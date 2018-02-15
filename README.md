@@ -1,1 +1,1 @@
-# pynbody
+# nbodypy

@@ -1,7 +1,10 @@
 #Change Star or StarCluster units when necessary
 #Real units count as Msun, km/s, and pc
+
 #CAUTION: - Double Check that everything is in the same units when definining Star or StarCluster and note that any operations performed on Star or StarCluster will be in those units and any calculated variables will not have their units changed by the functions below.
 #Also added subroutine to shift positions and velocities and rename origin
+
+#In what follows, object is typically a StarCluster while subobject will be a Star. Based on the current definitions of the two, Star sometimes needs information from StarCluster to change units. Not currently loving this setup, so this may change. Need to tweak how individual stars are defined.
 
 import math
 

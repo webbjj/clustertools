@@ -76,6 +76,6 @@ def makeplot(object,xparam,yparam,xlim=None,ylim=None,savedir='./',filename=None
         plt.ylim(ylim)
 
     plt.plot(plotx,ploty,'k.')
-    plt.title(xparam+' VS '+yparam)
+    plt.title('Time = %f' % object.tphys)
     plt.savefig(savedir+filename)   
     plt.close() 

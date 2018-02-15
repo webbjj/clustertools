@@ -3,8 +3,10 @@ from cluster import *
 from star import *
 import numpy
 
-#TO DO DEFAULT FORT.82 AND FORT.83
+#To Do:
+#Add get functions for public versions of OUT34, fort.82 and fort.83
 
+#Get StarCluster from Gyrfalcon output
 def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0):
     nhead=13
     id=[]
@@ -53,9 +55,14 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0):
 
     return cluster
 
+#Get StarCluster from NBODY6 using Jarrod Hurley's version of hrplot.f
 def get_nbody6_jarrod(fort82,fort83):
     
     line1=fort83.readline().split()
+    if (len(line1)==0):
+        print('END OF FILE')
+        return StarCluster(0,0.0)
+
     line2=fort83.readline().split()
     line3=fort83.readline().split()
     line1b=fort82.readline().split()
@@ -191,11 +198,14 @@ def get_nbody6_jarrod(fort82,fort83):
 
     return cluster
 
-#TO DO - DEFAULT OUT3 AND OUT34
-#Get data from custom version of OUT34
+#Get StarCluster from custom version of OUT34
 def get_nbody6_out34(out34):
     
     line1=out34.readline().split()
+    if (len(line1)==0):
+        print('END OF FILE')
+        return StarCluster(0,0.0)
+
     line2=out34.readline().split()
     line3=out34.readline().split()
 
@@ -285,6 +295,7 @@ def get_nbody6_out34(out34):
 
     return cluster
 
+#Get Star from an individual star
 def get_star(cluster,id):
     indx=cluster.id.index(id)
     star=Star(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vx[indx],tphys=cluster.tphys,units=cluster.units,origin=cluster.origin)

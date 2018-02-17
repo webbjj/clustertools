@@ -1,3 +1,5 @@
+#Extrct black hole and its properties from a cluster
+#INCOMPLETE
 def get_bhtdf(base):
 
     filename=base+'bhtdf.dat'
@@ -47,7 +49,7 @@ def get_bhtdf(base):
 
     return bh
 
-class BlackHole(object):
+class BlackHole(cluster):
 
     def __init__(self,t,x,y,z,r,v):
         self.t=t

@@ -34,37 +34,38 @@ def animate_nbody6_out34(out34,xparam,yparam,xlim=None,ylim=None,savedir='./',un
         cluster=get_nbody6_out34(out34)
         filenum+=1
 
-def makeplot(object,xparam,yparam,xlim=None,ylim=None,savedir='./',filename=None,units=None):
+def makeplot(cluster,xparam,yparam,xlim=None,ylim=None,savedir='./',filename=None,units=None):
 
     #Set Units
-    if units!=object.units:
-        if units=='realpc' and object.units=='nbody':
-            nbody_to_realpc(object)
-        elif units=='realkpc' and object.units=='nbody':
-            nbody_to_realkpc(object)
-        elif units=='galpy' and object.units=='nbody':
-            nbody_to_galpy(object)
+    if units!=cluster.units:
+        if units=='realpc' and cluster.units=='nbody':
+            nbody_to_realpc(cluster)
+        elif units=='realkpc' and cluster.units=='nbody':
+            nbody_to_realkpc(cluster)
+        elif units=='galpy' and cluster.units=='nbody':
+            nbody_to_galpy(cluster)
             
 
-    #Find which parameters to plot (this list is coninually being added to)
+    #Find which parameters to plot (this list is coninually being added to as I need to make plots)
+
     if xparam=='x':
-        plotx=object.x
+        plotx=cluster.x
         plt.xlabel('X')
     elif xparam=='y':
-        plotx=object.y
+        plotx=cluster.y
         plt.xlabel('Y')
     elif xparam=='z':
-        plotx=object.z
+        plotx=cluster.z
         plt.xlabel('Z')
 
     if yparam=='x':
-        ploty=object.x
+        ploty=cluster.x
         plt.ylabel('X')
     elif yparam=='y':
-        ploty=object.y
+        ploty=cluster.y
         plt.ylabel('Y')
     elif yparam=='z':
-        ploty=object.z
+        ploty=cluster.z
         plt.ylabel('Z')
 
     if filename==None:
@@ -76,6 +77,5 @@ def makeplot(object,xparam,yparam,xlim=None,ylim=None,savedir='./',filename=None
         plt.ylim(ylim)
 
     plt.plot(plotx,ploty,'k.')
-    plt.title('Time = %f' % object.tphys)
-    plt.savefig(savedir+filename)   
+    plt.title('Time = %f' % cluster.tphys)
     plt.close() 

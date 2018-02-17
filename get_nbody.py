@@ -1,7 +1,7 @@
 import math
-from cluster import *
-from star import *
-import numpy
+from cluster import StarCluster
+from star import Star
+import numpy as np
 
 #To Do:
 #Add get functions for public versions of OUT34, fort.82 and fort.83
@@ -66,6 +66,11 @@ def get_nbody6_jarrod(fort82,fort83):
     line2=fort83.readline().split()
     line3=fort83.readline().split()
     line1b=fort82.readline().split()
+
+    print('DEBUG ',line1)
+    print('DEBUG ',line2)
+    print('DEBUG ',line3)
+    print('DEBUG ',line1b)
 
     ns=int(line1[0])
     tphys=float(line1[1])
@@ -139,19 +144,19 @@ def get_nbody6_jarrod(fort82,fort83):
         logl2.append(float(data[11]))
         logl.append(max(logl1,logl2))
         logr1.append(float(data[12]))
-        logr2.append(float(data[12]))
+        logr2.append(float(data[13]))
         logr.append(max(logr1,logr2))
-        x.append(float(data[13]))
-        y.append(float(data[14]))
-        z.append(float(data[15]))
-        vx.append(float(data[16]))
-        vy.append(float(data[17]))
-        vz.append(float(data[18]))
+        x.append(float(data[14]))
+        y.append(float(data[15]))
+        z.append(float(data[16]))
+        vx.append(float(data[17]))
+        vy.append(float(data[18]))
+        vz.append(float(data[19]))
  
-        if type=='bound' or type=='esc':
-            kin.append(float(data[19]))
-            pot.append(float(data[20]))
-            etot.append(float(data[22]))
+        if len(data) > 22:
+            kin.append(float(data[20]))
+            pot.append(float(data[21]))
+            etot.append(float(data[23]))
         else:
             kin.append(0.0)
             pot.append(0.0)
@@ -163,11 +168,12 @@ def get_nbody6_jarrod(fort82,fort83):
 
     data=fort83.readline().split()
     while int(data[0]) > 0 and len(data)>0:
+        if(tphys>95.0): print(data)
         id.append(int(data[0]))
         kw.append(int(data[1]))
         m.append(float(data[2])/zmbar)
         logl.append(float(data[3]))
-        logr.append(float(data[12]))
+        logr.append(float(data[4]))
         x.append(float(data[5]))
         y.append(float(data[6]))
         z.append(float(data[7]))
@@ -189,12 +195,13 @@ def get_nbody6_jarrod(fort82,fort83):
 
     nbnd=nsbnd+nbbnd
 
-    cluster= StarCluster(nbnd,tphys,nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd)
-
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
+    cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz)
     cluster.add_se(kw,logl,logr)
     cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2)
     cluster.add_energies(kin,pot,etot)
+
 
     return cluster
 
@@ -265,7 +272,7 @@ def get_nbody6_out34(out34):
             kw.append(int(data[1]))
             m.append(float(data[2]))
             logl.append(float(data[3]))
-            logr.append(float(data[12]))
+            logr.append(float(data[4]))
             x.append(float(data[5]))
             y.append(float(data[6]))
             z.append(float(data[7]))
@@ -287,7 +294,8 @@ def get_nbody6_out34(out34):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,np)
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
+    cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,np)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz)
     cluster.add_se(kw,logl,logr)
     cluster.add_energies(kin,pot,etot)
@@ -295,9 +303,33 @@ def get_nbody6_out34(out34):
 
     return cluster
 
+#Get StarCluster from array of Stars
+def get_starcluster(stars):
+    id=[]
+    m=[]
+    x=[]
+    y=[]
+    z=[]
+    vx=[]
+    vy=[]
+    vz=[]
+
+    for i in range(0,len(stars)):
+        id.append(stars[i].id)
+        m.append(stars[i].m)
+        x.append(stars[i].x)
+        y.append(stars[i].y)
+        z.append(stars[i].z)
+        vx.append(stars[i].vx)
+        vy.append(stars[i].vy)
+        vz.append(stars[i].vz)
+    cluster=StarCluster(len(stars),stars[0].tphys,id,m,x,y,z,vx,vy,vz,units=stars[0].units,origin=stars[0].origin)
+
+    return cluster
+
 #Get Star from an individual star
 def get_star(cluster,id):
     indx=cluster.id.index(id)
-    star=Star(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vx[indx],tphys=cluster.tphys,units=cluster.units,origin=cluster.origin)
+    star=Star(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx], cluster.vx[indx],tphys=cluster.tphys,units=cluster.units,origin=cluster.origin)
     return star
 

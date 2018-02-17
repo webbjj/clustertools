@@ -1,13 +1,47 @@
 import math
+import numpy as np
 from units import *
 
-#Define the StarCluster class and add properties to the cluster
+#Define the StarClustee class and add properties to the cluster
+#With the exception of total cluster mass and core mass (if core radius is given), and other cluster properties
+#
 class StarCluster(object):
-    def __init__(self,ntot,tphys=0.0,nc=0,rc=0.0,rbar=1.0,rtide=0.0,xc=0.0,yc=0.0,zc=0.0,zmbar=1.0,vstar=1.0,rscale=1.0,ns=0.0,nb=0.0,np=0.0,units='nbody',origin='cluster'):
-        #Total Number of Stars + Binaries
+    def __init__(self,ntot=0,tphys=0.0,id=None,m=None,x=None,y=None,z=None,vx=None,vy=None,vz=None,units=None,origin=None):
+        #Total Number of Stars + Binaries in the cluster
         self.ntot=ntot
-        #Current Time
+        #Age of cluster
         self.tphys=tphys
+        
+        #If array of stars and their properties are included when instance is defined:
+        #Assume all coordinates are given in Msun, parsecs, km/s and clustercentric distance unless otherwise specified
+        if id!= None:
+            self.id=id
+            self.m=m
+            self.x=x
+            self.y=y
+            self.z=z
+            self.vx=vx
+            self.vy=vy
+            self.vz=vz
+        else:
+            self.id=[]
+            self.m=[]
+            self.x=[]
+            self.y=[]
+            self.z=[]
+            self.vx=[]
+            self.vy=[]
+            self.vz=[]
+        
+        self.units=units
+        self.origin=origin
+        
+        #Calculate key parameters
+        if id!=None:
+            self.key_params()
+
+    # Add key parameters from an Nbody6 output file
+    def add_nbody6(self,nc=0,rc=0.0,rbar=1.0,rtide=0.0,xc=0.0,yc=0.0,zc=0.0,zmbar=1.0,vstar=1.0,rscale=1.0,ns=0.0,nb=0.0,np=0.0):
         #Number of stars in the core
         self.nc=nc
         #Core radius
@@ -32,45 +66,60 @@ class StarCluster(object):
         self.nb=nb
         #Number of particles (from NBODY6 when tidal tail is being integrated)
         self.np=np
-        #Units (nbody/realpc/realkpc/galpy)
-        self.units=units
-        #Origin (cluster/galaxy)
-        self.origin=origin
     
     #Add an array of stars with id's, masses, positions, and velocities
     def add_stars(self,id,m,x,y,z,vx,vy,vz):
-        self.id=id
-        self.m=m
-        self.x=x
-        self.y=y
-        self.z=z
-        self.vx=vx
-        self.vy=vy
-        self.vz=vz
-    
+        for i in range(0,len(id)):
+            self.id.append(id[i])
+            self.m.append(m[i])
+            self.x.append(x[i])
+            self.y.append(y[i])
+            self.z.append(z[i])
+            self.vx.append(vx[i])
+            self.vy.append(vy[i])
+            self.vz.append(vz[i])
+        
+        if len(self.id)!=self.ntot:
+            print('Added %i stars to instance' % (len(self.id)-self.ntot))
+            self.ntot=len(self.id)
+
+        #Calculate key parameters
+        self.key_params()
+
+    def key_params(self):
         #Calculate Key Parameters
         self.v=[]
         self.rxy=[]
         self.r=[]
-        self.mtot=0.0
-        #Mass within rtide
-        self.mgc=0.0
-        #Mass within core
-        self.mc=0.0
-        #Mass beyond rtide
-        self.mrt=0.0
-        
-        for i in range(0,len(x)):
+        self.mtot=0.0       
+  
+        for i in range(0,len(self.x)):
             self.v.append(math.sqrt(self.vx[i]**2.0+self.vy[i]**2.0+self.vz[i]**2.0))
             self.rxy.append(math.sqrt(self.x[i]**2.0+self.y[i]**2.0))
             self.r.append(math.sqrt(self.x[i]**2.0+self.y[i]**2.0+self.z[i]**2.0))
             self.mtot+=self.m[i]
-            if self.r[i]<self.rc:
-                self.mc=self.mc+self.m[i]
-            if self.r[i]<=self.rtide:
-                self.mgc=self.mgc+self.m[i]
-            else:
-                self.mrt=self.mrt+self.m[i]
+        
+        self.rmean=np.mean(self.r)
+
+        if self.origin=='cluster':
+            self.rmax=np.max(self.r)
+            self.rm=self.rnfind(0.5)
+
+    def rnfind(self,nfrac):
+        
+        if self.origin!='cluster':
+            print('Cannot compute rm when origin = %s' % self.origin)
+            return None
+        else:
+            #Radially order the stars to find half-mass radius
+            self.rorder=sorted(range(0,self.ntot),key=lambda k:self.r[k])
+            msum=0.0
+            for i in range(0,self.ntot):
+                msum+=self.m[self.rorder[i]]
+                if msum >= nfrac*self.mtot:
+                    rn=self.r[self.rorder[i]]
+                    break
+        return rn
 
     #Add stellar evolution parameters (type (NBODY6), luminosity, radius)
     #Units not specified
@@ -114,50 +163,6 @@ class StarCluster(object):
         self.vxgc=vxgc
         self.vygc=vygc
         self.vzgc=vzgc
-
-    #Calculate lagrange radii
-    #Units will be whatever units the cluster is currently in
-    def rlagrange(self,nlagrange=10):
-        
-        #Shift to clustercentric origin if not so already:
-        origin0=self.origin
-        units0=self.units
-        if origin0 !='cluster':
-            xvshift(self,self.xgc,self.ygc,self.zgc,self.vxgc,self.vygc,self.vzgc,'cluster')
-        if units0 =='realkpc':
-            kpctopc(self)
-        
-        #If rtide was not given:
-        if self.mgc==0.0:
-            self.mgc=self.mtot
-
-        #Radially order the stars
-        rorder=sorted(range(0,self.ntot),key=lambda k:self.r[k])
-        msum=0.0
-        nfrac=1
-        self.rn=[]
-        for i in range(0,self.ntot):
-            mfrac=self.mgc*float(nfrac)/float(nlagrange)
-            msum+=self.m[rorder[i]]
-            if msum >= mfrac:
-                self.rn.append(self.r[rorder[i]])
-                nfrac+=1
-            if nfrac>nlagrange:
-                break
-
-        #If rc was not given let rc=r10:
-        if self.rc==0.0:
-            for i in range(0,nlagrange):
-                if float(i)/float(nlagrange) >= 0.1:
-                    self.rc=self.rn[i]
-                    self.mc=self.mgc*float(i)/float(nlagrange)
-                    break
-
-        #Shift back to original origin and units
-        if units0 =='realkpc' and self.units=='realpc':
-            pctokpc(self)
-        if origin0 == 'galaxy' and self.origin=='cluster':
-            xvshift(self,self.xgc,self.ygc,self.zgc,self.vxgc,self.vygc,self.vzgc,'galaxy')
 
 
 

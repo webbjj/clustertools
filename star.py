@@ -1,8 +1,7 @@
-import numpy
+import numpy as np
 import math
 
 #Define the Star class and add properties to the star
-#Need to work on definining Star, taking important properties from StarCluster and/or building StarCluster one Star at a time
 
 class Star(object):
     def __init__(self,id,m,x,y,z,vx,vy,vz,tphys='0.0',units='nbody',origin='cluster'):

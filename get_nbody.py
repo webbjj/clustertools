@@ -67,10 +67,6 @@ def get_nbody6_jarrod(fort82,fort83):
     line3=fort83.readline().split()
     line1b=fort82.readline().split()
 
-    print('DEBUG ',line1)
-    print('DEBUG ',line2)
-    print('DEBUG ',line3)
-    print('DEBUG ',line1b)
 
     ns=int(line1[0])
     tphys=float(line1[1])
@@ -168,7 +164,6 @@ def get_nbody6_jarrod(fort82,fort83):
 
     data=fort83.readline().split()
     while int(data[0]) > 0 and len(data)>0:
-        if(tphys>95.0): print(data)
         id.append(int(data[0]))
         kw.append(int(data[1]))
         m.append(float(data[2])/zmbar)

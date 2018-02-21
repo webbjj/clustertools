@@ -6,7 +6,7 @@ from units import *
 #With the exception of total cluster mass and core mass (if core radius is given), and other cluster properties
 #
 class StarCluster(object):
-    def __init__(self,ntot=0,tphys=0.0,id=None,m=None,x=None,y=None,z=None,vx=None,vy=None,vz=None,units=None,origin=None):
+    def __init__(self,ntot=0,tphys=0.0,id=None,m=None,x=None,y=None,z=None,vx=None,vy=None,vz=None,units=None,origin=None,keyparams=True):
         #Total Number of Stars + Binaries in the cluster
         self.ntot=ntot
         #Age of cluster
@@ -35,9 +35,9 @@ class StarCluster(object):
         
         self.units=units
         self.origin=origin
-        
+        self.keyparams=keyparams
         #Calculate key parameters
-        if id!=None:
+        if id!=None and self.keyparams:
             self.key_params()
 
     # Add key parameters from an Nbody6 output file
@@ -84,7 +84,8 @@ class StarCluster(object):
             self.ntot=len(self.id)
 
         #Calculate key parameters
-        self.key_params()
+        if self.keyparams:
+            self.key_params()
 
     def key_params(self):
         #Calculate Key Parameters

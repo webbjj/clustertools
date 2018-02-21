@@ -7,7 +7,7 @@ import numpy as np
 #Add get functions for public versions of OUT34, fort.82 and fort.83
 
 #Get StarCluster from Gyrfalcon output
-def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0):
+def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,do_keyparams=True):
     nhead=13
     id=[]
     m=[]
@@ -29,7 +29,7 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0):
         if any ('time' in dat for dat in data):
                 tphys=float(data[2])*1000.0
         
-    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy')
+    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy',keyparams=do_keyparams)
             
     for j in range(ntot):
         data=filein.readline().split()
@@ -44,19 +44,19 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0):
 
     cluster.add_stars(id,m,x,y,z,vx,vy,vz)
 
-    xgc=numpy.mean(x)
-    ygc=numpy.mean(y)
-    zgc=numpy.mean(z)
-    vxgc=numpy.mean(vx)
-    vygc=numpy.mean(vy)
-    vzgc=numpy.mean(vz)
+    xgc=np.mean(x)
+    ygc=np.mean(y)
+    zgc=np.mean(z)
+    vxgc=np.mean(vx)
+    vygc=np.mean(vy)
+    vzgc=np.mean(vz)
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
     return cluster
 
 #Get StarCluster from NBODY6 using Jarrod Hurley's version of hrplot.f
-def get_nbody6_jarrod(fort82,fort83):
+def get_nbody6_jarrod(fort82,fort83,do_keyparams=True):
     
     line1=fort83.readline().split()
     if (len(line1)==0):
@@ -190,18 +190,20 @@ def get_nbody6_jarrod(fort82,fort83):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
-    cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd)
-    cluster.add_stars(id,m,x,y,z,vx,vy,vz)
-    cluster.add_se(kw,logl,logr)
-    cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2)
-    cluster.add_energies(kin,pot,etot)
-
+    if nbnd > 0:
+        cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',keyparams=do_keyparams)
+        cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd)
+        cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+        cluster.add_se(kw,logl,logr)
+        cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2)
+        cluster.add_energies(kin,pot,etot)
+    else:
+        cluster=StarCluster(0,tphys)
 
     return cluster
 
 #Get StarCluster from custom version of OUT34
-def get_nbody6_out34(out34):
+def get_nbody6_out34(out34,do_keyparams=True):
     
     line1=out34.readline().split()
     if (len(line1)==0):
@@ -289,7 +291,7 @@ def get_nbody6_out34(out34):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',keyparams=do_keyparams)
     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,np)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz)
     cluster.add_se(kw,logl,logr)
@@ -299,7 +301,7 @@ def get_nbody6_out34(out34):
     return cluster
 
 #Get StarCluster from array of Stars
-def get_starcluster(stars):
+def get_starcluster(stars,do_keyparams=True):
     id=[]
     m=[]
     x=[]
@@ -318,7 +320,7 @@ def get_starcluster(stars):
         vx.append(stars[i].vx)
         vy.append(stars[i].vy)
         vz.append(stars[i].vz)
-    cluster=StarCluster(len(stars),stars[0].tphys,id,m,x,y,z,vx,vy,vz,units=stars[0].units,origin=stars[0].origin)
+    cluster=StarCluster(len(stars),stars[0].tphys,id,m,x,y,z,vx,vy,vz,units=stars[0].units,origin=stars[0].origin,keyparams=do_keyparams)
 
     return cluster
 

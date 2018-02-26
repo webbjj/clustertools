@@ -56,12 +56,12 @@ def rlagrange(cluster,nlagrange=10):
     #Radially order the stars
     msum=0.0
     nfrac=1
-    cluster.rn=[]
+    rn=[]
     for i in range(0,cluster.ntot):
         mfrac=cluster.mgc*float(nfrac)/float(nlagrange)
         msum+=cluster.m[cluster.rorder[i]]
         if msum >= mfrac:
-            cluster.rn.append(cluster.r[cluster.rorder[i]])
+            rn.append(cluster.r[cluster.rorder[i]])
             nfrac+=1
         if nfrac>nlagrange:
             break
@@ -70,6 +70,7 @@ def rlagrange(cluster,nlagrange=10):
     if origin0 == 'galaxy' and cluster.origin=='cluster':
         xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
 
+    return rn
 #Split an array into nbin bin's of equal number elements
 def nbinmaker(x,nbin):
     
@@ -102,13 +103,18 @@ def nbinmaker(x,nbin):
     return x_lower,x_mean,x_upper,x_hist
 
 #Find mass function over a given mass range using nmass bins containing an equal number of stars
-def mass_function(cluster,mmin=0.1,mmax=1.0,nmass=10):
+#Radial range optional
+def mass_function(cluster,mmin=0.1,mmax=1.0,nmass=10,rmin=None,rmax=None):
 
     msub=[]
     
     for i in range(0,cluster.ntot):
         if cluster.m[i]>=mmin and cluster.m[i]<=mmax:
-            msub.append(cluster.m[i])
+            if rmin!=None:
+                if cluster.r[i]>=rmin and cluster.r[i]<=rmax:
+                    msub.append(cluster.m[i])
+            else:
+                msub.append(cluster.m[i])
 
     m_lower,m_mean,m_upper,m_hist=nbinmaker(msub,nmass)
 
@@ -166,6 +172,58 @@ def alpha_prof(cluster,mmin=0.1,mmax=100.0,nmass=10,rmin=0.0,rmax=100.0,nrad=10)
     eydalpha=np.sqrt(V[1][1])
     
     return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
+
+#Find eta over a given mass range using nmass bins containing an equal number of stars
+#Radial range optional
+def eta_function(cluster,mmin=0.1,mmax=1.8,nmass=10,rmin=None,rmax=None):
+
+    msub=[]
+    
+    for i in range(0,cluster.ntot):
+        if cluster.m[i]>=mmin and cluster.m[i]<=mmax:
+            if rmin!=None:
+                if cluster.r[i]>=rmin and cluster.r[i]<=rmax:
+                    msub.append(cluster.m[i])
+            else:
+                msub.append(cluster.m[i])
+
+    m_lower,m_mean,m_upper,m_hist=nbinmaker(msub,nmass)
+
+    lm_mean=[]
+    sigvm=[]
+    lsigvm=[]
+    for i in range(0,nmass):
+        lm_mean.append(math.log(m_mean[i],10.0))
+        vx=[]
+        vy=[]
+        vz=[]
+
+        for j in range(0,cluster.ntot):
+            if cluster.m[j]>=m_lower[i] and cluster.m[j]<=m_upper[i]:
+                if rmin!=None:
+                    if cluster.r[i]>=rmin and cluster.r[i]<=rmax:
+                        vx.append(cluster.vx)
+                        vy.append(cluster.vy)
+                        vz.append(cluster.vz)
+                else:
+                    vx.append(cluster.vx)
+                    vy.append(cluster.vy)
+                    vz.append(cluster.vz)
+
+        sigx=np.std(vx)
+        sigy=np.std(vy)
+        sigz=np.std(vz)
+
+        sigvm.append(math.sqrt(sigvx**2.0+sigvy**2.0+sigvz**2.0))
+        lsigvm.append(math.log(sigvm[-1],10.0))
+
+
+    (eta,yeta),V=np.polyfit(lm_mean,lsigvm,1,cov=True)
+    eeta=np.sqrt(V[0][0])
+    eyeta=np.sqrt(V[1][1])
+
+    return m_mean,sigvm,eta,eeta,yeta,eyeta
+
 
 
 

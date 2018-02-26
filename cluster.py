@@ -165,6 +165,36 @@ class StarCluster(object):
         self.vygc=vygc
         self.vzgc=vzgc
 
+#Routine for joining cluster timesteps
+
+def join_clusters(clusters):
+
+    base_cluster=clusters[0]
+
+    id=[]
+    m=[]
+    x=[]
+    y=[]
+    z=[]
+    vx=[]
+    vy=[]
+    vz=[]
+    
+    for i in range(1,len(clusters)):
+        for j in range(0,clusters[i].ntot):
+            id.append(clusters[i].id[j])
+            m.append(clusters[i].m[j])
+            x.append(clusters[i].x[j])
+            y.append(clusters[i].y[j])
+            z.append(clusters[i].z[j])
+            vx.append(clusters[i].vx[j])
+            vy.append(clusters[i].vy[j])
+            vz.append(clusters[i].vz[j])
+
+    base_cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+
+    return base_cluster
+
 
 
  

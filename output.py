@@ -1,6 +1,10 @@
 #Output files containing key cluster properties 
 from functions import *
 
+#def extrct_out(cluster,fileout):
+
+    
+
 #Output dvprof.dat (WIP)
 def eta_out(cluster,fileout):
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))

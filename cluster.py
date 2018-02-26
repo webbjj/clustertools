@@ -195,6 +195,41 @@ def join_clusters(clusters):
 
     return base_cluster
 
+def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None):
+
+    id=[]
+    m=[]
+    x=[]
+    y=[]
+    z=[]
+    vx=[]
+    vy=[]
+    vz=[]
+
+    for i in range(0,cluster.ntot):
+        add_star=False
+        if rmin!=None and mmin!= None:
+            if cluster.r[i]>=rmin and cluster.r[i]<=rmax and cluster.m[i]>=mmin and cluster.m[i]<=mmax:
+                add_star=True
+        elif rmin!=None and cluster.r[i]>=rmin and cluster.r[i]<=rmax:
+            add_star=True
+        elif mmin!=None and cluster.m[i]>=mmin and cluster.m[i]<=mmax:
+            add_star=True
+
+        if add_star:
+            id.append(clusters[i].id[i])
+            m.append(clusters[i].m[i])
+            x.append(clusters[i].x[i])
+            y.append(clusters[i].y[i])
+            z.append(clusters[i].z[i])
+            vx.append(clusters[i].vx[i])
+            vy.append(clusters[i].vy[i])
+            vz.append(clusters[i].vz[i])
+
+    return StarCluster(len(x),cluster.tphys,id,m,x,y,z,vx,vy,vz)
+
+
+
 
 
  

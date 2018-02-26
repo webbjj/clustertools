@@ -22,12 +22,31 @@ def Half_Mass_Relaxation_Time(cluster):
 #Relaxation time
 #No assumptions of virialization
 #TODO ADD REFERENCE
-def Relaxation_Time(cluster):
-    
-    p50=3.0*(0.5*cluster.mtot)/(4.0*math.pi*(cluster.rm**3.0))
+def Relaxation_Time(cluster,local=False,multimass=True):
+    #Gravitational Constant (pc km/s^2 / Msun)
+    grav=4.302E-3
+    #Find Density within Half-Mass Radius
+    if local:
+        vol=(4.0/3.0)*math.pi*(np.max(cluster.r)**3.0-np.min(cluster.r)**3.0)
+        p50=cluster.mtot/vol
+    else:
+        p50=3.0*(0.5*cluster.mtot)/(4.0*math.pi*(cluster.rm**3.0))
 
-    trelax = float(cluster.ntot)/math.log(0.4*float(cluster.ntot),10)
-    trelax=0.858*trelax*math.sqrt(math.pow(cluster.rm,3.0)/cluster.mtot)
+    #Find 1D Global Velocity Dispersion
+    sigv_1d=(np.std(cluster.vx)+np.std(cluster.vy)+np.std(cluster.vz))/3.0
+    #Mean stellar mass
+    mbar=np.mean(cluster.m)
+    
+    if multimass:
+        lnlambda=math.log(0.02*cluster.ntot)
+    else:
+        lnlambda=math.log(0.11*cluster.ntot)
+
+    #Units of seconds * (pc/km)
+    trelax=0.34*(sigv_1d**3.0)/((grav**2.0)*mbar*p50*lnlambda)
+
+    #Units of Myr
+    trelax=trelax*3.086e13/(3600.0*24.0*365.0*1000000.0)
 
     return trelax
 

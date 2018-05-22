@@ -7,7 +7,7 @@ import numpy as np
 #Add get functions for public versions of OUT34, fort.82 and fort.83
 
 #Get StarCluster from Gyrfalcon output
-def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,do_keyparams=True):
+def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,mcon=None,do_keyparams=True,yzswap=False,find_center=False):
     nhead=13
     id=[]
     m=[]
@@ -33,8 +33,10 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,do_keyparams=True):
             
     for j in range(ntot):
         data=filein.readline().split()
-        id.append(j)
+        id.append(j+1)
         m.append(float(data[0]))
+        if mcon!=None:
+            m[-1]*=mcon
         x.append(float(data[1]))
         y.append(float(data[2]))
         z.append(float(data[3]))
@@ -42,14 +44,64 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,do_keyparams=True):
         vy.append(float(data[5])*vcon)
         vz.append(float(data[6])*vcon)
 
-    cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+    if yzswap:
+        cluster.add_stars(id,m,x,z,y,vx,vz,vy)
+    else:
+        cluster.add_stars(id,m,x,y,z,vx,vy,vz)
 
-    xgc=np.mean(x)
-    ygc=np.mean(y)
-    zgc=np.mean(z)
-    vxgc=np.mean(vx)
-    vygc=np.mean(vy)
-    vzgc=np.mean(vz)
+    #Estimate center of distribution using median function
+    xgc=np.median(cluster.x)
+    ygc=np.median(cluster.y)
+    zgc=np.median(cluster.z)
+    vxgc=np.median(cluster.vx)
+    vygc=np.median(cluster.vy)
+    vzgc=np.median(cluster.vz)
+
+    if find_center:
+        #Iterate to find center of cluster
+        sigma_xgc=np.std(cluster.x)
+        sigma_ygc=np.std(cluster.y)
+        sigma_zgc=np.std(cluster.z)
+        
+        niterate=0
+
+        while abs(sigma_xgc/xgc)>0.001 or abs(sigma_ygc/ygc)>0.001 or abs(sigma_zgc/zgc)>0.001:
+            
+            niterate+=1
+
+            #Then find center of stars within 1sigma of median
+            x=[]
+            y=[]
+            z=[]
+            vx=[]
+            vy=[]
+            vz=[]
+
+            for i in range(0,cluster.ntot):
+                if abs(cluster.x[i]-xgc) < sigma_xgc and abs(cluster.y[i]-ygc) < sigma_ygc and abs(cluster.z[i]-zgc) < sigma_zgc:
+                    x.append(cluster.x[i])
+                    y.append(cluster.y[i])
+                    z.append(cluster.z[i])
+                    vx.append(cluster.vx[i])
+                    vy.append(cluster.vy[i])
+                    vz.append(cluster.vz[i])
+        
+            if len(x)<=1:
+                break
+
+            xgc=np.mean(x)
+            ygc=np.mean(y)
+            zgc=np.mean(z)
+            vxgc=np.mean(vx)
+            vygc=np.mean(vy)
+            vzgc=np.mean(vz)
+                
+            sigma_xgc=np.std(x)
+            sigma_ygc=np.std(y)
+            sigma_zgc=np.std(z)
+
+            if niterate>10:
+                print('SEARCHING FOR CLUSTER CENTER....',niterate)
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
@@ -135,7 +187,7 @@ def get_nbody6_jarrod(fort82,fort83,do_keyparams=True):
         semi.append(float(data[7]))
         m1.append(float(data[8])/zmbar)
         m2.append(float(data[9])/zmbar)
-        m.append(float(data[8])+float(data[9])/zmbar)
+        m.append(m1[-1]+m2[-1])
         logl1.append(float(data[10]))
         logl2.append(float(data[11]))
         logl.append(max(logl1,logl2))
@@ -203,7 +255,7 @@ def get_nbody6_jarrod(fort82,fort83,do_keyparams=True):
     return cluster
 
 #Get StarCluster from custom version of OUT34
-def get_nbody6_out34(out34,do_keyparams=True):
+def get_nbody6_out34(out34,do_keyparams=True,debug=False):
     
     line1=out34.readline().split()
     if (len(line1)==0):
@@ -256,16 +308,17 @@ def get_nbody6_out34(out34,do_keyparams=True):
     kin=[]
     pot=[]
     etot=[]
+    if debug:
+        debug_column=[]
 
     data=out34.readline().split()
-    while int(data[0]) > 0 and len(data)>0:
-
+    while int(float(data[0])) >= -999 and len(data)>0:
         # IGNORE GHOST PARTICLES
         if float(data[2])==0.0:
             ns-=1
             ntot-=1
         else:
-            id.append(int(data[0]))
+            id.append(int(float(data[0])))
             kw.append(int(data[1]))
             m.append(float(data[2]))
             logl.append(float(data[3]))
@@ -277,10 +330,13 @@ def get_nbody6_out34(out34,do_keyparams=True):
             vy.append(float(data[9]))
             vz.append(float(data[10]))
 
-            if len(data)>13:
-                kin.append(float(data[11]))
-                pot.append(float(data[12]))
-                etot.append(float(data[14]))
+            if debug:
+                debug_column.append(float(data[13]))
+
+            if len(data)>14:
+                kin.append(float(data[13]))
+                pot.append(float(data[14]))
+                etot.append(float(data[15]))
             else:
                 kin.append(0.0)
                 pot.append(0.0)
@@ -298,7 +354,62 @@ def get_nbody6_out34(out34,do_keyparams=True):
     cluster.add_energies(kin,pot,etot)
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
-    return cluster
+    if debug:
+        return cluster,debug_column
+    else:
+        return cluster
+
+#Get StarCluster from custom version of OUT34
+def get_nbody6_snapauto(snap,do_keyparams=True,debug=False):
+    
+    data=snap.readline().split()
+    tphys=float(data[0])
+    ntot=float(data[1])
+    nb=int(data[2])
+    xc=float(data[3])
+    yc=float(data[4])
+    zc=float(data[5])
+    
+    id=[]
+    m=[]
+    x=[]
+    y=[]
+    z=[]
+    vx=[]
+    vy=[]
+    vz=[]
+    if debug:
+        debug_column=[]
+
+    data=snap.readline().split()
+    nbnd=0
+    while len(data)>0:
+            if int(data[7]) <=0:
+                break
+
+            m.append(float(data[0]))
+            x.append(float(data[1]))
+            y.append(float(data[2]))
+            z.append(float(data[3]))
+            vx.append(float(data[4]))
+            vy.append(float(data[5]))
+            vz.append(float(data[6]))
+            id.append(int(float(data[7])))
+
+            if debug:
+                debug_column.append(float(data[13]))
+        
+            nbnd+=1
+
+            data=snap.readline().split()
+        
+    cluster=StarCluster(nbnd,tphys,units='realpc',origin='cluster',keyparams=do_keyparams)
+    cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+
+    if debug:
+        return cluster,debug_column
+    else:
+        return cluster
 
 #Get StarCluster from array of Stars
 def get_starcluster(stars,do_keyparams=True):
@@ -327,6 +438,6 @@ def get_starcluster(stars,do_keyparams=True):
 #Get Star from an individual star
 def get_star(cluster,id):
     indx=cluster.id.index(id)
-    star=Star(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx], cluster.vx[indx],tphys=cluster.tphys,units=cluster.units,origin=cluster.origin)
+    star=Star(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx], cluster.vz[indx],cluster.kw[indx],tphys=cluster.tphys,units=cluster.units,origin=cluster.origin)
     return star
 

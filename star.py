@@ -4,7 +4,7 @@ import math
 #Define the Star class and add properties to the star
 
 class Star(object):
-    def __init__(self,id,m,x,y,z,vx,vy,vz,tphys='0.0',units='nbody',origin='cluster'):
+    def __init__(self,id,m,x,y,z,vx,vy,vz,kw=0,tphys=0.0,units='nbody',origin='cluster'):
         self.ntot=1
         self.id=id
         self.m=m
@@ -14,13 +14,14 @@ class Star(object):
         self.vx=vx
         self.vy=vy
         self.vz=vz
+        self.kw=kw
         self.tphys=tphys
         self.units=units
         self.origin=origin
     
         #Calculate Key Parameters
         self.v=math.sqrt(self.vx**2.0+self.vy**2.0+self.vz**2.0)
-        self.rxy=math.sqrt(self.x**2.0+self.y**2.0)
+        self.rpro=math.sqrt(self.x**2.0+self.y**2.0)
         self.r=math.sqrt(self.x**2.0+self.y**2.0+self.z**2.0)
 
     def add_se(self,kw,logl,logr):

@@ -1,9 +1,79 @@
 #Output files containing key cluster properties 
 from functions import *
+from coordinates import *
+import numpy as np
 
-#def extrct_out(cluster,fileout):
+def extrct_out(cluster,fileout):
 
+    if cluster.ntot==0:
+        origin0=cluster.origin
+        units0=cluster.units
+        nb=0
+        cluster.mtot=0.0
+        trh=0.0
+        rn=np.zeros(10)
     
+    else:
+        if cluster.origin=='galaxy':
+            origin0=cluster.origin
+            xvshift(cluster,-cluster.xgc,-cluster.ygc,-cluster.zgc,-cluster.vxgc,-cluster.vygc,-cluster.vzgc,'cluster')
+        else:
+            origin0=cluster.origin
+
+        if cluster.units=='realkpc':
+            units0=cluster.units
+            kpctopc(cluster)
+        else:
+            units0=cluster.units
+
+        if not cluster.keyparams:
+            cluster.key_params()
+        if cluster.bse:
+            nb=len(cluster.m2)
+        else:
+            nb=0
+
+
+        trh=Relaxation_Time(cluster,local=False,multimass=True)
+
+        if cluster.ntot > 10:    
+            rn=rlagrange(cluster,10)
+        else:
+            rn=np.zeros(10)  
+    fileout.write("%i %i %f %f %f " % (cluster.ntot,nb,cluster.tphys,trh,cluster.mtot))
+
+    for i in range(0,len(rn)):
+        fileout.write("%f " % rn[i])
+    fileout.write("\n")
+
+    if units0!=cluster.units and units0=='realkpc':
+        pctokpc(cluster)
+    if origin0!=cluster.origin and origin0=='galaxy':
+        xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
+
+
+def trelax_prof_out(cluster,fileout,multimass=True):
+    trelax=Relaxation_Time(cluster,local=False,multimass=multimass)
+    fileout.write("%f %f " % (cluster.tphys,trelax))
+    rn=rlagrange(cluster,nlagrange=10)
+    trelax_prof=[]
+
+    for r in rn:
+        fileout.write("%f " % (r))
+
+    for i in range(0,len(rn)):
+        if i==0:
+            rmin=0.0
+            rmax=rn[i]
+        else:
+            rmin=rn[i-1]
+            rmax=rn[i]
+
+        rcluster=sub_cluster(cluster,rmin=rmin,rmax=rmax)
+        trelax_prof.append(Relaxation_Time(rcluster,local=True,multimass=multimass))
+        fileout.write("%f " % (trelax_prof[-1]))
+
+    fileout.write("\n")
 
 #Output dvprof.dat (WIP)
 def eta_out(cluster,fileout):
@@ -73,6 +143,6 @@ def snapout(cluster,filename):
     fileout=open(filename,'w')
 
     for i in range(0,cluster.ntot):
-        fileout.write("%i %f %f %f %f %f %f %f" % (cluster.id[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i]))
+        fileout.write("%i %f %f %f %f %f %f %f\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i]))
 
     fileout.close()

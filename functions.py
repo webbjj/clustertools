@@ -1,27 +1,11 @@
 #Key calculations (constantly adding to this file)
 import math
 import numpy as np
-from get_nbody import get_star
-from get_nbody import get_starcluster
 from cluster import *
+from observations import *
+from constants import *
 
-#Half-Mass Relaxation Time (Units = Myr)
-#Assumes virialized cluster
-#TODO - ADD REFERENCE
-
-def Half_Mass_Relaxation_Time(cluster):
-
-    p50=3.0*(0.5*cluster.mtot)/(4.0*math.pi*(cluster.rm**3.0))
-    #TODO - NEED TO EDIT DEFINITION OF SIG50
-    sig50=np.std(cluster.v)
-    trh=0.34*(sigv50**3.0)/(((4.302e-3)**2.0)*(1.0/3.0)*p50*math.log(0.4*cluster.mtot/(1.0/3.0)))
-    trh=trh*3.086e13/(3600.0*24.0*365.0*1000000.0)
-
-    return rh
-
-#Relaxation time
-#No assumptions of virialization
-#TODO ADD REFERENCE
+#Relaxation time - Spitzer (1987)
 def Relaxation_Time(cluster,local=False,multimass=True):
     #Gravitational Constant (pc km/s^2 / Msun)
     grav=4.302E-3
@@ -33,7 +17,7 @@ def Relaxation_Time(cluster,local=False,multimass=True):
         p50=3.0*(0.5*cluster.mtot)/(4.0*math.pi*(cluster.rm**3.0))
 
     #Find 1D Global Velocity Dispersion
-    sigv_1d=(np.std(cluster.vx)+np.std(cluster.vy)+np.std(cluster.vz))/3.0
+    sigv_1d=math.sqrt((np.std(cluster.vx)**2.0+np.std(cluster.vy)**2.0+np.std(cluster.vz)**2.0)/3.0)
     #Mean stellar mass
     mbar=np.mean(cluster.m)
     
@@ -42,24 +26,84 @@ def Relaxation_Time(cluster,local=False,multimass=True):
     else:
         lnlambda=math.log(0.11*cluster.ntot)
 
+
     #Units of seconds * (pc/km)
     trelax=0.34*(sigv_1d**3.0)/((grav**2.0)*mbar*p50*lnlambda)
 
     #Units of Myr
     trelax=trelax*3.086e13/(3600.0*24.0*365.0*1000000.0)
 
+    #print('DEBUG: ',sigv_1d,mbar,p50,cluster.rm,np.min(cluster.r),np.max(cluster.r),trelax)
+
+
     return trelax
 
-#Calculate distances between stars in the cluster
-def Inter_Stellar_Distances(cluster):
-    s2sd=np.zeros((cluster.ntot,cluster.ntot))
-    for i in range(0,cluster.ntot):
-        for j in range(i,cluster.ntot):
-            d=math.sqrt((cluster.x[i]-cluster.x[j])**2.0+(cluster.y[i]-cluster.y[j])**2.0+(cluster.z[i]-cluster.z[j])**2.0)
-            s2sd[i][j]=d
-            s2sd[j][i]=d
+#Calculate Force Acting on Specific Star or All Stars
+#Output units depends on input units
+def get_forces(cluster,id=None):
+    
+    if id==None:
+    #Calculate force acting on each star
+        s2sd=np.zeros((cluster.ntot,cluster.ntot))
+        for i in range(0,cluster.ntot):
+            for j in range(i,cluster.ntot):
+                d=math.sqrt((cluster.x[i]-cluster.x[j])**2.0+(cluster.y[i]-cluster.y[j])**2.0+(cluster.z[i]-cluster.z[j])**2.0)
+                s2sd[i][j]=d
+                s2sd[j][i]=d
+    else:
+        #Calculate force acting on specific star
+        indx=cluster.id.index(id)
+        fx=0.0
+        fy=0.0
+        fz=0.0
+        pot=0.0
 
-    return s2sd
+        for i in range(0,cluster.ntot):
+            if cluster.id[i]!=id:       
+                dx=cluster.x[indx]-cluster.x[i]
+                dy=cluster.y[indx]-cluster.y[i]
+                dz=cluster.z[indx]-cluster.z[i]
+
+                if dx==0: dx=cluster.x[indx]-0.99*cluster.x[i]
+                if dy==0: dy=cluster.y[indx]-0.99*cluster.y[i]
+                if dz==0: dz=cluster.z[indx]-0.99*cluster.z[i]
+
+                dr=math.sqrt(dx**2.0+dy**2.0+dz**2.0)
+
+                xhat=dx/abs(dx)
+                yhat=dy/abs(dy)
+                zhat=dz/abs(dz)
+
+                fx+=xhat*cluster.m[i]/(dx**2.0)
+                fy+=yhat*cluster.m[i]/(dy**2.0)
+                fz+=zhat*cluster.m[i]/(dz**2.0)
+                pot-=cluster.m[i]/dr
+
+    ek=0.5*math.sqrt((cluster.vx[indx]-np.mean(cluster.vx))**2.0+(cluster.vy[indx]-np.mean(cluster.vy))**2.0+(cluster.vz[indx]-np.mean(cluster.vz))**2.0)
+    
+    if cluster.units=='nbody':
+        grav=1.0
+        fscale=1.0
+    elif cluster.units=='realpc':
+        #G has units of pc (km/s)^2 / Msun
+        grav=4.302e-3
+        #Scale forces to units of (km/s) / Myr
+        fscale=spermyr/kmperpc
+    elif cluster.units=='realkpc':
+        #G has units of kpc (km/s)^2 / Msun
+        grav=4.302e-6
+        #Scale forces to units of (km/s) / Myr
+        fscale=spermyr/kmperkpc
+    else:
+        grav=1.0
+        fscale=1.0
+
+    fx=fx*grav*fscale
+    fy=fy*grav*fscale
+    fz=fz*grav*fscale
+    pot=pot*grav
+
+    return fx,fy,fz,pot,ek
 
 
 #Calculate lagrange radii
@@ -70,26 +114,29 @@ def rlagrange(cluster,nlagrange=10):
     origin0=cluster.origin
     units0=cluster.units
     if origin0 !='cluster':
-        xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'cluster')
+        xvshift(cluster,-cluster.xgc,-cluster.ygc,-cluster.zgc,-cluster.vxgc,-cluster.vygc,-cluster.vzgc,'cluster')
 
     #Radially order the stars
     msum=0.0
     nfrac=1
     rn=[]
     for i in range(0,cluster.ntot):
-        mfrac=cluster.mgc*float(nfrac)/float(nlagrange)
+        mfrac=cluster.mtot*float(nfrac)/float(nlagrange)
         msum+=cluster.m[cluster.rorder[i]]
         if msum >= mfrac:
             rn.append(cluster.r[cluster.rorder[i]])
             nfrac+=1
         if nfrac>nlagrange:
             break
+    if len(rn) != nlagrange:
+        rn.append(np.max(cluster.r))
 
     #Shift back to original origin
     if origin0 == 'galaxy' and cluster.origin=='cluster':
         xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
 
     return rn
+
 #Split an array into nbin bin's of equal number elements
 def nbinmaker(x,nbin):
     
@@ -123,83 +170,144 @@ def nbinmaker(x,nbin):
 
 #Find mass function over a given mass range using nmass bins containing an equal number of stars
 #Radial range optional
-def mass_function(cluster,mmin=0.1,mmax=1.0,nmass=10,rmin=None,rmax=None):
+#Stellar evolution range (kw type) optional (default is MS stars)
+def mass_function(cluster,mmin=0.1,mmax=1.0,nmass=10,rmin=None,rmax=None,se_min=0,se_max=1,projected=False):
 
     msub=[]
     
     for i in range(0,cluster.ntot):
-        if cluster.m[i]>=mmin and cluster.m[i]<=mmax:
+        if projected:
+            rad=cluster.rpro[i]
+        else:
+            rad=cluster.r[i]
+        if cluster.m[i]>=mmin and cluster.m[i]<=mmax and cluster.kw[i]>=se_min and cluster.kw[i]<=se_max:
             if rmin!=None:
-                if cluster.r[i]>=rmin and cluster.r[i]<=rmax:
+                if rad>=rmin and rad<=rmax:
                     msub.append(cluster.m[i])
             else:
                 msub.append(cluster.m[i])
 
-    m_lower,m_mean,m_upper,m_hist=nbinmaker(msub,nmass)
+    if len(msub)>2.0*nmass:
+        m_lower,m_mean,m_upper,m_hist=nbinmaker(msub,nmass)
+    else:
+        m_mean=np.zeros(nmass)
+        m_hist=np.zeros(nmass)
+        dm=np.zeros(nmass)
+        alpha=-100.0
+        ealpha=0.0
+        yalpha=0.0
+        eyalpha=0.0
+        return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
 
     lm_mean=[]
     dm=[]
     ldm=[]
-    for i in range(0,nmass):
-        lm_mean.append(math.log(m_mean[i],10.0))
-        dm.append(m_hist[i]/(m_upper[i]-m_lower[i]))
-        ldm.append(math.log(dm[i],10.0))
+    print('DEBUG ',m_lower,m_mean,m_upper,m_hist)
+    for i in range(0,len(m_mean)):
+        if m_upper[i]!=m_lower[i]:
+            lm_mean.append(math.log(m_mean[i],10.0))
+            dm.append(m_hist[i]/(m_upper[i]-m_lower[i]))
+            ldm.append(math.log(dm[-1],10.0))
+        else:
+            m_mean.pop(i)
+            m_hist.pop(i)
+
+    if len(lm_mean)>=3:
+        (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
+        ealpha=np.sqrt(V[0][0])
+        eyalpha=np.sqrt(V[1][1])
+    else:
+        alpha=-100.0
+        yalpha=0.0
+        ealpha=0.0
+        eyalpha=0.0
+
+    if len(m_mean)!=nmass:
+        for i in range(0,nmass-len(m_mean)):
+            m_mean.append(0.0)
+            m_hist.append(0.0)
+            dm.append(0.0)
 
 
-    (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
-    ealpha=np.sqrt(V[0][0])
-    eyalpha=np.sqrt(V[1][1])
 
-    return m_mean,m_hist,alpha,ealpha,yalpha,eyalpha
+    return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
 
-
-def alpha_prof(cluster,mmin=0.1,mmax=100.0,nmass=10,rmin=0.0,rmax=100.0,nrad=10):
+#Measure the radial variation in the stellar mass function
+#Mass range optional
+#Radial range optional
+#Stellar evolution range (kw type) optional (default is MS stars)
+def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,se_min=0,se_max=1,projected=False,obs_cut=None):
 
     stars=[]
     rprof=[]
     lrprofn=[]
     aprof=[]
     eaprof=[]
+    nskip=0
 
-    
+    if rmin==None: rmin=np.min(cluster.r)
+    if rmax==None: rmax=np.max(cluster.r)
+    if mmin==None: mmin=np.min(cluster.m)
+    if mmax==None: mmax=np.max(cluster.m)
+
     #Build subcluster containing only stars in the full radial and mass range:
-    for i in range(0,cluster.ntot):
-        if cluster.r[i]>=rmin and cluster.r[i]<=rmax and cluster.m[i]>=mmin and cluster.m[i]<=mmax:
-            stars.append(get_star(cluster,cluster.id[i]))
+    subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected)
 
-    subcluster=get_starcluster(stars)
+    #Make radial bins
+    if obs_cut!=None and projected:
+        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
+        nrad=len(r_mean)
+    elif obs_cut!=None and not projected:
+        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.r,cluster.rm,obs_cut)
+        nrad=len(r_mean)
+    elif projected:
+        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.rpro,nrad)
+    else:
+        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.r,nrad)
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.r,nrad)
+    for i in range(0,len(r_lower)):
 
-    for i in range(0,nrad):
-        stars=[]
-        for j in range(0,subcluster.ntot):
-            if subcluster.r[j] >= r_lower[i] and subcluster.r[j] <= r_upper[i]:
-                stars.append(get_star(subcluster,subcluster.id[j]))
+        rcluster=sub_cluster(subcluster,rmin=r_lower[i],rmax=r_upper[i],projected=projected)
 
-        rcluster=get_starcluster(stars)
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(rcluster,mmin,mmax,nmass)
+     
+        if alpha!=-100.0:
+            rprof.append(r_mean[i])
+            if projected:
+                lrprofn.append(math.log(rprof[-1]/cluster.rmpro))
+            else:
+                lrprofn.append(math.log(rprof[-1]/cluster.rm))
+            aprof.append(alpha)
+            eaprof.append(ealpha)
 
-        m_mean,m_hist,alpha,ealpha,yalpha,eyalpha=mass_function(rcluster,mmin,mmax,nmass)
+    if len(lrprofn)>=3:
+        (dalpha,ydalpha),V=np.polyfit(lrprofn,aprof,1,cov=True)
+        edalpha=np.sqrt(V[0][0])
+        eydalpha=np.sqrt(V[1][1])
+    else:
+        dalpha=-100.0
+        ydalpha=0.0
+        edalpha=0.0
+        eydalpha=0.0
 
-        rprof.append(r_mean[i])
-        lrprofn.append(math.log(rprof[-1]/cluster.rm))
-        aprof.append(alpha)
-        eaprof.append(ealpha)
-
-    (dalpha,ydalpha),V=np.polyfit(lrprofn,aprof,1,cov=True)
-    edalpha=np.sqrt(V[0][0])
-    eydalpha=np.sqrt(V[1][1])
+    #Add empty cells to array when rcluster.ntot<int(2.0*float(nmass))
+    if len(lrprofn)!=nrad:
+        for i in range(0,nrad-len(lrprofn)):
+            lrprofn.append(0.0)
+            aprof.append(0.0)
     
     return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
 
 #Find eta over a given mass range using nmass bins containing an equal number of stars
+#Mass range optional (default is between 0.1 and 1.8 Msun)
 #Radial range optional
-def eta_function(cluster,mmin=0.1,mmax=1.8,nmass=10,rmin=None,rmax=None):
+#Stellar evolution range optional
+def eta_function(cluster,mmin=0.1,mmax=1.8,nmass=10,rmin=None,rmax=None,se_min=0,se_max=100,projected=False):
 
     msub=[]
     
     for i in range(0,cluster.ntot):
-        if cluster.m[i]>=mmin and cluster.m[i]<=mmax:
+        if cluster.m[i]>=mmin and cluster.m[i]<=mmax and cluster.kw[i]>=se_min and cluster.kw[i]<=se_max:
             if rmin!=None:
                 if cluster.r[i]>=rmin and cluster.r[i]<=rmax:
                     msub.append(cluster.m[i])
@@ -218,7 +326,7 @@ def eta_function(cluster,mmin=0.1,mmax=1.8,nmass=10,rmin=None,rmax=None):
         vz=[]
 
         for j in range(0,cluster.ntot):
-            if cluster.m[j]>=m_lower[i] and cluster.m[j]<=m_upper[i]:
+            if cluster.m[j]>=m_lower[i] and cluster.m[j]<=m_upper[i] and cluster.kw[i]>=se_min and cluster.kw[i]<=se_max:
                 if rmin!=None:
                     if cluster.r[i]>=rmin and cluster.r[i]<=rmax:
                         vx.append(cluster.vx)

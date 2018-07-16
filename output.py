@@ -119,13 +119,19 @@ def dalpha_out(cluster,fileout):
     m_upper=[0.5,0.8,0.8,0.5,0.8,0.8]
     r_lower=[0.0,0.0,0.0,None,None,None]
     r_upper=[cluster.rm,cluster.rm,cluster.rm,None,None,None]
+    alphag=[]
+    dalpha=[]
+    ydalpha=[]
+   
+    if not cluster.keyparams:
+        cluster.key_params()
 
     for i in range(0,len(m_lower)):
 
-        m_mean,m_hist,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,m_lower[i],m_upper[i],10,rmin=r_lower[i],rmax=r_upper[i])
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,m_lower[i],m_upper[i],10,rmin=r_lower[i],rmax=r_upper[i])
         alphag.append(alpha)
 
-        lrprofn,aprof,da,eda,yda,eyda=npy.alpha_prof(cluster,m_lower[i],m_upper[i],10,rmin=r_lower[i],rmax=r_upper[i],nrad=10)
+        lrprofn,aprof,da,eda,yda,eyda=alpha_prof(cluster,m_lower[i],m_upper[i],10,rmin=r_lower[i],rmax=r_upper[i],nrad=10)
         dalpha.append(da)
         ydalpha.append(yda)
 
@@ -137,6 +143,31 @@ def dalpha_out(cluster,fileout):
         fileout.write("%f " % yda)
     fileout.write("%f\n" % cluster.rm)
 
+def alpha_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,se_min=0,se_max=1,projected=False,obs_cut=None):
+
+    if not cluster.keyparams:
+        cluster.keyparams=True
+        cluster.key_params()
+    else:
+        cluster.key_params()
+
+    m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,se_min=se_min,se_max=se_max,projected=projected)
+    lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,se_min=se_min,se_max=se_max,projected=projected,obs_cut=obs_cut)
+
+
+    print(cluster.tphys,cluster.ntot,cluster.rm,cluster.rmpro,cluster.mtot,np.min(cluster.kw),np.max(cluster.kw),alpha)
+    fileout.write("%f %f %f %f %f " % (cluster.tphys,alpha,ealpha,yalpha,eyalpha))
+    for i in range(0,len(m_mean)):
+        fileout.write("%f " % m_mean[i])
+    for i in range(0,len(dm)):
+        fileout.write("%f " % dm[i])
+    for i in range(0,len(lrprofn)):
+        fileout.write("%f " % lrprofn[i])
+    for i in range(0,len(aprof)):
+        fileout.write("%f " % aprof[i])
+
+    fileout.write("%f %f %f %f\n" % (dalpha,edalpha,ydalpha,eydalpha))
+
 #Output a snapshot
 def snapout(cluster,filename):
 
@@ -146,3 +177,23 @@ def snapout(cluster,filename):
         fileout.write("%i %f %f %f %f %f %f %f\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i]))
 
     fileout.close()
+
+#Output dvprof.dat
+def sigv_out(cluster,fileout,do_beta=False):
+    fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
+
+    lrprofn,sigvprof=sigv_prof(cluster)
+
+    if do_beta:
+        lrprofn,betaprof=beta_prof(cluster)
+
+    for lr in lrprofn:
+        fileout.write("%f " % lr)
+    for sig in sigvprof:
+        fileout.write("%f " % sig)
+    if do_beta:
+        for beta in betaprof:
+            fileout.write("%f " % beta)
+
+    fileout.write("%f\n" % (cluster.rm))
+

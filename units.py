@@ -8,16 +8,24 @@ import math
 
 def nbody_to_realpc(cluster):
     if cluster.units=='nbody':
-        for i in range(0,len(cluster.x)):
-            cluster.m[i]=cluster.m[i]*cluster.zmbar
-            cluster.x[i]=cluster.x[i]*cluster.rbar
-            cluster.y[i]=cluster.y[i]*cluster.rbar
-            cluster.z[i]=cluster.z[i]*cluster.rbar
-            cluster.vx[i]=cluster.vx[i]*cluster.vstar
-            cluster.vy[i]=cluster.vy[i]*cluster.vstar
-            cluster.vz[i]=cluster.vz[i]*cluster.vstar
+        cluster.m=cluster.m*cluster.zmbar
+        cluster.x=cluster.x*cluster.rbar
+        cluster.y=cluster.y*cluster.rbar
+        cluster.z=cluster.z*cluster.rbar
+        cluster.vx=cluster.vx*cluster.vstar
+        cluster.vy=cluster.vy*cluster.vstar
+        cluster.vz=cluster.vz*cluster.vstar
 
         cluster.units='realpc'
+
+        if cluster.nb>0:
+            yrs = (cluster.rbar*1296000./(2.0*np.pi))**1.5/np.sqrt(cluster.zmbar)
+            days = 365.25*yrs
+            pctoau=206265.
+
+            cluster.pb*=days
+            cluster.semi*=cluster.rbar*pctoau
+
         if cluster.keyparams:
             cluster.key_params()
     else:
@@ -26,14 +34,13 @@ def nbody_to_realpc(cluster):
 
 def nbody_to_realkpc(cluster,subcluster=None):
     if cluster.units=='nbody':
-        for i in range(0,len(cluster.x)):
-            cluster.m[i]=cluster.m[i]*cluster.zmbar
-            cluster.x[i]=cluster.x[i]*cluster.rbar/1000.0
-            cluster.y[i]=cluster.y[i]*cluster.rbar/1000.0
-            cluster.z[i]=cluster.z[i]*cluster.rbar/1000.0
-            cluster.vx[i]=cluster.vx[i]*cluster.vstar
-            cluster.vy[i]=cluster.vy[i]*cluster.vstar
-            cluster.vz[i]=cluster.vz[i]*cluster.vstar
+        cluster.m=cluster.m*cluster.zmbar
+        cluster.x=cluster.x*cluster.rbar/1000.0
+        cluster.y=cluster.y*cluster.rbar/1000.0
+        cluster.z=cluster.z*cluster.rbar/1000.0
+        cluster.vx=cluster.vx*cluster.vstar
+        cluster.vy=cluster.vy*cluster.vstar
+        cluster.vz=cluster.vz*cluster.vstar
 
         cluster.units='realkpc'
         if cluster.keyparams:
@@ -44,14 +51,13 @@ def nbody_to_realkpc(cluster,subcluster=None):
 
 def realpc_to_nbody(cluster,subcluster=None):
     if cluster.units=='realpc':
-        for i in range(0,len(cluster.m)):
-            cluster.m[i]=cluster.m[i]/cluster.zmbar
-            cluster.x[i]=cluster.x[i]/cluster.rbar
-            cluster.y[i]=cluster.y[i]/cluster.rbar
-            cluster.z[i]=cluster.z[i]/cluster.rbar
-            cluster.vx[i]=cluster.vx[i]/cluster.vstar
-            cluster.vy[i]=cluster.vy[i]/cluster.vstar
-            cluster.vz[i]=cluster.vz[i]/cluster.vstar
+        cluster.m=cluster.m/cluster.zmbar
+        cluster.x=cluster.x/cluster.rbar
+        cluster.y=cluster.y/cluster.rbar
+        cluster.z=cluster.z/cluster.rbar
+        cluster.vx=cluster.vx/cluster.vstar
+        cluster.vy=cluster.vy/cluster.vstar
+        cluster.vz=cluster.vz/cluster.vstar
 
         cluster.units='nbody'
         if cluster.keyparams:
@@ -63,14 +69,13 @@ def realpc_to_nbody(cluster,subcluster=None):
 def nbody_to_galpy(cluster,r0,v0,subcluster=None):
     if cluster.units=='nbody':
         nbody_to_realkpc(cluster,subcluster)
-        for i in range(0,len(cluster.m)):
-            cluster.m[i]=cluster.m[i]
-            cluster.x[i]=cluster.x[i]/r0
-            cluster.y[i]=cluster.y[i]/r0
-            cluster.z[i]=cluster.z[i]/r0
-            cluster.vx[i]=cluster.vx[i]/v0
-            cluster.vy[i]=cluster.vy[i]/v0
-            cluster.vz[i]=cluster.vz[i]/v0
+        cluster.m=cluster.m
+        cluster.x=cluster.x/r0
+        cluster.y=cluster.y/r0
+        cluster.z=cluster.z/r0
+        cluster.vx=cluster.vx/v0
+        cluster.vy=cluster.vy/v0
+        cluster.vz=cluster.vz/v0
 
         cluster.units='galpy'
         if cluster.keyparams:
@@ -80,16 +85,10 @@ def nbody_to_galpy(cluster,r0,v0,subcluster=None):
 
 def kpctopc(cluster):
     if cluster.units == 'realkpc':
-        if cluster.ntot==1:
-            cluster.x*=1000.0
-            cluster.y*=1000.0
-            cluster.z*=1000.0
-        else:
-            for i in range(0,cluster.ntot):
-                cluster.x[i]=cluster.x[i]*1000.0
-                cluster.y[i]=cluster.y[i]*1000.0
-                cluster.z[i]=cluster.z[i]*1000.0
-
+        cluster.x*=1000.0
+        cluster.y*=1000.0
+        cluster.z*=1000.0
+      
         cluster.units='realpc'
         if cluster.keyparams:
             cluster.key_params()
@@ -98,15 +97,9 @@ def kpctopc(cluster):
 
 def pctokpc(cluster):
     if cluster.units=='realpc':
-        if cluster.ntot==1:
-            cluster.x/=1000.0
-            cluster.y/=1000.0
-            cluster.z/=1000.0
-        else:
-            for i in range(0,cluster.ntot):
-                cluster.x[i]=cluster.x[i]/1000.0
-                cluster.y[i]=cluster.y[i]/1000.0
-                cluster.z[i]=cluster.z[i]/1000.0
+        cluster.x/=1000.0
+        cluster.y/=1000.0
+        cluster.z/=1000.0
 
         cluster.units='realkpc'
         if cluster.keyparams:

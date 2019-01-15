@@ -13,3 +13,5 @@ from output import *
 from observations import *
 #Commonly used constants
 from constants import *
+#General recipes
+from recipes import *

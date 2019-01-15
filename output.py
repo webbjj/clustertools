@@ -44,6 +44,14 @@ def extrct_out(cluster,fileout):
 
     for i in range(0,len(rn)):
         fileout.write("%f " % rn[i])
+
+    fileout.write("%f " % cluster.rmpro)
+
+    if cluster.se:
+        fileout.write("%f " % cluster.rhpro)
+
+
+
     fileout.write("\n")
 
     if units0!=cluster.units and units0=='realkpc':
@@ -72,6 +80,32 @@ def trelax_prof_out(cluster,fileout,multimass=True):
         rcluster=sub_cluster(cluster,rmin=rmin,rmax=rmax)
         trelax_prof.append(Relaxation_Time(rcluster,local=True,multimass=multimass))
         fileout.write("%f " % (trelax_prof[-1]))
+
+    fileout.write("%f %f " % (cluster.rmpro,cluster.rhpro))
+
+    fileout.write("\n")
+
+def p_prof_out(cluster,fileout,nrad=10):
+    fileout.write("%f " % (cluster.tphys))
+    rn=rlagrange(cluster,nlagrange=nrad)
+    mn=cluster.mtot/float(nrad)
+    p_prof=[]
+
+    for r in rn:
+        fileout.write("%f " % (r))
+
+    for i in range(0,len(rn)):
+        if i==0:
+            rmin=0.0
+            rmax=rn[i]
+            vol=4.0*np.pi*(rmax**3.0)/3.0
+        else:
+            rmin=rn[i-1]
+            rmax=rn[i]
+            vol=4.0*np.pi*(rmax**3.0)/3.0-4.0*np.pi*(rmin**3.0)/3.0
+
+        p_prof.append(mn/vol)
+        fileout.write("%f " % (p_prof[-1]))
 
     fileout.write("\n")
 
@@ -169,12 +203,15 @@ def alpha_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,se_min=
     fileout.write("%f %f %f %f\n" % (dalpha,edalpha,ydalpha,eydalpha))
 
 #Output a snapshot
-def snapout(cluster,filename):
+def snapout(cluster,filename,energies=False):
 
     fileout=open(filename,'w')
 
     for i in range(0,cluster.ntot):
-        fileout.write("%i %f %f %f %f %f %f %f\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i]))
+        if energies:
+            fileout.write("%i %f %f %f %f %f %f %f %i %f %f %f\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.kw[i],cluster.kin[i],cluster.pot[i],cluster.etot[i]))
+        else:
+            fileout.write("%i %f %f %f %f %f %f %f %i\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.kw[i]))
 
     fileout.close()
 
@@ -197,3 +234,15 @@ def sigv_out(cluster,fileout,do_beta=False):
 
     fileout.write("%f\n" % (cluster.rm))
 
+#Output dvprof.dat
+def v_out(cluster,fileout,coord=None):
+    fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
+
+    lrprofn,vprof=v_prof(cluster,coord=coord)
+
+    for lr in lrprofn:
+        fileout.write("%f " % lr)
+    for v in vprof:
+        fileout.write("%f " % v)
+
+    fileout.write("%f\n" % (cluster.rm))

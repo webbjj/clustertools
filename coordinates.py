@@ -3,26 +3,26 @@ import numpy as np
 
 #Scale positions and velocity by a specific value
 def xvscale(cluster,rscale=1.0,vscale=1.0):
-    for i in range(0,cluster.ntot):
-        cluster.x[i]*=rscale
-        cluster.y[i]*=rscale
-        cluster.z[i]*=rscale
-        cluster.vx[i]*=vscale
-        cluster.vy[i]*=vscale
-        cluster.vz[i]*=vscale
+
+    cluster.x*=rscale
+    cluster.y*=rscale
+    cluster.z*=rscale
+    cluster.vx*=vscale
+    cluster.vy*=vscale
+    cluster.vz*=vscale
+    
     if cluster.keyparams:
         cluster.key_params()
 
 
 #Shift cluster to/from cluster-centric and galactocentric coordinates
 def xvshift(cluster,x,y,z,vx,vy,vz,origin=None):
-    for i in range(0,cluster.ntot):
-        cluster.x[i]+=x
-        cluster.y[i]+=y
-        cluster.z[i]+=z
-        cluster.vx[i]+=vx
-        cluster.vy[i]+=vy
-        cluster.vz[i]+=vz
+    cluster.x+=x
+    cluster.y+=y
+    cluster.z+=z
+    cluster.vx+=vx
+    cluster.vy+=vy
+    cluster.vz+=vz
 
     if origin!=None:
         cluster.origin=origin

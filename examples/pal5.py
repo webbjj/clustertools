@@ -1,4 +1,3 @@
-#MAIN VERSION
 import sys
 import os, os.path
 import csv
@@ -10,18 +9,17 @@ from galpy.potential import LogarithmicHaloPotential,MWPotential2014,rtide
 
 debug=False
 
-tphys_max=12005.0
+tphys_max=12000.0
+
 #Correct for Center of Mass
 cmcorr=False
-#Find new cneter
-find_center=True
 #Read KW Data
 kw_read=False
 #Use galpy orbit integrator
 use_galpy_orbit=False
 #Extrct key parameters
-extrct=False
-rtextrct=False
+extrct=True
+rtextrct=True
 dvprof=False
 betaprof=False
 vprof=False
@@ -40,18 +38,18 @@ da_projected=False
 da_obscut=None
 
 #Rtide
-calc_rtide=False
+calc_rtide=True
 rtiterate=0
 rtide_rgc=None
 rtmax=145.0
 #Extrct snaps shops
-snaps=False
+snaps=True
 #Calculate boundedness
 boundedness=False
 #Set origin
 set_origin='cluster'
 #Set units
-set_units='realpc'
+set_units='pc'
 #Swap y and z to compare with gyrfalcon
 yzswap=False
 #If there is mass correction (e.g. gyrfalcon):
@@ -103,7 +101,7 @@ def get_rtide(cluster,rtiterate,rtide_rgc=None):
 
     return rt
 
-def get_cluster(type=None,f82=None,f83=None,units0='realpc',origin0='cluster'):
+def get_cluster(type=None,f82=None,f83=None):
     
     if type=='OUT34':
         cluster=npy.get_nbody6_out34(f83,do_keyparams=False)
@@ -114,8 +112,6 @@ def get_cluster(type=None,f82=None,f83=None,units0='realpc',origin0='cluster'):
         cluster=npy.get_gyrfalcon(f83,r0=8.0,v0=220.0,vcon=vcon,mcon=mcon,do_keyparams=False,find_center=True)
     elif type=='SNAPAUTO':
         cluster=npy.get_nbody6_snapauto(f83,do_keyparams=False)
-    elif type=='SNAPSHOT':
-        cluster=npy.get_nbodypy_snapshot(f83,units0,origin0,do_keyparams=False)
     return cluster
 
 def get_cluster_orbit(orbit):
@@ -140,7 +136,7 @@ def get_cluster_orbit(orbit):
     rgc=math.sqrt(xgc**2.0+ygc**2.0+zgc**2.0)
     return xgc,ygc,zgc,vxgc,vygc,vzgc,rgc
 
-def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster'):
+def tsep(type,snapfile82=None,snapfile83=None):
     #Directories
     snapdir= 'snaps/'
     if type=='SNAPAUTO':
@@ -184,9 +180,7 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
 
     #OPEN FILES AND READ FIRST TIMESTEPS
     f83=open(snapfile83,'r')
-    if type=='SNAPSHOT':
-        cluster=get_cluster(type=type,f82=None,f83=f83,units0=units0,origin0=origin0)
-    elif snapfile82!=None:
+    if snapfile82!=None:
         f82=open(snapfile82,'r')
         cluster=get_cluster(type=type,f82=f82,f83=f83)
     else:
@@ -203,12 +197,10 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
     #READ IN OR WRITE ORBIT DATA
     if use_galpy_orbit:
         gorbit=open('gorbit.dat','r')
-        noname=False
     elif type=='OUT34':
-        noname=True
+        orbit=open('Norbit.dat','w')
     elif type=='GYRFALCON':
         oname=os.path.isfile('orbit.dat')
-        noname=False
         if oname:
             orbit=open('orbit.dat','r')
         else:
@@ -217,18 +209,10 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
         oname=os.path.isfile('gc_orbit.dat')
         if oname:
             orbit=open('gc_orbit.dat','r')
-            noname=True
         else:
             oname=os.path.isfile('orbit.dat')
             if oname:
                 orbit=open('orbit.dat','r')
-            noname=False
-    else:
-        noname=False
-        oname=False
-    if noname:
-        norbit=open('Norbit.dat','w')
-
 
     #Begin reading in timesteps
     nstep=0
@@ -255,6 +239,8 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
             cluster.vygc=float(gdata[5])*220.
             cluster.vzgc=float(gdata[6])*220.
 
+        elif type=='OUT34':
+            orbit.write("%f %f %f %f %f %f %f\n" % (cluster.tphys,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc))
         elif type=='GYRFALCON':
             if oname:
                 odata=orbit.readline().split()
@@ -262,42 +248,33 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
             else:
                 orbit.write("%f %f %f %f %f %f %f\n" % (cluster.tphys,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc))
 
-        elif type=='NBODY6' or type=='SNAPAUTO' or type=='SNAPSHOT':
+        elif type=='NBODY6' or type=='SNAPAUTO':
             if oname:
                 xgc,ygc,zgc,vxgc,vygc,vzgc,rgc=get_cluster_orbit(orbit)
             else:
                 xgc,ygc,zgc,vxgc,vygc,vzgc=numpy.zeros(6)
-
             cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
-        if type!='GYRFALCON' and type!='SNAPSHOT':
-
-            #Undo default center of mass correction in NBODY6
+        if type!='GYRFALCON':
+            print('CMCORR ', cluster.xc, cluster.yc, cluster.zc)
             if cmcorr:
                 npy.xvshift(cluster,cluster.xc,cluster.yc,cluster.zc,0.0,0.0,0.0,cluster.origin)
            
-            #Automatically convert from nbody to pc
             if type!='SNAPAUTO': 
                 npy.nbody_to_realpc(cluster)
 
         #Shif to clustercentric units of analysis
         if cluster.origin=='galaxy':
+            origin0='galaxy'
             npy.xvshift(cluster,-cluster.xgc,-cluster.ygc,-cluster.zgc,-cluster.vxgc,-cluster.vygc,-cluster.vzgc,'cluster')
+        else:
+            origin0='cluster'
 
         if cluster.units=='realkpc':
+            units0='realkpc'
             npy.kpctopc(cluster)
-
-        #Find center:
-        if find_center:
-            xshift,yshift,zshift,vxshift,vyshift,vzshift=cluster.find_center(0.0,0.0,0.0)
-            print('FIND CENTER: ',xshift,yshift,zshift,vxshift,vyshift,vzshift)
-            npy.xvshift(cluster,-xshift,-yshift,-zshift,-vxshift,-vyshift,-vzshift)
-
-        #Measure key cluster parameters
-        cluster.key_params()
-                
-        if noname:
-            norbit.write("%f %f %f %f %f %f %f %f %f %f %f %f %f\n" % (cluster.tphys,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,xshift,yshift,zshift,vxshift,vyshift,vzshift))
+        else:
+            units0='realpc'
 
         if extrct:
             npy.extrct_out(cluster,exfile)
@@ -344,15 +321,17 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
             if do_aprof:
                 npy.alpha_prof_out(cluster,aprof_file,mmin=da_mmin,mmax=da_mmax,rmin=da_rmin,rmax=da_rmax,se_min=da_se_min,se_max=da_se_max,projected=da_projected,obs_cut=da_obscut)
 
+        # Return to original origin and units
+        if units0=='realkpc':
+            npy.pctokpc(cluster)
+        if origin0=='galaxy':
+            npy.xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
+
         if debug:
             print('DEBUG ',numpy.min(cluster.x),cluster.tphys,cluster.ntot,rtmax)
 
-
-        #FIND BOUNDEDNESS CALCULATION
         if boundedness:
-            pot,ektot=npy.get_energies(cluster,True)
-            energy=pot+ektot
-            bound=(energy<0.)
+            energy,bound=cluster.bound('nbody')
         else:
             energy=[0.0]*cluster.ntot
             bound=[True]*cluster.ntot
@@ -363,18 +342,30 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
             csvfile= open(os.path.join(snapdir,basefilename+'_%s.dat' % str(nstep).zfill(5)),'w')
             writer= csv.writer(csvfile,
                            delimiter=',')
-                
-            #Shift from realpc and clustercentric origin to units and origin of choice
-            if set_units=='realkpc' and set_origin=='cluster':
-                npy.pctokpc(cluster)
-            elif set_units=='realkpc' and set_origin=='galaxy':
-                if find_center:
-                    npy.xvshift(cluster,xshift,yshift,zshift,vxshift,vyshift,vzshift)
+
+            if cluster.units!=set_units and set_units=='realkpc':
+                if cluster.units=='nbody':
+                    npy.nbody_to_realkpc(cluster)
+                elif cluster.units=='realpc':
+                    npy.pctokpc(cluster)
+
+            if cluster.units!=set_units and set_units=='realpc':
+                if cluster.units=='nbody':
+                    npy.nbody_to_realpc(cluster)
+                elif cluster.units=='realkpc':
+                    npy.kpctopc(cluster)
+
+            if cluster.units!=set_units and set_units=='nbody':
+                if cluster.units=='realkpc':
+                    npy.realkpc_to_nbody(cluster)
+                elif cluster.units=='realpc':
+                    npy.realpc_to_nbody(cluster)
+
+            #Split snapshots and save to separate files
+            if cluster.origin!=set_origin and set_origin=='galaxy':
                 npy.xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
-            elif set_units=='realpc' and set_origin=='galaxy':
-                if find_center:
-                    npy.xvshift(cluster,xshift,yshift,zshift,vxshift,vyshift,vzshift)
-                npy.xvshift(cluster,cluster.xgc*1000.0,cluster.ygc*1000.0,cluster.zgc*1000.0,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
+            elif cluster.origin!=set_origin and set_origin=='cluster':
+                npy.xvshift(cluster,-cluster.xgc,-cluster.ygc,-cluster.zgc,-cluster.vxgc,-cluster.vygc,-cluster.vzgc,'cluster')
 
             for j in range(cluster.ntot):
                 if type=='GYRFALCON' and yzswap:
@@ -387,9 +378,8 @@ def tsep(type,snapfile82=None,snapfile83=None,units0='realpc',origin0='cluster')
                     writer.writerow([cluster.m[j],cluster.x[j],cluster.y[j],cluster.z[j],
                              (cluster.vx[j]),(cluster.vy[j]),(cluster.vz[j]),cluster.id[j],cluster.kw[j]])
             csvfile.close()
-        if type=='SNAPSHOT':
-            break
-        elif snapfile82!=None:
+
+        if snapfile82!=None:
             cluster=get_cluster(type=type,f82=f82,f83=f83)
         elif type=='SNAPAUTO':
             nsnap+=1
@@ -421,14 +411,6 @@ if __name__ == '__main__':
     
     if 'OUT34' in sys.argv[1]:
         type='OUT34'
-    elif 'fort_' in sys.argv[1]:
-        type='SNAPSHOT'
-        if len(sys.argv) >2:
-            units=sys.argv[2]
-            origin=sys.argv[3]
-        else:
-            units='realpc'
-            origin='cluster'
     elif 'fort' in sys.argv[1] or 'bnd' in sys.argv[1] or 'esc' in sys.argv[1]:
         type='NBODY6'
     elif 'snapauto' in sys.argv[1]:
@@ -440,12 +422,8 @@ if __name__ == '__main__':
     #If not in current directory, check for a /start directory
     if not os.path.isfile(sys.argv[1]):
         sys.argv[1]='./start/'+sys.argv[1]
-        if not os.path.isfile(sys.argv[1]):
-            print('FILE NOT FOUDN')
-
-    if type=='SNAPSHOT':
-        tsep(type,snapfile82=None,snapfile83=sys.argv[1],units0=units,origin0=origin)
-    elif len(sys.argv) ==2:
+    
+    if len(sys.argv) ==2:
         tsep(type,snapfile82=None,snapfile83=sys.argv[1])
     elif len(sys.argv) ==3:
         if 'start' in sys.argv[1]:

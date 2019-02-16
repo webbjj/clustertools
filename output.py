@@ -135,7 +135,12 @@ def eta_out(cluster,fileout,m_lower=[0.1,0.1,0.1],m_upper=[50.0,0.5,1.8]):
     fileout.write("\n")
 
 #Output dalpha_prof.dat (TODO - NEED TO ADD PROJECTED VALUES)
-def dalpha_out(cluster,fileout,m_lower=[0.1,0.3,0.5,0.1,0.3,0.5],m_upper=[0.5,0.8,0.8,0.5,0.8,0.8],r_lower=[0.0,0.0,0.0,None,None,None],r_upper=[cluster.rm,cluster.rm,cluster.rm,None,None,None]):
+def dalpha_out(cluster,fileout,m_lower=[0.1,0.3,0.5,0.1,0.3,0.5],m_upper=[0.5,0.8,0.8,0.5,0.8,0.8]):
+
+
+    r_lower=[0.0,0.0,0.0,None,None,None]
+    r_upper=[cluster.rm,cluster.rm,cluster.rm,None,None,None]
+
 
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
 

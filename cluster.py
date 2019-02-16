@@ -6,54 +6,55 @@ from units import *
 #With the exception of total cluster mass and core mass (if core radius is given), and other cluster properties
 #
 class StarCluster(object):
-    def __init__(self,ntot=0,tphys=0.0,with_stars=False,id=None,m=None,x=None,y=None,z=None,vx=None,vy=None,vz=None,kw=None,units=None,origin=None,keyparams=True):
-        #Set additional components as False initially
-        self.nbody6=False
-        self.se=False
-        self.bse=False
-        self.energies=False
-        self.orbit=False
-        self.rcom=False
-        self.vcom=False
+    def __init__(self,ntot=0,tphys=0.0,units=None,origin=None):
         #Total Number of Stars + Binaries in the cluster
         self.ntot=ntot
         #Age of cluster
         self.tphys=tphys
         
-        #If array of stars and their properties are included when instance is defined:
-        #Assume all coordinates are given in Msun, parsecs, km/s and clustercentric distance unless otherwise specified
-        if with_stars:
-            self.id=np.asarray(id)
-            self.m=np.asarray(m)
-            self.x=np.asarray(x)
-            self.y=np.asarray(y)
-            self.z=np.asarray(z)
-            self.vx=np.asarray(vx)
-            self.vy=np.asarray(vy)
-            self.vz=np.asarray(vz)
-            self.kw=np.asarray(kw)
-        else:
-            self.id=np.array([])
-            self.m=np.array([])
-            self.x=np.array([])
-            self.y=np.array([])
-            self.z=np.array([])
-            self.vx=np.array([])
-            self.vy=np.array([])
-            self.vz=np.array([])
-            self.kw=np.array([])
+        #Initial arrays
+        self.id=np.array([])
+        self.m=np.array([])
+        self.x=np.array([])
+        self.y=np.array([])
+        self.z=np.array([])
+        self.vx=np.array([])
+        self.vy=np.array([])
+        self.vz=np.array([])
+        self.kw=np.array([])
+        
+        #SE Arrays
+        self.logl=np.asarray([])
+        self.logr=np.asarray([])
+        self.lum=np.asarray([])
+        self.ep=np.asarray([])
+        self.ospin=np.asarray([])
+        
+        #BSE Array
+        self.id1=np.asarray([])
+        self.id2=np.asarray([])
+        self.kw1=np.asarray([])
+        self.kw2=np.asarray([])
+        self.kcm=np.asarray([])
+        self.ecc=np.asarray([])
+        self.pb=np.asarray([])
+        self.semi=np.asarray([])
+        self.m1=np.asarray([])
+        self.m2=np.asarray([])
+        self.logl1=np.asarray([])
+        self.logl2=np.asarray([])
+        self.logr1=np.asarray([])
+        self.logr2=np.asarray([])
+        self.ep1=np.asarray([])
+        self.ep2=np.asarray([])
+        self.ospin1=np.asarray([])
+        self.ospin2=np.asarray([])
 
         self.units=units
         self.origin=origin
-        self.keyparams=keyparams
-        #Calculate key parameters
-        if with_stars and self.keyparams:
-            self.key_params()
 
     # Add key parameters from an Nbody6 output file
     def add_nbody6(self,nc=0,rc=0.0,rbar=1.0,rtide=0.0,xc=0.0,yc=0.0,zc=0.0,zmbar=1.0,vstar=1.0,rscale=1.0,ns=0.0,nb=0.0,np=0.0):
-        self.nbody6=True
-
         #Number of stars in the core
         self.nc=nc
         #Core radius
@@ -96,9 +97,8 @@ class StarCluster(object):
             print('Added %i stars to instance' % (len(self.id)-self.ntot))
             self.ntot=len(self.id)
 
-        #Calculate key parameters
-        if self.keyparams:
-            self.key_params()
+
+        self.key_params()
 
     def key_params(self):
         #Calculate Key Parameters
@@ -109,11 +109,9 @@ class StarCluster(object):
         self.lr=np.log10(self.r)
         self.lv=np.log10(self.v)
         self.rmean=np.mean(self.r)
+        self.rmax=np.max(self.r)
 
-        if self.origin!='cluster':
-            print('Cannot compute rm when origin = %s' % self.origin)
-        else:
-            self.rmax=np.max(self.r)
+        if self.origin=='cluster':
             #Radially order the stars to find half-mass radius
             self.rorder=sorted(range(0,self.ntot),key=lambda k:self.r[k])
             msum=0.0
@@ -130,7 +128,7 @@ class StarCluster(object):
                 if msum >= 0.5*self.mtot:
                     self.rmpro=self.rpro[self.rproorder[i]]
                     break
-            if self.se:
+            if len(self.logl)>0:
                 lsum=0.0
                 for i in range(0,self.ntot):
                     lsum+=self.lum[self.rproorder[i]]
@@ -141,7 +139,6 @@ class StarCluster(object):
     #Add stellar evolution parameters (type (NBODY6), luminosity, radius)
     #Units not specified
     def add_se(self,kw,logl,logr,ep,ospin):
-        self.se=True
         self.kw=np.asarray(kw)
         self.logl=np.asarray(logl)
         self.logr=np.asarray(logr)
@@ -153,7 +150,6 @@ class StarCluster(object):
     #Add binary evolution parameters (ids,type,eccentricity, semi major axis, masses, luminosities, and radii)
     #Units not specified
     def add_bse(self,id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2,ep1,ep2,ospin1,ospin2):
-        self.bse=True
         self.id1=np.asarray(id1)
         self.id2=np.asarray(id2)
         self.kw1=np.asarray(kw1)
@@ -176,7 +172,6 @@ class StarCluster(object):
     #Add individual energies
     #Units not specified
     def add_energies(self,kin,pot,etot):
-        self.energies=True
         self.kin=np.asarray(kin)
         self.pot=np.asarray(pot)
         self.etot=np.asarray(etot)
@@ -184,7 +179,6 @@ class StarCluster(object):
     #Add cluster's orbital properties
     #Units not specified
     def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc):
-        self.orbit=True
         self.xgc=xgc
         self.ygc=ygc
         self.zgc=zgc
@@ -195,34 +189,32 @@ class StarCluster(object):
 
    #Calculate location of center of mass:
     def r_com(self):
-        self.rcom=True
-
         self.xcom=np.sum(self.m*self.x)/np.sum(self.m)
         self.ycom=np.sum(self.m*self.y)/np.sum(self.m)
         self.zcom=np.sum(self.m*self.z)/np.sum(self.m)
 
    #Calculate velocity of center of mass:
     def v_com(self):
-        self.vcom=True
         self.xcom=np.sum(self.m*self.vx)/np.sum(self.m)
         self.ycom=np.sum(self.m*self.vy)/np.sum(self.m)
         self.zcom=np.sum(self.m*self.vz)/np.sum(self.m)
 
-    def find_center(self,xgc,ygc,zgc):
-        #Iterate to find center of cluster
+    def find_center(self,xgc,ygc,zgc,nsigma=1.):
+        #Iterate to find center of cluster using stars within nsigma*sigma
+        
         sigma_xgc=np.std(self.x)
         sigma_ygc=np.std(self.y)
         sigma_zgc=np.std(self.z)
 
         niterate=0
-
+        
         while sigma_xgc>0.001 or sigma_ygc>0.001 or sigma_zgc>0.001:
-
+            
             niterate+=1
 
             #Then find center of stars within 1sigma of median
 
-            indx=(abs(self.x-xgc) < sigma_xgc) * (abs(self.y-ygc) < sigma_ygc) * (abs(self.z-zgc) < sigma_zgc)
+            indx=(abs(self.x-xgc) < nsigma*sigma_xgc) * (abs(self.y-ygc) < nsigma*sigma_ygc) * (abs(self.z-zgc) < nsigma*sigma_zgc)
 
             if len(self.x[indx])<=1:
                 break
@@ -273,15 +265,15 @@ def join_clusters(clusters):
 
     base_cluster.add_stars(id,m,x,y,z,vx,vy,vz,kw)
 
+    base_cluster.key_params()
+
+
     return base_cluster
 
 # Extract a sub population of stars from a cluster
 # Extraction criteria include radius, mass and stellar evolution (KW) type (default all stars)
 def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,se_min=0,se_max=100,e_min=None,e_max=None,projected=False):
  
-    if not cluster.keyparams:
-        cluster.key_params()
-    
     if rmin==None and projected:
        rmin=np.min(cluster.rpro)
        rmax=np.max(cluster.rpro)
@@ -309,15 +301,19 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,se_min=0,se_max=
     indx=np.logical_and(indx,eindx)
 
     if len(cluster.id[indx])>0:
-        subcluster=StarCluster(len(cluster.id[indx]),cluster.tphys,True,cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vz[indx],cluster.kw[indx],units=cluster.units,origin=cluster.origin,keyparams=cluster.keyparams)
-        if cluster.se:
+        subcluster=StarCluster(len(cluster.id[indx]),cluster.tphys,units=cluster.units,origin=cluster.origin)
+        subcluster.add_stars(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vz[indx],cluster.kw[indx])
+        
+        if len(cluster.logl)>0:
             subcluster.add_se(cluster.kw[indx],cluster.logl[indx],cluster.logr[indx],cluster.ep[indx],cluster.ospin[indx])
-        if cluster.bse:
+        if len(cluster.id2)>0:
             bindx=np.in1d(cluster.id1,cluster.id[indx])
             subcluster.add_bse(cluster.id1[bindx],cluster.id2[bindx],cluster.kw1[bindx],cluster.kw2[bindx],cluster.kcm[bindx],cluster.ecc[bindx],cluster.pb[bindx],cluster.semi[bindx],cluster.m1[bindx],cluster.m2[bindx],cluster.logl1[bindx],cluster.logl2[bindx],cluster.logr1[bindx],cluster.logr2[bindx],cluster.ep1[bindx],cluster.ep2[bindx],cluster.ospin1[bindx],cluster.ospin2[bindx])
-        if cluster.energies:
+        if len(cluster.etot)>0:
             subcluster.add_energies(cluster.kin[indx],cluster.pot[indx],cluster.etot[indx])
     else:
         subcluster=StarCluster(0,cluster.tphys)
+
+    subcluster.key_params()
 
     return subcluster

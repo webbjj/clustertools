@@ -46,13 +46,9 @@ def Relaxation_Time(cluster,local=False,multimass=True):
 def get_forces(cluster,id=None):
     
     if id==None:
-    #Calculate force acting on each star
-        s2sd=np.zeros((cluster.ntot,cluster.ntot))
-        for i in range(0,cluster.ntot):
-            for j in range(i,cluster.ntot):
-                d=math.sqrt((cluster.x[i]-cluster.x[j])**2.0+(cluster.y[i]-cluster.y[j])**2.0+(cluster.z[i]-cluster.z[j])**2.0)
-                s2sd[i][j]=d
-                s2sd[j][i]=d
+        dx=np.repeat(cluster.x,len(cluster.x))-np.tile(cluster.x,len(cluster.x))
+        dy=np.repeat(cluster.y,len(cluster.x))-np.tile(cluster.y,len(cluster.x))
+        dz=np.repeat(cluster.z,len(cluster.x))-np.tile(cluster.z,len(cluster.x))
     else:
         #Calculate force acting on specific star
         indx=cluster.id.index(id)
@@ -108,6 +104,52 @@ def get_forces(cluster,id=None):
 
     return fx,fy,fz,pot,ek
 
+def get_forces(cluster,specific=True):
+    
+    if cluster.units=='nbody':
+        grav=1.0
+        fscale=1.0
+    elif cluster.units=='realpc':
+        #G has units of pc (km/s)^2 / Msun
+        grav=4.302e-3
+        #Scale forces to units of (km/s) / Myr
+        fscale=spermyr/kmperpc
+    elif cluster.units=='realkpc':
+        #G has units of kpc (km/s)^2 / Msun
+        grav=4.302e-6
+        #Scale forces to units of (km/s) / Myr
+        fscale=spermyr/kmperkpc
+    else:
+        grav=1.0
+        fscale=1.0
+
+    ek=0.5*(cluster.v**2.0)
+    ektot=np.sum(ek)
+
+    dx=np.repeat(cluster.x,len(cluster.x))-np.tile(cluster.x,len(cluster.x))
+    dy=np.repeat(cluster.y,len(cluster.x))-np.tile(cluster.y,len(cluster.x))
+    dz=np.repeat(cluster.z,len(cluster.x))-np.tile(cluster.z,len(cluster.x))
+    dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+
+    gmr=np.reshape(-grav*m/dr,(len(cluster.r),len(cluster.r)))
+    indx=np.logical_or(np.isinf(gmr),np.isnan(gmr))
+    gmr[indx]=0.0
+    pot=np.sum(gmr,axis=1)
+    pottot=np.sum(pot)
+    etot=ek+pot
+
+    xhat=dx/abs(dx)
+    yhat=dy/abs(dy)
+    zhat=dz/abs(dz)
+
+    fx=grav*fscale*xhat*cluster.m/(dx**2.0)
+    fy=grav*fscale*yhat*cluster.m/(dy**2.0)
+    fz=grav*fscale*zhat*cluster.m/(dz**2.0)
+
+    cluster.add_energies(ek,pot,etot)
+
+    return fx,fy,fz,pot,ek,etot
+
 def get_energies(cluster,specific=True):
     
     if cluster.units=='nbody':
@@ -120,35 +162,36 @@ def get_energies(cluster,specific=True):
         grav=4.302e-6
     else:
         grav=1.0
-
+    
     if specific:
         ek=0.5*(cluster.v**2.0)
     else:
         ek=0.5*cluster.m*(cluster.v**2.0)
+
     ektot=np.sum(ek)
 
-    pot=np.zeros(cluster.ntot)
-    etot=[]
-    pottot=0.0
+    dx=np.repeat(cluster.x,len(cluster.x))-np.tile(cluster.x,len(cluster.x))
+    dy=np.repeat(cluster.y,len(cluster.x))-np.tile(cluster.y,len(cluster.x))
+    dz=np.repeat(cluster.z,len(cluster.x))-np.tile(cluster.z,len(cluster.x))
 
-    for i in range(0,cluster.ntot):
-        dx=cluster.x-cluster.x[i]
-        dy=cluster.y-cluster.y[i]
-        dz=cluster.z-cluster.z[i]
-        dr=np.sqrt(dx**2.0+dy**2.0+dz**2.0)
-        indx=dr>0
+    if specific:
+        m=np.repeat(cluster.m,len(cluster.m))
+    else:
+        m=np.repeat(cluster.m,len(cluster.m))*np.tile(cluster.m,len(cluster.m))
 
-        if specific:
-            pot[i]=np.sum(-grav*cluster.m[indx]/dr[indx])
-        else:
-            pot[i]+=np.sum(-grav*cluster.m[indx]/dr[indx])*cluster.m[i]
+    dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+    gmr=np.reshape(-grav*m/dr,(len(cluster.r),len(cluster.r)))
 
+    indx=np.logical_or(np.isinf(gmr),np.isnan(gmr))
+    gmr[indx]=0.0
+
+    pot=np.sum(gmr,axis=1)
     pottot=np.sum(pot)
     etot=ek+pot
+
     cluster.add_energies(ek,pot,etot)
-
+    
     return pottot,ektot
-
 
 #Calculate lagrange radii
 #Units will be whatever units the cluster is currently in
@@ -270,13 +313,6 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,
     #Build subcluster containing only stars in the full radial and mass range:
     subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
 
-
-    if not subcluster.keyparams:
-        subcluster.keyparams=True
-        subcluster.key_params()
-    else:
-        subcluster.key_params()
-
     #Make radial bins
     if obs_cut!=None and projected:
         r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
@@ -395,13 +431,6 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,se_min=0,s
     #Build subcluster containing only stars in the full radial and mass range:
     subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
 
-
-    if not subcluster.keyparams:
-        subcluster.keyparams=True
-        subcluster.key_params()
-    else:
-        subcluster.key_params()
-
     #Make radial bins
     if obs_cut!=None and projected:
         r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
@@ -451,13 +480,6 @@ def beta_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,se_min=0,s
 
     #Build subcluster containing only stars in the full radial and mass range:
     subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
-
-
-    if not subcluster.keyparams:
-        subcluster.keyparams=True
-        subcluster.key_params()
-    else:
-        subcluster.key_params()
 
     #Make radial bins
     if obs_cut!=None and projected:
@@ -535,13 +557,6 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,se_min=0,se_m
 
     #Build subcluster containing only stars in the full radial and mass range:
     subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
-
-
-    if not subcluster.keyparams:
-        subcluster.keyparams=True
-        subcluster.key_params()
-    else:
-        subcluster.key_params()
 
     #Make radial bins
     if obs_cut!=None and projected:

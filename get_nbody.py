@@ -1,13 +1,12 @@
 import math
 from cluster import StarCluster
-from star import Star
 import numpy as np
 
 #To Do:
 #Add get functions for public versions of OUT34, fort.82 and fort.83
 
 #Get StarCluster from Gyrfalcon output
-def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,mcon=None,do_keyparams=True,yzswap=False,find_center=False):
+def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,mcon=1.0,yzswap=False,find_center=False):
     nhead=13
     id=[]
     m=[]
@@ -35,7 +34,7 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,mcon=None,do_keyparams=True,yz
         if any ('time' in dat for dat in data):
                 tphys=float(data[2])*1000.0        
 
-    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy',keyparams=do_keyparams)
+    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy')
             
     for j in range(ntot):
         if over_head:
@@ -47,9 +46,7 @@ def get_gyrfalcon(filein,r0=8.0,v0=220.0,vcon=1.0,mcon=None,do_keyparams=True,yz
             break
 
         id.append(j+1)
-        m.append(float(data[0]))
-        if mcon!=None:
-            m[-1]*=mcon
+        m.append(float(data[0])*mcon)
         x.append(float(data[1]))
         y.append(float(data[2]))
         z.append(float(data[3]))
@@ -230,7 +227,7 @@ def get_nbody6_jarrod(fort82,fort83,do_keyparams=True):
     nbnd=nsbnd+nbbnd
 
     if nbnd > 0:
-        cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',keyparams=do_keyparams)
+        cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
         cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd)
         cluster.add_stars(id,m,x,y,z,vx,vy,vz)
         cluster.add_se(kw,logl,logr,ep,ospin)
@@ -242,7 +239,7 @@ def get_nbody6_jarrod(fort82,fort83,do_keyparams=True):
     return cluster
 
 #Get StarCluster from custom version of OUT34 and OUT9 (if binaries)
-def get_nbody6_out(out9,out34,do_keyparams=True,debug=False):
+def get_nbody6_out(out9,out34,debug=False):
     
     line1=out34.readline().split()
     if (len(line1)==0):
@@ -412,7 +409,7 @@ def get_nbody6_out(out9,out34,do_keyparams=True,debug=False):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',keyparams=do_keyparams)
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,n_p)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz)
     cluster.add_se(kw,logl,logr)
@@ -426,8 +423,8 @@ def get_nbody6_out(out9,out34,do_keyparams=True,debug=False):
     else:
         return cluster
 
-#Get StarCluster from custom version of OUT34 (PHASING OUT)
-def get_nbody6_out34(out34,do_keyparams=True,debug=False):
+#Get StarCluster from custom version of OUT34
+def get_nbody6_out34(out34,debug=False):
     
     line1=out34.readline().split()
     if (len(line1)==0):
@@ -519,7 +516,7 @@ def get_nbody6_out34(out34,do_keyparams=True,debug=False):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',keyparams=do_keyparams)
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster')
     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,n_p)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz)
     cluster.add_se(kw,logl,logr,np.zeros(nbnd),np.zeros(nbnd))
@@ -531,8 +528,8 @@ def get_nbody6_out34(out34,do_keyparams=True,debug=False):
     else:
         return cluster
 
-#Get StarCluster from custom version of OUT34
-def get_nbody6_snapauto(snap,do_keyparams=True,debug=False):
+#Get StarCluster snapshots produces by snapauto
+def get_nbody6_snapauto(snap,debug=False):
     
     data=snap.readline().split()
     tphys=float(data[0])
@@ -576,7 +573,7 @@ def get_nbody6_snapauto(snap,do_keyparams=True,debug=False):
             data=snap.readline().split()
 
     kw=np.zeros(int(ntot)) 
-    cluster=StarCluster(nbnd,tphys,units='realpc',origin='cluster',keyparams=do_keyparams)
+    cluster=StarCluster(nbnd,tphys,units='realpc',origin='cluster')
     cluster.add_stars(id,m,x,y,z,vx,vy,vz,kw=kw)
 
     if debug:
@@ -584,79 +581,45 @@ def get_nbody6_snapauto(snap,do_keyparams=True,debug=False):
     else:
         return cluster
 
-#Get StarCluster from standard nbodypy
-def get_nbodypy_snapshot(snap,units0='realpc',origin0='cluster',do_keyparams=True,debug=False):
+#Get StarCluster from standard nbodypy snapshot
+def get_nbodypy_snapshot(snap,delimiter=',',units0='realpc',origin0='cluster',find_center=True,debug=False):
     
-    id=[]
-    m=[]
-    x=[]
-    y=[]
-    z=[]
-    vx=[]
-    vy=[]
-    vz=[]
-    
+    data=np.loadtxt(snap,delimiter=delimiter)
+
+    m=data[:,0]
+    x=data[:,1]
+    y=data[:,2]
+    z=data[:,3]
+    vx=data[:,4]
+    vy=data[:,5]
+    vz=data[:,6]
+    id=data[:,7]
+    kw=data[:,8]
+
+
     if debug:
-        debug_column=[]
-
-    data=snap.readline().split(',')
-    nbnd=0
-    while len(data)>1:
-
-            m.append(float(data[0]))
-            x.append(float(data[1]))
-            y.append(float(data[2]))
-            z.append(float(data[3]))
-            vx.append(float(data[4]))
-            vy.append(float(data[5]))
-            vz.append(float(data[6]))
-            id.append(nbnd)
-
-            if debug:
-                debug_column.append(float(data[7]))
+        debug_column=data[:,9]
         
-            nbnd+=1
+    nbnd=len(m)
 
-            data=snap.readline().split(',')
-
-    kw=np.zeros(int(nbnd))
-    cluster=StarCluster(nbnd,0.0,units=units0,origin=origin0,keyparams=do_keyparams)
+    cluster=StarCluster(nbnd,0.0,units=units0,origin=origin0)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz,kw=kw)
+
+    #Estimate center of distribution using median function
+    xgc=np.median(cluster.x)
+    ygc=np.median(cluster.y)
+    zgc=np.median(cluster.z)
+    vxgc=np.median(cluster.vx)
+    vygc=np.median(cluster.vy)
+    vzgc=np.median(cluster.vz)
+    
+    if find_center:
+        xgc,ygc,zgc,vxgc,vygz,vzgc=cluster.find_center(xgc,ygc,zgc)
+
+    cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
     if debug:
         return cluster,debug_column
     else:
         return cluster
-
-#Get StarCluster from array of Stars
-def get_starcluster(stars,do_keyparams=True):
-    id=[]
-    m=[]
-    x=[]
-    y=[]
-    z=[]
-    vx=[]
-    vy=[]
-    vz=[]
-    kw=[]
-
-    for i in range(0,len(stars)):
-        id.append(stars[i].id)
-        m.append(stars[i].m)
-        x.append(stars[i].x)
-        y.append(stars[i].y)
-        z.append(stars[i].z)
-        vx.append(stars[i].vx)
-        vy.append(stars[i].vy)
-        vz.append(stars[i].vz)
-        kw.append(stars[i].kw)
-    cluster=StarCluster(len(stars),stars[0].tphys,True,id,m,x,y,z,vx,vy,vz,kw=kw,units=stars[0].units,origin=stars[0].origin,keyparams=do_keyparams)
-
-    return cluster
-
-#Get Star from an individual star
-def get_star(cluster,id):
-    indx=cluster.id.index(id)
-    star=Star(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx], cluster.vz[indx],cluster.kw[indx],tphys=cluster.tphys,units=cluster.units,origin=cluster.origin)
-    return star
 

@@ -3,7 +3,9 @@ from collections import Counter
 
 #Split an array into nbin bin's of equal number elements
 def nbinmaker(x,nbin,nsum=False):
-    
+   
+    x=np.asarray(x)
+ 
     xorder=sorted(range(0,len(x)),key=lambda k:x[k])
 
     x_lower=np.array([])

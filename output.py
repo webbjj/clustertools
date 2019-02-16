@@ -26,20 +26,18 @@ def extrct_out(cluster,fileout):
         else:
             units0=cluster.units
 
-        if not cluster.keyparams:
-            cluster.key_params()
         if cluster.bse:
             nb=len(cluster.m2)
         else:
             nb=0
-
 
         trh=Relaxation_Time(cluster,local=False,multimass=True)
 
         if cluster.ntot > 10:    
             rn=rlagrange(cluster,10)
         else:
-            rn=np.zeros(10)  
+            rn=np.zeros(10)
+                
     fileout.write("%i %i %f %f %f " % (cluster.ntot,nb,cluster.tphys,trh,cluster.mtot))
 
     for i in range(0,len(rn)):
@@ -50,15 +48,12 @@ def extrct_out(cluster,fileout):
     if cluster.se:
         fileout.write("%f " % cluster.rhpro)
 
-
-
     fileout.write("\n")
 
     if units0!=cluster.units and units0=='realkpc':
         pctokpc(cluster)
     if origin0!=cluster.origin and origin0=='galaxy':
         xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
-
 
 def trelax_prof_out(cluster,fileout,multimass=True):
     trelax=Relaxation_Time(cluster,local=False,multimass=multimass)
@@ -110,12 +105,8 @@ def p_prof_out(cluster,fileout,nrad=10):
     fileout.write("\n")
 
 #Output dvprof.dat (WIP)
-def eta_out(cluster,fileout):
+def eta_out(cluster,fileout,m_lower=[0.1,0.1,0.1],m_upper=[50.0,0.5,1.8]):
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
-
-    m_lower=[0.1,0.1,0.1]
-    m_upper=[50.0,0.5,1.8]
-
 
     yeta_all=[]
 
@@ -143,16 +134,11 @@ def eta_out(cluster,fileout):
 
     fileout.write("\n")
 
-
 #Output dalpha_prof.dat (TODO - NEED TO ADD PROJECTED VALUES)
-def dalpha_out(cluster,fileout):
+def dalpha_out(cluster,fileout,m_lower=[0.1,0.3,0.5,0.1,0.3,0.5],m_upper=[0.5,0.8,0.8,0.5,0.8,0.8],r_lower=[0.0,0.0,0.0,None,None,None],r_upper=[cluster.rm,cluster.rm,cluster.rm,None,None,None]):
 
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
 
-    m_lower=[0.1,0.3,0.5,0.1,0.3,0.5]
-    m_upper=[0.5,0.8,0.8,0.5,0.8,0.8]
-    r_lower=[0.0,0.0,0.0,None,None,None]
-    r_upper=[cluster.rm,cluster.rm,cluster.rm,None,None,None]
     alphag=[]
     dalpha=[]
     ydalpha=[]
@@ -179,12 +165,6 @@ def dalpha_out(cluster,fileout):
 
 def alpha_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,se_min=0,se_max=1,projected=False,obs_cut=None):
 
-    if not cluster.keyparams:
-        cluster.keyparams=True
-        cluster.key_params()
-    else:
-        cluster.key_params()
-
     m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,se_min=se_min,se_max=se_max,projected=projected)
     lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,se_min=se_min,se_max=se_max,projected=projected,obs_cut=obs_cut)
 
@@ -209,9 +189,9 @@ def snapout(cluster,filename,energies=False):
 
     for i in range(0,cluster.ntot):
         if energies:
-            fileout.write("%i %f %f %f %f %f %f %f %i %f %f %f\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.kw[i],cluster.kin[i],cluster.pot[i],cluster.etot[i]))
+            fileout.write("%f,%f,%f,%f,%f,%f,%f,%f,%i,%f,%f,%f\n" % (cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.id[i],cluster.kw[i],cluster.kin[i],cluster.pot[i],cluster.etot[i]))
         else:
-            fileout.write("%i %f %f %f %f %f %f %f %i\n" % (cluster.id[i],cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.kw[i]))
+            fileout.write("%f,%f,%f,%f,%f,%f,%f,%f,%i\n" % (cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.id[i],cluster.kw[i]))
 
     fileout.close()
 
@@ -234,7 +214,7 @@ def sigv_out(cluster,fileout,do_beta=False):
 
     fileout.write("%f\n" % (cluster.rm))
 
-#Output dvprof.dat
+#Output vprof.dat
 def v_out(cluster,fileout,coord=None):
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
 

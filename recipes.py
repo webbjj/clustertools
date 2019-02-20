@@ -12,6 +12,7 @@ def nbinmaker(x,nbin,nsum=False):
     x_upper=np.array([])
     x_hist=np.zeros(nbin)
     x_sum=np.zeros(nbin)
+    x_mid=np.array([])
 
     for i in range(0,nbin):
         indx=int(float(i)*float(len(x))/float(nbin))
@@ -23,11 +24,7 @@ def nbinmaker(x,nbin,nsum=False):
         indx=(x>=x_lower[j]) * (x<=x_upper[j])
         x_hist[j]=len(x[indx])
         x_sum[j]=np.sum(x[indx])
-
-
-    x_mid=np.array([])
-    for i in range(0,nbin):
-        x_mid=np.append(x_mid,x_sum[i]/x_hist[i])
+        x_mid=np.append(x_mid,x_sum[-1]/x_hist[-1])
 
     if nsum:
         return x_lower,x_mid,x_upper,x_hist,x_sum
@@ -37,7 +34,6 @@ def nbinmaker(x,nbin,nsum=False):
 #Split an array into nbin bin's of equal size
 def binmaker(x,nbin,nsum=False):
     
-
     x_lower=np.array([])
     x_upper=np.array([])
     x_mid=np.array([])
@@ -88,7 +84,7 @@ def mean_prof(x,y,nbin=10,bintype='fix',nsum=False,median=False):
                 y_bin=np.append(y_bin,y[indx])
                 y_sig=np.append(y_sig,0.0)
             else:
-                y_bin=np.append(y_bin,y[indx])
+                y_bin=np.append(y_bin,0.0)
                 y_sig=np.append(y_sig,0.0)
 
     return x_bin,y_bin,y_sig

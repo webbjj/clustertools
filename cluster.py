@@ -6,12 +6,27 @@ from units import *
 #With the exception of total cluster mass and core mass (if core radius is given), and other cluster properties
 #
 class StarCluster(object):
-    def __init__(self,ntot=0,tphys=0.0,units=None,origin=None):
+    def __init__(self,ntot=0,tphys=0.0,units=None,origin=None,**kwargs):
+        
         #Total Number of Stars + Binaries in the cluster
         self.ntot=ntot
+        self.nb=0
         #Age of cluster
         self.tphys=tphys
         
+        if 'ctype' in kwargs:
+            self.ctype=kwargs.get('ctype')
+        if 'sfile' in kwargs:
+            self.sfile=kwargs.get('sfile')
+        if 'bfile' in kwargs:
+            self.bfile=kwargs.get('bfile')
+        if 'delimiter' in kwargs:
+            self.delimiter=kwargs.get('delimiter')
+        if 'nsnap' in kwargs:
+             self.nsnap=kwargs.get('nsnap')
+        if 'nzfill' in kwargs:
+            self.nzfill=kwargs.get('nzfill')
+ 
         #Initial arrays
         self.id=np.array([])
         self.m=np.array([])
@@ -22,7 +37,21 @@ class StarCluster(object):
         self.vy=np.array([])
         self.vz=np.array([])
         self.kw=np.array([])
-        
+
+        self.xc=0.
+        self.yc=0.
+        self.zc=0.
+        self.vxc=0.
+        self.vyc=0.
+        self.vzc=0.
+
+        self.xgc=0.
+        self.ygc=0.
+        self.zgc=0.
+        self.vxgc=0.
+        self.vygc=0.
+        self.vzgc=0.
+
         #SE Arrays
         self.logl=np.asarray([])
         self.logr=np.asarray([])
@@ -49,6 +78,22 @@ class StarCluster(object):
         self.ep2=np.asarray([])
         self.ospin1=np.asarray([])
         self.ospin2=np.asarray([])
+
+
+        #Energies
+        self.kin=np.asarray([])
+        self.pot=np.asarray([])
+        self.etot=np.asarray([])
+
+        #Functions
+        self.trh=None
+        self.alpha=None
+        self.ealpha=None
+        self.dalpha=None
+        self.edalpha=None
+        self.rn=None
+        self.eta=None
+        self.eeta=None
 
         self.units=units
         self.origin=origin
@@ -176,6 +221,13 @@ class StarCluster(object):
         self.pot=np.asarray(pot)
         self.etot=np.asarray(etot)
 
+    #Add individual energies
+    #Units not specified
+    def add_forces(self,fx,fy,fz):
+        self.fx=np.asarray(fx)
+        self.fy=np.asarray(fy)
+        self.fz=np.asarray(fz)
+
     #Add cluster's orbital properties
     #Units not specified
     def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc):
@@ -199,7 +251,7 @@ class StarCluster(object):
         self.ycom=np.sum(self.m*self.vy)/np.sum(self.m)
         self.zcom=np.sum(self.m*self.vz)/np.sum(self.m)
 
-    def find_center(self,xgc,ygc,zgc,nsigma=1.):
+    def find_center(self,xgc,ygc,zgc,nsigma=1.2):
         #Iterate to find center of cluster using stars within nsigma*sigma
         
         sigma_xgc=np.std(self.x)
@@ -207,34 +259,48 @@ class StarCluster(object):
         sigma_zgc=np.std(self.z)
 
         niterate=0
+
+        xindx=(abs(self.x-xgc) < nsigma*sigma_xgc) 
+        yindx=(abs(self.y-ygc) < nsigma*sigma_ygc)
+        zindx=(abs(self.z-zgc) < nsigma*sigma_zgc)
+
+
+        print('INITIAL FIND CENTER: ',niterate,xgc,ygc,zgc,sigma_xgc,sigma_ygc,sigma_zgc,len(self.x[xindx]),len(self.y[yindx]),len(self.z[zindx]))
+
         
         while sigma_xgc>0.001 or sigma_ygc>0.001 or sigma_zgc>0.001:
-            
+
             niterate+=1
 
             #Then find center of stars within 1sigma of median
 
-            indx=(abs(self.x-xgc) < nsigma*sigma_xgc) * (abs(self.y-ygc) < nsigma*sigma_ygc) * (abs(self.z-zgc) < nsigma*sigma_zgc)
+            xindx=(abs(self.x-xgc) < nsigma*sigma_xgc)
+            yindx=(abs(self.y-ygc) < nsigma*sigma_ygc)
+            zindx=(abs(self.z-zgc) < nsigma*sigma_zgc)
 
-            if len(self.x[indx])<=1:
+            if sigma_xgc>0.001 and len(self.x[xindx]) > 100.:
+                xgc=np.mean(self.x[xindx])
+                sigma_xgc=np.std(self.x[xindx])
+                vxgc=np.mean(self.vx[xindx])
+
+            if sigma_ygc>0.001 and len(self.y[yindx]) > 100.:
+                ygc=np.mean(self.y[yindx])
+                sigma_ygc=np.std(self.y[yindx])
+                vygc=np.mean(self.vy[yindx])
+
+            if sigma_zgc>0.001 and len(self.z[zindx]) > 100.:
+                zgc=np.mean(self.z[zindx])
+                sigma_zgc=np.std(self.z[zindx])
+                vzgc=np.mean(self.vz[zindx])
+
+            if  len(self.x[xindx]) < 100. and  len(self.y[yindx]) < 100. and  len(self.z[zindx]) < 100.:
                 break
+            
 
-            xgc=np.mean(self.x[indx])
-            ygc=np.mean(self.y[indx])
-            zgc=np.mean(self.z[indx])
-            vxgc=np.mean(self.vx[indx])
-            vygc=np.mean(self.vy[indx])
-            vzgc=np.mean(self.vz[indx])
-
-            sigma_xgc=np.std(self.x[indx])
-            sigma_ygc=np.std(self.y[indx])
-            sigma_zgc=np.std(self.z[indx])
-
-            if niterate>10:
-                print('SEARCHING FOR CLUSTER CENTER....',niterate)
+            if niterate>0:
+                print('SEARCHING FOR CLUSTER CENTER....',niterate, sigma_xgc,sigma_ygc,sigma_zgc,len(self.x[xindx]),len(self.y[yindx]),len(self.z[zindx]))
 
         return xgc,ygc,zgc,vxgc,vygc,vzgc
-
 
 #Routine for joining cluster timesteps
 

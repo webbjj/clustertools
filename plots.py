@@ -15,6 +15,8 @@ def posplot(cluster,filename=None,coords='xy'):
         units='(pc)'
     elif cluster.units=='realkpc':
         units='(kpc)'
+    elif cluster.units=='galpy':
+        units='(GALPY)'
     else:
         units=''
 

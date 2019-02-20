@@ -26,7 +26,7 @@ def extrct_out(cluster,fileout):
         else:
             units0=cluster.units
 
-        if cluster.bse:
+        if cluster.nb>0:
             nb=len(cluster.m2)
         else:
             nb=0
@@ -45,7 +45,7 @@ def extrct_out(cluster,fileout):
 
     fileout.write("%f " % cluster.rmpro)
 
-    if cluster.se:
+    if len(cluster.logl)>0:
         fileout.write("%f " % cluster.rhpro)
 
     fileout.write("\n")
@@ -148,8 +148,7 @@ def dalpha_out(cluster,fileout,m_lower=[0.1,0.3,0.5,0.1,0.3,0.5],m_upper=[0.5,0.
     dalpha=[]
     ydalpha=[]
    
-    if not cluster.keyparams:
-        cluster.key_params()
+    cluster.key_params()
 
     for i in range(0,len(m_lower)):
 

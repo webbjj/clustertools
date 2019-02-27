@@ -30,25 +30,4 @@ def xvshift(cluster,x,y,z,vx,vy,vz,origin=None):
     cluster.key_params()
 
 
-def rect_to_sphere(x,y,z):
-    r=np.sqrt(x*x+y*y+z*z)
-    rxy=np.sqrt(x*x+y*y)
-    phi=np.arctan2(y,x)
-    theta=np.arctan2(rxy,z)
-
-    return r,phi,theta
-
-def rect_to_sphere_vel(x,y,z,vx,vy,vz):
-    r,phi,theta=rect_to_sphere(x,y,z)
-    v=np.sqrt(vx*vx+vy*vy+vz*vz)
-
-    #v DOT r_hat,phi_hat,and theta_hat
-    
-    vr=vx*np.cos(phi)*np.sin(theta)+vy*np.sin(phi)*np.sin(theta)+vz*np.cos(theta)
-    vp=-1.0*vx*np.sin(phi)+vy*np.cos(phi)
-    vt=vx*np.cos(phi)*np.cos(theta)+vy*np.sin(phi)*np.cos(theta)-vz*np.sin(theta)
-
-    return vr,vp,vt
-
-
 

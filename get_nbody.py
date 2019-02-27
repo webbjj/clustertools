@@ -21,44 +21,53 @@ def get_cluster(ctype,units0='realpc',origin0='cluster',**kwargs):
     #filename - when ctype=gyrfalcon, the file name needs to read in as its a customizable option in gyrfalcon
     #nzfill - value for zfill when reading and writing snapshots (Default: 5)
     #delimiter - choice of delimiter when reading ascii/csv files (Default: ',')
-    
-    if kwargs['orbit']:
-        ofile=kwargs.get('orbit')
+    #wdir - working directory of snapshots
+
+    if 'wdir' in kwargs:
+        wdir=kwargs.get('wdir')
     else:
-        ofile=None
-    
-    if ctype=='fort':
-        fort82=open('fort.82','r')
-        fort83=open('fort.83','r')
+        wdir=''
+
+    if 'orbit' in kwargs:
+        ofile=kwargs.get('orbit')
+    elif 'oname' in kwargs:
+        ofile=open(wdir+kwargs.get('oname'),'r')
+
+    if ctype=='nbody6se':
+        #When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
+        fort82=open('%sfort.82' % wdir,'r')
+        fort83=open('%sfort.83' % wdir,'r')
         cluster=get_nbody6_jarrod(fort82,fort83,ofile)
-    elif ctype=='out':
-        if os.path.isfile('OUT9'):
-            out9=open('OUT9','r')
+    elif ctype=='nbody6':
+        #With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
+        if os.path.isfile('%sOUT9'):
+            out9=open('%sOUT9' % wdir,'r')
         else:
             out9=None
-        out34=open('OUT34','r')
+        out34=open('%sOUT34' % wdir,'r')
         cluster=get_nbody6_out(out9,out34)
-    #Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++
     elif ctype=='snapauto':
+        #Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++
+
         nsnap=kwargs.get('nsnap')
         
-        if kwargs['nzfill']:
-            nzfill=kwargs.get('nzfill')
+        if 'nzfill' in kwargs:
+            nzfill=int(kwargs.get('nzfill'))
         else:
             nzfill=5
 
-        snapfile=('./snapshot/snap.dat.%s' % str(nsnap).zfill(nzfill))
-        cluster=get_nbody6_snapauto(snapfile,units0,origin0,nsnap,nzfill,ofile)
-    #Read in snapshot from gyrfalcon. Note option for swapping y-z coordinates (necessary when using a logarithmic potential)
+        cluster=get_nbody6_snapauto(nsnap,units0,origin0,nzfill,wdir,ofile)
     elif ctype=='gyrfalcon':
-        filein=kwargs.get('filename')
+        #Read in snapshot from gyrfalcon.
+        filename='%s%s' % (wd,kwargs.get('filename'))
+        filein=open(filename,'r')
         cluster=get_gyrfalcon(filein,'WDunits',ofile)
-    #Read in standard nbodypy snapshot
     elif ctype=='snapshot':
+        #Read in standard nbodypy snapshot
         nsnap=kwargs.get('nsnap')
 
         if 'nzfill' in kwargs:
-            nzfill=kwargs.get('nzfill')
+            nzfill=int(kwargs.get('nzfill'))
         else:
             nzfill=5
 
@@ -67,40 +76,39 @@ def get_cluster(ctype,units0='realpc',origin0='cluster',**kwargs):
         else:
             delimiter=','
 
-        cluster=get_nbodypy_snapshot(nsnap,units0,origin0,delimiter,nzfill,ofile)
+        cluster=get_nbodypy_snapshot(nsnap,units0,origin0,nzfill,delimiter,wdir,ofile)
 
     return cluster
 
-def advance_cluster(cluster,ofile):
-    print(cluster.ctype)
-    #Either read in fort.82/fort83, OUT34, or OUT3 and OUT34 from NBODY6. Note these output files have been customised to match my personal versions
-    if cluster.ctype=='fort':
+def advance_cluster(cluster,ofile=None):
+
+    #Continue reading in cluster opened in get_cluster()
+    if cluster.ctype=='nbody6se':
         cluster=get_nbody6_jarrod(cluster.bfile,cluster.sfile,ofile)
-    elif cluster.ctype=='out':
+    elif cluster.ctype=='nbody6':
         cluster=get_nbody6_out(cluster.bfile,cluster.sfile,ofile)
-    #Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++
     elif cluster.ctype=='snapauto':
         nsnap=int(cluster.nsnap)+1
-        cluster=get_nbody6_snapauto(nsnap,cluster.units,cluster.origin,ofile,nsnap=cluster.nsnap+1,nzfill=cluster.nzfill,ocontinue=True)
-    #Read in snapshot from gyrfalcon. Note option for swapping y-z coordinates (necessary when using a logarithmic potential)
+        cluster=get_nbody6_snapauto(nsnap,cluster.units,cluster.origin,cluster.nzfill,cluster.wdir,ofile,ocontinue=True)
     elif cluster.ctype=='gyrfalcon':
         cluster=get_gyrfalcon(cluster.sfile,'WDunits',ofile)
     elif cluster.ctype=='snapshot':
         nsnap=int(cluster.nsnap)+1
-        cluster=get_nbodypy_snapshot(nsnap,cluster.units,cluster.origin,cluster.delimiter,cluster.nzfill,ofile,ocontinue=True)
+        cluster=get_nbodypy_snapshot(nsnap,cluster.units,cluster.origin,cluster.nzfill,cluster.delimiter,cluster.wdir,ofile,ocontinue=True)
 
     return cluster
 
-def get_cluster_orbit(orbit,cluster,nsnap=None,ocontinue=False):
+def get_cluster_orbit(orbit,cluster,nsnap=None,ocontinue=False,**kwargs):
+    #Read in orbital information from orbit
     if nsnap!=None and not ocontinue:
         for i in range(0,int(nsnap)+1):
             data=orbit.readline().split()
     else:
         data=orbit.readline().split()
     
-    if orbit.name=='gc_orbit.dat':
+    if 'gc_orbit.dat' in orbit.name:
         #Saved orbit from doing a grep of NBODY6 logfile
-
+        orbit_units='kpc'
         xgc=float(data[8])
         ygc=float(data[9])
         zgc=float(data[10])
@@ -108,32 +116,59 @@ def get_cluster_orbit(orbit,cluster,nsnap=None,ocontinue=False):
         vygc=float(data[12])
         vzgc=float(data[13])
     else:
-        #Input logfile, assumed units is kpc and km/s
         xgc=float(data[1])
         ygc=float(data[2])
         zgc=float(data[3])
         vxgc=float(data[4])
         vygc=float(data[5])
         vzgc=float(data[6])
+
+    if 'ounits' in kwargs:
+        ounits=kwargs.get('ounits')
+    elif 'Norbit.dat' in orbit.name:
+        ounits=cluster.units
+    else:
+        ounits='kpc'
+
+    if ounits!=cluster.units:
     
-    if cluster.units=='nbody':
-        xgc*=(1000.0/cluster.rbar)
-        ygc*=(1000.0/cluster.rbar)
-        zgc*=(1000.0/cluster.rbar)
-        vxgc/=(cluster.vstar)
-        vygc/=(cluster.vstar)
-        vzgc/=(cluster.vstar)
-    elif cluster.units=='realpc':
-        xgc*=1000.0
-        ygc*=1000.0
-        zgc*=1000.0
-    elif cluster.units=='galpy':
-        xgc/=8.
-        ygc/=8.
-        zgc/=8.
-        vxgc/=220.
-        vygc/=220.
-        vzgc/=220.
+        if cluster.units=='nbody' and ounits=='kpc':
+            xgc*=(1000.0/cluster.rbar)
+            ygc*=(1000.0/cluster.rbar)
+            zgc*=(1000.0/cluster.rbar)
+            vxgc/=(cluster.vstar)
+            vygc/=(cluster.vstar)
+            vzgc/=(cluster.vstar)
+        elif cluster.units=='realpc' and ounits=='kpc':
+            xgc*=1000.0
+            ygc*=1000.0
+            zgc*=1000.0
+        elif cluster.units=='galpy' and ounits=='kpc':
+            xgc/=8.
+            ygc/=8.
+            zgc/=8.
+            vxgc/=220.
+            vygc/=220.
+            vzgc/=220.
+        elif cluster.units=='nbody' and ounits=='pc':
+            xgc/=cluster.rbar
+            ygc/=cluster.rbar
+            zgc/=cluster.rbar
+            vxgc/=(cluster.vstar)
+            vygc/=(cluster.vstar)
+            vzgc/=(cluster.vstar)
+        elif cluster.units=='realkpc' and ounits=='pc':
+            xgc/=1000.0
+            ygc/=1000.0
+            zgc/=1000.0
+        elif cluster.units=='galpy' and ounits=='pc':
+            xgc/=8000.
+            ygc/=8000.
+            zgc/=8000.
+            vxgc/=220.
+            vygc/=220.
+            vzgc/=220.
+                
     return xgc,ygc,zgc,vxgc,vygc,vzgc
 
 
@@ -199,19 +234,10 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None):
 
     if ofile!=None:
         xgc,ygc,zgc,vxgc,vygc,vzgc=get_cluster_orbit(ofile,cluster)
-        xc=np.median(cluster.x)
-        yc=np.median(cluster.y)
-        zc=np.median(cluster.z)
-        cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xc,yc,zc)
+        cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xgc,ygc,zgc)
     else:
         #Estimate center of distribution using median function
-        xgc=np.median(cluster.x)
-        ygc=np.median(cluster.y)
-        zgc=np.median(cluster.z)
-        vxgc=np.median(cluster.vx)
-        vygc=np.median(cluster.vy)
-        vzgc=np.median(cluster.vz)
-        xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.find_center(xgc,ygc,zgc)
+        xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.find_center(np.median(cluster.x),np.median(cluster.y),np.median(cluster.z))
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
@@ -368,7 +394,7 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None):
     nbnd=nsbnd+nbbnd
 
     if nbnd > 0:
-        cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='fort',sfile=fort83,bfile=fort82)
+        cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='nbody6se',sfile=fort83,bfile=fort82)
         cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd)
         cluster.add_stars(id,m,x,y,z,vx,vy,vz)
         cluster.add_se(kw,logl,logr,ep,ospin)
@@ -379,11 +405,8 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None):
             xgc,ygc,zgc,vxgc,vygc,vzgc=get_cluster_orbit(ofile,cluster)
             cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
-        #Estimate center of distribution using median function
-        xc=np.median(cluster.x)
-        yc=np.median(cluster.y)
-        zc=np.median(cluster.z)
-        cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xc,yc,zc)
+        #Estimate center
+        cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(0.0,0.0,0.0)
     
     else:
         cluster=StarCluster(0,tphys)
@@ -556,7 +579,7 @@ def get_nbody6_out(out9,out34):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='out',sfile=out34,bfile=out9)
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='nbody6',sfile=out34,bfile=out9)
     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,n_p)
     #Add back on the center of mass which has been substracted off by NBODY6
     cluster.add_stars(id,m,x+xc,y+yc,z+zc,vx,vy,vz)
@@ -565,11 +588,8 @@ def get_nbody6_out(out9,out34):
     if out9!=None:
         cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2)
 
-    #Estimate center of distribution using median function
-    xc=np.median(cluster.x)
-    yc=np.median(cluster.y)
-    zc=np.median(cluster.z)
-    cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xc,yc,zc)
+    #Estimate center of distribution
+    cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(0.,0.,0.)
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
@@ -663,7 +683,7 @@ def get_nbody6_out34(out34):
 
     nbnd=nsbnd+nbbnd
 
-    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='out',sfile=out34,bfile=None)
+    cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='nbody6',sfile=out34,bfile=None)
     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,n_p)
     #Add back on the center of mass which has been substracted off by NBODY6
     cluster.add_stars(id,m,x+xc,y+yc,z+zc,vx,vy,vz)
@@ -671,9 +691,6 @@ def get_nbody6_out34(out34):
     cluster.add_energies(kin,pot,etot)
     
     #Estimate center of distribution using median function
-    xc=np.median(cluster.x)
-    yc=np.median(cluster.y)
-    zc=np.median(cluster.z)
     cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xc,yc,zc)
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
@@ -682,60 +699,54 @@ def get_nbody6_out34(out34):
     return cluster
 
 #Get StarCluster snapshots produces by snapauto
-def get_nbody6_snapauto(snap,units0='realpc',origin0='cluster',ofile=None,**kwargs):
+def get_nbody6_snapauto(nsnap,units0='realpc',origin0='cluster',nzfill=5,wdir='./',ofile=None,**kwargs):
     
-    nsnap=kwargs.get('nsnap')
-    nzfill=kwargs.get('nzfill')
     if 'ocontinue' in kwargs:
         ocontinue=kwargs.get('ocontinue')
     else:
         ocontinue=False
-    
-    data=snap.readline().split()
-    tphys=float(data[0])
-    ntot=float(data[1])
-    nb=int(float(data[2]))
-    xc=float(data[3])
-    yc=float(data[4])
-    zc=float(data[5])
-    
-    id=[]
-    m=[]
-    x=[]
-    y=[]
-    z=[]
-    vx=[]
-    vy=[]
-    vz=[]
 
-    data=snap.readline().split()
-    nbnd=0
-    while len(data)>0:
-            if int(data[7]) <=0:
-                break
+    if os.path.isfile('%ssnapshot/snap.dat.%s' % (wdir,str(nsnap).zfill(nzfill))):
+        snap=np.loadtxt(('%ssnapshot/snap.dat.%s' % (wdir,str(nsnap).zfill(nzfill))),skiprows=1)
+        data=open('%ssnapshot/snap.dat.%s' % (wdir,str(nsnap).zfill(nzfill)),'r').readline().split()
+    elif os.path.isfile('snap.dat.%s' % str(nsnap).zfill(nzfill)):
+        snap=np.loadtxt(('snap.dat.%s' % str(nsnap).zfill(nzfill)),skiprows=1)
+        data=open('snap.dat.%s' % str(nsnap).zfill(nzfill),'r').readline().split()
+    else:
+        print('NO FILE FOUND')
+        return 0
 
-            m.append(float(data[0]))
-            x.append(float(data[1]))
-            y.append(float(data[2]))
-            z.append(float(data[3]))
-            vx.append(float(data[4]))
-            vy.append(float(data[5]))
-            vz.append(float(data[6]))
-            id.append(int(float(data[7])))
+    if len(data)<=5:
+        tphys=float(data[0])
+        ntot=float(data[1])
+        xgc=int(float(data[2]))
+        ygc=float(data[3])
+        zgc=float(data[4])
+    else:
+        tphys=float(data[0])
+        ntot=float(data[1])
+        nb=int(float(data[2]))
+        xc=float(data[3])
+        yc=float(data[4])
+        zc=float(data[5])
+
+    m=snap[:,0]
+    x=snap[:,1]
+    y=snap[:,2]
+    z=snap[:,3]
+    vx=snap[:,4]
+    vy=snap[:,5]
+    vz=snap[:,6]
+    id=snap[:,7]
         
-            nbnd+=1
-
-            data=snap.readline().split()
+    nbnd=len(m)
 
     kw=np.zeros(int(ntot)) 
-    cluster=StarCluster(nbnd,tphys,units='realpc',origin='cluster',ctype='snapauto',nsnap=nsnap,nzfill=nzfill)
+    cluster=StarCluster(nbnd,tphys,units='realpc',origin='cluster',ctype='snapauto',nsnap=nsnap,nzfill=nzfill,wdir=wdir)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz,kw=kw)
     
-    #Estimate center of distribution using median function
-    xc=np.median(cluster.x)
-    yc=np.median(cluster.y)
-    zc=np.median(cluster.z)
-    cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xc,yc,zc)
+    #Estimate center of distribution
+    cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(0.,0.,0.,)
 
     if ofile!=None:
         xgc,ygc,zgc,vxgc,vygc,vzgc=get_cluster_orbit(ofile,cluster,nsnap,ocontinue=ocontinue)
@@ -744,18 +755,21 @@ def get_nbody6_snapauto(snap,units0='realpc',origin0='cluster',ofile=None,**kwar
     return cluster
 
 #Get StarCluster from standard nbodypy snapshot
-def get_nbodypy_snapshot(nsnap,units0='realpc',origin0='cluster',delimiter=',',nzfill=5,ofile=None,**kwargs):
+def get_nbodypy_snapshot(nsnap,units0='realpc',origin0='cluster',nzfill=5,delimiter=',',wdir='./',ofile=None,**kwargs):
     
     if 'ocontinue' in kwargs:
         ocontinue=kwargs.get('ocontinue')
     else:
         ocontinue=False
    
-    if os.path.isfile('./snaps/snap.dat.%s' % str(nsnap).zfill(nzfill)):
-        nsnapfile=('./snaps/snap.dat.%s' % str(nsnap).zfill(nzfill))
+    if os.path.isfile(('%ssnaps/snap.dat.%s') % (wdir,str(nsnap).zfill(nzfill))):
+        nsnapfile=('%ssnaps/snap.dat.%s') % (wdir,str(nsnap).zfill(nzfill))
         data=np.loadtxt(nsnapfile,delimiter=delimiter)
-    elif os.path.isfile('./snaps/fort_%s.dat' % str(nsnap).zfill(nzfill)):
-        nsnapfile=('./snaps/fort_%s.dat' % str(nsnap).zfill(nzfill))
+    elif os.path.isfile(('%ssnaps/fort_%s.dat') % (wdir,str(nsnap).zfill(nzfill))):
+        nsnapfile=('%ssnaps/fort_%s.dat') % (wdir,str(nsnap).zfill(nzfill))
+        data=np.loadtxt(nsnapfile,delimiter=delimiter)
+    elif os.path.isfile(('%ssnaps/%s.dat') % (wdir,str(nsnap).zfill(nzfill))):
+        nsnapfile=('%ssnaps/%s.dat') % (wdir,str(nsnap).zfill(nzfill))
         data=np.loadtxt(nsnapfile,delimiter=delimiter)
     else:
         print('NO SNAPSHOT FOUND')
@@ -773,25 +787,22 @@ def get_nbodypy_snapshot(nsnap,units0='realpc',origin0='cluster',delimiter=',',n
     
     nbnd=len(m)
 
-    cluster=StarCluster(nbnd,0.0,units=units0,origin=origin0,ctype='snapshot',sfile=nsnapfile,bfile=None,delimiter=delimiter,nsnap=nsnap,nzfill=nzfill)
+    cluster=StarCluster(nbnd,0.0,units=units0,origin=origin0,ctype='snapshot',sfile=nsnapfile,bfile=None,delimiter=delimiter,nsnap=nsnap,nzfill=nzfill,wdir=wdir)
     cluster.add_stars(id,m,x,y,z,vx,vy,vz,kw=kw)
 
     if origin0=='galaxy':
 
         if ofile==None:
-            xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.find_center(xgc,ygc,zgc)
+            xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.find_center(np.median(x),np,median(y),np.median(z))
         else:
             xgc,ygc,zgc,vxgc,vygc,vzgc=get_cluster_orbit(ofile,cluster,nsnap,ocontinue=ocontinue)
 
         cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
-        #Estimate center of distribution using median function
+        #Estimate center of distribution
         cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xgc,ygc,zgc)
     elif origin0=='cluster':
-        #Estimate center of distribution using median function
-        xc=np.median(cluster.x)
-        yc=np.median(cluster.y)
-        zc=np.median(cluster.z)
-        cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(xc,yc,zc)
+        #Estimate center of distribution
+        cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc=cluster.find_center(0.,0.,0.)
 
         if ofile!=None:
             xgc,ygc,zgc,vxgc,vygc,vzgc=get_cluster_orbit(ofile,cluster,nsnap,ocontinue=ocontinue)

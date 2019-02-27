@@ -1,8 +1,7 @@
 #get_nbody includes functions to convert Nbody simulation data to StarCluster and Stars 
-#(Also includes import StarCluster and import units)
-#(units includes import coordiates)
+#(Also includes import StarCluster)
 from get_nbody import *
-#Functions to calculate various cluster parameters
+#Functions (which includes operations) that act on StarClusters
 from functions import *
 #Routines for making common plots
 from plots import *
@@ -14,3 +13,5 @@ from observations import *
 from constants import *
 #General recipes
 from recipes import *
+#Galpy recipes
+from ngalpy import *

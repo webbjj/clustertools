@@ -3,6 +3,7 @@ import math
 import numpy as np
 from cluster import *
 from observations import *
+from operations import *
 from constants import *
 from galpy.util import bovy_coords
 from coordinates import *
@@ -38,56 +39,10 @@ def relaxation_time(cluster,local=False,multimass=True):
 
     return trelax
 
-#Calculate Force Acting on all stars
-#Output units depends on input units
-def forces(cluster,specific=True):
-    
-    if cluster.units=='nbody':
-        grav=1.0
-        fscale=1.0
-    elif cluster.units=='realpc':
-        #G has units of pc (km/s)^2 / Msun
-        grav=4.302e-3
-        #Scale forces to units of (km/s) / Myr
-        fscale=spermyr/kmperpc
-    elif cluster.units=='realkpc':
-        #G has units of kpc (km/s)^2 / Msun
-        grav=4.302e-6
-        #Scale forces to units of (km/s) / Myr
-        fscale=spermyr/kmperkpc
-    else:
-        grav=1.0
-        fscale=1.0
+def energies(cluster,specific=True,do_batch=True):
+    origin0=cluster.origin
+    center0=cluster.center
 
-    ek=0.5*(cluster.v**2.0)
-    ektot=np.sum(ek)
-
-    dx=np.repeat(cluster.x,len(cluster.x))-np.tile(cluster.x,len(cluster.x))
-    dy=np.repeat(cluster.y,len(cluster.x))-np.tile(cluster.y,len(cluster.x))
-    dz=np.repeat(cluster.z,len(cluster.x))-np.tile(cluster.z,len(cluster.x))
-    dr=np.sqrt(dx**2.+dy**2.+dz**2.)
-
-    gmr=np.reshape(-grav*m/dr,(len(cluster.r),len(cluster.r)))
-    indx=np.logical_or(np.isinf(gmr),np.isnan(gmr))
-    gmr[indx]=0.0
-    pot=np.sum(gmr,axis=1)
-    pottot=np.sum(pot)
-    etot=ek+pot
-
-    xhat=dx/abs(dx)
-    yhat=dy/abs(dy)
-    zhat=dz/abs(dz)
-
-    fx=grav*fscale*xhat*cluster.m/(dx**2.0)
-    fy=grav*fscale*yhat*cluster.m/(dy**2.0)
-    fz=grav*fscale*zhat*cluster.m/(dz**2.0)
-
-    cluster.add_energies(ek,pot,etot)
-    cluster.add_forces(fx,fy,fz)
-
-    return fx,fy,fz,pot,ek,etot
-
-def energies(cluster,specific=True):
     
     if cluster.units=='nbody':
         grav=1.0
@@ -99,6 +54,11 @@ def energies(cluster,specific=True):
         grav=4.302e-6
     else:
         grav=1.0
+
+    if origin0!='cluster':
+        cluster.to_cluster()
+    if not center0:
+        cluster.to_center()
     
     if specific:
         ek=0.5*(cluster.v**2.0)
@@ -107,28 +67,55 @@ def energies(cluster,specific=True):
 
     ektot=np.sum(ek)
 
-    dx=np.repeat(cluster.x,len(cluster.x))-np.tile(cluster.x,len(cluster.x))
-    dy=np.repeat(cluster.y,len(cluster.x))-np.tile(cluster.y,len(cluster.x))
-    dz=np.repeat(cluster.z,len(cluster.x))-np.tile(cluster.z,len(cluster.x))
+    if do_batch:
 
-    if specific:
-        m=np.repeat(cluster.m,len(cluster.m))
+        pot=[]
+
+        for i in range(0,cluster.ntot):
+            dx=cluster.x[i]-cluster.x
+            dy=cluster.y[i]-cluster.y
+            dz=cluster.z[i]-cluster.z
+            if specific:
+                m=cluster.m
+            else:
+                m=cluter.m[i]*cluster.m
+
+            dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+            indx=(dr!=0.0)
+            gmr=-grav*m[indx]/dr[indx]
+
+            pot.append(np.sum(gmr))
+
     else:
-        m=np.repeat(cluster.m,len(cluster.m))*np.tile(cluster.m,len(cluster.m))
 
-    dr=np.sqrt(dx**2.+dy**2.+dz**2.)
-    gmr=np.reshape(-grav*m/dr,(len(cluster.r),len(cluster.r)))
+        dx=np.repeat(cluster.x,len(cluster.x))-np.tile(cluster.x,len(cluster.x))
+        dy=np.repeat(cluster.y,len(cluster.x))-np.tile(cluster.y,len(cluster.x))
+        dz=np.repeat(cluster.z,len(cluster.x))-np.tile(cluster.z,len(cluster.x))
 
-    indx=np.logical_or(np.isinf(gmr),np.isnan(gmr))
-    gmr[indx]=0.0
+        if specific:
+            m=np.repeat(cluster.m,len(cluster.m))
+        else:
+            m=np.repeat(cluster.m,len(cluster.m))*np.tile(cluster.m,len(cluster.m))
 
-    pot=np.sum(gmr,axis=1)
+        dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+        gmr=np.reshape(-grav*m/dr,(len(cluster.r),len(cluster.r)))
+
+        indx=np.logical_or(np.isinf(gmr),np.isnan(gmr))
+        gmr[indx]=0.0
+
+        pot=np.sum(gmr,axis=1)
+
     pottot=np.sum(pot)
     etot=ek+pot
 
     cluster.add_energies(ek,pot,etot)
-    
-    return pottot,ektot
+
+    if not center0:
+        cluster.from_center()
+    if origin0!='cluster':
+        cluster.to_galaxy()
+
+    return ektot,pottot
 
 #Calculate lagrange radii
 #Units will be whatever units the cluster is currently in

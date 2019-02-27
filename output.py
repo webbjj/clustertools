@@ -31,7 +31,7 @@ def extrct_out(cluster,fileout):
         else:
             nb=0
 
-        trh=Relaxation_Time(cluster,local=False,multimass=True)
+        trh=relaxation_time(cluster,local=False,multimass=True)
 
         if cluster.ntot > 10:    
             rn=rlagrange(cluster,10)
@@ -56,7 +56,7 @@ def extrct_out(cluster,fileout):
         xvshift(cluster,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,'galaxy')
 
 def trelax_prof_out(cluster,fileout,multimass=True):
-    trelax=Relaxation_Time(cluster,local=False,multimass=multimass)
+    trelax=relaxation_time(cluster,local=False,multimass=multimass)
     fileout.write("%f %f " % (cluster.tphys,trelax))
     rn=rlagrange(cluster,nlagrange=10)
     trelax_prof=[]
@@ -73,7 +73,7 @@ def trelax_prof_out(cluster,fileout,multimass=True):
             rmax=rn[i]
 
         rcluster=sub_cluster(cluster,rmin=rmin,rmax=rmax)
-        trelax_prof.append(Relaxation_Time(rcluster,local=True,multimass=multimass))
+        trelax_prof.append(relaxation_time(rcluster,local=True,multimass=multimass))
         fileout.write("%f " % (trelax_prof[-1]))
 
     fileout.write("%f %f " % (cluster.rmpro,cluster.rhpro))
@@ -189,15 +189,12 @@ def alpha_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,se_min=
 #Output a snapshot
 def snapout(cluster,filename,energies=False):
 
-    fileout=open(filename,'w')
+    if energies:
+        np.savetxt(filename,np.olumn_stack([cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.id,cluster.kw,cluster.kin,cluster.pot,cluster.etot]))
+    else:
+        np.savetxt(filename,np.column_stack([cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.id,cluster.kw]))
 
-    for i in range(0,cluster.ntot):
-        if energies:
-            fileout.write("%f,%f,%f,%f,%f,%f,%f,%f,%i,%f,%f,%f\n" % (cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.id[i],cluster.kw[i],cluster.kin[i],cluster.pot[i],cluster.etot[i]))
-        else:
-            fileout.write("%f,%f,%f,%f,%f,%f,%f,%f,%i\n" % (cluster.m[i],cluster.x[i],cluster.y[i],cluster.z[i],cluster.vx[i],cluster.vy[i],cluster.vz[i],cluster.id[i],cluster.kw[i]))
-
-    fileout.close()
+    return 0
 
 #Output dvprof.dat
 def sigv_out(cluster,fileout,do_beta=False):

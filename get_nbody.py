@@ -1,8 +1,8 @@
 import math
-from cluster import StarCluster
 import numpy as np
 from galpy.util import bovy_conversion
 import os
+from cluster import StarCluster
 
 #get_cluster is the main function for loading clusters from all types of codes (e.g. NBODY6, GYRFALCON, etc.). Individual functions are then called that have been customised to call files from a given software package and any necessary **kwargs for those files are then required. Due to the common practice of editing output files in commonly used and publically availble codes, get_cluster is written to be modular in the sense that it is trivial to add your own get_mycode() function to this list by creating a new ctype.
 
@@ -78,15 +78,22 @@ def get_cluster(ctype,units0='realpc',origin0='cluster',**kwargs):
 
         cluster=get_nbodypy_snapshot(nsnap,units0,origin0,nzfill,delimiter,wdir,ofile)
 
+    if 'kwfile' in kwargs:
+        kwfile=kwargs.get('kwfile')
+        cluster.kw[cluster.id-1]=get_kwtype(cluster,kwfile)
+
     return cluster
 
-def advance_cluster(cluster,ofile=None):
+def advance_cluster(cluster,ofile=None,kwfile=None):
+
+    if kwfile!=None:
+        kw0=cluster.kw
 
     #Continue reading in cluster opened in get_cluster()
     if cluster.ctype=='nbody6se':
         cluster=get_nbody6_jarrod(cluster.bfile,cluster.sfile,ofile)
     elif cluster.ctype=='nbody6':
-        cluster=get_nbody6_out(cluster.bfile,cluster.sfile,ofile)
+        cluster=get_nbody6_out(cluster.bfile,cluster.sfile)
     elif cluster.ctype=='snapauto':
         nsnap=int(cluster.nsnap)+1
         cluster=get_nbody6_snapauto(nsnap,cluster.units,cluster.origin,cluster.nzfill,cluster.wdir,ofile,ocontinue=True)
@@ -95,6 +102,9 @@ def advance_cluster(cluster,ofile=None):
     elif cluster.ctype=='snapshot':
         nsnap=int(cluster.nsnap)+1
         cluster=get_nbodypy_snapshot(nsnap,cluster.units,cluster.origin,cluster.nzfill,cluster.delimiter,cluster.wdir,ofile,ocontinue=True)
+
+    if kwfile!=None:
+        cluster.kw[cluster.id-1]=kw0
 
     return cluster
 
@@ -171,6 +181,11 @@ def get_cluster_orbit(orbit,cluster,nsnap=None,ocontinue=False,**kwargs):
                 
     return xgc,ygc,zgc,vxgc,vygc,vzgc
 
+def get_kwtype(cluster,kwfile):
+    kw= np.loadtxt(kwfile)[:,1]
+    indx=cluster.id-1
+    kw0=kw[indx]
+    return kw0
 
 #Get StarCluster from Gyrfalcon output
 def get_gyrfalcon(filein,units='WDunits',ofile=None):
@@ -427,7 +442,10 @@ def get_nbody6_out(out9,out34):
     ns=int(line1[0])
     tphys=float(line1[1])
     n_p=int(line1[4])
-    nb=int(float(line1[11]))
+    if len(line1)>11:
+        nb=int(float(line1[11]))
+    else:
+        nb=0
 
     if out9!=None:
         line1b=out9.readline().split()
@@ -529,9 +547,9 @@ def get_nbody6_out(out9,out34):
             vy2=float(data[22])
             vz2=float(data[23])
 
-            x.append((x1*m1[-1]+x2*m2[-1])/(m1[-1]+m2[-1]))
-            y.append((y1*m1[-1]+y2*m2[-1])/(m1[-1]+m2[-1]))
-            z.append((z1*m1[-1]+z2*m2[-1])/(m1[-1]+m2[-1]))
+            x.append((x1*m1[-1]+x2*m2[-1])/(m1[-1]+m2[-1])+xc)
+            y.append((y1*m1[-1]+y2*m2[-1])/(m1[-1]+m2[-1])+yc)
+            z.append((z1*m1[-1]+z2*m2[-1])/(m1[-1]+m2[-1])+zc)
             vx.append((vx1*m1[-1]+vx2*m2[-1])/(m1[-1]+m2[-1]))
             vy.append((vy1*m1[-1]+vy2*m2[-1])/(m1[-1]+m2[-1]))
             vz.append((vz1*m1[-1]+vz2*m2[-1])/(m1[-1]+m2[-1]))
@@ -558,9 +576,9 @@ def get_nbody6_out(out9,out34):
             m.append(float(data[2]))
             logl.append(float(data[3]))
             logr.append(float(data[4]))
-            x.append(float(data[5]))
-            y.append(float(data[6]))
-            z.append(float(data[7]))
+            x.append(float(data[5])+xc)
+            y.append(float(data[6])+yc)
+            z.append(float(data[7])+zc)
             vx.append(float(data[8]))
             vy.append(float(data[9]))
             vz.append(float(data[10]))
@@ -582,8 +600,8 @@ def get_nbody6_out(out9,out34):
     cluster=StarCluster(nbnd,tphys,units='nbody',origin='cluster',ctype='nbody6',sfile=out34,bfile=out9)
     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vstar,rscale,nsbnd,nbbnd,n_p)
     #Add back on the center of mass which has been substracted off by NBODY6
-    cluster.add_stars(id,m,x+xc,y+yc,z+zc,vx,vy,vz)
-    cluster.add_se(kw,logl,logr)
+    cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+    cluster.add_se(kw,logl,logr,np.zeros(nbnd),np.zeros(nbnd))
     cluster.add_energies(kin,pot,etot)
     if out9!=None:
         cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2)

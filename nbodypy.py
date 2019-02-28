@@ -1,5 +1,7 @@
 #get_nbody includes functions to convert Nbody simulation data to StarCluster and Stars 
-#(Also includes import StarCluster)
+#The StarCluster class (comes with ngalpy)
+from cluster import *
+#Routines for loading starclusters
 from get_nbody import *
 #Functions (which includes operations) that act on StarClusters
 from functions import *

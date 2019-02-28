@@ -1,8 +1,11 @@
 from galpy.orbit import Orbit, Orbits
 from galpy.util import bovy_coords,bovy_conversion
-import numpy as np
+from galpy.potential import LogarithmicHaloPotential,MWPotential2014,rtide
 
-def orbit(cluster,from_center=False,r0=8.,v0=220.):
+import numpy as np
+from cluster import StarCluster
+
+def initialize_orbit(cluster,from_center=False,r0=8.,v0=220.):
  
     units0=cluster.units
     if units0!='galpy':
@@ -29,7 +32,7 @@ def orbit(cluster,from_center=False,r0=8.,v0=220.):
 
     return o
 
-def orbits(cluster,r0=8.,v0=220.):
+def initialize_orbits(cluster,r0=8.,v0=220.):
     units0=cluster.units
     origin0=cluster.origin
     center0=cluster.center
@@ -99,11 +102,11 @@ def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,
     
     print('DO CLUSTER')
     
-    cluster.initialize_orbit(from_center)
+    cluster.orbit=initialize_orbit(cluster,from_center)
     ts=np.linspace(0,dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),10)
     print('INTEGRATE ORBIT')
 
-    cluster.o.integrate(ts,pot)
+    cluster.orbit.integrate(ts,pot)
 
     units0=cluster.units
     origin0=cluster.origin
@@ -115,19 +118,19 @@ def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,
         cluster.to_galaxy()
 
     if from_center:
-        dx=cluster.o.x(ts[-1])-cluster.xc-cluster.xgc
-        dy=cluster.o.y(ts[-1])-cluster.yc-cluster.ygc
-        dz=cluster.o.z(ts[-1])-cluster.zc-cluster.zgc
-        dvx=cluster.o.vx(ts[-1])-cluster.vxc-cluster.vxgc
-        dvy=cluster.o.vy(ts[-1])-cluster.vyc-cluster.vygc
-        dvz=cluster.o.vz(ts[-1])-cluster.vzc-cluster.vzgc
+        dx=cluster.orbit.x(ts[-1])-cluster.xc-cluster.xgc
+        dy=cluster.orbit.y(ts[-1])-cluster.yc-cluster.ygc
+        dz=cluster.orbit.z(ts[-1])-cluster.zc-cluster.zgc
+        dvx=cluster.orbit.vx(ts[-1])-cluster.vxc-cluster.vxgc
+        dvy=cluster.orbit.vy(ts[-1])-cluster.vyc-cluster.vygc
+        dvz=cluster.orbit.vz(ts[-1])-cluster.vzc-cluster.vzgc
     else:
-        dx=cluster.o.x(ts[-1])-cluster.xgc
-        dy=cluster.o.y(ts[-1])-cluster.ygc
-        dz=cluster.o.z(ts[-1])-cluster.zgc
-        dvx=cluster.o.vx(ts[-1])-cluster.vxgc
-        dvy=cluster.o.vy(ts[-1])-cluster.vygc
-        dvz=cluster.o.vz(ts[-1])-cluster.vzgc
+        dx=cluster.orbit.x(ts[-1])-cluster.xgc
+        dy=cluster.orbit.y(ts[-1])-cluster.ygc
+        dz=cluster.orbit.z(ts[-1])-cluster.zgc
+        dvx=cluster.orbit.vx(ts[-1])-cluster.vxgc
+        dvy=cluster.orbit.vy(ts[-1])-cluster.vygc
+        dvz=cluster.orbit.vz(ts[-1])-cluster.vzgc
     
     print(dx,dy,dz,dvx,dvy,dvz)
 
@@ -151,8 +154,8 @@ def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,
         cluster.vyc+=dvy
         cluster.vzc+=dvz
 
-    cluster.xgc,cluster.ygc,cluster.zgc=cluster.o.x(ts[-1]),cluster.o.y(ts[-1]),cluster.o.z(ts[-1])
-    cluster.vxgc,cluster.vygc,cluster.vzgc=cluster.o.vx(ts[-1]),cluster.o.vy(ts[-1]),cluster.o.vz(ts[-1])
+    cluster.xgc,cluster.ygc,cluster.zgc=cluster.orbit.x(ts[-1]),cluster.orbit.y(ts[-1]),cluster.orbit.z(ts[-1])
+    cluster.vxgc,cluster.vygc,cluster.vzgc=cluster.orbit.vx(ts[-1]),cluster.orbit.vy(ts[-1]),cluster.orbit.vz(ts[-1])
 
     if do_tails:
         print('DO TAILS')
@@ -160,7 +163,7 @@ def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,
         tail=StarCluster(np.sum(tindx),0.0,units=cluster.units,origin=cluster.origin,center=cluster.center)
         tail.add_stars(cluster.id[tindx],cluster.m[tindx],cluster.x[tindx],cluster.y[tindx],cluster.z[tindx],cluster.vx[tindx],cluster.vy[tindx],cluster.vz[tindx])
 
-        otail=npy.orbits(tail)
+        otail=initialize_orbits(tail)
         ts=np.linspace(0,dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),10)
         print('INTEGRATE ORBITS')
 
@@ -186,3 +189,61 @@ def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,
 
     if cluster.origin!=origin0:
         cluster.to_cluster()
+
+def get_rtide(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
+    
+    units0=cluster.units
+    origin0=cluster.origin
+    center0=cluster.center
+
+    if origin0!='cluster':
+        cluster.to_cluster()
+        cluster.to_center()
+    elif not center0:
+        cluster.to_center()
+
+    if units0!='galpy':
+        cluster.to_galpy()
+    
+    if rtide_rgc!=None:
+        R=rgc/r0
+        z=0.0
+    elif cluster.units=='realkpc':
+        R=numpy.sqrt(cluster.xgc**2.0+cluster.ygc**2.0)
+        z=cluster.zgc
+
+    #Calculate rtide
+    rt=rtide(pot,R,z,M=cluster.mtot)
+
+    for i in range(0,rtiterate):
+        msum=0.0
+        indx=(cluster.r < rt)
+        msum=np.sum(cluster.m[indx])
+
+        rtnew=rtide(pot,R/R0,z/R0,M=msum/bovy_conversion.mass_in_msol(ro=r0,vo=v0))*r0
+        
+        if cluster.units=='realpc':
+            rtnew*=1000.0
+        
+        print(rt,rtnew,rtnew/rt,msum/cluster.mtot)
+
+        if rtnew/rt>=0.9:
+            break
+        rt=rtnew
+
+    if not center0:
+        cluster.from_center()
+    if units0!='cluster':
+        cluster.to_galaxy()
+
+    if units0=='realpc':
+        rt*=1000.0*r0
+        cluster.to_realpc()
+    elif units0=='realkpc':
+        rt*=r0
+        cluster.to_realkpc()
+    elif units=='nbody':
+        rt*=(1000.0*r0/cluster.rbar)
+        cluster.to_nbody()
+
+    return rt

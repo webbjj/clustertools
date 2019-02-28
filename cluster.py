@@ -1,7 +1,6 @@
-import math
 import numpy as np
 from galpy.util import bovy_conversion
-from ngalpy import *
+
 
 #Define the StarClustee class and add properties to the cluster
 #With the exception of total cluster mass and core mass (if core radius is given), and other cluster properties
@@ -59,6 +58,8 @@ class StarCluster(object):
         self.vxgc=0.
         self.vygc=0.
         self.vzgc=0.
+        
+        self.orbit=None
 
         #SE Arrays
         self.logl=np.asarray([])
@@ -202,13 +203,10 @@ class StarCluster(object):
         self.xgc=xgc
         self.ygc=ygc
         self.zgc=zgc
-        self.rgc=math.sqrt(xgc**2.0+ygc**2.0+zgc**2.0)
+        self.rgc=np.sqrt(xgc**2.0+ygc**2.0+zgc**2.0)
         self.vxgc=vxgc
         self.vygc=vygc
         self.vzgc=vzgc
-    
-    def initialize_orbit(self,from_center=False,r0=8.,v0=220.):
-        self.o=orbit(self,from_center)
 
     def find_center(self,xgc,ygc,zgc,nsphere=100):
         #Iterate to find center of cluster
@@ -498,7 +496,7 @@ class StarCluster(object):
             
             self.center=True
         else:
-            print('CLUSTER CENTER ALREADY EQAULS ',cluster.center)
+            print('CLUSTER CENTER ALREADY EQAULS ',self.center)
 
 
     def from_center(self):
@@ -515,7 +513,7 @@ class StarCluster(object):
             
             self.center=False
         else:
-            print('CLUSTER CENTER ALREADY EQAULS ',cluster.center)
+            print('CLUSTER CENTER ALREADY EQAULS ',self.center)
 
 
 

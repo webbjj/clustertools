@@ -1,13 +1,70 @@
+"""
+CLUSTER
+
+The StarCluster instance and key internal functions
+
+"""
 import numpy as np
-from galpy.util import bovy_conversion
+from galpy.util import bovy_conversion,bovy_coords
+from functions import *
+from profiles import *
+#from orbit import *
 
-
-#Define the StarClustee class and add properties to the cluster
-#With the exception of total cluster mass and core mass (if core radius is given), and other cluster properties
-#
 class StarCluster(object):
+    """
+    Class representing a star cluster
+    """    
     def __init__(self,ntot=0,tphys=0.0,units=None,origin=None,center=False,**kwargs):
-        
+        """
+        NAME:
+
+           __init__
+
+        PURPOSE:
+
+           Initialize a Star Cluster
+           Notes:
+            - key stellar attributes are initialized so they can be added
+            directly to the instance (self.x = x) or through one of the add
+            functions below.
+
+        INPUT:
+
+           ntot - number of stars (default:0)
+
+           tphys - age of cluster (default:0)
+
+           units - units of input data (nbody/realpc/realkpc/galpy,default:None)
+
+           origin - origin of input data (cluster/galaxy/default:None)
+
+           center - the origin is the center of the distribution (default:False)
+
+        KWARGS:
+
+            ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
+
+            sfile - name of file containing stellar data
+
+            bfile - name of file contain binary star data
+
+            delimiter - for opening files using numpy.loadtxt
+
+            nsnap - number of snapshot to be opened
+
+            nzfill - number of zeros preceeding nsnap in snapshot filename
+
+            wdir - working directory (only needs to be specified if not current directory)
+
+        OUTPUT:
+
+           instance
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """        
         #Total Number of Stars + Binaries in the cluster
         self.ntot=ntot
         self.nb=0
@@ -93,24 +150,65 @@ class StarCluster(object):
         self.kin=np.asarray([])
         self.pot=np.asarray([])
         self.etot=np.asarray([])
-        self.bound=np.ones(self.ntot,dtype=bool)
 
-        #Functions
+        #Lagrange Radii,tidal radius, and virial radius
+        self.rn=None
+        self.rt=None
+        self.rv=None
+
+        #Additional Parameters
         self.trh=None
         self.alpha=None
-        self.ealpha=None
         self.dalpha=None
-        self.edalpha=None
-        self.rn=None
         self.eta=None
-        self.eeta=None
 
         self.units=units
         self.origin=origin
-        self.center=False
+        self.center=center
 
-    # Add key parameters from an Nbody6 output file
     def add_nbody6(self,nc=0,rc=0.0,rbar=1.0,rtide=0.0,xc=0.0,yc=0.0,zc=0.0,zmbar=1.0,vstar=1.0,rscale=1.0,ns=0.0,nb=0.0,np=0.0):
+        """
+        NAME:
+
+           add_nbody6
+
+        PURPOSE:
+
+           For data generated using NBDOY6 (or one of its variants), add additional information from output files
+
+        INPUT:
+
+           nc - number of stars in core (default:0)
+
+           rc - core radius (default:0)
+
+           rbar - scaling factor between NBODY units and pc (default:1.)
+
+           rtide - rtide set in the simulation (default:0)
+
+           xc,yc,zc - position of cluster center (default:0)
+
+           zmbar - scaling factor between NBODY units and Msun (default:1.)
+
+           vstar - scaling factor between NBODY units and km/s (default:1.)
+
+           rscale - the scale radius of data (default:1.)
+
+           ns - number of single stars (default:0)
+
+           nb - number of binary stars (default:0)
+
+           np - number of particles (default:0)
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """  
         #Number of stars in the core
         self.nc=nc
         #Core radius
@@ -136,8 +234,37 @@ class StarCluster(object):
         #Number of particles (from NBODY6 when tidal tail is being integrated)
         self.np=np
     
-    #Add an array of stars with id's, masses, positions, and velocities
-    def add_stars(self,id,m,x,y,z,vx,vy,vz,kw=None):
+    def add_stars(self,id,m,x,y,z,vx,vy,vz,do_key_params=True,do_order=True):
+        """
+        NAME:
+
+           add_stars
+
+        PURPOSE:
+
+           Add stars to the StarCluster instance
+
+        INPUT:
+
+           id - star id
+
+           m - mass
+
+           x,y,z - positions
+
+           vx,vy,vz - velocities
+
+           kw - stellar evolution tag (optional,for using with NBODY6) (default:0)
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """  
         self.id=np.append(self.id,np.asarray(id))
         self.m=np.append(self.m,np.asarray(m))
         self.x=np.append(self.x,np.asarray(x))
@@ -146,19 +273,51 @@ class StarCluster(object):
         self.vx=np.append(self.vx,np.asarray(vx))
         self.vy=np.append(self.vy,np.asarray(vy))
         self.vz=np.append(self.vz,np.asarray(vz))
-        self.kw=np.append(self.kw,np.asarray(kw))
         
 
+        self.kw=np.append(self.kw,np.zeros(len(self.id)))
+
+        if do_key_params:
+            self.key_params(do_order=do_order)
+        
         if len(self.id)!=self.ntot:
             print('Added %i stars to instance' % (len(self.id)-self.ntot))
             self.ntot=len(self.id)
 
-
-        self.key_params()
-
-    #Add stellar evolution parameters (type (NBODY6), luminosity, radius)
-    #Units not specified
     def add_se(self,kw,logl,logr,ep,ospin):
+        """
+        NAME:
+
+           add_se
+
+        PURPOSE:
+
+           Add stellar evolution information to stars
+           Notes:
+            - parameters are common output variables in NBODY6
+            - values are never adjusted during unit or coordinate changes
+
+        INPUT:
+
+           kw - stellar evolution tag (for using with NBODY6) 
+
+           logl - log of luminosity
+
+           logr - log of stellar radius
+
+           ep - epoch
+
+           ospin - ospin
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """  
         self.kw=np.asarray(kw)
         self.logl=np.asarray(logl)
         self.logr=np.asarray(logr)
@@ -167,9 +326,51 @@ class StarCluster(object):
         self.ep=np.asarray(ep)
         self.ospin=np.asarray(ospin)
 
-    #Add binary evolution parameters (ids,type,eccentricity, semi major axis, masses, luminosities, and radii)
-    #Units not specified
     def add_bse(self,id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2,ep1,ep2,ospin1,ospin2):
+        """
+        NAME:
+
+           add_bse
+
+        PURPOSE:
+
+           Add binary star evolution information to stars
+           Notes:
+            - parameters are common output variables in NBODY6
+            - values are never adjusted during unit or coordinate changes
+
+        INPUT:
+
+           id1/id2 - id of star1 and star2
+
+           kw1/kw2 - stellar evolution tags (for using with NBODY6) 
+
+           kcm - stellar evolution tag for binary star
+
+           ecc - eccentricity of binary orbit
+
+           pb - period of binary orbit
+
+           semi - semi major axis of binary orbit
+
+           m1/m2 - masses of binary stars
+
+           logl1/logl2 - luminosities of binary stars
+
+           logr1/logr2 - radii of binary stars
+
+           ep1/ep2 - epochs of binary stars
+
+           ospin1/ospin2 - opsin of binary stars
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+        """
         self.id1=np.asarray(id1)
         self.id2=np.asarray(id2)
         self.kw1=np.asarray(kw1)
@@ -189,17 +390,114 @@ class StarCluster(object):
         self.ospin1=np.asarray(ospin1)
         self.ospin2=np.asarray(ospin2)
 
-    #Add individual energies
-    #Units not specified
     def add_energies(self,kin,pot,etot):
-        
+        """
+        NAME:
+
+           add_energies
+
+        PURPOSE:
+
+           Add energy information to stars
+           Notes:
+            - values are never adjusted during unit or coordinate changes
+
+        INPUT:
+
+           kin - kinetic energy 
+
+           pot - potentail energy
+
+           etot - total energy
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """ 
+
         self.kin=np.asarray(kin)
         self.pot=np.asarray(pot)
         self.etot=np.asarray(etot)
+        self.ektot=np.sum(self.kin)
+        self.ptot=np.sum(self.pot)
+        self.qvir=2.0*self.ektot/self.ptot
 
-    #Add cluster's orbital properties
-    #Units not specified
-    def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc):
+    def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=None,r0=8.,v0=220.):
+        """
+        NAME:
+
+           add_orbit
+
+        PURPOSE:
+
+           Add orbital information of the star cluster
+           Notes:
+            - the input units are assumed to be equal that of self.units
+
+        INPUT:
+
+           xgc,ygc,zgc - cluster's galactocentric position
+
+           vxgc,vygc,vzgc - cluster's galactocentric velocity
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """ 
+        if ounits!=None and ounits!=self.units:
+              #First convert to realkpc
+              if ounits!='realkpc':
+                  if ounits=='nbody':
+                      xgc*=self.rbar*1000.0
+                      ygc*=self.rbar*1000.0
+                      zgc*=self.rbar*1000.0
+                      vxgc*=self.vstar
+                      vygc*=self.vstar
+                      vzgc*=self.vstar
+                  elif ounits=='galpy':
+                      xgc*=r0
+                      ygc*=r0
+                      zgc*=r0
+                      vxgc*=v0
+                      vygc*=v0
+                      vzgc*=v0
+                  elif ounits=='realpc':
+                      xgc/=1000.
+                      ygc/=1000.
+                      zgc/=1000.
+
+                  ounits='realkpc'
+
+              if self.units=='realpc':
+                  xgc*=1000.
+                  ygc*=1000.
+                  zgc*=1000.
+              elif self.units=='nbody':
+                  xgc*=1000./self.rbar
+                  ygc*=1000./self.rbar
+                  zgc*=1000./self.rbar
+                  vxgc/=self.vstar
+                  vygc/=self.vstar
+                  vzgc/=self.vstar
+              elif self.units=='galpy':
+                  xgc/=r0
+                  ygc/=r0
+                  zgc/=r0
+                  vxgc/=v0
+                  vygc/=v0
+                  vzgc/=v0
+
+
         self.xgc=xgc
         self.ygc=ygc
         self.zgc=zgc
@@ -208,9 +506,33 @@ class StarCluster(object):
         self.vygc=vygc
         self.vzgc=vzgc
 
-    def find_center(self,xgc,ygc,zgc,nsphere=100):
-        #Iterate to find center of cluster
-        
+    def find_center(self,nsphere=100):
+        """
+        NAME:
+
+           find_center
+
+        PURPOSE:
+
+           Find the center of mass of the cluster
+           Notes:
+            - The routine first works to identify a sphere of nsphere stars around the center in which
+            to perform the C.O.M calculation. This step prevents long tidal tails from affecting the 
+            calculation
+
+        INPUT:
+
+           nsphere - number of stars in center sphere (default:100)
+
+        OUTPUT:
+
+           xc,yc,zc,vxc,vyc,vzc - coordinates of center of mass
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """         
         x=self.x
         y=self.y
         z=self.z
@@ -233,19 +555,42 @@ class StarCluster(object):
         #Find center of mass and velocity of inner stars:
         indx=np.in1d(self.id,id)
         
-        xgc=np.sum(self.m[indx]*self.x[indx])/np.sum(self.m[indx])
-        ygc=np.sum(self.m[indx]*self.y[indx])/np.sum(self.m[indx])
-        zgc=np.sum(self.m[indx]*self.z[indx])/np.sum(self.m[indx])
+        self.xc=np.sum(self.m[indx]*self.x[indx])/np.sum(self.m[indx])
+        self.yc=np.sum(self.m[indx]*self.y[indx])/np.sum(self.m[indx])
+        self.zc=np.sum(self.m[indx]*self.z[indx])/np.sum(self.m[indx])
 
-        vxgc=np.sum(self.m[indx]*self.vx[indx])/np.sum(self.m[indx])
-        vygc=np.sum(self.m[indx]*self.vy[indx])/np.sum(self.m[indx])
-        vzgc=np.sum(self.m[indx]*self.vz[indx])/np.sum(self.m[indx])
+        self.vxc=np.sum(self.m[indx]*self.vx[indx])/np.sum(self.m[indx])
+        self.vyc=np.sum(self.m[indx]*self.vy[indx])/np.sum(self.m[indx])
+        self.vzc=np.sum(self.m[indx]*self.vz[indx])/np.sum(self.m[indx])
     
-        return xgc,ygc,zgc,vxgc,vygc,vzgc
+        return self.xc,self.yc,self.zc,self.vxc,self.vyc,self.vzc
 
-    def key_params(self):
-        #Calculate Key Parameters
+    def key_params(self,do_order=True):
+        """
+        NAME:
+
+           key_params
+
+        PURPOSE:
+
+           Find key parameters of the cluster (mass,luminosity,r10,r50,rh10,rh50)
+
+        INPUT:
+
+           do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:True)
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """                  
         self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
         self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
         self.rpro=np.sqrt(self.x**2.+self.y**2.)
         self.mtot=np.sum(self.m)
@@ -253,34 +598,91 @@ class StarCluster(object):
         self.lv=np.log10(self.v)
         self.rmean=np.mean(self.r)
         self.rmax=np.max(self.r)
+        
+        if self.origin=='cluster' or self.center:
 
-        if self.origin=='cluster':
             #Radially order the stars to find half-mass radius
-            self.rorder=sorted(range(0,self.ntot),key=lambda k:self.r[k])
-            msum=0.0
-            for i in range(0,self.ntot):
-                msum+=self.m[self.rorder[i]]
-                if msum >= 0.5*self.mtot:
-                    self.rm=self.r[self.rorder[i]]
-                    break
+            if do_order:
+                self.rorder=np.array(sorted(range(0,self.ntot),key=lambda k:self.r[k]))
+                self.rproorder=np.array(sorted(range(0,self.ntot),key=lambda k:self.rpro[k]))
 
-            self.rproorder=sorted(range(0,self.ntot),key=lambda k:self.rpro[k])
-            msum=0.0
-            for i in range(0,self.ntot):
-                msum+=self.m[self.rproorder[i]]
-                if msum >= 0.5*self.mtot:
-                    self.rmpro=self.rpro[self.rproorder[i]]
-                    break
+          
+            msum=np.cumsum(self.m[self.rorder])
+            indx=(msum >= 0.5*self.mtot)
+            self.rm=self.r[self.rorder[indx]][0]
+            indx=(msum >= 0.1*self.mtot)
+            self.r10=self.r[self.rorder[indx]][0]
+
+
+            msum=np.cumsum(self.m[self.rproorder])
+            indx=(msum >= 0.5*self.mtot)
+            self.rmpro=self.r[self.rproorder[indx]][0]
+            indx=(msum >= 0.1*self.mtot)
+            self.r10pro=self.r[self.rproorder[indx]][0]
+
             if len(self.logl)>0:
-                lsum=0.0
-                for i in range(0,self.ntot):
-                    lsum+=self.lum[self.rproorder[i]]
-                    if lsum>=0.5*self.ltot:
-                        self.rhpro=self.rpro[self.rproorder[i]]
-                        break
+                lsum=np.cumsum(self.lum[self.rorder])
+                indx=(lsum >= 0.5*self.ltot)
+                self.rh=self.r[self.rorder[indx]][0]
+                indx=(lsum >= 0.1*self.ltot)
+                self.rh10=self.r[self.rorder[indx]][0]
 
-    #Change units
-    def to_realpc(self):
+                lsum=np.cumsum(self.lum[self.rproorder])
+                indx=(lsum >= 0.5*self.ltot)
+                self.rhpro=self.rpro[self.rproorder[indx]][0]
+                indx=(lsum >= 0.1*self.ltot)
+                self.rh10pro=self.rpro[self.rproorder[indx]][0]
+
+    #Directly call functions from functions.py:
+    def energies(self,specific=True,do_batch=True,i_d=None):
+        energies(self,specific=specific,do_batch=do_batch,i_d=i_d)
+
+    def rlagrange(cluster,nlagrange=10,projected=False):
+        self.rn=rlagrange(cluster,nlagrange=nlagrange,projected=projected)
+        
+    def rvirial(self,H=70.0,Om=0.3,overdens=200.,nrad=10,projected=False):
+        self.rv=rvirial(self,H=H,Om=Om,overdens=overdens,nrad=nrad,projected=projected)
+
+    def mass_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        self.alpha=alpha 
+
+    def eta_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
+        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        self.eta=eta
+
+    def alpha_prof(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
+        lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        self.dalpha=dalpha
+
+    #def rtidal(self,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
+        #self.rt=rtidal(self,pot=pot,rtiterate=rtiterate,rgc=rgc,r0=r0,v0=v0)
+
+    #Unit and coordinate conversion:
+
+    def to_realpc(self,do_order=False,do_key_params=True):
+        """
+        NAME:
+
+           to_realpc
+
+        PURPOSE:
+
+           Convert stellar positions/velocities, center of mass, and orbital position and velocity to pc and km/s
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """    
         if self.units=='galpy': self.to_realkpc()
 
         if self.units=='nbody':
@@ -315,9 +717,7 @@ class StarCluster(object):
                 
                 self.pb*=days
                 self.semi*=self.rbar*pctoau
-            
-            self.key_params()
-    
+                
         elif self.units == 'realkpc':
             self.x*=1000.0
             self.y*=1000.0
@@ -332,13 +732,33 @@ class StarCluster(object):
             self.zc*=1000.0
             
             self.units='realpc'
-            self.key_params()
-        
-        else:
-            print('CLUSTER UNITS ALREADY EQAULS ',self.units)
 
+        if do_key_params:
+            self.key_params(do_order=do_order)
 
-    def to_realkpc(self,r0=8.,v0=220.):
+    def to_realkpc(self,do_order=False,do_key_params=True,r0=8.,v0=220.):
+        """
+        NAME:
+
+           to_realkpc
+
+        PURPOSE:
+
+           Convert stellar positions/velocities, center of mass, and orbital position and velocity to kpc and km/s
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """ 
         if self.units=='galpy':
             self.m*=bovy_conversion.mass_in_msol(ro=r0,vo=v0)
             self.x*=r0
@@ -363,7 +783,6 @@ class StarCluster(object):
             self.vzgc*=v0
 
             self.units='realkpc'
-            self.key_params()
 
         elif self.units=='nbody':
             self.m*=self.zmbar
@@ -389,8 +808,6 @@ class StarCluster(object):
             self.vzgc*=self.vstar
             
             self.units='realkpc'
-            self.key_params()
-
         
         elif self.units=='realpc':
             self.x/=1000.0
@@ -406,15 +823,37 @@ class StarCluster(object):
             self.zc/=1000.0
             
             self.units='realkpc'
-            self.key_params()
-        else:
-            print('CLUSTER UNITS ALREADY EQAULS ',self.units)
 
+        if do_key_params:
+            self.key_params(do_order=do_order)
 
-    def to_nbody(self,r0=8.,v0=220.):
-        
-        if self.units=='galpy': self.to_realkpc()
-        if self.units!='realpc': self.to_realpc()
+    def to_nbody(self,do_order=False,do_key_params=True,r0=8.,v0=220.):
+        """
+        NAME:
+
+           to_nbody
+
+        PURPOSE:
+
+           Convert stellar positions/velocities, center of mass, and orbital position and velocity to Nbody units
+           Notes:
+            - requires that self.zmbar, self.rbar, self.vstar are set (defaults are 1 in add_nbody6)
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """     
+        if self.units=='galpy': self.to_realkpc(do_key_params=False)
+        if self.units!='realpc': self.to_realpc(do_key_params=False)
 
         if self.units=='realpc':
             self.m/=self.zmbar
@@ -440,15 +879,35 @@ class StarCluster(object):
             self.vzgc/=self.vstar
             
             self.units='nbody'
-            self.key_params()
 
-        else:
-            print('CLUSTER UNITS ALREADY EQAULS ',self.units)
+        if do_key_params:
+            self.key_params(do_order=do_order)
 
+    def to_galpy(self,do_order=False,do_key_params=True,r0=8.,v0=220.):
+        """
+        NAME:
 
-    def to_galpy(self,r0=8.,v0=220.):
+           to_galpy
+
+        PURPOSE:
+
+           Convert stellar positions/velocities, center of mass, and orbital position and velocity to galpy units
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """ 
         if self.units!='realkpc' and self.units!='galpy':
-            self.to_realkpc()
+            self.to_realkpc(do_key_params=False)
         
         if self.units=='realkpc':
             self.m=self.m/bovy_conversion.mass_in_msol(ro=r0,vo=v0)
@@ -474,16 +933,37 @@ class StarCluster(object):
             self.vzgc/=v0
             
             self.units='galpy'
-            self.key_params()
-        else:
-            print('CLUSTER UNITS ALREADY EQAULS ',self.units)
 
-    #Change origin
-    def to_center(self):
+        if do_key_params:
+            self.key_params(do_order=do_order)
+
+    def to_center(self,do_order=True,do_key_params=True,):
+        """
+        NAME:
+
+           to_center
+
+        PURPOSE:
+
+           Shift coordinates such that origin is the center of mass
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """ 
         if not self.center:
 
             if self.origin=='galaxy':
-                self.to_cluster()
+                self.to_cluster(do_key_params=False)
         
             self.x-=self.xc
             self.y-=self.yc
@@ -491,16 +971,35 @@ class StarCluster(object):
             self.vx-=self.vxc
             self.vy-=self.vyc
             self.vz-=self.vzc
-
-            self.key_params()
             
             self.center=True
-        else:
-            print('CLUSTER CENTER ALREADY EQAULS ',self.center)
 
+            if do_key_params:
+                self.key_params(do_order=do_order)
 
-    def from_center(self):
-        
+    def from_center(self,do_order=True,do_key_params=True):
+        """
+        NAME:
+
+           to_center
+
+        PURPOSE:
+
+           Shift coordinates to simulation reference frame
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """
         if self.center and self.origin=='cluster':
             self.x+=self.xc
             self.y+=self.yc
@@ -508,16 +1007,34 @@ class StarCluster(object):
             self.vx+=self.vxc
             self.vy+=self.vyc
             self.vz+=self.vzc
-
-            self.key_params()
             
             self.center=False
-        else:
-            print('CLUSTER CENTER ALREADY EQAULS ',self.center)
+        
+            if do_key_params:
+                self.key_params(do_order=do_order)
 
+    def to_cluster(self,do_order=True,do_key_params=True):
+        """
+        NAME:
 
+           to_cluster
 
-    def to_cluster(self,to_center=False):
+        PURPOSE:
+
+           Shift coordinates to clustercentric reference frame
+
+        INPUT:
+
+           to_center - shift to center of mass as well (default: False)
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+        """
         if self.origin!='cluster':
             self.x-=self.xgc
             self.y-=self.ygc
@@ -527,19 +1044,34 @@ class StarCluster(object):
             self.vz-=self.vzgc
             self.origin='cluster'
 
-            if to_center:
-                self.to_center()
+            if do_key_params:
+                self.key_params(do_order=do_order)
 
-            self.key_params()
-        else:
-            print('CLUSTER ORIGIN ALREADY EQAULS ',self.origin)
+    def to_galaxy(self,do_order=True,do_key_params=True):
+        """
+        NAME:
 
+           to_galaxy
 
-    def to_galaxy(self,from_center=False):
+        PURPOSE:
 
+           Shift coordinates to galactocentric reference frame
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+           None
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+        """
         if self.origin!='galaxy':
             if self.center:
-                self.from_center()
+                self.from_center(do_key_params=False)
             
             self.x+=self.xgc
             self.y+=self.ygc
@@ -548,9 +1080,151 @@ class StarCluster(object):
             self.vy+=self.vygc
             self.vz+=self.vzgc
             
-            self.key_params()
-
 
             self.origin='galaxy'
+        
+            if do_key_params:
+                self.key_params(do_order=do_order)
+
+    def to_sky(self):
+        units0,origin0,center0=self.units,self.origin,self.center
+
+        if origin0!='galaxy':
+          self.to_galaxy()
+        if units0!='realkpc':
+          self.to_realkpc()
+
+        x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.x,self.y,self.z,Xsun=8.,Zsun=0.025).T
+        vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vx,self.vy,self.vz,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25]).T
+
+        self.vlos=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
+
+        l0,b0,self.dist=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True).T
+        self.ra,self.dec=bovy_coords.lb_to_radec(l0,b0,degree=True).T
+
+        vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.dist,degree=True).T
+        self.pmra,self.pmdec=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True).T
+
+        x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.xgc,self.ygc,self.zgc,Xsun=8.,Zsun=0.025)
+        vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vxgc,self.vygc,self.vzgc,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25])
+
+        self.vlosgc=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
+
+        l0,b0,self.distgc=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True)
+        self.ragc,self.decgc=bovy_coords.lb_to_radec(l0,b0,degree=True)
+
+        vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.distgc,degree=True)
+        self.pmragc,self.pmdecgc=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True)
+
+       
+        if center0:
+            self.to_center()
+        elif origin0=='cluster':
+              self.to_cluster()
+
+        if units0!='realkpc':
+            if units0=='realpc':
+                self.to_realpc()
+            elif units0=='nbody':
+                self.to_nbody()
+            elif units0=='galpy':
+                self.to_galpy()
+
+# Extract a sub population of stars from a cluster
+# Extraction criteria include radius, mass and stellar evolution (KW) type (default all stars)
+def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,new_center=False):
+
+    units0,origin0,center0=cluster.units,cluster.origin,cluster.center
+    cluster.to_center()
+
+    if projected:
+        r=cluster.rpro
+        v=cluster.vpro
+    else:
+        r=cluster.r
+        v=cluster.v
+
+    if rmin==None: rmin=np.min(r)
+    if rmax==None: rmax=np.max(r)
+    if vmin==None: vmin=np.min(v)
+    if vmax==None: vmax=np.max(v)
+    if mmin==None: mmin=np.min(cluster.m)
+    if mmax==None: mmax=np.max(cluster.m)
+
+    if emin==None and emax!=None:
+        eindx=(cluster.etot<=emax)
+        print('EINDX1:',len(cluster.etot),emax)
+    elif emin!=None and emax==None:
+        eindx=(cluster.etot>=emin)
+    elif emin!=None and emax!=None:
+        eindx=(cluster.etot<=emax) * (cluster.etot>=emin)
+    else:
+        eindx=(cluster.id > -1)
+
+    if indx==None:
+        indx=(cluster.id > -1)
+
+    indx*=(r>=rmin) * (r<=rmax) * (cluster.m>=mmin) * (cluster.m<=mmax) * (v>=vmin) * (v<=vmax) * (cluster.kw>=kwmin) * (cluster.kw<=kwmax) * eindx
+
+    if np.sum(indx)>0:
+        subcluster=StarCluster(len(cluster.id[indx]),cluster.tphys,units=cluster.units,origin=cluster.origin,center=cluster.center)
+        subcluster.add_stars(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vz[indx])
+        subcluster.kw=cluster.kw[indx]
+
+        if len(cluster.logl)>0:
+            subcluster.add_se(cluster.kw[indx],cluster.logl[indx],cluster.logr[indx],cluster.ep[indx],cluster.ospin[indx])
+        if len(cluster.id2)>0:
+            bindx=np.in1d(cluster.id1,cluster.id[indx])
+            subcluster.add_bse(cluster.id1[bindx],cluster.id2[bindx],cluster.kw1[bindx],cluster.kw2[bindx],cluster.kcm[bindx],cluster.ecc[bindx],cluster.pb[bindx],cluster.semi[bindx],cluster.m1[bindx],cluster.m2[bindx],cluster.logl1[bindx],cluster.logl2[bindx],cluster.logr1[bindx],cluster.logr2[bindx],cluster.ep1[bindx],cluster.ep2[bindx],cluster.ospin1[bindx],cluster.ospin2[bindx])
+        if len(cluster.etot)>0:
+            subcluster.add_energies(cluster.kin[indx],cluster.pot[indx],cluster.etot[indx])
+
+        if new_center:
+            subcluster.add_orbit(cluster.xgc+cluster.xc,cluster.ygc+cluster.yc,cluster.zgc+cluster.zc,cluster.vxgc+cluster.vxc,cluster.vygc+cluster.vyc,cluster.vzgc+cluster.vzc)
+            subcluster.xc,subcluster.yc,subcluster.zc=0.0,0.0,0.0
+            subcluster.vxc,subcluster.vyc,subcluster.vzc=0.0,0.0,0.0
+            subcluster.xc,subcluster.yc,subcluster.zc,subcluster.vxc,subcluster.vyc,subcluster.vzc=subcluster.find_center(0.0,0.0,0.0)
+
         else:
-            print('CLUSTER ORIGIN ALREADY EQAULS ',self.origin)
+            subcluster.add_orbit(cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc)
+            subcluster.xc,subcluster.yc,subcluster.zc=cluster.xc,cluster.yc,cluster.zc
+            subcluster.vxc,subcluster.vyc,subcluster.vzc=cluster.vxc,cluster.vyc,cluster.vzc
+
+        subcluster.key_params()
+
+        if not (center0 and cluster.center):
+            if center0:
+                cluster.to_center()
+            else:
+                cluster.from_center()
+
+        if cluster.origin!=origin0:
+            if origin0=='cluster':
+                cluster.to_cluster()
+                sub_cluster.to_cluster()
+
+            else:
+                cluster.to_cluster()
+                sub_cluster.to_cluster()
+
+        if cluster.units!=units0:
+            if units0=='realpc':
+                cluster.to_realpc()
+                sub_cluster.to_realpc()
+
+            elif units0=='realkpc':
+                cluster.to_realkpc()
+                sub_cluster.to_realkpc()
+
+            elif units0=='nbody':
+                cluster.to_nbody()
+                sub_cluster.to_nbody()
+
+            elif units0=='galpy':
+                cluster.to_galpy()
+                sub_cluster.to_galpy()
+
+    else:
+        subcluster=StarCluster(0,cluster.tphys)
+
+    return subcluster

@@ -1,81 +1,134 @@
-#Create a time sequence of plots in order to animate the evolution
-#of various parameters
+"""
+ANIMATE
+
+Routines to easily generate the same figures at different timesteps
+
+"""
+
 import matplotlib.pyplot as plt
+import numpy as np
+from galpy.util import bovy_plot
 import os
-from get_nbody import *
 
-def animate_nbody6_jarrod(fort82,fort83,xparam,yparam,xlim=None,ylim=None,savedir='./',units=None):
 
-    if not os.path.isdir(savedir):
-        print('SAVE DIRECTORY DOES NOT EXIST')
-        return -1
+from plots import dvplot, bplot
 
-    filenum=0
-    cluster=get_nbody6_jarrod(fort82,fort83)
+def dvanimate(data,nsnap=0,tsnap=None,prefix='',nrad=10,save=True,**kwargs):
+    """
+    NAME:
 
-    while cluster.ntot>0:
-        filename=str(filenum).zfill(5)+'.png'        
-        makeplot(cluster,xparam,yparam,xlim,ylim,savedir,filename,units)
-        cluster=get_nbody6_jarrod(fort82,fort83)
-        filenum+=1
+       dvanimate
 
-def animate_nbody6_out34(out34,xparam,yparam,xlim=None,ylim=None,savedir='./',units=None):
+    PURPOSE:
 
-    if not os.path.isdir(savedir):
-        print('SAVE DIRECTORY DOES NOT EXIST')
-        return -1
+       Plot velocity dispersion profiles using dvplot over a range of timesteps
+       To Do:
+        - use data from StarCluster as opposed to a written file
 
-    filenum=0
-    cluster=get_nbody6_out34(out34)
+    INPUT:
 
-    while cluster.ntot>0:
-        filename=str(filenum).zfill(5)+'.png'
-        makeplot(cluster,xparam,yparam,xlim,ylim,savedir,filename,units)
-        cluster=get_nbody6_out34(out34)
-        filenum+=1
+       data - array from output.sigv_out (t,m,rm,r[0:nrad],sig[0:nrad],beta[0:nrad])
 
-def makeplot(cluster,xparam,yparam,xlim=None,ylim=None,savedir='./',filename=None,units=None):
+       nsnap - starting snapshot (default:0)
 
-    #Set Units
-    if units!=cluster.units:
-        if units=='realpc' and cluster.units=='nbody':
-            nbody_to_realpc(cluster)
-        elif units=='realkpc' and cluster.units=='nbody':
-            nbody_to_realkpc(cluster)
-        elif units=='galpy' and cluster.units=='nbody':
-            nbody_to_galpy(cluster)
-            
+       tsnap - starting time step (default: 0 Myr, overwrites nsnap)
 
-    #Find which parameters to plot (this list is coninually being added to as I need to make plots)
+       prefix - string noting the begining of directory to save images
 
-    if xparam=='x':
-        plotx=cluster.x
-        plt.xlabel('X')
-    elif xparam=='y':
-        plotx=cluster.y
-        plt.xlabel('Y')
-    elif xparam=='z':
-        plotx=cluster.z
-        plt.xlabel('Z')
+       nrad - number of radial bins in profile
 
-    if yparam=='x':
-        ploty=cluster.x
-        plt.ylabel('X')
-    elif yparam=='y':
-        ploty=cluster.y
-        plt.ylabel('Y')
-    elif yparam=='z':
-        ploty=cluster.z
-        plt.ylabel('Z')
+       save - option to save images or simply just show them (default: True)
 
-    if filename==None:
-        filename=xparam + yparam + '_plot.png'
+    KWARGS:
 
-    if xlim!=None:
-        plt.xlim(xlim)
-    if ylim!=None:
-        plt.ylim(ylim)
+       kwargs - for passing to plots.dvplot
 
-    plt.plot(plotx,ploty,'k.')
-    plt.title('Time = %f' % cluster.tphys)
-    plt.close() 
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+    """
+    t=data[:,0]
+    m=data[:,1]
+    rm=data[:,-1]
+
+    
+    if not os.path.exists('./%sdvmovie/' % prefix):
+        os.makedirs('./%sdvmovie/' % prefix)
+
+    if tsnap!=None:
+        nsnap=int(np.argwhere(t>=tsnap)[0])
+
+    for i in range(nsnap,len(t)+1):
+
+        if save:
+            filename='./%sdvmovie/%sdvplot%s.png' % (prefix,prefix,str(i))
+        else:
+            filename=None
+
+        npy.dvplot(data,nsnap,tsnap,prefix='',nrad=10,nsnap=i,filename=filename,**kwargs)
+
+    return 0
+
+def banimate(data,nsnap=0,tsnap=None,prefix='',nrad=10,save=True,**kwargs):
+    """
+    NAME:
+
+       banimate
+
+    PURPOSE:
+
+       Plot anisotropy profiles using bplot over a range of timesteps
+       To Do:
+        - use data from StarCluster as opposed to a written file
+
+    INPUT:
+
+       data - array from output.sigv_out (t,m,rm,r[0:nrad],sig[0:nrad],beta[0:nrad])
+
+       nsnap - starting snapshot (default:0)
+
+       tsnap - starting time step (default: 0 Myr, overwrites nsnap)
+
+       prefix - string noting the begining of directory to save images
+
+       nrad - number of radial bins in profile
+
+       save - option to save images or simply just show them (default: True)
+
+    KWARGS:
+
+       kwargs - for passing to plots.bplot
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+    """
+    t=data[:,0]
+    m=data[:,1]
+    rm=data[:,-1]
+
+    
+    if not os.path.exists('./%sbmovie/' % prefix):
+        os.makedirs('./%sbmovie/' % prefix)
+
+    if tsnap!=None:
+        nsnap=int(np.argwhere(t>=tsnap)[0])
+
+    for i in range(nsnap,len(t)+1):
+
+        if save:
+            filename='./%sbmovie/%sbplot%s.png' % (prefix,prefix,str(i))
+        else:
+            filename=None
+
+        npy.bplot(data,nsnap,tsnap,prefix='',nrad=10,nsnap=i,filename=filename,**kwargs)
+
+    return 0

@@ -1,8 +1,9 @@
 #Routines for making Nbody Clusters look like Observations
+#WIP - Create an omask
 import numpy as np
-#Make radial bins based on an observed dataset
-def obsrbinmaker(r,rm,obs_cut):
 
+def obsrbinmaker(r,rm,obs_cut):
+    #Make radial bins based on an observed dataset
 
     if obs_cut=='M30':
         rh=61.800000000000004

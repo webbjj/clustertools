@@ -1,35 +1,80 @@
-#Key calculations (constantly adding to this file)
-import math
-import numpy as np
-from cluster import *
-from observations import *
-from operations import *
-from constants import *
-from galpy.util import bovy_coords
-from coordinates import *
-from recipes import *
+"""
+FUNCTIONS
 
-#Relaxation time - Spitzer (1987)
-def relaxation_time(cluster,local=False,multimass=True):
+Designed to accept StarCluster instance as in put to
+calculate key parameters
+
+"""
+import numpy as np
+from galpy.util import bovy_coords
+
+from constants import *
+from recipes import *
+from operations import *
+from plots import *
+
+def relaxation_time(cluster,local=False,multimass=True,projected=False):
+    """
+    NAME:
+
+       relaxation_time
+
+    PURPOSE:
+
+       Calculate the relaxation time of the cluster (Default is half mass relaxation time)
+
+    INPUT:
+
+       cluster - StarCluster insane
+
+       local - calcuate relaxation time at each lagrange bin (True) or the half mass radius (False) (default: False)
+
+       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
+
+       projected - use projected values (default: False)
+
+    OUTPUT:
+
+       trelax
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
+    #Relaxation time - Spitzer (1987)
+    #Default is to be calculated at the half-mass radius, but can be computed locally
+    #multimass determines value of lnlambda
+
     #Gravitational Constant (pc km/s^2 / Msun)
     grav=4.302E-3
+    
     #Find Density within Half-Mass Radius
     if local:
-        vol=(4.0/3.0)*math.pi*(np.max(cluster.r)**3.0-np.min(cluster.r)**3.0)
+        if projected:
+            vol=(4.0/3.0)*np.pi*(np.max(cluster.rpro)**3.0-np.min(cluster.rpro)**3.0)
+        else:
+            vol=(4.0/3.0)*np.pi*(np.max(cluster.r)**3.0-np.min(cluster.r)**3.0)
         p50=cluster.mtot/vol
     else:
-        p50=3.0*(0.5*cluster.mtot)/(4.0*math.pi*(cluster.rm**3.0))
+        if projected:
+            p50=3.0*(0.5*cluster.mtot)/(4.0*np.pi*(cluster.rmpro**3.0))
+        else:
+            p50=3.0*(0.5*cluster.mtot)/(4.0*np.pi*(cluster.rm**3.0))
 
     #Find 1D Global Velocity Dispersion
-    sigv_1d=math.sqrt((np.std(cluster.vx)**2.0+np.std(cluster.vy)**2.0+np.std(cluster.vz)**2.0)/3.0)
+    if projected:
+        sigv_1d=np.std(cluster.vx)
+    else:
+        sigv_1d=np.sqrt((np.std(cluster.vx)**2.0+np.std(cluster.vy)**2.0+np.std(cluster.vz)**2.0)/3.0)
+
     #Mean stellar mass
     mbar=np.mean(cluster.m)
     
     if multimass:
-        lnlambda=math.log(0.02*cluster.ntot)
+        lnlambda=np.log(0.02*cluster.ntot)
     else:
-        lnlambda=math.log(0.11*cluster.ntot)
-
+        lnlambda=np.log(0.11*cluster.ntot)
 
     #Units of seconds * (pc/km)
     trelax=0.34*(sigv_1d**3.0)/((grav**2.0)*mbar*p50*lnlambda)
@@ -37,13 +82,15 @@ def relaxation_time(cluster,local=False,multimass=True):
     #Units of Myr
     trelax=trelax*3.086e13/(3600.0*24.0*365.0*1000000.0)
 
+    cluster.trh=trelax
+
     return trelax
 
-def energies(cluster,specific=True,do_batch=True):
-    origin0=cluster.origin
-    center0=cluster.center
+def energies(cluster,specific=True,do_batch=True,i_d=None):
+    #Calculate energy on each star or just one star (i_d)
+    units0,origin0,center0=save_cluster(cluster)
+    cluster.to_center()
 
-    
     if cluster.units=='nbody':
         grav=1.0
     elif cluster.units=='realpc':
@@ -54,20 +101,32 @@ def energies(cluster,specific=True,do_batch=True):
         grav=4.302e-6
     else:
         grav=1.0
-
-    if origin0!='cluster':
-        cluster.to_cluster()
-    if not center0:
-        cluster.to_center()
     
     if specific:
         ek=0.5*(cluster.v**2.0)
     else:
         ek=0.5*cluster.m*(cluster.v**2.0)
 
-    ektot=np.sum(ek)
+    if i_d!=None:
+        indx=(cluster.id==i_d)
 
-    if do_batch:
+        dx=cluster.x[indx]-cluster.x
+        dy=cluster.y[indx]-cluster.y
+        dz=cluster.z[indx]-cluster.z
+
+        if specific:
+            m=cluster.m
+        else:
+            m=cluter.m[indx]*cluster.m
+
+        dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+        rindx=(dr!=0.0)
+        gmr=-grav*m[rindx]/dr[rindx]
+
+        pottot=np.sum(gmr)
+        ektot=ek[indx]
+
+    elif do_batch:
 
         pot=[]
 
@@ -105,35 +164,62 @@ def energies(cluster,specific=True,do_batch=True):
 
         pot=np.sum(gmr,axis=1)
 
-    pottot=np.sum(pot)
+
     etot=ek+pot
 
     cluster.add_energies(ek,pot,etot)
 
-    if not center0:
-        cluster.from_center()
-    if origin0!='cluster':
-        cluster.to_galaxy()
+    return_cluster(cluster,units0,origin0,center0)
 
-    return ektot,pottot
+    return ek,pot,etot
 
-#Calculate lagrange radii
-#Units will be whatever units the cluster is currently in
-def rlagrange(cluster,nlagrange=10):
+def virialize(cluster,specific=True,do_batch=True):
+    units0,origin0,center0=save_cluster(cluster)
+    cluster.to_center()
+
+    try:
+        qv=np.sqrt(np.abs(0.5/cluster.qvir))
+    except:
+        print('NEED TO CALCULATE ENERGIES FIRST')
+        energies(cluster,specific=specific,do_batch=do_batch)
+        qv=np.sqrt(np.abs(0.5/cluster.qvir))
+
+    print('QV = ',qv)
+
+    cluster.vx*=qv
+    cluster.vy*=qv
+    cluster.vz*=qv
+    cluster.key_params()
+
+    energies(cluster,specific=specific,do_batch=do_batch)
+    qv=np.sqrt(np.abs(0.5/cluster.qvir))
+
+    return_cluster(cluster,units0,origin0,center0)
+
+    return qv
+
+def rlagrange(cluster,nlagrange=10,projected=False):
+    #Calculate lagrange radii
+    #Units will be whatever units the cluster is currently in
     
-    if cluster.origin!='cluster':
-        print('CANNOT COMPUTE LAGRANGE RADII IF CLUSTER.ORIGIN=',cluster.origin)
-        return 0
+    units0,origin0,center0=save_cluster(cluster)
+    cluster.to_cluster()
 
     #Radially order the stars
     msum=0.0
     nfrac=1
     rn=[]
+    
+    if projected:
+        rorder=sorted(range(0,self.ntot),key=lambda k:self.rpro[k])
+    else:
+        rorder=cluster.rorder
+    
     for i in range(0,cluster.ntot):
         mfrac=cluster.mtot*float(nfrac)/float(nlagrange)
-        msum+=cluster.m[cluster.rorder[i]]
+        msum+=cluster.m[rorder[i]]
         if msum >= mfrac:
-            rn.append(cluster.r[cluster.rorder[i]])
+            rn.append(cluster.r[rorder[i]])
             nfrac+=1
         if nfrac>nlagrange:
             break
@@ -142,352 +228,172 @@ def rlagrange(cluster,nlagrange=10):
 
     cluster.rn=rn
 
+    return_cluster(cluster,units0,origin0,center0)
+
     return rn
 
-#Find mass function over a given mass range using nmass bins containing an equal number of stars
-#Radial range optional
-#Stellar evolution range (kw type) optional (default is MS stars)
-def mass_function(cluster,mmin=0.1,mmax=1.0,nmass=10,rmin=None,rmax=None,se_min=0,se_max=1,projected=False):
+def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=10,projected=False):
+    #Calculate the virial radius of the cluster - 
+    # radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
+
+    units0,origin0,center0=save_cluster(cluster)
+    cluster.to_realpc()
+    cluster.to_center()
+ 
+    H/=(1000000.0) #(km/s) / pc
+    Grav=4.302e-3 #pc (km/s)^2 / Msun
     
+    rhocrit=3.0*(H**2.)/(8.0*np.pi*Grav) # Msun/pc^3
+ 
+
+    indx=cluster.rorder
+    msum=np.cumsum(cluster.m[indx])
+    vsum=(4./3.)*np.pi*(cluster.r[indx]**3.)
+    pprof=msum/vsum
+
+
+    #Find radius where maxium density occurs
+    rindx=np.argwhere(pprof==np.max(pprof))[0][0]
+    rmax=rprof[rindx]
+
+    print('RMAX AT ',rindx,rmax)
+
+    indx1=(rprof > rmax) * (pprof < rhocrit*overdens)
+    indx2=(rprof > rmax) * (pprof > rhocrit*overdens)
+
+    if np.sum(indx2)==0.:
+        print('SYSTEM IS NOT VIRIALIZED')
+        r_v=-1.
+    else:
+
+        r1=rprof[indx1][-1]
+        r2=rprof[indx2][0]
+
+        rho1=pprof[indx1][-1]
+        rho2=pprof[indx2][0]    
+
+        print(r1,r2,rho1,rho2,rhocrit*overdens)
+        r_v=interpolate([r1,rho1],[r2,rho2],y=rhocrit*overdens)
+
+    cluster.rv=r_v
+
+    return_cluster(cluster,units0,origin0,center0)
+        
+    return r_v
+
+
+def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+    #Find mass function over a given mass range using nmass bins containing an equal number of stars
+    #Radial range optional
+    #Stellar evolution range (kw type) optional (default is MS stars)
     if projected:
-        rad=cluster.rpro
+        r=cluster.rpro
+        v=cluster.vpro
     else:
-        rad=cluster.r
+        r=cluster.r
+        v=cluster.v
 
-    indx=(cluster.m>=mmin) * (cluster.m<=mmax) * (cluster.kw>=se_min) * (cluster.kw<=se_max)
-    if rmin!=None:
-        indx=indx * (rad >= rmin) * (rad <= rmax)
-
-    msub=cluster.m[indx]
-
-    if len(msub)>2.0*nmass:
-        m_lower,m_mean,m_upper,m_hist=nbinmaker(msub,nmass)
-    else:
-        m_mean=np.zeros(nmass)
-        m_hist=np.zeros(nmass)
-        dm=np.zeros(nmass)
-        alpha=-100.0
-        ealpha=0.0
-        yalpha=0.0
-        eyalpha=0.0
-        return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
-
-    indx=(m_upper!=m_lower)
-    lm_mean=math.log(m_mean[indx],10.0)
-    dm=m_hist[indx]/(m_upper[indx]-m_lower[indx])
-    ldm=math.log(dm[indx],10.0)
-    m_mean=m_mean[indx]
-    m_hist=m_hist[indx]
-
-    if len(lm_mean)>=3:
-        (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
-        ealpha=np.sqrt(V[0][0])
-        eyalpha=np.sqrt(V[1][1])
-    else:
-        alpha=-100.0
-        yalpha=0.0
-        ealpha=0.0
-        eyalpha=0.0
-
-    if len(m_mean)!=nmass:
-        for i in range(0,nmass-len(m_mean)):
-            m_mean.append(0.0)
-            m_hist.append(0.0)
-            dm.append(0.0)
-
-    cluster.alpha=alpha
-    cluster.ealpha=ealpha
-
-    return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
-
-#Measure the radial variation in the stellar mass function
-#Mass range optional
-#Radial range optional
-#Stellar evolution range (kw type) optional (default is MS stars)
-def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,se_min=0,se_max=1,projected=False,obs_cut=None):
-
-    stars=[]
-    rprof=[]
-    lrprofn=[]
-    nskip=0
-
-    if rmin==None: rmin=np.min(cluster.r)
-    if rmax==None: rmax=np.max(cluster.r)
+    if rmin==None: rmin=np.min(r)
+    if rmax==None: rmax=np.max(r)
+    if vmin==None: vmin=np.min(v)
+    if vmax==None: vmax=np.max(v)
     if mmin==None: mmin=np.min(cluster.m)
     if mmax==None: mmax=np.max(cluster.m)
 
+    if indx==None:
+        indx=(cluster.id > -1)
+
     #Build subcluster containing only stars in the full radial and mass range:
-    subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
+    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
 
-    #Make radial bins
-    if obs_cut!=None and projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
-        nrad=len(r_mean)
-    elif obs_cut!=None and not projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.r,cluster.rm,obs_cut)
-        nrad=len(r_mean)
-    elif projected:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.rpro,nrad)
-    else:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.r,nrad)
+    if emin!=None:
+        indx*=(cluster.etot >= emin)
+    if emin!=None:
+        indx*=(cluster.etot <= emax)
 
+    m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
+   
+    lm_mean=np.log10(m_mean)
+    dm=m_hist/(m_upper-m_lower)
+    ldm=np.log10(dm)
 
-    rcluster=sub_cluster(subcluster,rmin=r_lower[i],rmax=r_upper[i],projected=projected)
-    m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(rcluster,mmin,mmax,nmass)
-     
-    indx=(alpha!=-100.0)
-    rprof=(r_mean[indx])
-    if projected:
-        lrprofn.append(math.log(rprof[indx]/cluster.rmpro))
-    else:
-        lrprofn.append(math.log(rprof[indx]/cluster.rm))
+    (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
+    ealpha=np.sqrt(V[0][0])
+    eyalpha=np.sqrt(V[1][1])
 
-    if len(lrprofn)>3:
-        (dalpha,ydalpha),V=np.polyfit(lrprofn,alpha,1,cov=True)
-        edalpha=np.sqrt(V[0][0])
-        eydalpha=np.sqrt(V[1][1])
-    else:
-        dalpha=-100.0
-        ydalpha=0.0
-        edalpha=0.0
-        eydalpha=0.0
+    if plot:
+        filename=kwargs.get('filename',None)
+        nplot(m_mean,np.log10(dm),xlabel='M',ylabel='LOG(dN/dM)',**kwargs)
+        mfit=np.linspace(np.min(m_mean),np.max(m_mean),nmass)
+        dmfit=10.0**(alpha*np.log10(mfit)+yalpha)
+        nlplot(mfit,np.log10(dmfit),overplot=True,label=(r'$\alpha$ = %f' % alpha))
 
-    #Add empty cells to array when rcluster.ntot<int(2.0*float(nmass))
-    if len(lrprofn)!=nrad:
-        for i in range(0,nrad-len(lrprofn)):
-            lrprofn.append(0.0)
-            aprof.append(0.0)
-    
-    cluster.dalpha=dalpha
-    cluster.edalpha=dalpha
+        plt.legend()
 
-    return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
+        if filename!=None:
+            plt.savefig(filename)
+
+    cluster.alpha=alpha
+
+    return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
 
 #Find eta over a given mass range using nmass bins containing an equal number of stars
 #Mass range optional (default is between 0.1 and 1.8 Msun)
 #Radial range optional
 #Stellar evolution range optional
-def eta_function(cluster,mmin=0.1,mmax=1.8,nmass=10,rmin=None,rmax=None,se_min=0,se_max=100,projected=False):
-
+def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
     if projected:
-        rad=cluster.rpro
+        r=cluster.rpro
+        v=cluster.vpro
     else:
-        rad=cluster.r
+        r=cluster.r
+        v=cluster.v
 
-    indx=(cluster.m>=mmin) * (cluster.m<=mmax) * (cluster.kw>=se_min) * (cluster.kw<=se_max)
-    if rmin!=None:
-        indx=indx * (rad >= rmin) * (rad <= rmax)
-    
-    msub=cluster.m[indx]
-    m_lower,m_mean,m_upper,m_hist=nbinmaker(msub,nmass)
+    if rmin==None: rmin=np.min(r)
+    if rmax==None: rmax=np.max(r)
+    if vmin==None: vmin=np.min(v)
+    if vmax==None: vmax=np.max(v)
+    if mmin==None: mmin=np.min(cluster.m)
+    if mmax==None: mmax=np.max(cluster.m)
 
+    if indx==None:
+        indx=(cluster.id > -1)
 
-    lm_mean=math.log(m_mean,10.0)
+    #Build subcluster containing only stars in the full radial and mass range:
+    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+
+    if emin!=None:
+        indx*=(cluster.etot >= emin)
+    if emin!=None:
+        indx*=(cluster.etot <= emax)
+
+    m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
+    lm_mean=np.log10(m_mean)
 
     sigvm=[]
     lsigvm=[]
     for i in range(0,nmass):
-        indx= (cluster.m >=m_lower[i]) * (cluster.m<=m_upper) * (cluster.kw>=se_min) * (cluster.kw<=se_max)
-        if rmin!=None:
-            indx=indx * (cluster.r[i]>=rmin) * (cluster.r[i]<=rmax)
 
-        sigx=np.std(cluster.vx[indx])
-        sigy=np.std(cluster.vy[indx])
-        sigz=np.std(cluster.vz[indx])
-
-        sigvm.append(math.sqrt(sigvx**2.0+sigvy**2.0+sigvz**2.0))
-        lsigvm.append(math.log(sigvm,10.0))
+        mindx=indx * (cluster.m >=m_lower[i]) * (cluster.m<=m_upper[i])
+        sigvm.append(np.std(v[mindx]))
+        lsigvm.append(np.log10(sigvm[-1]))
 
 
     (eta,yeta),V=np.polyfit(lm_mean,lsigvm,1,cov=True)
     eeta=np.sqrt(V[0][0])
     eyeta=np.sqrt(V[1][1])
 
+    if plot:
+        filename=kwargs.get('filename',None)
+        nplot(m_mean,np.log10(sigvm),xlabel='M',ylabel=r'$\sigma_v$',**kwargs)
+        mfit=np.linspace(np.min(m_mean),np.max(m_mean),nmass)
+        sigfit=10.0**(eta*np.log10(mfit)+yeta)
+        nlplot(mfit,np.log10(sigfit),overplot=True,label=(r'$\eta$ = %f' % eta))
+        plt.legend()
+
+        if filename!=None:
+            plt.savefig(filename)
+
+    cluster.eta=eta
+
     return m_mean,sigvm,eta,eeta,yeta,eyeta
-
-#Measure the radial variation in the velocity dispersion
-#Mass range optional
-#Radial range optional
-#Stellar evolution range (kw type) optional (default is all stars)
-def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,se_min=0,se_max=15,projected=False,obs_cut=None):
-
-    stars=[]
-    rprof=[]
-    lrprofn=[]
-    sigvprof=[]
-    nskip=0
-
-    if rmin==None: rmin=np.min(cluster.r)
-    if rmax==None: rmax=np.max(cluster.r)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
-
-    #Build subcluster containing only stars in the full radial and mass range:
-    subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
-
-    #Make radial bins
-    if obs_cut!=None and projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
-        nrad=len(r_mean)
-    elif obs_cut!=None and not projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.r,cluster.rm,obs_cut)
-        nrad=len(r_mean)
-    elif projected:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.rpro,nrad)
-    else:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.r,nrad)
-
-
-
-    rcluster=sub_cluster(subcluster,rmin=r_lower,rmax=r_upper,projected=projected)
-    sigx,sigy,sigz,sigv,lsigv=sigv_function(rcluster)
-
-    if projected:
-        lrprofn=math.log(rmean/cluster.rmpro)
-    else:
-        lrprofn=math.log(rmean/cluster.rm)
-
-    sigvprof(sigv)
-
-    #Add empty cells to array when rcluster.ntot<int(2.0*float(nmass))
-    if len(lrprofn)!=nrad:
-        for i in range(0,nrad-len(lrprofn)):
-            lrprofn.append(0.0)
-            sigv.append(0.0)
-    
-    return lrprofn,sigv
-
-
-def beta_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,se_min=0,se_max=15,projected=False,obs_cut=None):
-
-    stars=[]
-    rprof=[]
-    lrprofn=[]
-    betaprof=[]
-    nskip=0
-
-    if rmin==None: rmin=np.min(cluster.r)
-    if rmax==None: rmax=np.max(cluster.r)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
-
-    #Build subcluster containing only stars in the full radial and mass range:
-    subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
-
-    #Make radial bins
-    if obs_cut!=None and projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
-        nrad=len(r_mean)
-    elif obs_cut!=None and not projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.r,cluster.rm,obs_cut)
-        nrad=len(r_mean)
-    elif projected:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.rpro,nrad)
-    else:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.r,nrad)
-
-
-    rcluster=sub_cluster(subcluster,rmin=r_lower,rmax=r_upper,projected=projected)
-
-    sigr,sigt,sigp,sigv,lsigv=sigv_function(rcluster,spherical=True)
-
-    if projected:
-        lrprofn=math.log(rprof/cluster.rmpro)
-    else:
-        lrprofn=math.log(rprof/cluster.rm)
-
-    betaprof=1.0-(sigt**2.0+sigp**2.0)/(2.*(sigr**2.0))
-
-    #Add empty cells to array when rcluster.ntot<int(2.0*float(nmass))
-    if len(lrprofn)!=nrad:
-        for i in range(0,nrad-len(lrprofn)):
-            lrprofn.append(0.0)
-    
-    return lrprofn,betaprof
-
-def sigv_function(cluster,spherical=False):
-    vx=[]
-    vy=[]
-    vz=[]
-    
-    if spherical:
-        r,theta,phi=rect_to_sphere(cluster.x,cluster.y,cluster.z)
-        vx,vy,vz=rect_to_sphere_vel(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
-
-    else:
-        vx=cluster.vx
-        vy=cluster.vy
-        vz=cluster.vz
-
-    sigx=np.std(vx)
-    sigy=np.std(vy)
-    sigz=np.std(vz)
-    
-    sigv=(math.sqrt(sigx**2.0+sigy**2.0+sigz**2.0))
-    lsigv=(math.log(sigv,10.0))
-
-    return sigx,sigy,sigz,sigv,lsigv
-
-def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,se_min=0,se_max=15,coord=None,projected=False,obs_cut=None):
-
-    stars=[]
-    rprof=[]
-    lrprofn=[]
-    vprof=[]
-    nskip=0
-
-    if rmin==None: rmin=np.min(cluster.r)
-    if rmax==None: rmax=np.max(cluster.r)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
-
-    #Build subcluster containing only stars in the full radial and mass range:
-    subcluster=sub_cluster(cluster,rmin,rmax,mmin,mmax,se_min,se_max,projected=projected)
-
-    #Make radial bins
-    if obs_cut!=None and projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.rpro,cluster.rmpro,obs_cut)
-        nrad=len(r_mean)
-    elif obs_cut!=None and not projected:
-        r_lower,r_mean,r_upper,r_hist=obsrbinmaker(subcluster.r,cluster.rm,obs_cut)
-        nrad=len(r_mean)
-    elif projected:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.rpro,nrad)
-    else:
-        r_lower,r_mean,r_upper,r_hist=nbinmaker(subcluster.r,nrad)
-
-
-    rcluster=sub_cluster(subcluster,rmin=r_lower,rmax=r_upper,projected=projected)
-
-    if coord==None:
-        vmean=np.mean(rcluster.v)
-    elif coord=='x':
-        vmean=np.mean(rcluster.vx)
-    elif coord=='y':
-        vmean=np.mean(rcluster.vy)
-    elif coord=='z':
-        vmean=np.mean(rcluster.vz)
-    elif coord=='r' or coord=='theta' or coord=='phi':
-        vr,vt,vp=rect_to_sphere_vel(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
-
-        if coord=='r':
-            vmean=np.mean(vr)
-        if coord=='theta':
-            vmean=np.mean(vt)
-        if coord=='phi':
-            vmean=np.mean(vp)
-
-    if projected:
-        lrprofn=math.log(r_mean/cluster.rmpro)
-    else:
-        lrprofn=math.log(r_mean/cluster.rm)
-
-    #Add empty cells to array when rcluster.ntot<int(2.0*float(nmass))
-    if len(lrprofn)!=nrad:
-        for i in range(0,nrad-len(lrprofn)):
-            lrprofn.append(0.0)
-            vmean.append(0.0)
-    
-    return lrprofn,vprof
-
-

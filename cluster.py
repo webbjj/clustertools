@@ -8,7 +8,10 @@ import numpy as np
 from galpy.util import bovy_conversion,bovy_coords
 from functions import *
 from profiles import *
-#from orbit import *
+from textwrap import dedent
+from orbit import rtidal,rlimiting
+from galpy.potential import MWPotential2014
+
 
 class StarCluster(object):
     """
@@ -71,20 +74,16 @@ class StarCluster(object):
         #Age of cluster
         self.tphys=tphys
         
-        if 'ctype' in kwargs:
-            self.ctype=kwargs.get('ctype')
+        self.ctype=kwargs.get('ctype','snapshot')
+        self.delimiter=kwargs.get('delimiter',None)
+        self.wdir=kwargs.get('wdir','')
+        self.nzfill=int(kwargs.get('nzfill','5'))
+        self.nsnap=int(kwargs.get('nsnap','0'))
+
         if 'sfile' in kwargs:
             self.sfile=kwargs.get('sfile')
         if 'bfile' in kwargs:
             self.bfile=kwargs.get('bfile')
-        if 'delimiter' in kwargs:
-            self.delimiter=kwargs.get('delimiter')
-        if 'nsnap' in kwargs:
-             self.nsnap=kwargs.get('nsnap')
-        if 'nzfill' in kwargs:
-            self.nzfill=kwargs.get('nzfill')
-        if 'wdir' in kwargs:
-            self.wdir=kwargs.get('wdir')
  
         #Initial arrays
         self.id=np.array([])
@@ -398,7 +397,7 @@ class StarCluster(object):
 
         PURPOSE:
 
-           Add energy information to stars
+           Add energy information to stars and calculate total energy and Q for the cluster
            Notes:
             - values are never adjusted during unit or coordinate changes
 
@@ -427,7 +426,7 @@ class StarCluster(object):
         self.ptot=np.sum(self.pot)
         self.qvir=2.0*self.ektot/self.ptot
 
-    def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=None,r0=8.,v0=220.):
+    def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=None,initialize=False,r0=8.,v0=220.):
         """
         NAME:
 
@@ -506,7 +505,10 @@ class StarCluster(object):
         self.vygc=vygc
         self.vzgc=vzgc
 
-    def find_center(self,nsphere=100):
+        if initialize:
+            initialize_orbit(self,from_center=False)
+
+    def find_center(self,xstart=0.,ystart=0.,zstart=0.,nsphere=100):
         """
         NAME:
 
@@ -521,7 +523,7 @@ class StarCluster(object):
             calculation
 
         INPUT:
-
+           xstart,ystart,zstart - starting position for center
            nsphere - number of stars in center sphere (default:100)
 
         OUTPUT:
@@ -533,10 +535,10 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """         
-        x=self.x
-        y=self.y
-        z=self.z
-        r=self.r
+        x=self.x-xstart
+        y=self.y-ystart
+        z=self.z-zstart
+        r=np.sqrt(x**2.+y**2.+z**2.)
         id=self.id
 
         while len(r)>nsphere:
@@ -564,6 +566,41 @@ class StarCluster(object):
         self.vzc=np.sum(self.m[indx]*self.vz[indx])/np.sum(self.m[indx])
     
         return self.xc,self.yc,self.zc,self.vxc,self.vyc,self.vzc
+
+    def add_rotation(self,qrot):
+        """
+        NAME:
+
+           add_rotation
+
+        PURPOSE:
+
+           Introduce a degree of rotation into the cluster
+
+        INPUT:
+
+           qrot - Degree of rotation, such that qrot% of stars with negative v_theta are switched positive
+
+        OUTPUT:
+
+            None
+
+        HISTORY:
+
+           2019 - Written - Webb (UofT)
+
+        """   
+
+        r,theta,z,vr,vtheta,vz=npy.cyl_coords(cluster)
+
+        indx=(vtheta < 0.)
+        rindx=(np.random.rand(cluster.ntot) < q)
+
+        vtheta[indx*rindx]=np.sqrt(vtheta[indx*rindx]*vtheta[indx*rindx])
+        cluster.x,cluster.y,cluster.z=bovy_coords.cyl_to_rect(r,theta,z)
+        cluster.vx,cluster.vy,cluster.vz=bovy_coords.cyl_to_rect_vec(vr,vtheta,vz,theta)
+
+
 
     def key_params(self,do_order=True):
         """
@@ -594,8 +631,7 @@ class StarCluster(object):
         self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
         self.rpro=np.sqrt(self.x**2.+self.y**2.)
         self.mtot=np.sum(self.m)
-        self.lr=np.log10(self.r)
-        self.lv=np.log10(self.v)
+        self.mmean=np.mean(self.m)
         self.rmean=np.mean(self.r)
         self.rmax=np.max(self.r)
         
@@ -632,33 +668,6 @@ class StarCluster(object):
                 self.rhpro=self.rpro[self.rproorder[indx]][0]
                 indx=(lsum >= 0.1*self.ltot)
                 self.rh10pro=self.rpro[self.rproorder[indx]][0]
-
-    #Directly call functions from functions.py:
-    def energies(self,specific=True,do_batch=True,i_d=None):
-        energies(self,specific=specific,do_batch=do_batch,i_d=i_d)
-
-    def rlagrange(cluster,nlagrange=10,projected=False):
-        self.rn=rlagrange(cluster,nlagrange=nlagrange,projected=projected)
-        
-    def rvirial(self,H=70.0,Om=0.3,overdens=200.,nrad=10,projected=False):
-        self.rv=rvirial(self,H=H,Om=Om,overdens=overdens,nrad=nrad,projected=projected)
-
-    def mass_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
-        self.alpha=alpha 
-
-    def eta_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
-        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
-        self.eta=eta
-
-    def alpha_prof(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
-        lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
-        self.dalpha=dalpha
-
-    #def rtidal(self,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
-        #self.rt=rtidal(self,pot=pot,rtiterate=rtiterate,rgc=rgc,r0=r0,v0=v0)
-
-    #Unit and coordinate conversion:
 
     def to_realpc(self,do_order=False,do_key_params=True):
         """
@@ -1130,9 +1139,80 @@ class StarCluster(object):
             elif units0=='galpy':
                 self.to_galpy()
 
-# Extract a sub population of stars from a cluster
-# Extraction criteria include radius, mass and stellar evolution (KW) type (default all stars)
-def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,new_center=False):
+    #Directly call from functions.py and profiles.py (see respective files for documenation):
+    def energies(self,specific=True,do_batch=True,i_d=None):
+        ek,pot,etot=energies(self,specific=specific,do_batch=do_batch,i_d=i_d)
+        self.add_energies(ek,pot,etot)
+
+    def rlagrange(self,nlagrange=10,projected=False):
+        self.rn=rlagrange(self,nlagrange=nlagrange,projected=projected)
+        
+    def rvirial(self,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False):
+        self.rv=rvirial(self,H=H,Om=Om,overdens=overdens,nrad=nrad,projected=projected)
+
+    def rtidal(self,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
+        self.rt=rtidal(self,pot=pot,rtiterate=rtiterate,rgc=rgc,r0=r0,v0=v0)
+
+    def rlimiting(self,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,**kwargs):
+        self.rl=rlimiting(self,pot=pot,rgc=rgc,r0=r0,v0=v0,nrad=nrad,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+
+    def mass_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,title='GLOBAL',**kwargs)
+        self.alpha=alpha 
+        self.rn=rlagrange(self,nlagrange=10,projected=projected)
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=self.rn[4],rmax=self.rn[6],vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,title='AT R50',**kwargs)
+        self.alpha50=alpha 
+
+    def eta_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
+        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        self.eta=eta
+
+    def alpha_prof(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
+        lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        self.dalpha=dalpha
+
+    #def rtidal(self,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
+        #self.rt=rtidal(self,pot=pot,rtiterate=rtiterate,rgc=rgc,r0=r0,v0=v0)
+
+def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,reset_center=False,reset_nbody_scale=False,reset_nbody_mass=False,reset_nbody_radii=False):
+    """
+    NAME:
+
+       sub_cluster
+
+    PURPOSE:
+
+       Extract a sub population of stars from a StarCluster
+       Notes:
+        -- automatically moves cluster to center of mass, so all constraints are in clustercentric coordinates and current cluster.units
+
+    INPUT:
+
+       rmin/rmax - minimum and maximum stellar radii
+
+       mmin/mmax - minimum and maximum stellar mass
+
+       vmin/vmax - minimum and maximum stellar velocity
+
+       emin/emax - minimum and maximum stellar energy
+
+       kwmin/kwmax - minimum and maximum stellar type (kw)
+
+       indx - user defined boolean array from which to extract the subset
+
+       projected - use projected values and constraints (default:False)
+
+       reset_center - re-calculate cluster center after extraction (default:False)
+
+    OUTPUT:
+
+       instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """     
 
     units0,origin0,center0=cluster.units,cluster.origin,cluster.center
     cluster.to_center()
@@ -1171,6 +1251,11 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
         subcluster.add_stars(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vz[indx])
         subcluster.kw=cluster.kw[indx]
 
+        subcluster.zmbar=cluster.zmbar
+        subcluster.rbar=cluster.rbar
+        subcluster.vstar=cluster.vstar
+        subcluster.tstar=cluster.tstar
+
         if len(cluster.logl)>0:
             subcluster.add_se(cluster.kw[indx],cluster.logl[indx],cluster.logr[indx],cluster.ep[indx],cluster.ospin[indx])
         if len(cluster.id2)>0:
@@ -1179,7 +1264,7 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
         if len(cluster.etot)>0:
             subcluster.add_energies(cluster.kin[indx],cluster.pot[indx],cluster.etot[indx])
 
-        if new_center:
+        if reset_center:
             subcluster.add_orbit(cluster.xgc+cluster.xc,cluster.ygc+cluster.yc,cluster.zgc+cluster.zc,cluster.vxgc+cluster.vxc,cluster.vygc+cluster.vyc,cluster.vzgc+cluster.vzc)
             subcluster.xc,subcluster.yc,subcluster.zc=0.0,0.0,0.0
             subcluster.vxc,subcluster.vyc,subcluster.vzc=0.0,0.0,0.0
@@ -1190,41 +1275,117 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
             subcluster.xc,subcluster.yc,subcluster.zc=cluster.xc,cluster.yc,cluster.zc
             subcluster.vxc,subcluster.vyc,subcluster.vzc=cluster.vxc,cluster.vyc,cluster.vzc
 
-        subcluster.key_params()
+        if reset_nbody_scale or reset_nbody_mass or reset_nbody_radii:
+            subcluster.to_realpc()
+            subcluster.key_params()
 
-        if not (center0 and cluster.center):
-            if center0:
-                cluster.to_center()
-            else:
-                cluster.from_center()
+            if reset_nbody_scale or reset_nbody_mass:
+                subcluster.zmbar=subcluster.mtot
+            if reset_nbody_scale or reset_nbody_radii:
+                subcluster.rbar=4.0*subcluster.rm/3.0
+
+            subcluster.vstar=0.06557*np.sqrt(subcluster.zmbar/subcluster.rbar)
+            subcluster.tstar=subcluster.rbar/subcluster.vstar
+        else:
+            subcluster.key_params()
+
+        if not center0:
+            cluster.from_center()
+            subcluster.from_center()
 
         if cluster.origin!=origin0:
             if origin0=='cluster':
                 cluster.to_cluster()
-                sub_cluster.to_cluster()
-
+                subcluster.to_cluster()
             else:
                 cluster.to_cluster()
-                sub_cluster.to_cluster()
+                subcluster.to_cluster()
 
         if cluster.units!=units0:
             if units0=='realpc':
                 cluster.to_realpc()
-                sub_cluster.to_realpc()
+                subcluster.to_realpc()
 
             elif units0=='realkpc':
                 cluster.to_realkpc()
-                sub_cluster.to_realkpc()
+                subcluster.to_realkpc()
 
             elif units0=='nbody':
                 cluster.to_nbody()
-                sub_cluster.to_nbody()
+                subcluster.to_nbody()
 
             elif units0=='galpy':
                 cluster.to_galpy()
-                sub_cluster.to_galpy()
+                subcluster.to_galpy()
 
     else:
         subcluster=StarCluster(0,cluster.tphys)
 
     return subcluster
+
+def kwtypes():
+    """
+    NAME:
+
+       kwtypes
+
+    PURPOSE:
+
+       Print legend for converting kwtype (from NBODY6) to stellar evolution type
+
+    INPUT:
+
+       None
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """   
+
+    print (dedent("""\
+        *       Stellar evolution types
+        *       ***********************
+        *
+        *       ---------------------------------------------------------------------
+        *       0       Low main sequence (M < 0.7).
+        *       1       Main sequence.
+        *       2       Hertzsprung gap (HG).
+        *       3       Red giant.
+        *       4       Core Helium burning.
+        *       5       First AGB.
+        *       6       Second AGB.
+        *       7       Helium main sequence.
+        *       8       Helium HG.
+        *       9       Helium GB.
+        *      10       Helium white dwarf.
+        *      11       Carbon-Oxygen white dwarf.
+        *      12       Oxygen-Neon white dwarf.
+        *      13       Neutron star.
+        *      14       Black hole.
+        *      15       Massless supernova remnant.
+        *       ---------------------------------------------------------------------
+        *
+        *       Binary types
+        *       ************
+        *
+        *       ---------------------------------------------------------------------
+        *       0       Standard case.
+        *      -1       Chaotic (option 27 = 2).
+        *      -2       Continuous circularizing (option 27 = 2).
+        *       9       Sequential circularization (option 27 = 1).
+        *      10       Circularized.
+        *      11       First Roche stage (option 34 = 1/2).
+        *      12       End of first Roche stage.
+        *      13       Start of second Roche stage.
+        *      xx       Further Roche stages.
+        *       ---------------------------------------------------------------------
+        *
+
+
+
+        """))

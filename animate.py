@@ -13,7 +13,7 @@ import os
 
 from plots import dvplot, bplot
 
-def dvanimate(data,nsnap=0,tsnap=None,prefix='',nrad=10,save=True,**kwargs):
+def dvanimate(data,nsnap=0,tsnap=None,prefix='',nrad=20,save=True,**kwargs):
     """
     NAME:
 
@@ -69,11 +69,11 @@ def dvanimate(data,nsnap=0,tsnap=None,prefix='',nrad=10,save=True,**kwargs):
         else:
             filename=None
 
-        npy.dvplot(data,nsnap,tsnap,prefix='',nrad=10,nsnap=i,filename=filename,**kwargs)
+        npy.dvplot(data,nsnap,tsnap,prefix='',nrad=nrad,nsnap=i,filename=filename,**kwargs)
 
     return 0
 
-def banimate(data,nsnap=0,tsnap=None,prefix='',nrad=10,save=True,**kwargs):
+def banimate(data,nsnap=0,tsnap=None,prefix='',nrad=20,save=True,**kwargs):
     """
     NAME:
 
@@ -129,6 +129,6 @@ def banimate(data,nsnap=0,tsnap=None,prefix='',nrad=10,save=True,**kwargs):
         else:
             filename=None
 
-        npy.bplot(data,nsnap,tsnap,prefix='',nrad=10,nsnap=i,filename=filename,**kwargs)
+        npy.bplot(data,nsnap,tsnap,prefix='',nrad=nrad,nsnap=i,filename=filename,**kwargs)
 
     return 0

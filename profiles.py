@@ -9,7 +9,7 @@ from operations import *
 from plots import *
 from coordinates import rect_to_sphere
 
-def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
     units0,origin0,center0=save_cluster(cluster)
     cluster.to_center()
 
@@ -94,7 +94,7 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,v
 
     return rprof,pprof,nprof
 
-def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,cumulative=False,obs_cut=None):
+def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,cumulative=False,obs_cut=None):
     units0,origin0,center0=save_cluster(cluster)
     cluster.to_center()
 
@@ -148,7 +148,7 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,vma
 #Mass range optional
 #Radial range optional
 #Stellar evolution range (kw type) optional (default is MS stars)
-def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
 
     units0,origin0,center0=save_cluster(cluster)
     cluster.to_center()
@@ -230,7 +230,7 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,
 #Mass range optional
 #Radial range optional
 #Stellar evolution range (kw type) optional (default is all stars)
-def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,projected=False,obs_cut=None):
+def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,projected=False,obs_cut=None):
     units0,origin0,center0=save_cluster(cluster)
     cluster.to_center()
 
@@ -300,7 +300,7 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,
      
     return lrprofn,sigvprof,betaprof
 
-def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None):
+def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None):
     units0,origin0,center0=save_cluster(cluster)
     cluster.to_center()
 
@@ -367,7 +367,7 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,vmin=None,vma
 
     return lrprofn,vprof
 
-def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=10,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None):
+def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None):
     units0,origin0,center0=save_cluster(cluster)
     cluster.to_center()
 

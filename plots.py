@@ -81,9 +81,8 @@ def nscatter(x,y,z=None,xlabel='',ylabel='',legend=False,title='',xlim=None,ylim
         
         if filename!=None:
             plt.savefig(filename)
-            return 0
-        else:
-            return 0
+
+        return out
 
 def nplot(x,y,ptype='.',xlabel='',ylabel='',legend=False,title='',xlim=None,ylim=None,scale=True,log=False,logx=False,logy=False,filename=None,overplot=False,**kwargs):
 
@@ -132,9 +131,8 @@ def nplot(x,y,ptype='.',xlabel='',ylabel='',legend=False,title='',xlim=None,ylim
         
         if filename!=None:
             plt.savefig(filename)
-            return 0
-        else:
-            return 0
+
+        return out
 
 def nlplot(x,y,ltype='-',xlabel='',ylabel='',legend=False,title='',xlim=None,ylim=None,scale=True,log=False,logx=False,logy=False,filename=None,overplot=False,**kwargs):
 
@@ -161,6 +159,8 @@ def nhist(x,nbin=10,xlabel='',legend=False,title='',xlim=None,fill=False,filenam
             plt.xlim(xlim)
 
         plt.xlabel(xlabel)
+        plt.ylabel('N')
+
         plt.title(title)
 
         if legend:
@@ -168,9 +168,8 @@ def nhist(x,nbin=10,xlabel='',legend=False,title='',xlim=None,fill=False,filenam
 
         if filename!=None:
             plt.savefig(filename)
-            return 0
-        else:
-            return 0
+
+        return out
 
 def nhist2d(x,y,nbin=10,xlabel='',ylabel='',title='',xlim=None,ylim=None,filename=None,**kwargs):
     
@@ -182,7 +181,7 @@ def nhist2d(x,y,nbin=10,xlabel='',ylabel='',title='',xlim=None,ylim=None,filenam
    
     cmap=kwargs.pop('cmap',plt.cm.jet)
 
-    plt.hist2d(x,y,bins=nbin,range=[xlim,ylim],cmap=cmap,**kwargs)
+    out=plt.hist2d(x,y,bins=nbin,range=[xlim,ylim],cmap=cmap,**kwargs)
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -192,9 +191,8 @@ def nhist2d(x,y,nbin=10,xlabel='',ylabel='',title='',xlim=None,ylim=None,filenam
 
     if filename!=None:
         plt.savefig(filename)
-        return 0
-    else:
-        return 0
+
+    return out
 
 def ndens(x,y,z=[None],normed=False,xstep=1.,ystep=1.,sigx=4.,sigy=4.,order=0,extent=None,interpolation='nearest',cmap='Spectral'):
 
@@ -211,10 +209,10 @@ def ndens(x,y,z=[None],normed=False,xstep=1.,ystep=1.,sigx=4.,sigy=4.,order=0,ex
     if extent==None:
         extent=[x.min(),x.max(),y.min(),y.max()]
 
-    plt.imshow(fimg, norm=colors.LogNorm(), interpolation=interpolation, cmap=cmap,extent=extent)
+    out=plt.imshow(fimg, norm=colors.LogNorm(), interpolation=interpolation, cmap=cmap,extent=extent)
     plt.colorbar()
 
-    return 0
+    return out
 
 def starplot(cluster,coords='xyz',xlim=None,ylim=None,legend=False,filename=None,overplot=False,do_center=False,**kwargs):
 
@@ -289,9 +287,8 @@ def starplot(cluster,coords='xyz',xlim=None,ylim=None,legend=False,filename=None
 
             if filename!=None:
                 plt.savefig(filename)
-                return 0
-            else:
-                return 0
+
+            return out
 
     else:
         
@@ -385,11 +382,10 @@ def skyplot(cluster,coords='radec',xlim=None,ylim=None,legend=False,filename=Non
 
         if filename!=None:
             plt.savefig(filename)
-            return 0
-        else:
-            return 0
+         
+        return out
 
-def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,kwmin=0,kwmax=15,projected=False,cumulative=False,obs_cut=None,log=False, filename=None,overplot=False,**kwargs):
+def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=15,projected=False,cumulative=False,obs_cut=None,log=False, filename=None,overplot=False,**kwargs):
 
     if not overplot:
         plt.figure()
@@ -412,7 +408,7 @@ def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,kwmin=0,kwmax=
         xunits=''
         yunits=''
 
-    x,y,n=m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,kwmin=0,kwmax=15,projected=False,cumulative=cumulative,obs_cut=None)
+    x,y,n=m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=15,projected=False,cumulative=cumulative,obs_cut=None)
 
     if log:
         out=plt.loglog(x,y,**kwargs)
@@ -433,9 +429,8 @@ def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=10,kwmin=0,kwmax=
 
         if filename!=None:
             plt.savefig(filename)
-            return 0
-        else:
-            return 0
+
+        return out
 
 def explot(data,prefix='',**kwargs):
     #Plot data saved in extrct.npy
@@ -452,7 +447,7 @@ def explot(data,prefix='',**kwargs):
 
     plt.subplot(2,1,2)
 
-    plt.plot(t,rm,**kwargs)
+    out=plt.plot(t,rm,**kwargs)
     plt.xlabel('Time (Myr)')
     plt.ylabel('rm (pc)')
 
@@ -460,7 +455,9 @@ def explot(data,prefix='',**kwargs):
     
     plt.close()
 
-def dvplot(data,nsnap=0,tsnap=None,prefix='',nrad=10,filename=None,**kwargs):
+    return out
+
+def dvplot(data,nsnap=0,tsnap=None,prefix='',nrad=20,filename=None,**kwargs):
     #Plot data saved in dvprof.npy
 
     t=data[:,0]
@@ -475,17 +472,16 @@ def dvplot(data,nsnap=0,tsnap=None,prefix='',nrad=10,filename=None,**kwargs):
     rbin=data[nsnap,2:2+nrad]
     sig=data[nsnap,2+nrad:2+nrad+nrad]
 
-    plt.plot(rbin,sig,**kwargs)
+    out=plt.plot(rbin,sig,**kwargs)
     plt.xlabel(r'ln(r/$r_m$)')
     plt.ylabel(r'$\sigma_v$ (km/s)')
 
     if filename!=None:
         plt.savefig('%sdvplot%s.png' % (prefix,str(i)))
-        return 0
-    else:
-        return 0
 
-def bplot(data,nsnap=0,tsnap=None,prefix='',nrad=10,filename=None,**kwargs):
+    return out
+
+def bplot(data,nsnap=0,tsnap=None,prefix='',nrad=20,filename=None,**kwargs):
     #Plot data saved in dvprof.npy
 
     t=data[:,0]
@@ -500,12 +496,11 @@ def bplot(data,nsnap=0,tsnap=None,prefix='',nrad=10,filename=None,**kwargs):
     rbin=data[nsnap,2:2+nrad]
     beta=data[nsnap,2+nrad+nrad:2+nrad+nrad+nrad]
 
-    plt.plot(rbin,beta,**kwargs)
+    out=plt.plot(rbin,beta,**kwargs)
     plt.xlabel(r'ln(r/$r_m$)')
     plt.ylabel(r'$\beta$')
 
     if filename!=None:
         plt.savefig('%sbplot%s.png' % (prefix,str(i)))
-        return 0
-    else:
-        return 0        
+
+    return out       

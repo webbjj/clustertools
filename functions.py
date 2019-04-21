@@ -25,7 +25,7 @@ def relaxation_time(cluster,local=False,multimass=True,projected=False):
 
     INPUT:
 
-       cluster - StarCluster insane
+       cluster - StarCluster instance
 
        local - calcuate relaxation time at each lagrange bin (True) or the half mass radius (False) (default: False)
 
@@ -81,8 +81,6 @@ def relaxation_time(cluster,local=False,multimass=True,projected=False):
 
     #Units of Myr
     trelax=trelax*3.086e13/(3600.0*24.0*365.0*1000000.0)
-
-    cluster.trh=trelax
 
     return trelax
 
@@ -226,13 +224,11 @@ def rlagrange(cluster,nlagrange=10,projected=False):
     if len(rn) != nlagrange:
         rn.append(np.max(cluster.r))
 
-    cluster.rn=rn
-
     return_cluster(cluster,units0,origin0,center0)
 
     return rn
 
-def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=10,projected=False):
+def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False):
     #Calculate the virial radius of the cluster - 
     # radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
 
@@ -275,8 +271,6 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=10,projected=False):
         print(r1,r2,rho1,rho2,rhocrit*overdens)
         r_v=interpolate([r1,rho1],[r2,rho2],y=rhocrit*overdens)
 
-    cluster.rv=r_v
-
     return_cluster(cluster,units0,origin0,center0)
         
     return r_v
@@ -311,6 +305,9 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
     if emin!=None:
         indx*=(cluster.etot <= emax)
 
+    print(rmin,rmax,cluster.ntot,np.sum(indx))
+
+
     m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
    
     lm_mean=np.log10(m_mean)
@@ -332,8 +329,6 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
 
         if filename!=None:
             plt.savefig(filename)
-
-    cluster.alpha=alpha
 
     return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
 
@@ -393,7 +388,5 @@ def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=N
 
         if filename!=None:
             plt.savefig(filename)
-
-    cluster.eta=eta
 
     return m_mean,sigvm,eta,eeta,yeta,eyeta

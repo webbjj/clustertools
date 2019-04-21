@@ -32,21 +32,20 @@ def nbinmaker(x,nbin=10,nsum=False):
     else:
         return x_lower,x_mid,x_upper,x_hist
 
-def binmaker(x,nbin=10,nsum=False):
+def binmaker(x,nbin=10,nsum=False,steptype='linear'):
     #Split an array into nbin bin's of equal size
     
-    x_lower=np.array([])
-    x_upper=np.array([])
-    x_mid=np.array([])
     x_hist=np.zeros(nbin)
     x_sum=np.zeros(nbin)
+ 
+    if steptype=='linear':
+        steps=np.linspace(np.amin(x),np.amax(x),nbin+1)
+    else:
+        steps=np.logspace(np.log10(np.amin(x)),np.log10(np.amax(x)),nbin+1)
 
-    step=abs(np.amax(x)-np.amin(x))/float(nbin)
-
-    for i in range(0,nbin):
-        x_lower=np.append(x_lower,np.amin(x)+step*float(i))
-        x_upper=np.append(x_upper,np.amin(x)+step*float(i+1))
-        x_mid=np.append(x_mid,(x_lower[-1]+x_upper[-1])/2.)
+    x_lower=steps[:-1]
+    x_upper=steps[1:]
+    x_mid=(x_upper+x_lower)/2.
 
     for j in range(0,nbin):
         indx=(x>=x_lower[j]) * (x<=x_upper[j])
@@ -73,12 +72,12 @@ def dx_function(x,nx=10):
 
     return x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
 
-def mean_prof(x,y,nbin=10,bintype='fix',nsum=False,median=False):
+def mean_prof(x,y,nbin=10,bintype='fix',steptype='linear',nsum=False,median=False):
     #Calculate mean profile of parameter y that depends on x  
     if bintype=='num':
         x_lower,x_mid,x_upper,x_hist=nbinmaker(x,nbin,nsum)
     else:
-        x_lower,x_mid,x_upper,x_hist=binmaker(x,nbin,nsum)
+        x_lower,x_mid,x_upper,x_hist=binmaker(x,nbin,nsum,steptype=steptype)
 
     y_bin=[]
     y_sig=[]
@@ -103,7 +102,7 @@ def mean_prof(x,y,nbin=10,bintype='fix',nsum=False,median=False):
                 y_bin=np.append(y_bin,0.0)
                 y_sig=np.append(y_sig,0.0)
 
-    return x_bin,y_bin,y_sig
+    return np.array(x_bin),np.array(y_bin),np.array(y_sig)
 
 def smooth(x,y,nbin=10,bintype='fix',median=False,**kwargs):
     #Smooth a profile

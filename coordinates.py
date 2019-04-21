@@ -87,3 +87,8 @@ def sky_coords(cluster):
     	 cluster.to_cluster()
 
     return ra,dec,d0,pmra,pmdec,vr0
+
+def cyl_coords(cluster):
+    r,theta,z=bovy_coords.rect_to_cyl(cluster.x,cluster.y,cluster.z)
+    vr,vtheta,vz=bovy_coords.rect_to_cyl_vec(cluster.vx,cluster.vy,cluster.vz,cluster.x,cluster.y,cluster.z)
+    return r,theta,z,vr,vtheta,z

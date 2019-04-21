@@ -1,4 +1,3 @@
-#get_nbody includes functions to convert Nbody simulation data to StarCluster and Stars 
 #The StarCluster class
 from cluster import *
 #Routines for loading or setting up starclusters (both depend on cluster.py)
@@ -8,6 +7,8 @@ from setup import *
 from functions import *
 #Functions focussed on the cluster's orbit (depends on cluster.py, recipes.py and operations.py)
 from orbit import *
+#Method for quickly evolving cluster from initial conditions
+from evolve import *
 #Profiles of functions: (depends on recipes.py, operations.py, constants.py, and coordinates.py)
 from profiles import *
 #Routines for making common plots (depends on profiles.py)
@@ -17,5 +18,7 @@ from animate import *
 from output import *
 #Commonly used constants
 from constants import *
+#Commonly used coordinates
+from coordinates import *
 #General recipes
 from recipes import *

@@ -3,6 +3,7 @@
 
 from functions import *
 from profiles import *
+from operations import *
 import numpy as np
 from coordinates import sky_coords
 from cluster import sub_cluster
@@ -85,7 +86,7 @@ def trelax_prof_out(cluster,fileout,multimass=True,projected=False):
 
     fileout.write("\n")
 
-def p_prof_out(cluster,fileout,nrad=10,projected=False):
+def p_prof_out(cluster,fileout,nrad=20,projected=False):
     #Write density profile (pprof.npy)
     fileout.write("%f " % (cluster.tphys))
     if cluster.rn==None or len(cluster.rn)!=nrad:
@@ -222,5 +223,22 @@ def snapout(cluster,filename,energies=False,observations=False):
             np.savetxt(filename,np.olumn_stack([cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.id,cluster.kw,cluster.kin,cluster.pot,cluster.etot]))
         else:
             np.savetxt(filename,np.column_stack([cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.id,cluster.kw]))
+
+    return 0
+
+def fortout(cluster,filename='fort.10',reset_nbody_scale=False,reset_nbody_mass=True,reset_nbody_radii=True):
+    #Output a snapshot in fort.10 format
+    units0,origin0,center0=save_cluster(cluster)
+    cluster.to_center()
+
+    if reset_nbody_scale:
+        new_nbody_scale(cluster,mass=reset_nbody_mass,radii=reset_nbody_radii)
+
+    cluster.to_nbody()
+
+    np.savetxt(filename,np.column_stack([cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz]))
+
+    return_cluster(cluster,units0,origin0,center0)
+
 
     return 0

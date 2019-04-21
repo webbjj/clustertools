@@ -6,6 +6,8 @@ import limepy
 from limepy import limepy
 from limepy import sample
 
+from profiles import m_prof
+
 def setup_cluster(ctype,units0='realpc',origin0='cluster',orbit=None,**kwargs):
     #setup_cluster is the main function for setting up clusters, built around LIMEPY
    
@@ -22,16 +24,17 @@ def setup_cluster(ctype,units0='realpc',origin0='cluster',orbit=None,**kwargs):
     #Generate cluster using limepy
     if ctype=='limepy':
         g=kwargs.pop('g')
-        cluster=get_limepy(units0=units0,origin0=origin0,g=g,**kwargs)
+        cluster=get_limepy(g=g,**kwargs)
     elif ctype=='woolley':
         g=kwargs.pop('g',0)
-        cluster=get_limepy(units0=units0,origin0=origin0,g=g,**kwargs)        
+        cluster=get_limepy(g=g,**kwargs)        
     elif ctype=='king':
         g=kwargs.pop('g',1)
-        cluster=get_limepy(units0=units0,origin0=origin0,g=g,**kwargs)
+        cluster=get_limepy(g=g,**kwargs)
     elif ctype=='wilson':
         g=kwargs.pop('g',2)
-        cluster=get_limepy(units0=units0,origin0=origin0,g=g,**kwargs)
+        cluster=get_limepy(g=g,**kwargs)
+
 
    #Add galpy orbit if given
     if orbit!=None:
@@ -43,12 +46,12 @@ def setup_cluster(ctype,units0='realpc',origin0='cluster',orbit=None,**kwargs):
 
     return cluster
 
-def get_limepy(units0='realpc',origin0='cluster',g=1,**kwargs):
+def get_limepy(g=1,**kwargs):
     phi0=float(kwargs.get('phi0'))
-
     project=bool(kwargs.get('project',False))
 
-    if units0=='realpc':
+    if 'M' in kwargs:
+        units='realpc'
         M=float(kwargs.get('M'))
         if 'rt' in kwargs:
             rt=float(kwargs.get('rt'))  
@@ -62,18 +65,17 @@ def get_limepy(units0='realpc',origin0='cluster',g=1,**kwargs):
         elif 'r0' in kwargs:
             r0=float(kwargs.get('r0'))      
             lmodel=limepy(phi0,g,M=M,r0=r0,project=project)
+        else:
+            lmodel=limepy(phi0,g,M=M,r0=1.,project=project)
     else:
-        lmodel=limepy(phi0,g,project=project)
+        units='nbody'
+        lmodel=limepy(phi0,g,G=1, M=1, rv=1,project=project)
 
     N=int(kwargs.get('N',1000))
 
     ldata=sample(lmodel,N=N)
 
-    if units0=='realpc':
-        cluster=StarCluster(N,units='realpc',origin='cluster')
-    else:
-        cluster=StarCluster(N,units='nbody',origin='cluster')
-
+    cluster=StarCluster(N,units=units,origin='cluster')
     cluster.add_stars(np.linspace(1,N,N,dtype=int),ldata.m,ldata.x,ldata.y,ldata.z,ldata.vx,ldata.vy,ldata.vz)
     cluster.find_center()
     cluster.key_params()
@@ -171,17 +173,49 @@ def get_imf(mlimits = [0.1, 50.0], alphas = [-1.35], ntot=1, mtot=None, do_rando
         ntot=int(mtot/np.mean(masses))
         masses=masses[0:ntot]
 
-    return masses
+    return np.array(masses)
 
 def get_segregated_imf(cluster,delta_alpha,alpha50, mlimits = [0.1, 50.0],do_random=True):
+    #TO DO - maintain number profile or mass profile?
 
-    m=[]
-    for i in range(0,cluster.ntot):
-        #Find local alpha
-        ydalpha=delta_alpha*np.log(cluster.r[i]/cluster.rm)+alpha50
-        m.append(get_imf(mlimits = mlimits, alphas = [ydalpha], ntot=1,do_random=do_random)[0])
+    if False:
+        rprof,mprof,nprof=m_prof(cluster,cumulative=True,nrad=50)
+        rprof=np.array(rprof)
+        mprof=np.array(mprof)
 
-    cluster.m=np.array(m)
+        m=[]
+        msum=0.
+        ns=0
+        while ns < cluster.ntot:
+            indx=cluster.rorder[ns]
+            if cluster.r[indx] <= rprof[0]:
+                rindx=0
+            elif cluster.r[indx] >= rprof[-1]:
+                rindx=-1
+            else:
+                rindx=np.argwhere(cluster.r[indx]<=rprof)[-1]
+
+            #Find local alpha
+            ydalpha=delta_alpha*np.log(cluster.r[indx]/cluster.rm)+alpha50
+            mtemp=get_imf(mlimits = mlimits, alphas = [ydalpha], ntot=1,do_random=do_random)[0]
+            
+            if ns==0:
+                m.append(mtemp)
+                msum+=m[-1]
+                ns+=1
+            else:
+                if msum+mtemp <= mprof[rindx] or (mprof[rindx]-msum) <= mlimits[0]:
+                    m.append(mtemp)
+                    msum+=m[-1]
+                    ns+=1
+    else:
+        m=[]
+        for i in range(0,cluster.ntot):
+            #Find local alpha
+            ydalpha=delta_alpha*np.log(cluster.r[i]/cluster.rm)+alpha50
+            m.append(get_imf(mlimits = mlimits, alphas = [ydalpha], ntot=1,do_random=do_random)[0])
+
+    return np.array(m)
 
 
 

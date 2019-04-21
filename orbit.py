@@ -2,13 +2,15 @@
 
 from galpy.orbit import Orbit, Orbits
 from galpy.util import bovy_coords,bovy_conversion
+from galpy import potential
 from galpy.potential import LogarithmicHaloPotential,MWPotential2014,rtide
 
 import numpy as np
-from cluster import StarCluster
 
-from recipes import rotate
+from recipes import rotate,interpolate
 from operations import save_cluster,return_cluster
+from profiles import rho_prof
+from plots import *
 
 def initialize_orbit(cluster,from_center=False,r0=8.,v0=220.):
  
@@ -52,6 +54,16 @@ def initialize_orbits(cluster,r0=8.,v0=220.):
     return_cluster(cluster,units0,origin0,center0)
 
     return os
+
+def integrate_orbit(cluster,pot,tfinal=12.0,nt=1000,r0=8.,v0=220.,plot=False):
+    cluster.orbit=initialize_orbit(cluster)
+    ts=np.linspace(0,tfinal/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),nt)
+    cluster.orbit.integrate(ts,pot)
+
+    if plot:
+        cluster.orbit.plot()
+
+    return ts,cluster.orbit
 
 def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,rmax=None,emin=None,emax=None,r0=8.,v0=220.):
     cluster.tphys+=dt
@@ -134,13 +146,23 @@ def orbit_interpolate(cluster,dt,pot,from_center=False,do_tails=False,rmin=None,
     cluster.vxgc,cluster.vygc,cluster.vzgc=cluster.orbit.vx(ts[-1]),cluster.orbit.vy(ts[-1]),cluster.orbit.vz(ts[-1])
 
     if do_tails:
-        print('DO TAILS')
+        cluster.to_galaxy()
+        cluster.to_galpy()
 
-        tail=StarCluster(np.sum(tindx),0.0,units=cluster.units,origin=cluster.origin,center=cluster.center)
-        tail.add_stars(cluster.id[tindx],cluster.m[tindx],cluster.x[tindx],cluster.y[tindx],cluster.z[tindx],cluster.vx[tindx],cluster.vy[tindx],cluster.vz[tindx])
+        x,y,z=cluster.x[tindx],cluster.y[tindx],cluster.z[tindx]
+        vx,vy,vz=cluster.vx[tindx],cluster.vy[tindx],cluster.vz[tindx]
 
-        otail=initialize_orbits(tail)
+        R,phi,z=bovy_coords.rect_to_cyl(x,y,z)
+        vR,vT,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z)
+
+        vxvv=np.array([R,vR,vT,z,vz,phi])
+        vxvv=np.rot90(vxvv)
+        otail=Orbits(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+
+        cluster.to_realkpc()
+
         ts=np.linspace(0,dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),10)
+
         print('INTEGRATE ORBITS')
 
         otail.integrate(ts,pot)
@@ -321,7 +343,7 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
         rt*=1000.0*r0
     elif units0=='realkpc':
         rt*=r0
-    elif units=='nbody':
+    elif units0=='nbody':
         rt*=(1000.0*r0/cluster.rbar)
 
     cluster.rt=rt
@@ -329,3 +351,95 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
     return_cluster(cluster,units0,origin0,center0)
 
     return rt
+
+def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,**kwargs):
+
+    units0,origin0,center0=save_cluster(cluster)
+
+    cluster.to_center()
+    cluster.to_galpy()
+
+    if rgc!=None:
+        R=rgc/r0
+        z=0.0
+    else:
+        R=np.sqrt(cluster.xgc**2.0+cluster.ygc**2.0)
+        z=cluster.zgc
+
+    #Calculate local density:
+    rho_local=potential.evaluateDensities(pot,R,z,ro=r0,vo=v0)/bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)
+
+    rprof,pprof,nprof=rho_prof(cluster,nrad=nrad,projected=projected,obs_cut=obs_cut)
+
+    if pprof[-1] > rho_local:
+        rl=rprof[-1]
+    else:
+        indx=np.argwhere(pprof < rho_local)[0][0]
+        r1=(rprof[indx-1],pprof[indx-1])
+        r2=(rprof[indx],pprof[indx])
+
+        rl=interpolate(r1,r2,y=rho_local)
+
+    print('FINAL RL: ',rl*r0*1000.0, 'pc')
+
+    if units0=='realpc':
+        rl*=1000.0*r0
+    elif units0=='realkpc':
+        rl*=r0
+    elif units=='nbody':
+        rl*=(1000.0*r0/cluster.rbar)
+
+    cluster.rl=rl
+
+    return_cluster(cluster,units0,origin0,center0)
+
+
+    if plot:
+        print('LOCAL DENSITY = ',rho_local)    
+
+        filename=kwargs.pop('filename',None)   
+        overplot=kwargs.pop('overplot',False)        
+     
+        if cluster.units=='nbody':
+            rprof*=(r0*1000.0/cluster.rbar)
+            pprof*=(bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)*(cluster.rbar**3.)/cluster.zmbar)
+            rho_local*=(bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)*(cluster.rbar**3.)/cluster.zmbar)
+            xunits=' (NBODY)'
+            yunits=' (NBODY)'
+        elif cluster.units=='realpc':
+            rprof*=(r0*1000.0)
+            pprof*=bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)
+            rho_local*=bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)
+            xunits=' (pc)'
+            if projected:
+                yunits=' Msun/pc^2'
+            else:
+                yunits=' Msun/pc^3'
+        elif cluster.units=='realkpc':
+            rprof*=r0
+            pprof*=bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)*(1000.0**3.)
+            rho_local*=bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)*(1000.0**3.)
+
+            xunits=' (kpc)'
+            if projected:
+                yunits=' Msun/kpc^2'
+            else:
+                yunits=' Msun/kpc^3'
+        elif cluster.units=='galpy':
+            xunits=' (GALPY)'
+            yunits=' (GALPY)'
+
+
+        else:
+            xunits=''
+            yunits=''
+
+        x,y,n=rprof,pprof,nprof
+        nlplot(x,y,xlabel='R'+xunits,ylabel='rho'+yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        nlplot(x,np.ones(len(x))*rho_local,'--',overplot=True)
+        nlplot(np.ones(len(y))*rl,y,'--',overplot=True)
+
+        if filename!=None:
+            plt.savefig(filename)
+
+    return rl

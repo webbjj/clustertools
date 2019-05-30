@@ -11,10 +11,8 @@ from galpy.potential import LogarithmicHaloPotential,MWPotential2014,NFWPotentia
 
 #Maximum timestep to read to
 tphys_max=12100.0
-#Calculate energies
-energies=False
-#Track center of cluster via stars within tidal or limiting racius
-track_centre=False
+#Calculate boundedness?
+boundedness=False
 #Use 3D or projected values?
 projected=False
 #Calculate GALPY orbit
@@ -24,7 +22,7 @@ v0=220.
 
 #Extrct key parameters
 extrct=True
-rtextrct=False
+rtextrct=True
 dvprof=False
 vprof=False
 pprof=False
@@ -46,39 +44,28 @@ obscut=None #WIP
 #Rtide calculation
 calc_rtide=False
 calc_rlim=False
-if calc_rlim:
-    rprefix='rl'
-else:
-    rprefix='rt'
-
 pot=MWPotential2014
 #pot=NFWPotential(a=2.,normalize=0.35, ro=r0, vo=v0)
 rtiterate=0
 #Specificy rgc or rtmax if want to keep rt fixed
 rgc=None
-rtmax=None
+rtmax=145.0
 #Specify number of radial bins for calculating rlim
 nrad=50
 
 #Extrct snaps shops
-snaps=False
+snaps=True
 snapdir= 'snaps/'
-rtsnaps=False
-rtsnapdir= 'rtsnaps/'
-#Set origin (centre,cluster,galaxy)
+#Set origin (center,cluster,galaxy)
 set_origin='galaxy'
 #Set units (nbody,realpc,realkpc,galpy)
 set_units='realkpc'
 
 def tsep(ctype,**kwargs):
  
-    nstep=0
-
     print('CTYPE = ',ctype)
     print(kwargs)    
     wdir=kwargs.get('wdir','./')
-    units=kwargs.pop('units','realpc')
-    origin=kwargs.pop('origin','cluster')
 
     #Open extrct files for writing
     if extrct: exfile=open(wdir+'extrct.npy','w')
@@ -89,12 +76,12 @@ def tsep(ctype,**kwargs):
     if vprof: vfile=open(wdir+'vprof.npy','w')
     
     if rtextrct:
-        rtexfile=open(wdir+rprefix+'extrct.npy','w')
-        if dvprof:rtdvfile=open(wdir+rprefix+'dvprof.npy','w')
-        if dalpha:rtdalpha_file=open(wdir+rprefix+'dalpha_prof.npy','w')
-        if aprof:rtaprof_file=open(wdir+rprefix+'alpha_prof.npy','w')
-        if pprof:rtpfile=open(wdir+rprefix+'pprof.npy','w')
-        if vprof:rtdvfile=open(wdir+rprefix+'vprof.npy','w')
+        rtexfile=open(wdir+'rtextrct.npy','w')
+        if dvprof:rtdvfile=open(wdir+'rtdvprof.npy','w')
+        if dalpha:rtdalpha_file=open(wdir+'rtdalpha_prof.npy','w')
+        if aprof:rtaprof_file=open(wdir+'rtalpha_prof.npy','w')
+        if pprof:rtpfile=open(wdir+'rtpprof.npy','w')
+        if vprof:rtdvfile=open(wdir+'rtvprof.npy','w')
 
 
     list_file=kwargs.get('list',None)
@@ -104,11 +91,10 @@ def tsep(ctype,**kwargs):
     else:
         do_filenames=False
 
-    if snaps and not os.path.exists(wdir+snapdir):
-        os.makedirs(wdir+snapdir)
 
-    if rtsnaps and not os.path.exists(wdir+rtsnapdir):
-        os.makedirs(wdir+rtsnapdir)
+    snapdir=wdir+'snaps/'
+    if snaps and not os.path.exists(snapdir):
+        os.makedirs(snapdir)
 
     #Output file for orbital and COM information
     norbit=open(wdir+'norbit.npy','w')
@@ -127,21 +113,18 @@ def tsep(ctype,**kwargs):
 
     #Initialize cluster
     if do_filenames:
-        print(filenames[nstep])
-        cluster=npy.load_cluster(ctype,units=units,origin=origin,ofile=ofile,filename=filenames[nstep],**kwargs)
+        print(filenames[0])
+        cluster=npy.load_cluster(ctype,ofile=ofile,filename=filenames[0],**kwargs)
     else:
-        cluster=npy.load_cluster(ctype,units=units,origin=origin,ofile=ofile,**kwargs)
-
-    units0,origin0=npy.save_cluster(cluster)
+        cluster=npy.load_cluster(ctype,ofile=ofile,**kwargs)
 
     if gorbit:
         go=npy.initialize_orbit(cluster)
         ts=np.linspace(0.,(tphys_max/1000.0)/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),1200)
         go.integrate(ts,pot)
 
-    bound_id=cluster.id
-
     #Begin reading in timesteps
+    nstep=0
     while cluster.ntot>0 and cluster.tphys<=tphys_max:
                 
         print('READING: ',nstep, ctype, cluster.tphys, cluster.ntot, cluster.nsnap)
@@ -152,18 +135,16 @@ def tsep(ctype,**kwargs):
             vxgc,vygc,vzgc=go.vx(to),go.vy(to),go.vz(to)
             cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,'realkpc')
 
-        #Shift to clustercentric units for analysis
-        cluster.to_cluster()
-        if track_centre:
-            bindx=np.in1d(cluster.id,bound_id)
-            print('DEBUG BINDX: ',np.sum(bindx))
-            cluster.find_centre(indx=bindx)
-
-        print('CLUSTER ORBIT: ',cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc)
-        print('MOVE TO CENTER: ',cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc)
+        #Shif to clustercentric units of analysis
+        if cluster.origin=='galaxy': 
+            cluster.to_cluster()
+            if gorbit:
+                cluster.find_center()
 
         cluster.to_realpc()
-        cluster.to_centre()
+        print('CLUSTER ORBIT: ',cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc)
+        print('MOVE TO CENTER: ',cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc)
+        cluster.to_center()
 
         if extrct:npy.extrct_out(cluster,exfile,projected=projected)
         if dvprof:npy.sigv_out(cluster,dvfile,projected=projected)
@@ -172,26 +153,16 @@ def tsep(ctype,**kwargs):
         if dalpha: npy.dalpha_out(cluster,dalpha_file,projected=projected)
         if aprof: npy.alpha_prof_out(cluster,aprof_file,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obscut)
 
-        if energies:
-            ektot,pottot=npy.energies(cluster,specific=True)
-            nbound=np.sum((cluster.etot<0.))
-
-        if calc_rtide or calc_rlim:
-            if energies:
-                rtcluster=npy.sub_cluster(cluster,emax=0.0,indx=bindx)
+        if rtextrct:
             if calc_rtide:
                 rtide=npy.rtidal(cluster,pot,rtiterate,rgc)
-                rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rtide,indx=bindx)
+                rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rtide)
             elif calc_rlim:
                 rlim=npy.rlimiting(cluster,pot,rgc,nrad=nrad,projected=projected,obs_cut=obscut)
-                rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rlim,indx=bindx)
+                rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rlim)
             else:
-                rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rtmax,indx=bindx)
+                rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rtmax)
            
-            bound_id=rtcluster.id
-
-        if rtextrct and rtcluster.ntot>0:
-
             npy.extrct_out(rtcluster,rtexfile,projected=projected)
 
             if dvprof: npy.sigv_out(rtcluster,rtdvfile,projected=projected)
@@ -199,6 +170,10 @@ def tsep(ctype,**kwargs):
             if vprof: npy.v_out(rtcluster,rtvfile,coord=coord,projected=projected)
             if dalpha: npy.dalpha_out(rtcluster,rtdalpha_file,projected=projected)
             if aprof: npy.alpha_prof_out(rtcluster,rtaprof_file,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obscut)
+
+        if boundedness:
+            ektot,pottot=npy.energies(cluster,specific=True)
+            nbound=np.sum(cluster.etot < 0)
 
         if snaps:
             if cluster.units!=set_units:
@@ -216,28 +191,9 @@ def tsep(ctype,**kwargs):
                 cluster.to_galaxy()
 
             npy.snapout(cluster,os.path.join(snapdir,'%s.dat' % str(nstep).zfill(5)))
-
-        if rtsnaps and rtcluster.ntot>0:
-            if rtcluster.units!=set_units:
-                if set_units=='realkpc':
-                    rtcluster.to_realkpc()
-                elif set_units=='realpc':
-                    rtcluster.to_realpc()
-                elif set_units=='nbody':
-                    rtcluster.to_nbody()
-
-            #Split snapshots and save to separate files
-            if set_origin=='cluster':
-                rtcluster.to_cluster()
-            elif set_origin=='galaxy':
-                rtcluster.to_galaxy()
-
-            npy.snapout(rtcluster,os.path.join(rtsnapdir,'%s.dat' % str(nstep).zfill(5)))
     
         norbit.write("%f %f %f %f %f %f %f %f %f %f %f %f %f\n" % (cluster.tphys,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc))
         
-        npy.return_cluster(cluster,units0,origin0)
-
         if do_filenames and nstep+1<len(filenames):
             print(filenames[nstep+1])
             cluster=npy.advance_cluster(cluster,ofile,filename=filenames[nstep+1],**kwargs)

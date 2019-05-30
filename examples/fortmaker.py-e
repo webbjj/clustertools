@@ -49,16 +49,16 @@ def fmaker(ctype,tphys_max,**kwargs):
 
             print('CLUSTER ORBIT: ',cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc)
             print('CLUSTER CENTER: ',cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc)
-            cluster.to_centre()
+            cluster.to_center()
 
             if 'rmax' in kwargs:
                 rmax=float(kwargs.get('rmax'))
                 print('GET RADII: ',rmax)
-                new_cluster=npy.sub_cluster(cluster,rmax=rmax,new_centre=True)
+                new_cluster=npy.sub_cluster(cluster,rmax=rmax,new_center=True)
             elif boundedness:
                 print('GET ENERGIES: ',boundedness)
                 npy.energies(cluster,specific=True)
-                new_cluster=npy.sub_cluster(cluster,e_max=0.,new_centre=True)
+                new_cluster=npy.sub_cluster(cluster,e_max=0.,new_center=True)
             else:
                 new_cluster=cluster
 

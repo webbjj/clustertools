@@ -288,6 +288,54 @@ def potential_energy_parallel(cluster):
 
     return energy
 
+def closest_star(cluster,projected=False):
+
+    if projected:
+        z=np.zeros(cluster.ntot)
+        x=np.array([cluster.x,cluster.y,z]).T
+    else:
+        x=np.array([cluster.x,cluster.y,cluster.z]).T
+    return minimum_distance(x)
+
+@numba.njit
+def minimum_distance(cluster):
+    """
+    NAME:
+
+       stellar_distances
+
+    PURPOSE:
+
+       Find distances between each star
+
+    INPUT:
+
+       cluster=[x,y,z].T
+
+    OUTPUT:
+
+       distances
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+    """
+    min_distance=[-1.]*len(cluster)
+    for i in range(len(cluster)-1):
+        for j in range(i + 1, len(cluster)):
+            r = distance(cluster[i],cluster[j])
+            if min_distance[i]<0:
+                min_distance[i]=r
+            else:
+                min_distance[i]=np.minimum(min_distance[i],r)
+
+            if min_distance[j]<0:
+                min_distance[j]=r
+            else:
+                min_distance[j]=np.minimum(min_distance[j],r)              
+
+    return min_distance
+
 
 def virialize(cluster,specific=True,full=True):
     """
@@ -669,3 +717,4 @@ def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=N
             plt.savefig(filename)
 
     return m_mean,sigvm,eta,eeta,yeta,eyeta
+

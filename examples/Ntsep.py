@@ -53,6 +53,7 @@ else:
 
 pot=MWPotential2014
 #pot=NFWPotential(a=2.,normalize=0.35, ro=r0, vo=v0)
+#pot=LogarithmicHaloPotential(normalize=1.,q=1.0)
 rtiterate=0
 #Specificy rgc or rtmax if want to keep rt fixed
 rgc=None
@@ -158,6 +159,8 @@ def tsep(ctype,**kwargs):
             bindx=np.in1d(cluster.id,bound_id)
             print('DEBUG BINDX: ',np.sum(bindx))
             cluster.find_centre(indx=bindx)
+        else:
+            bindx=np.ones(cluster.ntot,bool)
 
         print('CLUSTER ORBIT: ',cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc)
         print('MOVE TO CENTER: ',cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc)

@@ -17,7 +17,7 @@ def rect_to_sphere(cluster):
 
     PURPOSE:
 
-       Get the spherical coordinates of every stars in the cluster
+       Get the spherical coordinates of every star in the cluster
 
     INPUT:
 
@@ -51,7 +51,7 @@ def sky_coords(cluster):
 
     PURPOSE:
 
-       Get the sky coordinates of every stars in the cluster
+       Get the sky coordinates of every star in the cluster
 
     INPUT:
 
@@ -88,6 +88,28 @@ def sky_coords(cluster):
     return ra,dec,d0,pmra,pmdec,vr0
 
 def cyl_coords(cluster):
+    """
+    NAME:
+
+       cyl_coords
+
+    PURPOSE:
+
+       Get the cylindrical coordinates of every star in the cluster
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+    OUTPUT:
+
+       r,theta,z,vr,vtheta,vz
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
     r,theta,z=bovy_coords.rect_to_cyl(cluster.x,cluster.y,cluster.z)
     vr,vtheta,vz=bovy_coords.rect_to_cyl_vec(cluster.vx,cluster.vy,cluster.vz,cluster.x,cluster.y,cluster.z)
     return r,theta,z,vr,vtheta,vz

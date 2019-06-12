@@ -1,13 +1,12 @@
+__version__ = "1.0"
+
 from .nbodypy.cluster import * 
 from .nbodypy.functions import * 
 from .nbodypy.load import * 
 from .nbodypy.operations import * 
 from .nbodypy.orbit import * 
 from .nbodypy.profiles import *
-from .nbodypy.setup import *
-
-from .simulation.evolve import *
-from .simulation.simulation import *
+from .nbodypy.initialize import *
 
 from .util.constants import *
 from .util.coordinates import *

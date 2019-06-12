@@ -2,6 +2,8 @@
 #Only functions and profiles should be called here
 
 import numpy as np
+from galpy.util import bovy_conversion
+
 
 from .coordinates import sky_coords
 from ..nbodypy.cluster import sub_cluster
@@ -10,8 +12,31 @@ from ..nbodypy.profiles import *
 from ..nbodypy.operations import *
 
 def extrct_out(cluster,fileout,projected=False):
-    #Write key properties (extrct.npy)
-    
+    """
+    NAME:
+
+       extrct_out
+
+    PURPOSE:
+
+       Extrct key cluster properties and write to file
+       --> N, Nbinary, trh, mtot, rlagrange_1-10
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       fileout - opened file to write data to
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """    
     units0=cluster.units
     origin0=cluster.origin
 
@@ -61,8 +86,34 @@ def extrct_out(cluster,fileout,projected=False):
         cluster.to_galaxy()
 
 def snapout(cluster,filename,energies=False,observations=False):
-    #Output a snapshot in nbodypy format
+    """
+    NAME:
 
+       snapout
+
+    PURPOSE:
+
+       Output a snapshot in nbodypy format
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       filename - name of file to be written to
+
+       energies - include energies in output (Default: False)
+
+       observations - include sky values of stars (Default: False) 
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
     if observations:
 
         ra,dec,d0,pmra,pmdec,vr0=sky_coords(cluster)
@@ -81,7 +132,36 @@ def snapout(cluster,filename,energies=False,observations=False):
     return 0
 
 def fortout(cluster,filename='fort.10',reset_nbody_scale=False,reset_nbody_mass=True,reset_nbody_radii=True):
-    #Output a snapshot in fort.10 format so it can be used to star a new Nbody6 simulation
+    """
+    NAME:
+
+       fortout
+
+    PURPOSE:
+
+       Output a snapshot in NBODY6 fort.10 format
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       filename - name of file to be written to (Default: 'fort.10')
+
+       reset_nbody_scale - reset nbody scaling parameters (Default: False)
+
+       reset_nbody_mass - reset nbody mass scaling parameter (Default: False)
+
+       reset_nbody_radii - reset nbody radii scaling parameter (Default: False)
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """ 
     units0,origin0=save_cluster(cluster)
     cluster.to_centre()
 
@@ -96,3 +176,43 @@ def fortout(cluster,filename='fort.10',reset_nbody_scale=False,reset_nbody_mass=
 
 
     return 0
+
+def gyrout(cluster,filename='init.nemo.dat'):
+    """
+    NAME:
+
+       gyrout
+
+    PURPOSE:
+
+       Output a snapshot in gyrfalcon/NEMO format
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       filename - name of file to be written to (Default: 'init.nemo.dat')
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """ 
+    vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
+    mcon=222288.4543021174
+
+    units0,origin0=save_cluster(cluster)
+    cluster.to_galaxy()
+    cluster.to_realkpc()
+
+    np.savetxt(filename,np.column_stack([cluster.m/mcon,cluster.x,cluster.y,cluster.z,cluster.vx/vcon,cluster.vy/vcon,cluster.vz/vcon]))
+
+    return_cluster(cluster,units0,origin0)
+
+    return 0
+
+

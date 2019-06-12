@@ -1,6 +1,4 @@
-#Make key plots given StarCluster
-#import matplotlib
-#matplotlib.use('Agg')
+#A matplotlib.pyplot wrapper for making key StarCluster plots
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,27 +11,6 @@ import matplotlib.colors as colors
 bovy_plot.bovy_print(axes_labelsize=18.,xtick_labelsize=14.,ytick_labelsize=14.)
 current_palette = sns.color_palette()
 
-
-# @mpl_decorator(fig='new', )
-# def _nplot(x, y, alpha=.1, **kw):
-#     splt.plot(x, y, **kw)
-
-#     if xlim!=None:
-#         plt.xlim(xlim)
-#         if ylim==None and scale:
-#             xindx=(x>=xlim[0]) * (x <=xlim[1])
-#             ymin=np.min(y[xindx])
-#             ymax=np.max(y[xindx])
-#             plt.ylim((ymin,ymax))
-
-#     if ylim!=None:
-#         plt.ylim(ylim)
-#         if xlim==None and scale:
-#             yindx=(y>=ylim[0]) * (y <=ylim[1])
-#             xmin=np.min(x[yindx])
-#             xmax=np.max(x[yindx])
-#             plt.xlim((xmin,xmax))
-
 def nscatter(x,y,z=None,xlabel='',ylabel='',legend=False,title='',xlim=None,ylim=None,scale=True,filename=None,overplot=False,**kwargs):
 
     x=np.asarray(x)
@@ -44,12 +21,12 @@ def nscatter(x,y,z=None,xlabel='',ylabel='',legend=False,title='',xlim=None,ylim
 
     alpha=kwargs.pop('alpha',1.0)
 
-    if z!=None:
+    if z is None:
+        out=plt.scatter(x,y,alpha=alpha,**kwargs)
+    else:
         z=np.asarray(z)
         out=plt.scatter(x,y,c=z,alpha=alpha,**kwargs)
         plt.colorbar(out)
-    else:
-        out=plt.scatter(x,y,alpha=alpha,**kwargs)
 
     if overplot:
         return out
@@ -107,16 +84,16 @@ def nplot(x,y,ptype='.',xlabel='',ylabel='',legend=False,title='',xlim=None,ylim
             plt.xlim(xlim)
             if ylim==None and scale:
                 xindx=(x>=xlim[0]) * (x <=xlim[1])
-                ymin=np.min(y[xindx])
-                ymax=np.max(y[xindx])
+                ymin=np.amin(y[xindx])
+                ymax=np.amax(y[xindx])
                 plt.ylim((ymin,ymax))
 
         if ylim!=None:
             plt.ylim(ylim)
             if xlim==None and scale:
                 yindx=(y>=ylim[0]) * (y <=ylim[1])
-                xmin=np.min(x[yindx])
-                xmax=np.max(x[yindx])
+                xmin=np.amin(x[yindx])
+                xmax=np.amax(x[yindx])
                 plt.xlim((xmin,xmax))
 
         plt.xlabel(xlabel)

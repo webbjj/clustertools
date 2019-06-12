@@ -228,7 +228,43 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
     return cluster
 
 def get_cluster_orbit(cluster,ofile,**kwargs):
-    
+    """
+    NAME:
+
+       get_cluster_orbit
+
+    PURPOSE:
+
+       Read in cluster oribit from an ascii file and apply it to StarCluster instance
+        -->Columns assumed to be time,x,y,z,vx,vy,vz.
+        -->As I have hardcoded for gc_orbit.dat, if a certain filename is commonly used
+        with specific columns, an if statement can easily be added.
+            --> Note that gc_orbit.dat comes from running 'grep 'CLUSTER ORBIT' logfile > gc_orbit.dat' on 
+            the standard Nbody6 logfile
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       ofile - opened orbit file
+
+    KWARGS:
+
+        ocontinue - Is this a continuation from a previous timestep, in which case read next line (default: False)
+        nsnap - if nsnap is provided, read line # nsnap from the orbit file
+        ounits - if you units are not the same as StarCluster units, provide them and they will be converted
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
+
+
     ocontinue=kwargs.get('ocontinue',False)
     nsnap=int(kwargs.get('nsnap',cluster.nsnap))
     ounits=kwargs.get('ounits',None)
@@ -274,6 +310,40 @@ def get_cluster_orbit(cluster,ofile,**kwargs):
     return
 
 def get_kwtype(cluster,kwfile):
+    """
+    NAME:
+
+       get_kwtype
+
+    PURPOSE:
+
+       Get stellar evolution type of the star (kw in Nbody6 syntax) if information is in a separate file
+       --> Columns assumed to be ID, KW
+       --> see def kwtypes() in cluster.py for what different kw types mean
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       kwfile - opened file containing kw type
+
+    KWARGS:
+
+        ocontinue - Is this a continuation from a previous timestep, in which case read next line (default: False)
+        nsnap - if nsnap is provided, read line # nsnap from the orbit file
+        ounits - if you units are not the same as StarCluster units, provide them and they will be converted
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
+
+
     kw= np.loadtxt(kwfile)[:,1]
     indx=cluster.id-1
     kw0=kw[indx]
@@ -281,6 +351,37 @@ def get_kwtype(cluster,kwfile):
 
 #Get StarCluster from Gyrfalcon output
 def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
+    """
+    NAME:
+
+       get_gyrfalcon
+
+    PURPOSE:
+
+       Extract a single snapshot from an ascii file output from a gyrfalcon simulation
+
+    INPUT:
+
+       filein - opened gyrfalcon file
+
+       units - units of data (default:'WDunits')
+
+       ofile - opened file containing orbital information
+
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
+
     if units=='WDunits':
         vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
         mcon=222288.4543021174
@@ -353,8 +454,38 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
 
     return cluster
 
-#Get StarCluster from NBODY6 using Jarrod Hurley's version of hrplot.f
 def get_nbody6_jarrod(fort82,fort83,ofile=None,**kwargs):
+    """
+    NAME:
+
+       get_nbody6_jarrod
+
+    PURPOSE:
+
+       Extract a single snapshot from the fort.82 and fort.83 files output by Jarrod Hurleys version of Nbody6
+       --> Difference between Jarrod's output and the public version is found in /Node/hrplot.f of Nbody6
+       --> Called for Nbody6 simulations with stellar evolution
+
+    INPUT:
+
+       fort82 - opened fort.82 file containing binary star information
+
+       fort83 - opened fort.83 file containing single star information
+
+       ofile - opened file containing orbital information
+
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     
     line1=fort83.readline().split()
     if (len(line1)==0):
@@ -522,8 +653,38 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None,**kwargs):
 
     return cluster
 
-#Get StarCluster from custom version of OUT34 and OUT9 (if binaries)
 def get_nbody6_out(out9,out34,**kwargs):
+    """
+    NAME:
+
+       get_nbody6_out34
+
+    PURPOSE:
+
+       Extract a single snapshot from the OUT9 and OUT34 output of Jeremy Webb's version of Nbody6
+       --> Difference between Jeremy's output and the public version is found in /Node/output.f of Nbody6
+       --> Called for Nbody6 simulations without stellar evolution
+
+    INPUT:
+
+       out9 - opened OUT34 file containing binary star information
+
+       out34 - opened OUT34 file containing single star information
+
+       ofile - opened file containing orbital information
+
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     
     line1=out34.readline().split()
     if (len(line1)==0):
@@ -707,8 +868,36 @@ def get_nbody6_out(out9,out34,**kwargs):
 
     return cluster
 
-#Get StarCluster from custom version of OUT34
 def get_nbody6_out34(out34,**kwargs):
+    """
+    NAME:
+
+       get_nbody6_out34
+
+    PURPOSE:
+
+       Extract a single snapshot from the OUT34 output of Jeremy Webb's version of Nbody6
+       --> Difference between Jeremy's output and the public version is found in /Node/output.f of Nbody6
+       --> Called for Nbody6 simulations without stellar evolution
+
+    INPUT:
+
+       out34 - opened OUT34 file containing single star information
+
+       ofile - opened file containing orbital information
+
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     
     line1=out34.readline().split()
     if (len(line1)==0):
@@ -810,9 +999,40 @@ def get_nbody6_out34(out34,**kwargs):
 
     return cluster
 
-#Get StarCluster snapshots produces by snapauto
 def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
-    
+    """
+    NAME:
+
+       get_nbody6_snapauto
+
+    PURPOSE:
+
+       Load a single snapshot as produced by Jongsuk Hong's snpauto.f routine for extracting snapshots from
+       Nbody6 and Nbody6++ binary files 
+
+    INPUT:
+
+       filename = name of file
+
+       units - units of input data (default: realkpc)
+
+       origin - origin of input data (default: cluster)
+
+       ofile - opened file containing orbital information
+
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
     nsnap=kwargs.get('nsnap','1')
     nzfill=int(kwargs.get('nzfill',5))   
     ocontinue=kwargs.get('ocontinue',False)
@@ -827,7 +1047,8 @@ def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None
             snap=np.loadtxt('%s%s%s' %(wdir,snapdir,filename),skiprows=nskip)
             data=open('%s%s%s' %(wdir,snapdir,filename),'r').readline().split()
         else:
-            print('NO FILE FOUND')
+            print()
+            print('NO FILE FOUND %s%s%s' % (wdir,snapdir,filename))
             cluster=StarCluster()
             print(cluster.ntot)
             return cluster
@@ -836,7 +1057,7 @@ def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None
         snap=np.loadtxt(('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)),skiprows=nskip)
         data=open('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend),'r').readline().split()
     else:
-        print('NO FILE FOUND')
+        print('NO FILE FOUND %s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend))
         cluster=StarCluster()
         print(cluster.ntot)
         return cluster
@@ -877,8 +1098,38 @@ def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None
 
     return cluster
 
-#Get StarCluster from standard nbodypy snapshot
 def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
+    """
+    NAME:
+
+       get_nbodypy_snapshot
+
+    PURPOSE:
+
+       Load a single snapshot as produced by nbodypy's snapout routine
+
+    INPUT:
+
+       filename = name of file
+
+       units - units of input data (default: realkpc)
+
+       origin - origin of input data (default: cluster)
+
+       ofile - opened file containing orbital information
+       
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
    
     nsnap=int(kwargs.get('nsnap','0'))
  
@@ -946,9 +1197,43 @@ def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=Non
 
     return cluster
 
-#Get generic from standard nbodypy snapshot
 def get_snapshot(filename,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,**kwargs):
-    
+    """
+    NAME:
+
+       get_snapshot
+
+    PURPOSE:
+
+       Load a generic snapshot where column names and numbers can be manually assigned
+
+    INPUT:
+
+       filename - name of file
+
+       col_names - names corresponding to mass, position, and velocity
+
+       col_nums - column numbers corresponding to each column name
+
+       units - units of input data (default: realkpc)
+
+       origin - origin of input data (default: cluster)
+
+       ofile - opened file containing orbital information
+       
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
     delimiter=kwargs.get('delimiter',None)
     wdir=kwargs.get('wdir','./')
     ocontinue=kwargs.get('ocontinue',False)
@@ -1027,6 +1312,32 @@ def get_snapshot(filename,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0
     return cluster
 
 def get_mycode():
+    """
+    NAME:
+
+       get_mycode
+
+    PURPOSE:
+
+       Empty shell for a new user to write their own routine for reading in data and generating a StarCluster instance
+
+    INPUT:
+
+       TBD
+       
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       XXXX - Written - XXXX
+    """
+    
     cluster=StarCluster(0.0)
     return cluster
 

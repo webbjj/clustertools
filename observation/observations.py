@@ -1,11 +1,35 @@
-#Routines for making Nbody Clusters look like Observations
-#WIP - Create an omask
+#Routines for analysing Nbody models as if they were Observations
 import numpy as np
 
-def obsrbinmaker(r,rm,obs_cut):
-    #Make radial bins based on an observed dataset
+def obsrbinmaker(r,rm,obs_mask):
+    """
+    NAME:
 
-    if obs_cut=='M30':
+       obsrbinmaker (WORK IN PROGRESS)
+
+    PURPOSE:
+
+       Radially bin data based on a set of observations
+       --> Want to include spatial and magnitude/mass cuts 
+
+    INPUT:
+
+       r - stellar radii
+
+       rm - cluster half-mass radius
+
+       obs_mask - name of observational mask to be placed on cluster (Only current working mask is M30)
+
+    OUTPUT:
+
+       r_lower,r_mean,r_upper,r_hist
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
+    if obs_mask=='M30':
         rh=61.800000000000004
         #In arcseconds:
         r_lower=np.array([10.0,20.0,40.0,200.0,250.0,350.0,650.0])

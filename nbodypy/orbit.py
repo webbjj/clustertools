@@ -1,6 +1,6 @@
 #Functions and Operations that heavily use galpy and focus on the cluster's orbit
 
-from galpy.orbit import Orbit, Orbits
+from galpy.orbit import Orbit
 from galpy.util import bovy_coords,bovy_conversion
 from galpy import potential
 from galpy.potential import LogarithmicHaloPotential,MWPotential2014,rtide
@@ -18,7 +18,33 @@ import astropy.coordinates as coord
 import astropy.units as u
 
 def initialize_orbit(cluster,from_centre=False,r0=8.,v0=220.):
- 
+    """
+    NAME:
+
+       initialize_orbit
+
+    PURPOSE:
+
+       Initialize a galpy orbit instance for the cluster
+
+    INPUT:
+
+       cluster - StarCluster
+
+       from_centre - genrate orbit from cluster's assigned galactocentric coordinates (default) or from its centre
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       orbit instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     units0,origin0=save_cluster(cluster)
     cluster.to_galpy()
 
@@ -40,6 +66,34 @@ def initialize_orbit(cluster,from_centre=False,r0=8.,v0=220.):
     return o
 
 def initialize_orbits(cluster,r0=8.,v0=220.):
+    """
+    NAME:
+
+       initialize_orbits
+
+    PURPOSE:
+
+       Initialize a galpy orbit for every stars in the cluster
+       --> Note currently depends on version of galpy with Orbits, which is soon to be replace by a generic Orbit function
+
+    INPUT:
+
+       cluster - StarCluster
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       orbit instance for each stars
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
+
     units0,origin0=save_cluster(cluster)
     cluster.to_galaxy()
     cluster.to_galpy()
@@ -52,13 +106,46 @@ def initialize_orbits(cluster,r0=8.,v0=220.):
 
     vxvv=np.array([R,vR,vT,z,vz,phi])
     vxvv=np.rot90(vxvv)
-    os=Orbits(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+    os=Orbit(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
 
     return_cluster(cluster,units0,origin0)
 
     return os
 
 def integrate_orbit(cluster,pot=MWPotential2014,tfinal=12.0,nt=1000,r0=8.,v0=220.,plot=False):
+    """
+    NAME:
+
+       integrate_orbit
+
+    PURPOSE:
+
+       Integrate a galpy orbit instance for the cluster
+
+    INPUT:
+
+       cluster - StarCluster
+
+       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
+
+       tfinal - final time (in Gyr) to integrate orbit to (Default: 12 Gyr)
+
+       nt - number of timesteps
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+       plot - show plot of cluster's orbit
+
+    OUTPUT:
+
+       timesteps, orbit instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     cluster.orbit=initialize_orbit(cluster)
     ts=np.linspace(0,tfinal/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),nt)
     cluster.orbit.integrate(ts,pot)
@@ -69,6 +156,45 @@ def integrate_orbit(cluster,pot=MWPotential2014,tfinal=12.0,nt=1000,r0=8.,v0=220
     return ts,cluster.orbit
 
 def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=False,rmin=None,rmax=None,emin=None,emax=None,r0=8.,v0=220.):
+    """
+    NAME:
+
+       orbit_interpolate
+
+    PURPOSE:
+
+       Move the cluster centre and stars backwards or forwards along its orbit assuming stars only feel a force from the galaxy
+
+    INPUT:
+
+       cluster - StarCluster
+
+       dt - timestep that StarCluster is to be moved to
+
+       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
+
+       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
+
+       do_tails - interpolate the orbits of tail stars separately (Default: False)
+
+       rmin/rmax - radial range corresponding to cluster (needed to identify tail stars)
+
+       emin/emax - energy range corresponding to cluster (needed to identify tail stars)
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
+
     cluster.tphys+=dt
     units0,origin0=save_cluster(cluster)
     cluster.to_galaxy()
@@ -160,7 +286,7 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
 
         vxvv=np.array([R,vR,vT,z,vz,phi])
         vxvv=np.rot90(vxvv)
-        otail=Orbits(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+        otail=Orbit(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
 
         cluster.to_realkpc()
 
@@ -184,6 +310,42 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
 
 
 def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,skypath=False,r0=8.,v0=220.):
+    """
+    NAME:
+
+       orbital_path
+
+    PURPOSE:
+
+       Calculate orbital path +/- dt Gyr around the cluster
+
+    INPUT:
+
+       cluster - StarCluster
+
+       dt - timestep that StarCluster is to be moved to
+
+       nt - number of timesteps
+
+       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
+
+       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
+
+       sky_path - return sky coordinates instead of cartesian coordinates (Default: False)
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       t,x,y,z,vx,vy,vz,o
+       --> o is orbital instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     o=initialize_orbit(cluster,from_centre=from_centre)
 
     ts=np.linspace(0,-1.*dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),nt)
@@ -192,7 +354,7 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
     R,phi,z=bovy_coords.rect_to_cyl(o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1]))
     vR,vT,vz=bovy_coords.rect_to_cyl_vec(o.vx(ts[-1]),o.vy(ts[-1]),o.vz(ts[-1]),o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1]))
     o=Orbit([R/r0,vR/v0,vT/v0,z/r0,vz/v0,phi],ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
-    ts=np.linspace(0,2.*dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),2.*nt)
+    ts=np.linspace(0,2.*dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),2.*nt+1)
     o.integrate(ts,pot)
 
     if skypath:
@@ -248,13 +410,53 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
 
         return t,x,y,z,vx,vy,vz,o
 
-def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8.,v0=220.):
+def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
+    """
+    NAME:
 
+       orbital_path_match
+
+    PURPOSE:
+
+       Match stars to a position along the orbital path of the cluster
+
+    INPUT:
+
+       cluster - StarCluster
+
+       dt - timestep that StarCluster is to be moved to
+
+       nt - number of timesteps
+
+       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
+
+       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
+
+       to_path - measure distance to central point along the path (Default) or to the path itself 
+
+       do_full - calculate dpath all at once in a single numpy array (can be memory intensive) (Default:False)
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       tstar - orbital time associated with star
+
+       dprog - distance along the orbit to the progenitor
+
+       dpath - distance to centre of the orbital path bin (Default) or the orbit path (to_path = True)
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     units0,origin0=save_cluster(cluster)
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    t,x,y,z,vx,vy,vz,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=False,r0=8.,v0=220.)
+    t,x,y,z,vx,vy,vz,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
 
     ts=np.linspace(t[0],t[-1],10*nt)/bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
     x=o.x(ts)
@@ -271,36 +473,58 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
     dy=np.tile(np.array(o.y(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.y,len(ts)).reshape(cluster.ntot,len(ts))
     dz=np.tile(np.array(o.z(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.z,len(ts)).reshape(cluster.ntot,len(ts))
     dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+
+    print('DEBUG DR: ',len(dr))
+    print('DEBUG DR: ',len(dr[:,0]),len(dr[0,:]))
+
     
     indx=np.argmin(dr,axis=1)
-    dpath=np.min(dr,axis=1)
     tstar=ts[indx]*bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
+    dpath=np.amin(dr,axis=1)
 
 
-    dprog=[]
-    for i in range(0,cluster.ntot):
-        if indx[i]==pindx:
-            dprog.append(0.)
-        elif indx[i] > pindx:
+    dxo=x[1:]-x[0:-1]
+    dyo=y[1:]-y[0:-1]
+    dzo=z[1:]-z[0:-1]
 
-            xdiff=x-x[indx[i]]
-            ydiff=y-y[indx[i]]
-            zdiff=z-z[indx[i]]
+    dprogx=np.cumsum(np.fabs(dxo))
+    dprogy=np.cumsum(np.fabs(dyo))
+    dprogz=np.cumsum(np.fabs(dzo))
 
-            dx=xdiff[pindx:indx[i]]-xdiff[pindx+1:indx[i]+1]
-            dy=ydiff[pindx:indx[i]]-ydiff[pindx+1:indx[i]+1]
-            dz=zdiff[pindx:indx[i]]-zdiff[pindx+1:indx[i]+1]
-            dprog.append(np.sqrt(np.cumsum(np.fabs(dx))[-1]**2.+np.cumsum(np.fabs(dy))[-1]**2.+np.cumsum(np.fabs(dz))[-1]**2.))            
-        else:   
+    dprogx=np.insert(dprogx,0,0.)
+    dprogy=np.insert(dprogy,0,0.)
+    dprogz=np.insert(dprogz,0,0.)
 
-            xdiff=x-x[pindx]
-            ydiff=y-y[pindx]
-            zdiff=z-z[pindx]
+    dprogr=np.sqrt(dprogx**2.+dprogy**2.+dprogz**2.)
+    dprog=dprogr[indx]-dprogr[pindx]
 
-            dx=xdiff[indx[i]:pindx]-xdiff[indx[i]+1:pindx+1]
-            dy=ydiff[indx[i]:pindx]-ydiff[indx[i]+1:pindx+1]
-            dz=zdiff[indx[i]:pindx]-zdiff[indx[i]+1:pindx+1]
-            dprog.append(-1.*np.sqrt(np.cumsum(np.fabs(dx))[-1]**2.+np.cumsum(np.fabs(dy))[-1]**2.+np.cumsum(np.fabs(dz))[-1]**2.))
+    #Find distance to path instead of to central point
+    if to_path:
+        dxo=np.append(dxo,dxo[-1])
+        dyo=np.append(dyo,dyo[-1])
+        dzo=np.append(dzo,dzo[-1])
+
+        if do_full:
+            #Typically it is too expensive to calculate dpath all at once, but will allow option via do_full
+
+            ovec=np.column_stack([dxo,dyo,dzo])
+            mag_ovec=np.sqrt(dxo**2.0+dyo**2.0+dzo**2.0)
+            svec=np.column_stack([dx[:,indx],dy[:,indx],dz[:,indx]])
+            mag_svec=dr[:,indx]
+            theta=np.arccos(np.dot(ovec[indx],svec)/(mag_ovec[indx]*mag_svec))
+            dpath=mag_svec*np.sin(theta)
+        else:
+            #Need to optimize this via numba
+            dpath=np.array([])
+            for i in range(0,cluster.ntot):
+                ovec=[dxo[indx[i]],dyo[indx[i]],dzo[indx[i]]]
+                mag_ovec=np.sqrt(dxo[indx[i]]**2.0+dyo[indx[i]]**2.0+dzo[indx[i]]**2.0)
+
+                svec=[dx[i,indx[i]],dy[i,indx[i]],dz[i,indx[i]]]
+                mag_svec=dr[i,indx[i]]
+
+                theta=np.arccos((ovec[0]*svec[0]+ovec[1]*svec[1]+ovec[2]*svec[2])/(mag_ovec*mag_svec))
+                dpath=np.append(dpath,mag_svec*np.sin(theta))
 
     #Assign negative to stars with position vectors in opposite direction as local angular momentum vector
     rgc=np.column_stack([o.x(ts[indx]),o.y(ts[indx]),o.z(ts[indx])])
@@ -310,21 +534,57 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
     rstar=np.column_stack([cluster.x-o.x(ts[indx]),cluster.y-o.y(ts[indx]),cluster.z-o.z(ts[indx])])
 
     ldot=np.sum(rstar*lz,axis=1)
-    dpath[ldot<0]*=-1 
+
+    dpath[ldot<0]*=-1. 
 
     return_cluster(cluster,units0,origin0)
 
-    return np.array(tstar),np.array(dprog),np.array(dpath),o
+    return np.array(tstar),np.array(dprog),np.array(dpath)
 
 def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8.,v0=220.):
+    """
+    NAME:
+
+       stream_path
+
+    PURPOSE:
+
+       Calculate stream path +/- dt Gyr around the cluster
+
+    INPUT:
+
+       cluster - StarCluster
+
+       dt - timestep that StarCluster is to be moved to
+
+       nt - number of timesteps
+
+       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
+
+       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       t,x,y,z,vx,vy,vz
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
 
     units0,origin0=save_cluster(cluster)
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    tstar,dprog,dpath,o=orbital_path_match(cluster=cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
+    tstar,dprog,dpath=orbital_path_match(cluster=cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
+
 
     t_lower,t_mid,t_upper,t_hist=binmaker(tstar,nbin=50)
+    print('DEBUG: ',tstar[0],tstar[-1],len(tstar),t_mid)
     xstream=np.array([])
     ystream=np.array([])
     zstream=np.array([])
@@ -345,13 +605,51 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
 
     return t_mid,xstream,ystream,zstream,vxstream,vystream,vzstream
 
-def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8.,v0=220.):
+def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
+    """
+    NAME:
 
+       stream_path_match
+
+    PURPOSE:
+
+       Match stars to a position along the stream path of the cluster
+
+    INPUT:
+
+       cluster - StarCluster
+
+       dt - timestep that StarCluster is to be moved to
+
+       nt - number of timesteps
+
+       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
+
+       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
+
+       to_path - measure distance to central point along the path (Default) or to the path itself 
+
+       r0 - galpy distance scale (Default: 8.)
+
+       v0 - galpy velocity scale (Default: 220.)
+
+    OUTPUT:
+
+       tstar - stream time associated with star
+
+       dprog - distance along the stream to the progenitor
+
+       dpath - distance to centre of the stream path bin (Default) or the stream path (to_path = True)
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
     units0,origin0=save_cluster(cluster)
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    ts,x,y,z,vx,vy,vz=stream_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=False,r0=8.,v0=220.)
+    ts,x,y,z,vx,vy,vz=stream_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
 
     pindx=np.argmin(np.fabs(ts-dt))
     print('DEBUG: ',pindx,ts[pindx])
@@ -362,34 +660,51 @@ def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fals
     dr=np.sqrt(dx**2.+dy**2.+dz**2.)
     
     indx=np.argmin(dr,axis=1)
-    dstream=np.min(dr,axis=1)
-    tstar=ts[indx]*bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
+    dpath=np.amin(dr,axis=1)
+    tstar=ts[indx]#*bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
 
+    dxo=x[1:]-x[0:-1]
+    dyo=y[1:]-y[0:-1]
+    dzo=z[1:]-z[0:-1]
 
-    dprog=[]
-    for i in range(0,cluster.ntot):
-        if indx[i]==pindx:
-            dprog.append(0.)
-        elif indx[i] > pindx:
+    dprogx=np.cumsum(np.fabs(dxo))
+    dprogy=np.cumsum(np.fabs(dyo))
+    dprogz=np.cumsum(np.fabs(dzo))
 
-            xdiff=x-x[indx[i]]
-            ydiff=y-y[indx[i]]
-            zdiff=z-z[indx[i]]
+    dprogx=np.insert(dprogx,0,0.)
+    dprogy=np.insert(dprogy,0,0.)
+    dprogz=np.insert(dprogz,0,0.)
 
-            dx=xdiff[pindx:indx[i]]-xdiff[pindx+1:indx[i]+1]
-            dy=ydiff[pindx:indx[i]]-ydiff[pindx+1:indx[i]+1]
-            dz=zdiff[pindx:indx[i]]-zdiff[pindx+1:indx[i]+1]
-            dprog.append(np.sqrt(np.cumsum(np.fabs(dx))[-1]**2.+np.cumsum(np.fabs(dy))[-1]**2.+np.cumsum(np.fabs(dz))[-1]**2.))            
-        else:   
+    dprogr=np.sqrt(dprogx**2.+dprogy**2.+dprogz**2.)
+    dprog=dprogr[indx]-dprogr[pindx]
 
-            xdiff=x-x[pindx]
-            ydiff=y-y[pindx]
-            zdiff=z-z[pindx]
+    #Find distance to path instead of to central point
+    if to_path:
+        dxo=np.append(dxo,dxo[-1])
+        dyo=np.append(dyo,dyo[-1])
+        dzo=np.append(dzo,dzo[-1])
 
-            dx=xdiff[indx[i]:pindx]-xdiff[indx[i]+1:pindx+1]
-            dy=ydiff[indx[i]:pindx]-ydiff[indx[i]+1:pindx+1]
-            dz=zdiff[indx[i]:pindx]-zdiff[indx[i]+1:pindx+1]
-            dprog.append(-1.*np.sqrt(np.cumsum(np.fabs(dx))[-1]**2.+np.cumsum(np.fabs(dy))[-1]**2.+np.cumsum(np.fabs(dz))[-1]**2.))
+        if do_full:
+            #Typically it is too expensive to calculate dpath all at once, but will allow option via do_full
+
+            ovec=np.column_stack([dxo,dyo,dzo])
+            mag_ovec=np.sqrt(dxo**2.0+dyo**2.0+dzo**2.0)
+            svec=np.column_stack([dx[:,indx],dy[:,indx],dz[:,indx]])
+            mag_svec=dr[:,indx]
+            theta=np.arccos(np.dot(ovec[indx],svec)/(mag_ovec[indx]*mag_svec))
+            dpath=mag_svec*np.sin(theta)
+        else:
+            #Need to optimize this via numba
+            dpath=np.array([])
+            for i in range(0,cluster.ntot):
+                ovec=[dxo[indx[i]],dyo[indx[i]],dzo[indx[i]]]
+                mag_ovec=np.sqrt(dxo[indx[i]]**2.0+dyo[indx[i]]**2.0+dzo[indx[i]]**2.0)
+
+                svec=[dx[i,indx[i]],dy[i,indx[i]],dz[i,indx[i]]]
+                mag_svec=dr[i,indx[i]]
+
+                theta=np.arccos((ovec[0]*svec[0]+ovec[1]*svec[1]+ovec[2]*svec[2])/(mag_ovec*mag_svec))
+                dpath=np.append(dpath,mag_svec*np.sin(theta))
 
     #Assign negative to stars with position vectors in opposite direction as local angular momentum vector
     rgc=np.column_stack([x[indx],y[indx],z[indx]])
@@ -399,14 +714,47 @@ def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fals
     rstar=np.column_stack([cluster.x-x[indx],cluster.y-y[indx],cluster.z-z[indx]])
 
     ldot=np.sum(rstar*lz,axis=1)
-    dstream[ldot<0]*=-1 
+    dpath[ldot<0]*=-1 
 
     return_cluster(cluster,units0,origin0)
 
-    return np.array(tstar),np.array(dprog),np.array(dstream)
+    return np.array(tstar),np.array(dprog),np.array(dpath)
 
 def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
-    
+    """
+    NAME:
+
+       rtidal
+
+    PURPOSE:
+
+       Calculate tidal radius of the cluster
+       --> The calculation uses Galpy, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
+       --> riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
+       --> More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal
+           radius again until the change is less than 90%
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       pot - GALPY potential used to calculate actions
+
+       rtiterate - how many times to iterate on the calculation of r_t
+
+       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
+
+       r0,v0 - GALPY scaling parameters
+
+    OUTPUT:
+
+        rt
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """
     units0,origin0=save_cluster(cluster)
 
     cluster.to_centre()
@@ -453,7 +801,47 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
     return rt
 
 def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,**kwargs):
+    """
+    NAME:
 
+       rlimiting
+
+    PURPOSE:
+
+       Calculate limiting radius of the cluster
+       --> The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       pot - GALPY potential used to calculate actions
+
+       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
+
+       r0,v0 - GALPY scaling parameters
+
+       nrad - number of radial bins used to calculate density profile (Default: 20)
+
+       projected - use projected values (Default: False)
+
+       obs_cut - apply an observational mask over the dataset (Default: False)
+
+       plot - plot the density profile and mark the limiting radius of the cluster (Default: False)
+
+    KWARGS:
+
+       Same as ..util.plots.nplot
+
+    OUTPUT:
+
+        rl
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """
     units0,origin0=save_cluster(cluster)
 
     cluster.to_centre()
@@ -546,7 +934,46 @@ def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projec
     return rl
 
 def get_cluster_orbit(gcname='list',names=False,r0=8.,v0=220.):
+    """
+    NAME:
 
+       get_cluster_orbit
+
+    PURPOSE:
+
+       Get the measured orbital parameters of a Galactic globular cluster has measured by Vasiliev 2019 using Gaia DR2
+
+    INPUT:
+
+       gcname - name or list of GC names whose orbits are to be retrieved
+        --> Note that list just returns the list to read, while 'all' gets the orbits for all the clusters
+
+       names - return a list of cluster names on top of the orbit instances
+
+       pot - GALPY potential used to calculate actions
+
+       r0,v0 - GALPY scaling parameters
+
+    KWARGS:
+
+       type - method for calculating actions (default: staeckel)
+
+       delta - focus for staeckel method (default: 0.45 - optimal for MWPotential2014)
+
+       c - if True, always use C for calculations
+
+       Additional KWARGS can be included for other action angle calculation methods in galpy
+
+    OUTPUT:
+
+        o (if names == False)
+        o, names (if names==True)
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """  
     data=np.loadtxt('/Users/webbjj/Codes/nbodypy/tables/orbits.dat',str)
     i_d=data[:,0].astype('int')
 
@@ -575,8 +1002,9 @@ def get_cluster_orbit(gcname='list',names=False,r0=8.,v0=220.):
         if names:
             return name[indx]
         else:
-            return -1
+            return
     elif 'all' in gcname or 'ALL' in gcname:
+        #Get all clusters with i_d <=151, id > 151 is hardcoded due to custom orbits in the list
         indx=(dist>0.) * (i_d<=151)
     elif isinstance(gcname,str):
         gcname=gcname.upper()
@@ -586,19 +1014,24 @@ def get_cluster_orbit(gcname='list',names=False,r0=8.,v0=220.):
             gcname[i]=gcname[i].upper()
         indx=np.logical_or(np.in1d(name,gcname),np.in1d(name2,gcname))
 
+    oname=[]
+
     if np.sum(indx)==0:
+        print('COULD NOT FIND CLUSTER')
         return -1
     elif np.sum(indx)==1:
         print('GETTING ORBIT: ',name[indx])
         vxvv=[float(ra[indx]),float(dec[indx]),float(dist[indx]),float(pmra[indx]),float(pmdec[indx]),float(vlos[indx])]
-        o=Orbit(vxvv,ro=r0,vo=v0,radec=c,solarmotion=[-11.1,24.,7.25])
+        o=Orbit(vxvv,ro=r0,vo=v0,radec=True,solarmotion=[-11.1,24.,7.25])
+        oname=name[indx]
     else:
         print('GETTING ORBIT: ',name[indx])
         vxvv = coord.SkyCoord(ra=ra[indx]*u.degree, dec=dec[indx]*u.degree, distance=dist[indx]*u.kpc, pm_ra_cosdec=pmra[indx]*u.mas/u.yr, pm_dec=pmdec[indx]*u.mas/u.yr, radial_velocity=vlos[indx]*u.km/u.s)
-        o=Orbits(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+        o=Orbit(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+        oname=name[indx]
 
     if names:
-        return o,name[indx]
+        return o,oname
     else:
         return o
 

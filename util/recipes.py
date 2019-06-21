@@ -3,8 +3,34 @@
 import numpy as np
 
 def nbinmaker(x,nbin=10,nsum=False):
-    #Split an array into nbin bin's of equal number elements
-   
+    """
+    NAME:
+
+       nbinmaker
+
+    PURPOSE:
+
+       Split an array into nbin bin's of equal number elements
+
+    INPUT:
+
+       x - input array
+
+       nbin - number of bins
+
+       nsum - return number of points in each bin
+
+    OUTPUT:
+
+       x_lower,x_mid,x_upper,x_hist (if nsum==False)
+
+       x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """    
     x=np.asarray(x)
  
     xorder=sorted(range(0,len(x)),key=lambda k:x[k])
@@ -33,7 +59,36 @@ def nbinmaker(x,nbin=10,nsum=False):
         return x_lower,x_mid,x_upper,x_hist
 
 def binmaker(x,nbin=10,nsum=False,steptype='linear'):
-    #Split an array into nbin bin's of equal size
+    """
+    NAME:
+
+       nbinmaker
+
+    PURPOSE:
+
+       Split an array into nbin bin's of equal size
+
+    INPUT:
+
+       x - input array
+
+       nbin - number of bins
+
+       nsum - return number of points in each bin
+
+       steptype - linear or logarithmic steps
+
+    OUTPUT:
+
+       x_lower,x_mid,x_upper,x_hist (if nsum==False)
+
+       x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
     
     x_hist=np.zeros(nbin)
     x_sum=np.zeros(nbin)
@@ -59,7 +114,29 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
         return x_lower,x_mid,x_upper,x_hist
 
 def dx_function(x,nx=10):
-    #Find distribution function using nx bins containing an equal number of points
+    """
+    NAME:
+
+       dx_function
+
+    PURPOSE:
+
+       Find distribution function using nx bins containing an equal number of points
+    INPUT:
+
+       x - input array
+
+       nx - number of bins
+
+    OUTPUT:
+
+       x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
     
     x_lower,x_mean,x_upper,x_hist=nbinmaker(x,nx)
    
@@ -73,12 +150,40 @@ def dx_function(x,nx=10):
 
     return x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
 
-def mean_prof(x,y,nbin=10,bintype='fix',steptype='linear',nsum=False,median=False):
-    #Calculate mean profile of parameter y that depends on x  
+def mean_prof(x,y,nbin=10,bintype='fix',steptype='linear',median=False):
+    """
+    NAME:
+
+       mean_prof
+
+    PURPOSE:
+
+       Calculate mean profile of parameter y that depends on x  
+    INPUT:
+
+       x,y coordinates from which to measure the mean profile
+
+       nbin - number of bins
+
+       bintype - can be bins of fixed size ('fix') or equal number of stars ('num')
+
+       steptype - for fixed size arrays, set step size to 'linear' or 'log'
+
+       median - find median instead of mean (Default: False)
+
+    OUTPUT:
+
+       x_bin,y_bin,y_sig
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
     if bintype=='num':
-        x_lower,x_mid,x_upper,x_hist=nbinmaker(x,nbin,nsum)
+        x_lower,x_mid,x_upper,x_hist=nbinmaker(x,nbin)
     else:
-        x_lower,x_mid,x_upper,x_hist=binmaker(x,nbin,nsum,steptype=steptype)
+        x_lower,x_mid,x_upper,x_hist=binmaker(x,nbin,steptype=steptype)
 
     y_bin=[]
     y_sig=[]
@@ -106,8 +211,38 @@ def mean_prof(x,y,nbin=10,bintype='fix',steptype='linear',nsum=False,median=Fals
     return np.array(x_bin),np.array(y_bin),np.array(y_sig)
 
 def smooth(x,y,nbin=10,bintype='fix',median=False,**kwargs):
-    #Smooth a profile
+    """
+    NAME:
 
+       smooth
+
+    PURPOSE:
+
+       Smooth a profile
+
+    INPUT:
+
+       x,y coordinates from which to measure the mean profile
+
+       nbin - number of bins to smooth over
+
+       bintype - can be bins of fixed size ('fix') or equal number of stars ('num')
+
+       median - find median instead of mean (Default: False)
+
+    KWARGS:
+
+       dx - width of smoothening bin
+
+    OUTPUT:
+
+       x_bin,y_bin,y_sig
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """ 
     x=np.array(x)
     y=np.array(y)
     
@@ -154,7 +289,32 @@ def smooth(x,y,nbin=10,bintype='fix',median=False,**kwargs):
     return x_bin,y_bin,y_sig,y_min,y_max
 
 def interpolate(r1,r2,x=None,y=None):
+    """
+    NAME:
 
+       interpolate
+
+    PURPOSE:
+
+       Perform simple linear interpolate between two points in 2D
+
+    INPUT:
+
+       r1,r2 - x,y coordinates from which to interpolate
+
+       x - x-value from which to interpolate y
+
+       y - y-value from which to interpolate x
+
+    OUTPUT:
+
+       interpolated value
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """ 
     x1,y1=r1
     x2,y2=r2
 
@@ -170,7 +330,31 @@ def interpolate(r1,r2,x=None,y=None):
         return 0
         
 def rotate(x,y,z,thetax=0.,thetay=0.,thetaz=0.):
+    """
+    NAME:
 
+       rotate
+       --> This function is a work in progress. It is meant to eventually be a function for rotating streams to phi1/phi2 coordinates
+
+    PURPOSE:
+
+       Rotate StarCluster
+
+    INPUT:
+
+       x,y,z - coordinates of stars
+
+       thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates
+
+    OUTPUT:
+
+       rotated values of x,y,z
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """ 
     #rotate about x axis:
     y2=y*np.cos(thetax)-z*np.sin(thetax)
     z2=-y*np.sin(thetax)+z*np.cos(thetax)

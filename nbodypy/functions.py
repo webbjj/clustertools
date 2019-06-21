@@ -500,7 +500,6 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
         print('SYSTEM IS NOT VIRIALIZED')
         r_v=-1.
     else:
-        print('DEBUG: ',indx1,indx2)
         r1=rprof[indx1][-1]
         r2=rprof[indx2][0]
 
@@ -595,30 +594,35 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
     if emin!=None:
         indx*=(cluster.etot <= emax)
 
+    if np.sum(indx) >= nmass:
 
-    m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
-   
-    lm_mean=np.log10(m_mean)
-    dm=m_hist/(m_upper-m_lower)
-    ldm=np.log10(dm)
+        m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
+       
+        lm_mean=np.log10(m_mean)
+        dm=m_hist/(m_upper-m_lower)
+        ldm=np.log10(dm)
 
-    (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
-    ealpha=np.sqrt(V[0][0])
-    eyalpha=np.sqrt(V[1][1])
+        (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
+        ealpha=np.sqrt(V[0][0])
+        eyalpha=np.sqrt(V[1][1])
 
-    if plot:
-        filename=kwargs.get('filename',None)
-        nplot(m_mean,np.log10(dm),xlabel='M',ylabel='LOG(dN/dM)',**kwargs)
-        mfit=np.linspace(np.min(m_mean),np.max(m_mean),nmass)
-        dmfit=10.0**(alpha*np.log10(mfit)+yalpha)
-        nlplot(mfit,np.log10(dmfit),overplot=True,label=(r'$\alpha$ = %f' % alpha))
+        if plot:
+            filename=kwargs.get('filename',None)
+            nplot(m_mean,np.log10(dm),xlabel='M',ylabel='LOG(dN/dM)',**kwargs)
+            mfit=np.linspace(np.min(m_mean),np.max(m_mean),nmass)
+            dmfit=10.0**(alpha*np.log10(mfit)+yalpha)
+            nlplot(mfit,np.log10(dmfit),overplot=True,label=(r'$\alpha$ = %f' % alpha))
 
-        plt.legend()
+            plt.legend()
 
-        if filename!=None:
-            plt.savefig(filename)
+            if filename!=None:
+                plt.savefig(filename)
 
-    return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
+
+        return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
+    else:
+        print('NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION')
+        return np.zeros(nmass),np.zeros(nmass),np.zeros(nmass),-1000.,-1000.,-1000.,-1000.
 
 def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
     """
@@ -689,32 +693,36 @@ def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=N
     if emin!=None:
         indx*=(cluster.etot <= emax)
 
-    m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
-    lm_mean=np.log10(m_mean)
+    if np.sum(indx)>=2*nmass:
 
-    sigvm=[]
-    lsigvm=[]
-    for i in range(0,nmass):
+        m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
+        lm_mean=np.log10(m_mean)
 
-        mindx=indx * (cluster.m >=m_lower[i]) * (cluster.m<=m_upper[i])
-        sigvm.append(np.std(v[mindx]))
-        lsigvm.append(np.log10(sigvm[-1]))
+        sigvm=[]
+        lsigvm=[]
+        for i in range(0,nmass):
+
+            mindx=indx * (cluster.m >=m_lower[i]) * (cluster.m<=m_upper[i])
+            sigvm.append(np.std(v[mindx]))
+            lsigvm.append(np.log10(sigvm[-1]))
 
 
-    (eta,yeta),V=np.polyfit(lm_mean,lsigvm,1,cov=True)
-    eeta=np.sqrt(V[0][0])
-    eyeta=np.sqrt(V[1][1])
+        (eta,yeta),V=np.polyfit(lm_mean,lsigvm,1,cov=True)
+        eeta=np.sqrt(V[0][0])
+        eyeta=np.sqrt(V[1][1])
 
-    if plot:
-        filename=kwargs.get('filename',None)
-        nplot(m_mean,np.log10(sigvm),xlabel='M',ylabel=r'$\sigma_v$',**kwargs)
-        mfit=np.linspace(np.min(m_mean),np.max(m_mean),nmass)
-        sigfit=10.0**(eta*np.log10(mfit)+yeta)
-        nlplot(mfit,np.log10(sigfit),overplot=True,label=(r'$\eta$ = %f' % eta))
-        plt.legend()
+        if plot:
+            filename=kwargs.get('filename',None)
+            nplot(m_mean,np.log10(sigvm),xlabel='M',ylabel=r'$\sigma_v$',**kwargs)
+            mfit=np.linspace(np.min(m_mean),np.max(m_mean),nmass)
+            sigfit=10.0**(eta*np.log10(mfit)+yeta)
+            nlplot(mfit,np.log10(sigfit),overplot=True,label=(r'$\eta$ = %f' % eta))
+            plt.legend()
 
-        if filename!=None:
-            plt.savefig(filename)
+            if filename!=None:
+                plt.savefig(filename)
 
-    return m_mean,sigvm,eta,eeta,yeta,eyeta
-
+        return m_mean,sigvm,eta,eeta,yeta,eyeta
+    else:
+        print('NOT ENOUGH STARS TO ESTIMATE SIGMA-MASS RELATION')
+        return np.zeros(nmass),np.zeros(nmass),np.zeros(nmass),-1000.,-1000.,-1000.,-1000.

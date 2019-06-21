@@ -104,8 +104,7 @@ def initialize_orbits(cluster,r0=8.,v0=220.):
     R,phi,z=bovy_coords.rect_to_cyl(x,y,z)
     vR,vT,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z)
 
-    vxvv=np.array([R,vR,vT,z,vz,phi])
-    vxvv=np.rot90(vxvv)
+    vxvv=np.column_stack([R,vR,vT,z,vz,phi])
     os=Orbit(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
 
     return_cluster(cluster,units0,origin0)
@@ -284,8 +283,7 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
         R,phi,z=bovy_coords.rect_to_cyl(x,y,z)
         vR,vT,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z)
 
-        vxvv=np.array([R,vR,vT,z,vz,phi])
-        vxvv=np.rot90(vxvv)
+        vxvv=np.column_stack([R,vR,vT,z,vz,phi])
         otail=Orbit(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
 
         cluster.to_realkpc()
@@ -339,8 +337,7 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
 
     OUTPUT:
 
-       t,x,y,z,vx,vy,vz,o
-       --> o is orbital instance
+       t,x,y,z,vx,vy,vz
 
     HISTORY:
 
@@ -354,7 +351,7 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
     R,phi,z=bovy_coords.rect_to_cyl(o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1]))
     vR,vT,vz=bovy_coords.rect_to_cyl_vec(o.vx(ts[-1]),o.vy(ts[-1]),o.vz(ts[-1]),o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1]))
     o=Orbit([R/r0,vR/v0,vT/v0,z/r0,vz/v0,phi],ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
-    ts=np.linspace(0,2.*dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),2.*nt+1)
+    ts=np.linspace(-1.*dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),nt)
     o.integrate(ts,pot)
 
     if skypath:
@@ -408,7 +405,7 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
         else:
             t=ts*bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
 
-        return t,x,y,z,vx,vy,vz,o
+        return t,x,y,z,vx,vy,vz
 
 def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
     """
@@ -458,7 +455,8 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
 
     t,x,y,z,vx,vy,vz,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
 
-    ts=np.linspace(t[0],t[-1],10*nt)/bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
+    ts=t/bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
+
     x=o.x(ts)
     y=o.y(ts)
     z=o.z(ts)
@@ -466,16 +464,13 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
     vy=o.vy(ts)
     vz=o.vz(ts)
 
-    pindx=np.argmin(np.fabs(ts-dt))
-    print('DEBUG: ',pindx,ts[pindx])
+    pindx=np.argmin(np.fabs(ts))
+    print('CENTRE OF ORBIT: ',pindx,ts[0],ts[pindx],ts[-1],dt,len(ts))
 
     dx=np.tile(np.array(o.x(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.x,len(ts)).reshape(cluster.ntot,len(ts))
     dy=np.tile(np.array(o.y(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.y,len(ts)).reshape(cluster.ntot,len(ts))
     dz=np.tile(np.array(o.z(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.z,len(ts)).reshape(cluster.ntot,len(ts))
     dr=np.sqrt(dx**2.+dy**2.+dz**2.)
-
-    print('DEBUG DR: ',len(dr))
-    print('DEBUG DR: ',len(dr[:,0]),len(dr[0,:]))
 
     
     indx=np.argmin(dr,axis=1)
@@ -580,11 +575,12 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
     cluster.to_galaxy()
     cluster.to_realkpc()
 
+    to,xo,yo,zo,vxo,vyo,vzo,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
     tstar,dprog,dpath=orbital_path_match(cluster=cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
 
 
-    t_lower,t_mid,t_upper,t_hist=binmaker(tstar,nbin=50)
-    print('DEBUG: ',tstar[0],tstar[-1],len(tstar),t_mid)
+    t_lower,t_mid,t_upper,t_hist=binmaker(to,nbin=nt)
+    tstream=np.array([])
     xstream=np.array([])
     ystream=np.array([])
     zstream=np.array([])
@@ -594,16 +590,18 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
 
     for i in range(0,len(t_mid)):
         indx=(tstar>=t_lower[i]) * (tstar<=t_upper[i])
-        xstream=np.append(xstream,np.mean(cluster.x[indx]))
-        ystream=np.append(ystream,np.mean(cluster.y[indx]))
-        zstream=np.append(zstream,np.mean(cluster.z[indx]))
-        vxstream=np.append(vxstream,np.mean(cluster.vx[indx]))
-        vystream=np.append(vystream,np.mean(cluster.vy[indx]))
-        vzstream=np.append(vzstream,np.mean(cluster.vz[indx]))
+        if np.sum(indx)>0:
+            tstream=np.append(tstream,t_mid[i])
+            xstream=np.append(xstream,np.mean(cluster.x[indx]))
+            ystream=np.append(ystream,np.mean(cluster.y[indx]))
+            zstream=np.append(zstream,np.mean(cluster.z[indx]))
+            vxstream=np.append(vxstream,np.mean(cluster.vx[indx]))
+            vystream=np.append(vystream,np.mean(cluster.vy[indx]))
+            vzstream=np.append(vzstream,np.mean(cluster.vz[indx]))
 
     return_cluster(cluster,units0,origin0)
 
-    return t_mid,xstream,ystream,zstream,vxstream,vystream,vzstream
+    return tstream,xstream,ystream,zstream,vxstream,vystream,vzstream
 
 def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
     """
@@ -650,9 +648,7 @@ def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fals
     cluster.to_realkpc()
 
     ts,x,y,z,vx,vy,vz=stream_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
-
-    pindx=np.argmin(np.fabs(ts-dt))
-    print('DEBUG: ',pindx,ts[pindx])
+    pindx=np.argmin(np.fabs(ts))
 
     dx=np.tile(x,cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.x,len(ts)).reshape(cluster.ntot,len(ts))
     dy=np.tile(y,cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.y,len(ts)).reshape(cluster.ntot,len(ts))
@@ -1021,13 +1017,13 @@ def get_cluster_orbit(gcname='list',names=False,r0=8.,v0=220.):
         return -1
     elif np.sum(indx)==1:
         print('GETTING ORBIT: ',name[indx])
-        vxvv=[float(ra[indx]),float(dec[indx]),float(dist[indx]),float(pmra[indx]),float(pmdec[indx]),float(vlos[indx])]
+        vxvv=[ra[indx][0],dec[indx][0],dist[indx][0],pmra[indx][0],pmdec[indx][0],vlos[indx][0]]
         o=Orbit(vxvv,ro=r0,vo=v0,radec=True,solarmotion=[-11.1,24.,7.25])
         oname=name[indx]
     else:
         print('GETTING ORBIT: ',name[indx])
-        vxvv = coord.SkyCoord(ra=ra[indx]*u.degree, dec=dec[indx]*u.degree, distance=dist[indx]*u.kpc, pm_ra_cosdec=pmra[indx]*u.mas/u.yr, pm_dec=pmdec[indx]*u.mas/u.yr, radial_velocity=vlos[indx]*u.km/u.s)
-        o=Orbit(vxvv,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+        vxvv=np.column_stack([ra[indx],dec[indx],dist[indx],pmra[indx],pmdec[indx],vlos[indx]])
+        o=Orbit(vxvv,radec=True,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
         oname=name[indx]
 
     if names:

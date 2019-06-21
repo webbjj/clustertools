@@ -182,11 +182,12 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
     elif cluster.ctype=='nbodypy':
         nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
         cluster=get_nbodypy_snapshot(filename,cluster.units,cluster.origin,ofile,ocontinue=True,nsnap=nsnap,**kwargs)
-    elif ctype=='snapshot':
+    elif cluster.ctype=='snapshot':
         col_names=kwargs.pop('col_names',['m','x','y','z','vx','vy','vz'])
         col_nums=kwargs.pop('col_nums',[0,1,2,3,4,5,6])
-        cluster=get_snapshot(filename,col_names,col_nums,cluster.units,cluster.origin,ofile,ocontinue=True,**kwargs)  
-    elif ctype=='mycode':
+        nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
+        cluster=get_snapshot(filename,col_names,col_nums,cluster.units,cluster.origin,ofile,ocontinue=True,nsnap=nsnap,**kwargs)  
+    elif cluster.ctype=='mycode':
         cluster=get_mycode()
     else:
         cluster=StarCuster()
@@ -999,205 +1000,7 @@ def get_nbody6_out34(out34,**kwargs):
 
     return cluster
 
-def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
-    """
-    NAME:
-
-       get_nbody6_snapauto
-
-    PURPOSE:
-
-       Load a single snapshot as produced by Jongsuk Hong's snpauto.f routine for extracting snapshots from
-       Nbody6 and Nbody6++ binary files 
-
-    INPUT:
-
-       filename = name of file
-
-       units - units of input data (default: realkpc)
-
-       origin - origin of input data (default: cluster)
-
-       ofile - opened file containing orbital information
-
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-    """
-
-    nsnap=kwargs.get('nsnap','1')
-    nzfill=int(kwargs.get('nzfill',5))   
-    ocontinue=kwargs.get('ocontinue',False)
-    wdir=kwargs.get('wdir','./')
-    nskip=int(kwargs.get('nskip',1))
-    snapdir=kwargs.get('snapdir','snapshot/')
-    snapbase=kwargs.get('snapbase','snap.dat.')
-    snapend=kwargs.get('snapend','')
-
-    if filename!=None:
-        if os.path.isfile('%s%s%s' % (wdir,snapdir,filename)):
-            snap=np.loadtxt('%s%s%s' %(wdir,snapdir,filename),skiprows=nskip)
-            data=open('%s%s%s' %(wdir,snapdir,filename),'r').readline().split()
-        else:
-            print()
-            print('NO FILE FOUND %s%s%s' % (wdir,snapdir,filename))
-            cluster=StarCluster()
-            print(cluster.ntot)
-            return cluster
-
-    elif os.path.isfile('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
-        snap=np.loadtxt(('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)),skiprows=nskip)
-        data=open('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend),'r').readline().split()
-    else:
-        print('NO FILE FOUND %s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend))
-        cluster=StarCluster()
-        print(cluster.ntot)
-        return cluster
-
-    if len(data)<=5:
-        tphys=float(data[0])
-        ntot=float(data[1])
-        xgc=int(float(data[2]))
-        ygc=float(data[3])
-        zgc=float(data[4])
-    else:
-        tphys=float(data[0])
-        ntot=float(data[1])
-        nb=int(float(data[2]))
-        xc=float(data[3])
-        yc=float(data[4])
-        zc=float(data[5])
-
-    m=snap[:,0]
-    x=snap[:,1]
-    y=snap[:,2]
-    z=snap[:,3]
-    vx=snap[:,4]
-    vy=snap[:,5]
-    vz=snap[:,6]
-    i_d=snap[:,7]
-        
-    nbnd=len(m)
-
-    cluster=StarCluster(nbnd,tphys,units='realpc',origin='cluster',ctype='snapauto',nsnap=nsnap,nzfill=nzfill,wdir=wdir)
-    cluster.add_stars(i_d,m,x,y,z,vx,vy,vz)
-    
-    #Estimate centre of distribution
-    cluster.find_centre()
-
-    if ofile!=None:
-        get_cluster_orbit(cluster,ofile,**kwargs)
-
-    return cluster
-
-def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
-    """
-    NAME:
-
-       get_nbodypy_snapshot
-
-    PURPOSE:
-
-       Load a single snapshot as produced by nbodypy's snapout routine
-
-    INPUT:
-
-       filename = name of file
-
-       units - units of input data (default: realkpc)
-
-       origin - origin of input data (default: cluster)
-
-       ofile - opened file containing orbital information
-       
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-    """
-   
-    nsnap=int(kwargs.get('nsnap','0'))
- 
-    nzfill=int(kwargs.get('nzfill',5))
-    delimiter=kwargs.get('delimiter',None)
-    wdir=kwargs.get('wdir','./')
-    ocontinue=kwargs.get('ocontinue',False)
-    snapdir=kwargs.get('snapdir','snaps/')
-    snapbase=kwargs.get('snapbase','')
-    snapend=kwargs.get('snapend','.dat')
-    nskip=int(kwargs.get('nskip','0'))
-
-    if filename!=None:
-        if os.path.isfile('%s%s%s' % (wdir,snapdir,filename)):
-            data=np.loadtxt('%s%s%s' %(wdir,snapdir,filename),delimiter=delimiter,skiprows=nskip)
-        elif os.path.isfile('%s%s' % (wdir,filename)):
-            data=np.loadtxt('%s%s' %(wdir,filename),delimiter=delimiter,skiprows=nskip)
-        else:
-            print('NO FILE FOUND')
-            cluster=StarCluster()
-            print(cluster.ntot)
-            return cluster
-    elif os.path.isfile('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
-        data=np.loadtxt(('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)),delimiter=delimiter,skiprows=nskip)
-    elif os.path.isfile('%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
-        data=np.loadtxt(('%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)),delimiter=delimiter,skiprows=nskip)
-    else:
-        print('NO FILE FOUND - %s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend) )
-        cluster=StarCluster()
-        print(cluster.ntot)
-        return cluster
-
-    m=data[:,0]
-    x=data[:,1]
-    y=data[:,2]
-    z=data[:,3]
-    vx=data[:,4]
-    vy=data[:,5]
-    vz=data[:,6]
-    i_d=data[:,7]
-    kw=data[:,8]
-    
-    nbnd=len(m)
-
-    cluster=StarCluster(nbnd,0.0,units=units,origin=origin,ctype='nbodypy',sfile=filename,bfile=None,delimiter=delimiter,nsnap=nsnap,nzfill=nzfill,wdir=wdir)
-    cluster.add_stars(i_d,m,x,y,z,vx,vy,vz)
-    cluster.kw=kw
-
-    if origin=='galaxy':
-        if ofile==None:
-            cluster.find_centre()
-        else:
-            get_cluster_orbit(cluster,ofile,**kwargs)
-
-        cluster.to_cluster()
-        cluster.find_centre()
-        cluster.to_galaxy()
-
-    elif origin=='cluster':
-        #Estimate centre of distribution
-        cluster.find_centre()
-
-        if ofile!=None:
-            get_cluster_orbit(cluster,ofile,**kwargs)
-
-    return cluster
-
-def get_snapshot(filename,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,**kwargs):
+def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,**kwargs):
     """
     NAME:
 
@@ -1234,12 +1037,19 @@ def get_snapshot(filename,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0
        2018 - Written - Webb (UofT)
     """
 
+    col_names=np.array(col_names)
+    col_nums=np.array(col_nums)
+
+    nsnap=int(kwargs.get('nsnap','0'))
+    nzfill=int(kwargs.get('nzfill',5))
     delimiter=kwargs.get('delimiter',None)
     wdir=kwargs.get('wdir','./')
     ocontinue=kwargs.get('ocontinue',False)
+    snapdir=kwargs.get('snapdir','snaps/')
+    snapbase=kwargs.get('snapbase','')
+    snapend=kwargs.get('snapend','.dat')
     skiprows=kwargs.get('skiprows',0)
-    col_names=np.array(col_names)
-    col_nums=np.array(col_nums)
+    ocontinue=kwargs.get('ocontinue',False)
 
     if units=='WDunits':
         vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
@@ -1249,46 +1059,61 @@ def get_snapshot(filename,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0
         vcon=1.
         mcon=1.
 
-
-    snapdir=kwargs.get('snapdir','')
-   
-    if os.path.isfile(('%s%s%s') % (wdir,snapdir,filename)):
-        data=np.loadtxt('%s%s%s' % (wdir,snapdir,filename),delimiter=delimiter,skiprows=skiprows)
+    if filename!=None:
+        if os.path.isfile('%s%s%s' % (wdir,snapdir,filename)):
+            data=np.loadtxt('%s%s%s' %(wdir,snapdir,filename),delimiter=delimiter,skiprows=skiprows)
+        elif os.path.isfile('%s%s' % (wdir,filename)):
+            data=np.loadtxt('%s%s' %(wdir,filename),delimiter=delimiter,skiprows=skiprows)
+        else:
+            print('NO FILE FOUND')
+            cluster=StarCluster()
+            print(cluster.ntot)
+            return cluster
+    elif os.path.isfile('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
+        filename='%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)
+        data=np.loadtxt(('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)),delimiter=delimiter,skiprows=skiprows)
+    elif os.path.isfile('%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
+        filename='%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)
+        data=np.loadtxt(('%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)),delimiter=delimiter,skiprows=skiprows)
     else:
-        print('NO SNAPSHOT FOUND')
-        return 0
+        print('NO FILE FOUND - %s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend) )
+        filename='%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)
+        cluster=StarCluster(sfile=filename)
+        print(cluster.ntot)
+        return cluster
 
-    mindx=np.argwhere(col_names=='m')
+    mindx=np.argwhere(col_names=='m')[0][0]
     m=data[:,col_nums[mindx]]*mcon
 
-    xindx=np.argwhere(col_names=='x')
+    xindx=np.argwhere(col_names=='x')[0][0]
     x=data[:,col_nums[xindx]]
-    yindx=np.argwhere(col_names=='y')
+    yindx=np.argwhere(col_names=='y')[0][0]
     y=data[:,col_nums[yindx]]
-    zindx=np.argwhere(col_names=='z')
+    zindx=np.argwhere(col_names=='z')[0][0]
     z=data[:,col_nums[zindx]]
-    vxindx=np.argwhere(col_names=='vx')
+    vxindx=np.argwhere(col_names=='vx')[0][0]
     vx=data[:,col_nums[vxindx]]*vcon
-    vyindx=np.argwhere(col_names=='vy')
+    vyindx=np.argwhere(col_names=='vy')[0][0]
     vy=data[:,col_nums[vyindx]]*vcon
-    vzindx=np.argwhere(col_names=='vz')
+    vzindx=np.argwhere(col_names=='vz')[0][0]
     vz=data[:,col_nums[vzindx]]*vcon
 
     if 'id' in col_names:
-        idindx=np.argwhere(col_names=='id')
+        idindx=np.argwhere(col_names=='id')[0][0]
         i_d=data[:,col_nums[idindx]]
     else:
         i_d=np.linspace(0,len(x),len(x))+1
 
     if 'kw' in col_names:
-        kwindx=np.argwhere(col_names=='kd')
+        kwindx=np.argwhere(col_names=='kw')[0][0]
         kw=data[:,col_nums[kwindx]]
     else:
-        kw=np.zeros(len(x))   
+        kw=np.zeros(len(x))
+
     
     nbnd=len(m)
 
-    cluster=StarCluster(nbnd,0.0,units=units,origin=origin,ctype='snapshot',sfile=filename,bfile=None,delimiter=delimiter,wdir=wdir)
+    cluster=StarCluster(nbnd,0.0,units=units,origin=origin,ctype='snapshot',sfile=filename,bfile=None,delimiter=delimiter,wdir=wdir,nsnap=nsnap)
     cluster.add_stars(i_d,m,x,y,z,vx,vy,vz)
     cluster.kw=kw
 
@@ -1311,6 +1136,82 @@ def get_snapshot(filename,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0
 
     return cluster
 
+def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
+    """
+    NAME:
+
+       get_nbody6_snapauto
+
+    PURPOSE:
+
+       Load a single snapshot as produced by Jongsuk Hong's snpauto.f routine for extracting snapshots from
+       Nbody6 and Nbody6++ binary files 
+
+    INPUT:
+
+       filename = name of file
+
+       units - units of input data (default: realkpc)
+
+       origin - origin of input data (default: cluster)
+
+       ofile - opened file containing orbital information
+
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
+    cluster=get_snapshot(filename=filename,col_names=['m','x','y','z','vx','vy','vz','id'],col_nums=[0,1,2,3,4,5,6,7],units=units,origin=origin,ofile=ofile,**kwargs)
+
+
+    return cluster
+
+def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
+    """
+    NAME:
+
+       get_nbodypy_snapshot
+
+    PURPOSE:
+
+       Load a single snapshot as produced by nbodypy's snapout routine
+
+    INPUT:
+
+       filename = name of file
+
+       units - units of input data (default: realkpc)
+
+       origin - origin of input data (default: cluster)
+
+       ofile - opened file containing orbital information
+       
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+   
+    cluster=get_snapshot(filename=filename,col_names=['m','x','y','z','vx','vy','vz','id','kw'],col_nums=[0,1,2,3,4,5,6,7,8],units=units,origin=origin,ofile=ofile,**kwargs)
+
+    return cluster
+
 def get_mycode():
     """
     NAME:
@@ -1320,7 +1221,7 @@ def get_mycode():
     PURPOSE:
 
        Empty shell for a new user to write their own routine for reading in data and generating a StarCluster instance
-
+       --> Easiest to build around get_snapshot if files are separated
     INPUT:
 
        TBD

@@ -420,7 +420,11 @@ class StarCluster(object):
         self.etot=np.array(etot)
         self.ektot=np.sum(self.kin)
         self.ptot=np.sum(self.pot)/2.
-        self.qvir=self.ektot/self.ptot
+
+        if self.ptot==0.:
+            self.qvir=0.
+        else:
+            self.qvir=self.ektot/self.ptot
 
     def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=None,initialize=False,r0=8.,v0=220.):
         """

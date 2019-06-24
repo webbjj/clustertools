@@ -1,0 +1,8 @@
+README.md
+setup.py
+nbodypy.egg-info/PKG-INFO
+nbodypy.egg-info/SOURCES.txt
+nbodypy.egg-info/dependency_links.txt
+nbodypy.egg-info/requires.txt
+nbodypy.egg-info/top_level.txt
+nbodypy.egg-info/zip-safe

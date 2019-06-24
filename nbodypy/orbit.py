@@ -375,7 +375,10 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
         else:
             t=ts*bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
 
-        return t,ra,dec,dist,pmra,pmdec,vlos,o
+        if initialize:
+            return t,ra,dec,dist,pmra,pmdec,vlos,o
+        else:
+            return t,ra,dec,dist,pmra,pmdec,vlos
     else:
         x=np.array(o.x(ts))
         y=np.array(o.y(ts))
@@ -409,7 +412,10 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
         else:
             t=ts*bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
 
-        return t,x,y,z,vx,vy,vz
+        if initialize:
+            return t,x,y,z,vx,vy,vz,o
+        else:
+            return t,x,y,z,vx,vy,vz
 
 def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
     """
@@ -457,7 +463,8 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    t,x,y,z,vx,vy,vz=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,initialize=True,r0=r0,v0=v0)
+    t,x,y,z,vx,vy,vz,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,initialize=True,r0=r0,v0=v0)
+    cluster.orbit=o
 
     ts=t/bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
 

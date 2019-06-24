@@ -536,7 +536,7 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
 
     return np.array(tstar),np.array(dprog),np.array(dpath)
 
-def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8.,v0=220.):
+def stream_path(cluster,dt=0.1,nt=100,nbin=50,pot=MWPotential2014,from_centre=False,r0=8.,v0=220.):
     """
     NAME:
 
@@ -550,13 +550,15 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
 
        cluster - StarCluster
 
-       dt - timestep that StarCluster is to be moved to
+       dt - timestep that StarCluster is to be moved to (Default: 0.1 Gyr)
 
-       nt - number of timesteps
+       nt - number of timesteps (Default: 100)
+
+       nbin - number of bins along orbital path to bin data (Default: 50)
 
        pot - Potential orbit is to be integrate in (Default: MWPotential2014)
 
-       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
+       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster (Default: False)
 
        r0 - galpy distance scale (Default: 8.)
 
@@ -568,6 +570,7 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
     HISTORY:
 
        2018 - Written - Webb (UofT)
+       2019 - Implemented numpy array preallocation to minimize runtime and separate binning for orbital path and stream path - Nathaniel Starkman (UofT)
     """
 
 
@@ -579,14 +582,14 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
     tstar,dprog,dpath=orbital_path_match(cluster=cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
 
 
-    t_lower,t_mid,t_upper,t_hist=binmaker(to,nbin=nt)
-    tstream=np.array([])
-    xstream=np.array([])
-    ystream=np.array([])
-    zstream=np.array([])
-    vxstream=np.array([])
-    vystream=np.array([])
-    vzstream=np.array([])
+    t_lower,t_mid,t_upper,t_hist=binmaker(to,nbin=nbin)
+    tstream=np.full(nt, np.nan)
+    xstream=np.full(nt, np.nan)
+    ystream=np.full(nt, np.nan)
+    zstream=np.full(nt, np.nan)
+    vxstream=np.full(nt, np.nan)
+    vystream=np.full(nt, np.nan)
+    vzstream=np.full(nt, np.nan)
 
     for i in range(0,len(t_mid)):
         indx=(tstar>=t_lower[i]) * (tstar<=t_upper[i])
@@ -603,7 +606,7 @@ def stream_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,r0=8
 
     return tstream,xstream,ystream,zstream,vxstream,vystream,vzstream
 
-def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
+def stream_path_match(cluster,dt=0.1,nt=100,nbin=50,pot=MWPotential2014,from_centre=False,to_path=False,do_full=False,r0=8.,v0=220.):
     """
     NAME:
 
@@ -619,7 +622,9 @@ def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fals
 
        dt - timestep that StarCluster is to be moved to
 
-       nt - number of timesteps
+       nt - number of timesteps (Default: 100)
+
+       nbin - number of bins along orbital path to bin data (Default: 50)
 
        pot - Potential orbit is to be integrate in (Default: MWPotential2014)
 
@@ -647,7 +652,7 @@ def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fals
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    ts,x,y,z,vx,vy,vz=stream_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
+    ts,x,y,z,vx,vy,vz=stream_path(cluster,dt=dt,nt=nt,nbin=nbin,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
     pindx=np.argmin(np.fabs(ts))
 
     dx=np.tile(x,cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.x,len(ts)).reshape(cluster.ntot,len(ts))

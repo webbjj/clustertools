@@ -307,7 +307,7 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
     return_cluster(cluster,units0,origin0)
 
 
-def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,skypath=False,r0=8.,v0=220.):
+def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,skypath=False,initialize=False,r0=8.,v0=220.):
     """
     NAME:
 
@@ -331,6 +331,8 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
 
        sky_path - return sky coordinates instead of cartesian coordinates (Default: False)
 
+       initialize - initialize Galpy orbit as StarCluster.orbit (Default: False)
+
        r0 - galpy distance scale (Default: 8.)
 
        v0 - galpy velocity scale (Default: 220.)
@@ -344,6 +346,8 @@ def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,sky
        2018 - Written - Webb (UofT)
     """
     o=initialize_orbit(cluster,from_centre=from_centre)
+    if initialize:
+        cluster.orbit=o
 
     ts=np.linspace(0,-1.*dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),nt)
     o.integrate(ts,pot)
@@ -453,23 +457,23 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    t,x,y,z,vx,vy,vz,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
+    t,x,y,z,vx,vy,vz=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,initialize=True,r0=r0,v0=v0)
 
     ts=t/bovy_conversion.time_in_Gyr(ro=r0,vo=v0)
 
-    x=o.x(ts)
-    y=o.y(ts)
-    z=o.z(ts)
-    vx=o.vx(ts)
-    vy=o.vy(ts)
-    vz=o.vz(ts)
+    x=cluster.orbit.x(ts)
+    y=cluster.orbit.y(ts)
+    z=cluster.orbit.z(ts)
+    vx=cluster.orbit.vx(ts)
+    vy=cluster.orbit.vy(ts)
+    vz=cluster.orbit.vz(ts)
 
     pindx=np.argmin(np.fabs(ts))
     print('CENTRE OF ORBIT: ',pindx,ts[0],ts[pindx],ts[-1],dt,len(ts))
 
-    dx=np.tile(np.array(o.x(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.x,len(ts)).reshape(cluster.ntot,len(ts))
-    dy=np.tile(np.array(o.y(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.y,len(ts)).reshape(cluster.ntot,len(ts))
-    dz=np.tile(np.array(o.z(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.z,len(ts)).reshape(cluster.ntot,len(ts))
+    dx=np.tile(np.array(cluster.orbit.x(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.x,len(ts)).reshape(cluster.ntot,len(ts))
+    dy=np.tile(np.array(cluster.orbit.y(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.y,len(ts)).reshape(cluster.ntot,len(ts))
+    dz=np.tile(np.array(cluster.orbit.z(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.z,len(ts)).reshape(cluster.ntot,len(ts))
     dr=np.sqrt(dx**2.+dy**2.+dz**2.)
 
     
@@ -522,11 +526,11 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
                 dpath=np.append(dpath,mag_svec*np.sin(theta))
 
     #Assign negative to stars with position vectors in opposite direction as local angular momentum vector
-    rgc=np.column_stack([o.x(ts[indx]),o.y(ts[indx]),o.z(ts[indx])])
-    vgc=np.column_stack([o.vx(ts[indx]),o.vy(ts[indx]),o.vz(ts[indx])])
+    rgc=np.column_stack([cluster.orbit.x(ts[indx]),cluster.orbit.y(ts[indx]),cluster.orbit.z(ts[indx])])
+    vgc=np.column_stack([cluster.orbit.vx(ts[indx]),cluster.orbit.vy(ts[indx]),cluster.orbit.vz(ts[indx])])
     lz=np.cross(rgc,vgc)
 
-    rstar=np.column_stack([cluster.x-o.x(ts[indx]),cluster.y-o.y(ts[indx]),cluster.z-o.z(ts[indx])])
+    rstar=np.column_stack([cluster.x-cluster.orbit.x(ts[indx]),cluster.y-cluster.orbit.y(ts[indx]),cluster.z-cluster.orbit.z(ts[indx])])
 
     ldot=np.sum(rstar*lz,axis=1)
 
@@ -578,7 +582,7 @@ def stream_path(cluster,dt=0.1,nt=100,nbin=50,pot=MWPotential2014,from_centre=Fa
     cluster.to_galaxy()
     cluster.to_realkpc()
 
-    to,xo,yo,zo,vxo,vyo,vzo,o=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
+    to,xo,yo,zo,vxo,vyo,vzo=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
     tstar,dprog,dpath=orbital_path_match(cluster=cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,r0=r0,v0=v0)
 
 

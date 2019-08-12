@@ -1,11 +1,11 @@
-Metadata-Version: 2.1
+Metadata-Version: 1.0
 Name: nbodypy
-Version: 1.0
-Summary: python package for N-body star cluster analysis
-Home-page: https://github.com/webbjj
+Version: 0.1.0
+Summary: Package to Analyse N-body Simulations of Star Clusters
+Home-page: https://github.com/webbjj/nbodypy.git
 Author: Jeremy Webb
 Author-email: webb@astro.utoronto.ca
-License: New BSD
+License: BSD
 Description: # Welcome to nbodypy, a python packaged aimed at reading and analysing the results of NBODY star cluster simulations. 
         
         # The structure of the code is as follows:
@@ -30,9 +30,16 @@ Description: # Welcome to nbodypy, a python packaged aimed at reading and analys
         -- Generate example notebooks for basic features
         -- Include stream analysis features
         
+        
+        
+        
+        History
+        -------
+        
+        0.1.0 (2014-01-11)
+        ---------------------
+        
+        * First release on github. 
+        
+Keywords: nbodypy
 Platform: UNKNOWN
-Provides-Extra: astropy
-Provides-Extra: galpy
-Provides-Extra: numba
-Provides-Extra: scipy
-Provides-Extra: limepy

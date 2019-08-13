@@ -20,7 +20,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
 
     INPUT:
 
-       ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, splitsnap,snapauto, nbodypy, snapshot)
+       ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, nbodypy, snapshot)
 
        units - units of input data (default: realkpc)
 
@@ -86,9 +86,9 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
         #Read in snapshot from gyrfalcon.
         filein=open(wdir+filename,'r')
         cluster=get_gyrfalcon(filein,'WDunits','galaxy',advance=False,**kwargs)
-    elif ctype=='splitsnap':
-        #Read in splitsnap snapshot from gyrfalcon.
-        cluster=get_splitsnap(filename,'WDunits','galaxy',advance=False,**kwargs)
+    elif ctype=='snaptrim':
+        #Read in snaptrim snapshot from gyrfalcon.
+        cluster=get_snaptrim(filename,'WDunits','galaxy',advance=False,**kwargs)
     elif ctype=='nbodypy':
         #Read in standard nbodypy snapshot
         cluster=get_nbodypy_snapshot(filename,units,origin,ofile,advance=False,**kwargs)
@@ -181,9 +181,9 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
         cluster=get_nbody6_snapauto(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='gyrfalcon':
         cluster=get_gyrfalcon(cluster.sfile,'WDunits',ofile,advance=True,**advance_kwargs)
-    elif cluster.ctype=='splitsnap':
+    elif cluster.ctype=='snaptrim':
         #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
-        cluster=get_splitsnap(filename,cluster.units,cluster.origin,advance=True,**advance_kwargs)
+        cluster=get_snaptrim(filename,cluster.units,cluster.origin,advance=True,**advance_kwargs)
     elif cluster.ctype=='nbodypy':
         #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
         cluster=get_nbodypy_snapshot(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
@@ -508,16 +508,16 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,advance=False,**kwargs):
 
     return cluster
 
-#Get StarCluster from Gyrfalcon output snapshot (assumes that splitsnap was used)
-def get_splitsnap(filename,units='WDunits',origin='galaxy',advance=False,**kwargs):
+#Get StarCluster from Gyrfalcon output snapshot (assumes that snaptrim was used)
+def get_snaptrim(filename,units='WDunits',origin='galaxy',advance=False,**kwargs):
     """
     NAME:
 
-       get_splitsnap
+       get_snaptrim
 
     PURPOSE:
 
-       Load a gyrfalcon snapshot as produced by splitsnap
+       Load a gyrfalcon snapshot as produced by snaptrim
 
     INPUT:
 
@@ -606,7 +606,7 @@ def get_splitsnap(filename,units='WDunits',origin='galaxy',advance=False,**kwarg
 
     filein.close()
 
-    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ctype='splitsnap',nzfill=nzfill,skiprows=skiprows,**kwargs)
+    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ctype='snaptrim',nzfill=nzfill,skiprows=skiprows,**kwargs)
 
     return cluster
 

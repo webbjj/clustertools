@@ -20,7 +20,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
 
     INPUT:
 
-       ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snapauto, nbodypy, snapshot)
+       ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, splitsnap,snapauto, nbodypy, snapshot)
 
        units - units of input data (default: realkpc)
 
@@ -50,8 +50,6 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
 
         kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
 
-        ocontinue - if True read next line (or line # nsnap) of oribital information file instead of starting from beginning
-
     OUTPUT:
 
        StarCluster instance
@@ -72,7 +70,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
         #When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
         fort82=open('%sfort.82' % wdir,'r')
         fort83=open('%sfort.83' % wdir,'r')
-        cluster=get_nbody6_jarrod(fort82,fort83,ofile,**kwargs)
+        cluster=get_nbody6_jarrod(fort82,fort83,ofile,advance=False,**kwargs)
     elif ctype=='nbody6':
         #With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
         if os.path.isfile('%sOUT9'):
@@ -80,22 +78,25 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
         else:
             out9=None
         out34=open('%sOUT34' % wdir,'r')
-        cluster=get_nbody6_out(out9,out34,**kwargs)
+        cluster=get_nbody6_out(out9,out34,advance=False,**kwargs)
     elif ctype=='snapauto':
         #Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++
-        cluster=get_nbody6_snapauto(filename,units,origin,ofile,**kwargs)
+        cluster=get_nbody6_snapauto(filename,units,origin,ofile,advance=False,**kwargs)
     elif ctype=='gyrfalcon':
         #Read in snapshot from gyrfalcon.
         filein=open(wdir+filename,'r')
-        cluster=get_gyrfalcon(filein,'WDunits',ofile,**kwargs)
+        cluster=get_gyrfalcon(filein,'WDunits','galaxy',advance=False,**kwargs)
+    elif ctype=='splitsnap':
+        #Read in splitsnap snapshot from gyrfalcon.
+        cluster=get_splitsnap(filename,'WDunits','galaxy',advance=False,**kwargs)
     elif ctype=='nbodypy':
         #Read in standard nbodypy snapshot
-        cluster=get_nbodypy_snapshot(filename,units,origin,ofile,**kwargs)
+        cluster=get_nbodypy_snapshot(filename,units,origin,ofile,advance=False,**kwargs)
     elif ctype=='snapshot':
          #Read in standard generic snapshot
         col_names=kwargs.pop('col_names',['m','x','y','z','vx','vy','vz'])
         col_nums=kwargs.pop('col_nums',[0,1,2,3,4,5,6])
-        cluster=get_snapshot(filename,col_names,col_nums,units,origin,ofile,**kwargs)       
+        cluster=get_snapshot(filename,col_names,col_nums,units,origin,ofile,advance=False,**kwargs)       
     elif ctype=='mycode':
         #Read in new cluster type
         cluster=get_mycode()
@@ -146,7 +147,7 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
 
        Advance a loaded StarCluster snapshot to the next timestep
        --> ofile or orbit need to be provded again, same as load_cluster.
-       --> Be sure that ocontinue is set to True so next line of orbit file is read in
+       --> Be sure that advance is set to True so next line of orbit file is read in
 
     INPUT:
 
@@ -166,27 +167,31 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
 
     """ 
 
+    advance_kwargs=get_advanced_kwargs(cluster,**kwargs)
+
     if 'kwfile' in kwargs:
         kw0=cluster.kw
 
     #Continue reading in cluster opened in get_cluster()
     if cluster.ctype=='nbody6se':
-        cluster=get_nbody6_jarrod(cluster.bfile,cluster.sfile,ofile,ocontinue=True,**kwargs)
+        cluster=get_nbody6_jarrod(cluster.bfile,cluster.sfile,ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='nbody6':
-        cluster=get_nbody6_out(cluster.bfile,cluster.sfile,ocontinue=True,**kwargs)
+        cluster=get_nbody6_out(cluster.bfile,cluster.sfile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snapauto':
-        nsnap=np.maximum(int(kwargs.pop('nsnap','1')),cluster.nsnap)+1
-        cluster=get_nbody6_snapauto(filename,cluster.units,cluster.origin,ofile,ocontinue=True,nsnap=nsnap,**kwargs)
+        cluster=get_nbody6_snapauto(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='gyrfalcon':
-        cluster=get_gyrfalcon(cluster.sfile,'WDunits',ofile,**kwargs)
+        cluster=get_gyrfalcon(cluster.sfile,'WDunits',ofile,advance=True,**advance_kwargs)
+    elif cluster.ctype=='splitsnap':
+        #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
+        cluster=get_splitsnap(filename,cluster.units,cluster.origin,advance=True,**advance_kwargs)
     elif cluster.ctype=='nbodypy':
-        nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
-        cluster=get_nbodypy_snapshot(filename,cluster.units,cluster.origin,ofile,ocontinue=True,nsnap=nsnap,**kwargs)
+        #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
+        cluster=get_nbodypy_snapshot(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snapshot':
         col_names=kwargs.pop('col_names',['m','x','y','z','vx','vy','vz'])
         col_nums=kwargs.pop('col_nums',[0,1,2,3,4,5,6])
-        nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
-        cluster=get_snapshot(filename,col_names,col_nums,cluster.units,cluster.origin,ofile,ocontinue=True,nsnap=nsnap,**kwargs)  
+        #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
+        cluster=get_snapshot(filename,col_names,col_nums,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)  
     elif cluster.ctype=='mycode':
         cluster=get_mycode()
     else:
@@ -228,7 +233,53 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
 
     return cluster
 
-def get_cluster_orbit(cluster,ofile,**kwargs):
+def get_advanced_kwargs(cluster,**kwargs):
+    """
+    NAME:
+
+       get_advanced_kwargs
+
+    PURPOSE:
+
+       get **kwargs from current cluster before advancing
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+    KWARGS:
+
+        same a load_cluster
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """ 
+
+    kwfile=kwargs.get('kwfile',None)
+
+    nsnap=int(kwargs.get('nsnap',cluster.nsnap))+1
+    delimiter=kwargs.get('delimiter',cluster.delimiter)
+    wdir=kwargs.get('wdir',cluster.wdir)
+    nzfill=int(kwargs.get('nzfill',cluster.nzfill))
+    snapbase=kwargs.get('snapbase',cluster.snapbase)
+    snapend=kwargs.get('snapend',cluster.snapend)
+    snapdir=kwargs.get('snapdir',cluster.snapdir)
+    skiprows=kwargs.get('skiprows',cluster.skiprows)
+    #sfile=kwargs.get('sfile',cluster.sfile)
+    #bfile=kwargs.get('bfile',cluster.bfile)
+
+    return {"kwfile":kwfile,"nsnap":nsnap,"delimiter":delimiter,"wdir":wdir,
+            "nzfill":nzfill,"snapbase":snapbase,"snapend":snapend,"snapdir":snapdir,
+            "skiprows":skiprows} #,"sfile":sfile,"bfile":bfile}
+
+
+def get_cluster_orbit(cluster,ofile,advance=False,**kwargs):
     """
     NAME:
 
@@ -251,7 +302,7 @@ def get_cluster_orbit(cluster,ofile,**kwargs):
 
     KWARGS:
 
-        ocontinue - Is this a continuation from a previous timestep, in which case read next line (default: False)
+        advance - Is this a continuation from a previous timestep, in which case read next line (default: False)
         nsnap - if nsnap is provided, read line # nsnap from the orbit file
         ounits - if you units are not the same as StarCluster units, provide them and they will be converted
 
@@ -265,13 +316,11 @@ def get_cluster_orbit(cluster,ofile,**kwargs):
 
     """ 
 
-
-    ocontinue=kwargs.get('ocontinue',False)
     nsnap=int(kwargs.get('nsnap',cluster.nsnap))
     ounits=kwargs.get('ounits',None)
     
     #Read in orbital information from orbit
-    if nsnap!=0 and not ocontinue:
+    if nsnap!=0 and not advance:
         for i in range(0,int(nsnap)+1):
             data=ofile.readline().split()
     else:
@@ -330,7 +379,7 @@ def get_kwtype(cluster,kwfile):
 
     KWARGS:
 
-        ocontinue - Is this a continuation from a previous timestep, in which case read next line (default: False)
+        advance - Is this a continuation from a previous timestep, in which case read next line (default: False)
         nsnap - if nsnap is provided, read line # nsnap from the orbit file
         ounits - if you units are not the same as StarCluster units, provide them and they will be converted
 
@@ -351,7 +400,7 @@ def get_kwtype(cluster,kwfile):
     return kw0
 
 #Get StarCluster from Gyrfalcon output
-def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
+def get_gyrfalcon(filein,units='WDunits',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -368,6 +417,9 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
        units - units of data (default:'WDunits')
 
        ofile - opened file containing orbital information
+
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
+
 
     KWARGS:
 
@@ -390,8 +442,9 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
         vcon=1.
         mcon=1.
 
-    nhead=13
-    ntot=0
+    #Default **kwargs
+    skiprows=kwargs.pop('skiprows',13)
+
     i_d=[]
     m=[]
     x=[]
@@ -405,7 +458,7 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
     ntot=0
     tphys=0.
 
-    for j in range(0,nhead):
+    for j in range(0,skiprows):
         data=filein.readline().split()
         if '#' not in data:
             over_head=True
@@ -413,14 +466,14 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
             break
         if (len(data)==0):
             print('END OF FILE')
-            return StarCluster(0,0.0)
+            return StarCluster()
         if any ('Ntot' in dat for dat in data):
                 sntot=data[2]
                 ntot=int(sntot[:-1])
         if any ('time' in dat for dat in data):
                 tphys=float(data[2])*1000.0        
 
-    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy',ctype='gyrfalcon',sfile=filein,bfile=None)
+    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy',ctype='gyrfalcon',sfile=filein,bfile=None,skiprows=skiprows,**kwargs)
             
     for j in range(ntot):
         if over_head:
@@ -455,7 +508,109 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,**kwargs):
 
     return cluster
 
-def get_nbody6_jarrod(fort82,fort83,ofile=None,**kwargs):
+#Get StarCluster from Gyrfalcon output snapshot (assumes that splitsnap was used)
+def get_splitsnap(filename,units='WDunits',origin='galaxy',advance=False,**kwargs):
+    """
+    NAME:
+
+       get_splitsnap
+
+    PURPOSE:
+
+       Load a gyrfalcon snapshot as produced by splitsnap
+
+    INPUT:
+
+       filename = name of file
+
+       units - units of input data (default: WDunits)
+
+       origin - origin of input data (default: galaxy)
+
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
+
+       
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
+    #Default **kwargs
+    nzfill=int(kwargs.pop('nzfill',1))
+    skiprows=kwargs.pop('skiprows',13)
+
+    #**kwargs
+    nsnap=int(kwargs.get('nsnap','0'))
+    wdir=kwargs.get('wdir','./')
+    snapdir=kwargs.get('snapdir','snaps/')
+    snapbase=kwargs.get('snapbase','')
+    snapend=kwargs.get('snapend','.dat')
+
+
+    if units=='WDunits':
+        vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
+        mcon=222288.4543021174
+    else:
+        vcon=1.
+        mcon=1.
+
+    if filename!=None:
+        if os.path.isfile('%s%s%s' % (wdir,snapdir,filename)):
+            data=np.loadtxt('%s%s%s' %(wdir,snapdir,filename),delimiter=delimiter,skiprows=skiprows)
+        elif os.path.isfile('%s%s' % (wdir,filename)):
+            data=np.loadtxt('%s%s' %(wdir,filename),delimiter=delimiter,skiprows=skiprows)
+        else:
+            print('NO FILE FOUND')
+            cluster=StarCluster()
+            print(cluster.ntot)
+            return cluster
+    elif os.path.isfile('%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
+        filename='%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)
+    elif os.path.isfile('%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)):
+        filename='%s%s%s%s' % (wdir,snapbase,str(nsnap).zfill(nzfill),snapend)
+    else:
+        print('NO FILE FOUND - %s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend) )
+        filename='%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)
+        cluster=StarCluster(sfile=filename)
+        print(cluster.ntot)
+        return cluster
+
+    ntot=0
+    tphys=0.
+
+    filein=open(filename,'r')
+
+    print(filein,skiprows)
+
+    for j in range(0,skiprows):
+        data=filein.readline().split()
+        if '#' not in data:
+            print('OVER HEAD')
+            break
+        if (len(data)==0):
+            print('END OF FILE')
+            return StarCluster(0,0.0)
+        if any ('Ntot' in dat for dat in data):
+                sntot=data[2]
+                ntot=int(sntot[:-1])
+        if any ('time' in dat for dat in data):
+                tphys=float(data[2])*1000.0        
+
+    filein.close()
+
+    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ctype='splitsnap',nzfill=nzfill,skiprows=skiprows,**kwargs)
+
+    return cluster
+
+def get_nbody6_jarrod(fort82,fort83,ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -474,6 +629,8 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None,**kwargs):
        fort83 - opened fort.83 file containing single star information
 
        ofile - opened file containing orbital information
+
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
 
     KWARGS:
 
@@ -654,7 +811,7 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None,**kwargs):
 
     return cluster
 
-def get_nbody6_out(out9,out34,**kwargs):
+def get_nbody6_out(out9,out34,advance=False,**kwargs):
     """
     NAME:
 
@@ -673,6 +830,8 @@ def get_nbody6_out(out9,out34,**kwargs):
        out34 - opened OUT34 file containing single star information
 
        ofile - opened file containing orbital information
+
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
 
     KWARGS:
 
@@ -869,7 +1028,7 @@ def get_nbody6_out(out9,out34,**kwargs):
 
     return cluster
 
-def get_nbody6_out34(out34,**kwargs):
+def get_nbody6_out34(out34,advance=False,**kwargs):
     """
     NAME:
 
@@ -885,7 +1044,7 @@ def get_nbody6_out34(out34,**kwargs):
 
        out34 - opened OUT34 file containing single star information
 
-       ofile - opened file containing orbital information
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
 
     KWARGS:
 
@@ -1000,7 +1159,7 @@ def get_nbody6_out34(out34,**kwargs):
 
     return cluster
 
-def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,**kwargs):
+def get_snapshot(ctype='snapshot',filename=None,tphys=0.,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -1012,17 +1171,22 @@ def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nu
 
     INPUT:
 
+       ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
+
        filename - name of file
 
        col_names - names corresponding to mass, position, and velocity
 
        col_nums - column numbers corresponding to each column name
-
+s
        units - units of input data (default: realkpc)
 
        origin - origin of input data (default: cluster)
 
        ofile - opened file containing orbital information
+
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
+
        
     KWARGS:
 
@@ -1044,12 +1208,11 @@ def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nu
     nzfill=int(kwargs.get('nzfill',5))
     delimiter=kwargs.get('delimiter',None)
     wdir=kwargs.get('wdir','./')
-    ocontinue=kwargs.get('ocontinue',False)
+    advance=kwargs.get('advance',False)
     snapdir=kwargs.get('snapdir','snaps/')
     snapbase=kwargs.get('snapbase','')
     snapend=kwargs.get('snapend','.dat')
     skiprows=kwargs.get('skiprows',0)
-    ocontinue=kwargs.get('ocontinue',False)
 
     if units=='WDunits':
         vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
@@ -1078,7 +1241,7 @@ def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nu
     else:
         print('NO FILE FOUND - %s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend) )
         filename='%s%s%s%s%s' % (wdir,snapdir,snapbase,str(nsnap).zfill(nzfill),snapend)
-        cluster=StarCluster(sfile=filename)
+        cluster=StarCluster()
         print(cluster.ntot)
         return cluster
 
@@ -1113,7 +1276,7 @@ def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nu
     
     nbnd=len(m)
 
-    cluster=StarCluster(nbnd,0.0,units=units,origin=origin,ctype='snapshot',sfile=filename,bfile=None,delimiter=delimiter,wdir=wdir,nsnap=nsnap)
+    cluster=StarCluster(nbnd,tphys,units=units,origin=origin,ctype=ctype,**kwargs)
     cluster.add_stars(i_d,m,x,y,z,vx,vy,vz)
     cluster.kw=kw
 
@@ -1136,7 +1299,7 @@ def get_snapshot(filename=None,col_names=['m','x','y','z','vx','vy','vz'],col_nu
 
     return cluster
 
-def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
+def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -1157,6 +1320,8 @@ def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None
 
        ofile - opened file containing orbital information
 
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
+
     KWARGS:
 
         same as load_cluster
@@ -1170,12 +1335,12 @@ def get_nbody6_snapauto(filename=None,units='realpc',origin='cluster',ofile=None
        2018 - Written - Webb (UofT)
     """
 
-    cluster=get_snapshot(filename=filename,col_names=['m','x','y','z','vx','vy','vz','id'],col_nums=[0,1,2,3,4,5,6,7],units=units,origin=origin,ofile=ofile,**kwargs)
+    cluster=get_snapshot(ctype='snapauto',filename=filename,col_names=['m','x','y','z','vx','vy','vz','id'],col_nums=[0,1,2,3,4,5,6,7],units=units,origin=origin,ofile=ofile,advance=advance,**kwargs)
 
 
     return cluster
 
-def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=None,**kwargs):
+def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -1194,6 +1359,8 @@ def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=Non
        origin - origin of input data (default: cluster)
 
        ofile - opened file containing orbital information
+
+       advance - is this a snapshot that has been advanced to from initial load_cluster?
        
     KWARGS:
 
@@ -1208,7 +1375,7 @@ def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=Non
        2018 - Written - Webb (UofT)
     """
    
-    cluster=get_snapshot(filename=filename,col_names=['m','x','y','z','vx','vy','vz','id','kw'],col_nums=[0,1,2,3,4,5,6,7,8],units=units,origin=origin,ofile=ofile,**kwargs)
+    cluster=get_snapshot(ctype='nbodypy',filename=filename,col_names=['m','x','y','z','vx','vy','vz','id','kw'],col_nums=[0,1,2,3,4,5,6,7,8],units=units,origin=origin,ofile=ofile,advance=advance,**kwargs)
 
     return cluster
 

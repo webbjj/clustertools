@@ -16,7 +16,7 @@ class StarCluster(object):
     """
     Class representing a star cluster
     """    
-    def __init__(self,ntot=0,tphys=0.0,units=None,origin=None,**kwargs):
+    def __init__(self,ntot=0,tphys=0.0,units=None,origin=None,ctype='snapshot',**kwargs):
         """
         NAME:
 
@@ -40,21 +40,32 @@ class StarCluster(object):
 
            origin - origin of input data (cluster/galaxy/default:None)
 
-        KWARGS:
+           ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
 
-            ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
+
+        KWARGS:
 
             sfile - name of file containing stellar data
 
             bfile - name of file contain binary star data
 
-            delimiter - for opening files using numpy.loadtxt
+            ofilename - orbit filename if ofile is not given
 
-            nsnap - number of snapshot to be opened
+            ounits - units of orbital information (else assumed equal to StarCluster.units)
 
-            nzfill - number of zeros preceeding nsnap in snapshot filename
+            nsnap - if a specific snapshot is to be read in instead of starting from zero
+        
+            nzfill - value for zfill when reading and writing snapshots (Default: 5)
+        
+            delimiter - choice of delimiter when reading ascii/csv files (Default: ',')
+        
+            wdir - working directory of snapshots if not current directory
 
-            wdir - working directory (only needs to be specified if not current directory)
+            intialize - initialize a galpy orbit after reading in orbital information (default: False)
+
+            kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
+
+            advance - is this a snapshot that has been advanced to from initial load_cluster?
 
         OUTPUT:
 
@@ -70,18 +81,22 @@ class StarCluster(object):
         self.nb=0
         #Age of cluster
         self.tphys=tphys
+
+        #Cluster Simulation Type
+        self.ctype=ctype
         
-        self.ctype=kwargs.get('ctype','snapshot')
+        #Kwargs
+        self.nsnap=int(kwargs.get('nsnap','0'))
         self.delimiter=kwargs.get('delimiter',None)
         self.wdir=kwargs.get('wdir','')
         self.nzfill=int(kwargs.get('nzfill','5'))
-        self.nsnap=int(kwargs.get('nsnap','0'))
+        self.snapbase=kwargs.get('snapbase','')
+        self.snapend=kwargs.get('snapend','')
+        self.snapdir=kwargs.get('snapdir','')
+        self.skiprows=kwargs.get('skiprows',0)
+        self.sfile=kwargs.get('sfile','')
+        self.bfile=kwargs.get('bfile','')
 
-        if 'sfile' in kwargs:
-            self.sfile=kwargs.get('sfile')
-        if 'bfile' in kwargs:
-            self.bfile=kwargs.get('bfile')
- 
         #Initial arrays
         self.id=np.array([])
         self.m=np.array([])

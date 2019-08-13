@@ -180,7 +180,7 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
     elif cluster.ctype=='snapauto':
         cluster=get_nbody6_snapauto(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='gyrfalcon':
-        cluster=get_gyrfalcon(cluster.sfile,'WDunits',ofile,advance=True,**advance_kwargs)
+        cluster=get_gyrfalcon(cluster.sfile,'WDunits','galaxy',ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snaptrim':
         #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
         cluster=get_snaptrim(filename,cluster.units,cluster.origin,advance=True,**advance_kwargs)
@@ -263,7 +263,7 @@ def get_advanced_kwargs(cluster,**kwargs):
 
     kwfile=kwargs.get('kwfile',None)
 
-    nsnap=int(kwargs.get('nsnap',cluster.nsnap))+1
+    nsnap=np.maximum(int(kwargs.get('nsnap',0)),cluster.nsnap)+1
     delimiter=kwargs.get('delimiter',cluster.delimiter)
     wdir=kwargs.get('wdir',cluster.wdir)
     nzfill=int(kwargs.get('nzfill',cluster.nzfill))
@@ -400,7 +400,7 @@ def get_kwtype(cluster,kwfile):
     return kw0
 
 #Get StarCluster from Gyrfalcon output
-def get_gyrfalcon(filein,units='WDunits',ofile=None,advance=False,**kwargs):
+def get_gyrfalcon(filein,units='WDunits',origin='galaxy',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -438,6 +438,7 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,advance=False,**kwargs):
     if units=='WDunits':
         vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
         mcon=222288.4543021174
+        units='realkpc'
     else:
         vcon=1.
         mcon=1.
@@ -473,7 +474,7 @@ def get_gyrfalcon(filein,units='WDunits',ofile=None,advance=False,**kwargs):
         if any ('time' in dat for dat in data):
                 tphys=float(data[2])*1000.0        
 
-    cluster=StarCluster(ntot,tphys,units='realkpc',origin='galaxy',ctype='gyrfalcon',sfile=filein,bfile=None,skiprows=skiprows,**kwargs)
+    cluster=StarCluster(ntot,tphys,units=units,origin=origin,ctype='gyrfalcon',sfile=filein,bfile=None,skiprows=skiprows,**kwargs)
             
     for j in range(ntot):
         if over_head:
@@ -558,6 +559,7 @@ def get_snaptrim(filename,units='WDunits',origin='galaxy',advance=False,**kwargs
     if units=='WDunits':
         vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
         mcon=222288.4543021174
+        units='realkpc'
     else:
         vcon=1.
         mcon=1.

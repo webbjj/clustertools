@@ -70,7 +70,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
         #When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
         fort82=open('%sfort.82' % wdir,'r')
         fort83=open('%sfort.83' % wdir,'r')
-        cluster=get_nbody6_jarrod(fort82,fort83,ofile,advance=False,**kwargs)
+        cluster=get_nbody6_jarrod(fort82,fort83,ofile=ofile,advance=False,**kwargs)
     elif ctype=='nbody6':
         #With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
         if os.path.isfile('%sOUT9'):
@@ -81,22 +81,22 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
         cluster=get_nbody6_out(out9,out34,advance=False,**kwargs)
     elif ctype=='snapauto':
         #Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++
-        cluster=get_nbody6_snapauto(filename,units,origin,ofile,advance=False,**kwargs)
+        cluster=get_nbody6_snapauto(filename=filename,units=units,origin=origin,ofile=ofile,advance=False,**kwargs)
     elif ctype=='gyrfalcon':
         #Read in snapshot from gyrfalcon.
         filein=open(wdir+filename,'r')
         cluster=get_gyrfalcon(filein,'WDunits','galaxy',advance=False,**kwargs)
     elif ctype=='snaptrim':
         #Read in snaptrim snapshot from gyrfalcon.
-        cluster=get_snaptrim(filename,'WDunits','galaxy',advance=False,**kwargs)
+        cluster=get_snaptrim(filename=filename,units='WDunits',origin='galaxy',advance=False,**kwargs)
     elif ctype=='nbodypy':
         #Read in standard nbodypy snapshot
-        cluster=get_nbodypy_snapshot(filename,units,origin,ofile,advance=False,**kwargs)
+        cluster=get_nbodypy_snapshot(filename=filename,units=units,origin=origin,ofile=ofile,advance=False,**kwargs)
     elif ctype=='snapshot':
          #Read in standard generic snapshot
         col_names=kwargs.pop('col_names',['m','x','y','z','vx','vy','vz'])
         col_nums=kwargs.pop('col_nums',[0,1,2,3,4,5,6])
-        cluster=get_snapshot(filename,col_names,col_nums,units,origin,ofile,advance=False,**kwargs)       
+        cluster=get_snapshot(filename=filename,col_names=col_names,col_nums=col_nums,units=units,origin=origin,ofile=ofile,advance=False,**kwargs)       
     elif ctype=='mycode':
         #Read in new cluster type
         cluster=get_mycode()
@@ -108,7 +108,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
     if kwfile!=None:
         cluster.kw[cluster.id-1]=get_kwtype(cluster,kwfile)
 
-   #Add galpy orbit if given
+    #Add galpy orbit if given
     if orbit!=None:
         cluster.orbit=orbit
         if cluster.units=='realpc':
@@ -174,24 +174,22 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
 
     #Continue reading in cluster opened in get_cluster()
     if cluster.ctype=='nbody6se':
-        cluster=get_nbody6_jarrod(cluster.bfile,cluster.sfile,ofile,advance=True,**advance_kwargs)
+        cluster=get_nbody6_jarrod(cluster.bfile,cluster.sfile,ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='nbody6':
         cluster=get_nbody6_out(cluster.bfile,cluster.sfile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snapauto':
-        cluster=get_nbody6_snapauto(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
+        cluster=get_nbody6_snapauto(filename=filename,units=cluster.units,origin=cluster.origin,ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='gyrfalcon':
-        cluster=get_gyrfalcon(cluster.sfile,'WDunits','galaxy',ofile,advance=True,**advance_kwargs)
+        cluster=get_gyrfalcon(cluster.sfile,units='WDunits',origin='galaxy',ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snaptrim':
-        #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
-        cluster=get_snaptrim(filename,cluster.units,cluster.origin,advance=True,**advance_kwargs)
+        cluster=get_snaptrim(filename=filename,units='WDunits',origin=-'galaxy',ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='nbodypy':
-        #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
-        cluster=get_nbodypy_snapshot(filename,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)
+        cluster=get_nbodypy_snapshot(filename=filename,units=cluster.units,origin=cluster.origin,ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snapshot':
         col_names=kwargs.pop('col_names',['m','x','y','z','vx','vy','vz'])
         col_nums=kwargs.pop('col_nums',[0,1,2,3,4,5,6])
         #nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
-        cluster=get_snapshot(filename,col_names,col_nums,cluster.units,cluster.origin,ofile,advance=True,**advance_kwargs)  
+        cluster=get_snapshot(filename=filename,col_names=col_names,col_nums=col_nums,units=cluster.units,origin=cluster.origin,ofile=ofile,advance=True,**advance_kwargs)  
     elif cluster.ctype=='mycode':
         cluster=get_mycode()
     else:
@@ -509,8 +507,7 @@ def get_gyrfalcon(filein,units='WDunits',origin='galaxy',ofile=None,advance=Fals
 
     return cluster
 
-#Get StarCluster from Gyrfalcon output snapshot (assumes that snaptrim was used)
-def get_snaptrim(filename,units='WDunits',origin='galaxy',advance=False,**kwargs):
+def get_snaptrim(filename=filename,units='WDunits',origin='galaxy',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -541,7 +538,7 @@ def get_snaptrim(filename,units='WDunits',origin='galaxy',advance=False,**kwargs
 
     HISTORY:
 
-       2018 - Written - Webb (UofT)
+       2019 - Written - Webb (UofT)
     """
 
     #Default **kwargs
@@ -555,22 +552,13 @@ def get_snaptrim(filename,units='WDunits',origin='galaxy',advance=False,**kwargs
     snapbase=kwargs.get('snapbase','')
     snapend=kwargs.get('snapend','.dat')
 
-
-    if units=='WDunits':
-        vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
-        mcon=222288.4543021174
-        units='realkpc'
-    else:
-        vcon=1.
-        mcon=1.
-
     if filename!=None:
         if os.path.isfile('%s%s%s' % (wdir,snapdir,filename)):
             data=np.loadtxt('%s%s%s' %(wdir,snapdir,filename),delimiter=delimiter,skiprows=skiprows)
         elif os.path.isfile('%s%s' % (wdir,filename)):
             data=np.loadtxt('%s%s' %(wdir,filename),delimiter=delimiter,skiprows=skiprows)
         else:
-            print('NO FILE FOUND')
+            print('NO FILE FOUND: %s, %s, %s' % (wdir,snapdir,filename))
             cluster=StarCluster()
             print(cluster.ntot)
             return cluster
@@ -608,7 +596,8 @@ def get_snaptrim(filename,units='WDunits',origin='galaxy',advance=False,**kwargs
 
     filein.close()
 
-    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ctype='snaptrim',nzfill=nzfill,skiprows=skiprows,**kwargs)
+    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ofile=ofile,advance=advance,ctype='snaptrim',nzfill=nzfill,skiprows=skiprows,**kwargs)
+
 
     return cluster
 
@@ -1161,7 +1150,7 @@ def get_nbody6_out34(out34,advance=False,**kwargs):
 
     return cluster
 
-def get_snapshot(ctype='snapshot',filename=None,tphys=0.,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,advance=False,**kwargs):
+def get_snapshot(filename=None,tphys=0.,ctype='snapshot',col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units='realpc',origin='cluster',ofile=None,advance=False,**kwargs):
     """
     NAME:
 
@@ -1230,7 +1219,7 @@ s
         elif os.path.isfile('%s%s' % (wdir,filename)):
             data=np.loadtxt('%s%s' %(wdir,filename),delimiter=delimiter,skiprows=skiprows)
         else:
-            print('NO FILE FOUND')
+            print('NO FILE FOUND: %s, %s, %s' % (wdir,snapdir,filename))
             cluster=StarCluster()
             print(cluster.ntot)
             return cluster

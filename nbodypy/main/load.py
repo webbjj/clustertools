@@ -507,7 +507,7 @@ def get_gyrfalcon(filein,units='WDunits',origin='galaxy',ofile=None,advance=Fals
 
     return cluster
 
-def get_snaptrim(filename=filename,units='WDunits',origin='galaxy',ofile=None,advance=False,**kwargs):
+def get_snaptrim(filename=None,units='WDunits',origin='galaxy',ofile=None,advance=False,**kwargs):
     """
     NAME:
 

@@ -182,7 +182,7 @@ def advance_cluster(cluster,ofile=None,orbit=None,filename=None,**kwargs):
     elif cluster.ctype=='gyrfalcon':
         cluster=get_gyrfalcon(cluster.sfile,units='WDunits',origin='galaxy',ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snaptrim':
-        cluster=get_snaptrim(filename=filename,units='WDunits',origin=-'galaxy',ofile=ofile,advance=True,**advance_kwargs)
+        cluster=get_snaptrim(filename=filename,units='WDunits',origin='galaxy',ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='nbodypy':
         cluster=get_nbodypy_snapshot(filename=filename,units=cluster.units,origin=cluster.origin,ofile=ofile,advance=True,**advance_kwargs)
     elif cluster.ctype=='snapshot':
@@ -499,7 +499,7 @@ def get_gyrfalcon(filein,units='WDunits',origin='galaxy',ofile=None,advance=Fals
         if ofile==None:
             cluster.find_centre()
         else:
-            get_cluster_orbit(cluster,ofile,**kwargs)
+            get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)
 
         cluster.to_cluster()
         cluster.find_centre()
@@ -792,7 +792,7 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None,advance=False,**kwargs):
         cluster.add_energies(kin,pot,etot)
     
         if ofile!=None:
-            get_cluster_orbit(cluster,ofile,**kwargs)
+            get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)
 
         #Estimate centre
         cluster.find_centre()
@@ -1275,7 +1275,7 @@ s
         if ofile==None:
             cluster.find_centre()
         else:
-            get_cluster_orbit(cluster,ofile,**kwargs)
+            get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)
 
         cluster.to_cluster()
         cluster.find_centre()
@@ -1286,7 +1286,7 @@ s
         cluster.find_centre()
 
         if ofile!=None:
-            get_cluster_orbit(cluster,ofile,**kwargs)
+            get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)
 
     return cluster
 

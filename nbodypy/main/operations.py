@@ -60,6 +60,7 @@ def return_cluster(cluster,units0,origin0):
     cluster.to_units(units0)
     cluster.to_origin(origin0)
 
+
 def rotate_to_stream(cluster):
     """
     NAME:

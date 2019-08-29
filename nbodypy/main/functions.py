@@ -413,7 +413,7 @@ def rlagrange(cluster,nlagrange=10,projected=False):
     """
     
     units0,origin0=save_cluster(cluster)
-    cluster.to_cluster()
+    cluster.to_centre()
 
     #Radially order the stars
     msum=0.0
@@ -421,10 +421,16 @@ def rlagrange(cluster,nlagrange=10,projected=False):
     rn=[]
     
     if projected:
-        rorder=sorted(range(0,self.ntot),key=lambda k:self.rpro[k])
+        if cluster.rproorder is None:
+            rorder=np.argsort(cluster.rpro)
+        else:
+            rorder=cluster.rproorder
     else:
-        rorder=cluster.rorder
-    
+        if cluster.rorder is None:
+            rorder=np.argsort(cluster.r)
+        else:
+            rorder=cluster.rorder
+
     for i in range(0,cluster.ntot):
         mfrac=cluster.mtot*float(nfrac)/float(nlagrange)
         msum+=cluster.m[rorder[i]]

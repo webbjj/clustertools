@@ -752,3 +752,157 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
 
     return lrprofn,eprof,deta,edeta,ydeta,eydeta
 
+def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+    """
+    NAME:
+
+       vcirc_prof
+
+    PURPOSE:
+
+       Measure the circulr velocity profile of the cluster
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       mmin/mmax - minimum and maximum stellar mass
+
+       rmin/rmax - minimum and maximum stellar radii
+
+       nrad - number of radial bins
+
+       vmin/vmax - minimum and maximum stellar velocity
+
+       emin/emax - minimum and maximum stellar energy
+
+       kwmin/kwmax - minimum and maximum stellar type (kw)
+
+       indx - user defined boolean array from which to extract the subset
+
+       projected - use projected values and constraints (Default:False)
+
+       obs_cut - apply an observational mask to the dataset (Default: False)
+
+       plot - plot the density profile (Default: False)
+
+    KWARGS:
+
+        Same as for ..util.plot.nplot
+
+    OUTPUT:
+
+        rprof,vprof,rvmax,vmax (radius, circular velocity, radius of maximum virc, maximum vcirc)
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """ 
+
+    units0,origin0=save_cluster(cluster)
+    cluster.to_centre()
+
+    if cluster.units=='nbody':
+        grav=1.0
+    elif cluster.units=='realpc':
+        #G has units of pc (km/s)^2 / Msun
+        grav=4.302e-3
+    elif cluster.units=='realkpc':
+        #G has units of kpc (km/s)^2 / Msun
+        grav=4.302e-6
+    else:
+        grav=1.0
+
+
+
+    rprof=np.array([])
+    vcprof=np.array([])
+
+    if projected:
+        r=cluster.rpro
+        v=cluster.vpro
+    else:
+        r=cluster.r
+        v=cluster.v
+
+    m=cluster.m
+
+
+    if rmin==None: rmin=np.min(r)
+    if rmax==None: rmax=np.max(r)
+    if vmin==None: vmin=np.min(v)
+    if vmax==None: vmax=np.max(v)
+    if mmin==None: mmin=np.min(cluster.m)
+    if mmax==None: mmax=np.max(cluster.m)
+
+    if indx is None:
+        indx=(cluster.id > -1)
+
+    #Build subcluster containing only stars in the full radial and mass range:
+    indx*=(r >= rmin) * (r <= rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+
+    if emin!=None:
+        indx*=(cluster.etot >= emin)
+    if emin!=None:
+        indx*=(cluster.etot <= emax)
+
+    r=r[indx]
+    m=cluster.m[indx]
+
+    if self.rorder is None:
+        rorder=np.argsort(cluster.r[indx])
+    else:
+        rorder=cluster.rorder[indx]
+
+    msum=np.cumsum(m[rorder])
+    vcirc=np.sqrt(grav*msum/r[rorder])
+    vmax=np.amax(vcirc)
+    rvmax=r[rorder][np.argmax(vcirc)]
+
+    """
+    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+
+    for i in range(0,len(r_mean)):
+        rindx=(r >= r_lower[i]) * (r <= r_upper[i])
+        rprof=np.append(rprof,r_mean[i])
+        vcprof=np.append(vcprof,np.mean(vcirc[rindx]))
+    """
+
+    rprof=r[rorder]
+    vcprof=vcirc
+
+    if plot:
+        filename=kwargs.pop('filename',None)   
+        overplot=kwargs.pop('overplot',False)        
+     
+        if cluster.units=='nbody':
+            xunits=' (NBODY)'
+            yunits=' (NBODY)'
+        elif cluster.units=='realpc':
+            xunits=' (pc)'
+            yunits=' km/s'
+        elif cluster.units=='realkpc':
+            xunits=' (kpc)'
+            yunits=' km/s'
+
+        elif cluster.units=='galpy':
+            xunits=' (GALPY)'
+            yunits=' (GALPY)'
+
+        else:
+            xunits=''
+            yunits=''
+
+        x,y=rprof,vcprof
+        nlplot(x,y,xlabel='R'+xunits,ylabel='vc'+yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        nlplot([rvmax,rvmax],[np.amin(y),np.amax(y)],'--',overplot=True)
+        nlplot([np.amin(x),np.amax(x)],[vmax,vmax],'--',overplot=True)
+
+        if filename!=None:
+            plt.savefig(filename)
+
+    return_cluster(cluster,units0,origin0)
+
+    return rprof,vcprof,rvmax,vmax
+

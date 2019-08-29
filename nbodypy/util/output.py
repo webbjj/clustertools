@@ -37,19 +37,19 @@ def extrct_out(cluster,fileout,projected=False):
        2018 - Written - Webb (UofT)
 
     """    
-    units0=cluster.units
-    origin0=cluster.origin
+    units0,origin0=save_cluster(cluster)
 
+    #print('DEBUG: ',cluster.units,cluster.origin,np.amax(cluster.r))
+
+    
     if cluster.ntot==0:
         nb=0
         cluster.mtot=0.0
         trh=0.0
         rn=np.zeros(10)
     else:
-        if origin0=='galaxy':
-            cluster.to_cluster()
-        if units0!='realpc':
-            cluster.to_realpc()
+        cluster.to_centre()
+        cluster.to_realpc()
 
         if cluster.nb>0:
             nb=len(cluster.m2)
@@ -59,11 +59,11 @@ def extrct_out(cluster,fileout,projected=False):
         trh=relaxation_time(cluster,local=False,multimass=True,projected=projected)
 
         if cluster.ntot > 10:    
-            if cluster.rn==None:
+            if cluster.rn==None or (origin0!=cluster.origin or units0!=cluster.units):
                 rn=rlagrange(cluster,nlagrange=10,projected=projected)
         else:
             rn=np.zeros(10)
-                
+
     fileout.write("%i %i %f %f %f " % (cluster.ntot,nb,cluster.tphys,trh,cluster.mtot))
 
     for i in range(0,len(rn)):
@@ -73,17 +73,15 @@ def extrct_out(cluster,fileout,projected=False):
 
     if len(cluster.logl)>0:
         fileout.write("%f " % cluster.rhpro)
+    else:
+        fileout.write("-1. ")
 
     fileout.write("\n")
 
-    if units0=='realkpc':
-        cluster.to_realkpc()
-    elif units0=='nbody':
-        cluster.to_nbody()
-    elif units0=='galpy':
-        cluster.to_galpy()
-    if origin0=='galaxy':
-        cluster.to_galaxy()
+    return_cluster(cluster,units0,origin0)
+
+    #print('DEBUG: ',cluster.units,cluster.origin,np.amax(cluster.r),rn[0],rn[-1])
+
 
 def snapout(cluster,filename,energies=False,observations=False):
     """

@@ -930,7 +930,7 @@ def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projec
             yunits=''
 
         x,y,n=rprof,pprof,nprof
-        nlplot(x,y,xlabel='R'+xunits,ylabel='rho'+yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        nlplot(x,y,xlabel=r'$R %s$' % (xunits),ylabel=r'$\rho %s$' % (yunits),title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
         nlplot(x,np.ones(len(x))*rho_local,'--',overplot=True)
         nlplot(np.ones(len(y))*rl,y,'--',overplot=True)
 

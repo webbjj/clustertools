@@ -91,11 +91,12 @@ class StarCluster(object):
         self.wdir=kwargs.get('wdir','')
         self.nzfill=int(kwargs.get('nzfill','5'))
         self.snapbase=kwargs.get('snapbase','')
-        self.snapend=kwargs.get('snapend','')
+        self.snapend=kwargs.get('snapend','.dat')
         self.snapdir=kwargs.get('snapdir','')
         self.skiprows=kwargs.get('skiprows',0)
         self.sfile=kwargs.get('sfile','')
         self.bfile=kwargs.get('bfile','')
+        self.projected=kwargs.get('projected',True)
 
         #Initial arrays
         self.id=np.array([])
@@ -166,6 +167,8 @@ class StarCluster(object):
         self.rn=None
         self.rt=None
         self.rv=None
+        self.rorder=None
+        self.rproorder=None
 
         #Additional Parameters
         self.trh=None
@@ -244,7 +247,7 @@ class StarCluster(object):
         #Number of particles (from NBODY6 when tidal tail is being integrated)
         self.np=np
     
-    def add_stars(self,id,m,x,y,z,vx,vy,vz,do_key_params=True,do_order=True):
+    def add_stars(self,id,m,x,y,z,vx,vy,vz,do_key_params=False,do_order=False):
         """
         NAME:
 
@@ -805,7 +808,7 @@ class StarCluster(object):
         self.TR,self.Tphi,self.Tz=TR,Tphi,Tz
 
 
-    def key_params(self,do_order=True):
+    def key_params(self,do_order=False):
         """
         NAME:
 
@@ -817,7 +820,7 @@ class StarCluster(object):
 
         INPUT:
 
-           do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:True)
+           do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)
 
         OUTPUT:
 
@@ -841,36 +844,45 @@ class StarCluster(object):
 
         #Radially order the stars to find half-mass radius
         if do_order:
-            self.rorder=np.array(sorted(range(0,self.ntot),key=lambda k:self.r[k]))
-            self.rproorder=np.array(sorted(range(0,self.ntot),key=lambda k:self.rpro[k]))
+            self.rorder=np.argsort(self.r)
+            if self.projected:
+                self.rproorder=np.argsort(self.rpro)
  
-        msum=np.cumsum(self.m[self.rorder])
-        indx=(msum >= 0.5*self.mtot)
-        self.rm=self.r[self.rorder[indx]][0]
-        indx=(msum >= 0.1*self.mtot)
-        self.r10=self.r[self.rorder[indx]][0]
+        if self.rorder is not None:
+            msum=np.cumsum(self.m[self.rorder])
+            indx=(msum >= 0.5*self.mtot)
+            self.rm=self.r[self.rorder[indx]][0]
+            indx=(msum >= 0.1*self.mtot)
+            self.r10=self.r[self.rorder[indx]][0]
 
+        if self.projected and self.rproorder is not None:
+            msum=np.cumsum(self.m[self.rproorder])
+            indx=(msum >= 0.5*self.mtot)
+            self.rmpro=self.r[self.rproorder[indx]][0]
+            indx=(msum >= 0.1*self.mtot)
+            self.r10pro=self.r[self.rproorder[indx]][0]
+        else:
+            self.rmpro=0.
+            self.r10pro=0.
 
-        msum=np.cumsum(self.m[self.rproorder])
-        indx=(msum >= 0.5*self.mtot)
-        self.rmpro=self.r[self.rproorder[indx]][0]
-        indx=(msum >= 0.1*self.mtot)
-        self.r10pro=self.r[self.rproorder[indx]][0]
-
-        if len(self.logl)>0:
+        if len(self.logl)>0 and self.rorder is not None:
             lsum=np.cumsum(self.lum[self.rorder])
             indx=(lsum >= 0.5*self.ltot)
             self.rh=self.r[self.rorder[indx]][0]
             indx=(lsum >= 0.1*self.ltot)
             self.rh10=self.r[self.rorder[indx]][0]
 
-            lsum=np.cumsum(self.lum[self.rproorder])
-            indx=(lsum >= 0.5*self.ltot)
-            self.rhpro=self.rpro[self.rproorder[indx]][0]
-            indx=(lsum >= 0.1*self.ltot)
-            self.rh10pro=self.rpro[self.rproorder[indx]][0]
+            if self.projected and self.rproorder is not None:
+                lsum=np.cumsum(self.lum[self.rproorder])
+                indx=(lsum >= 0.5*self.ltot)
+                self.rhpro=self.rpro[self.rproorder[indx]][0]
+                indx=(lsum >= 0.1*self.ltot)
+                self.rh10pro=self.rpro[self.rproorder[indx]][0]
+            else:
+                self.rhpro=0.
+                self.rh10pro=0.
 
-    def to_realpc(self,do_order=False,do_key_params=True):
+    def to_realpc(self,do_key_params=True):
         """
         NAME:
 
@@ -944,9 +956,9 @@ class StarCluster(object):
             self.units='realpc'
 
         if do_key_params:
-            self.key_params(do_order=do_order)
+            self.key_params()
 
-    def to_realkpc(self,do_order=False,do_key_params=True,r0=8.,v0=220.):
+    def to_realkpc(self,do_key_params=True,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1035,9 +1047,9 @@ class StarCluster(object):
             self.units='realkpc'
 
         if do_key_params:
-            self.key_params(do_order=do_order)
+            self.key_params()
 
-    def to_nbody(self,do_order=False,do_key_params=True,r0=8.,v0=220.):
+    def to_nbody(self,do_key_params=True,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1091,9 +1103,9 @@ class StarCluster(object):
             self.units='nbody'
 
         if do_key_params:
-            self.key_params(do_order=do_order)
+            self.key_params()
 
-    def to_galpy(self,do_order=False,do_key_params=True,r0=8.,v0=220.):
+    def to_galpy(self,do_key_params=True,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1145,10 +1157,10 @@ class StarCluster(object):
             self.units='galpy'
 
         if do_key_params:
-            self.key_params(do_order=do_order)
+            self.key_params()
 
 
-    def to_units(self,units,do_order=False,do_key_params=True,r0=8.,v0=220.):
+    def to_units(self,units,do_key_params=True,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1173,16 +1185,16 @@ class StarCluster(object):
         """    
 
         if units=='nbody':
-            self.to_nbody(do_order=do_order,do_key_params=do_key_params)
+            self.to_nbody(do_key_params=do_key_params)
         elif units=='galpy':
-            self.to_galpy(do_order=do_order,do_key_params=do_key_params,r0=r0,v0=v0)
+            self.to_galpy(do_key_params=do_key_params,r0=r0,v0=v0)
         elif units=='realpc':
-            self.to_realpc(do_order=do_order,do_key_params=do_key_params)
+            self.to_realpc(do_key_params=do_key_params)
         elif units=='realkpc':
-            self.to_realkpc(do_order=do_order,do_key_params=do_key_params)
+            self.to_realkpc(do_key_params=do_key_params)
 
 
-    def to_centre(self,do_order=True,do_key_params=True,):
+    def to_centre(self,do_order=False,do_key_params=False):
         """
         NAME:
 
@@ -1222,7 +1234,8 @@ class StarCluster(object):
             if do_key_params:
                 self.key_params(do_order=do_order)
 
-    def to_cluster(self,do_order=True,do_key_params=True):
+
+    def to_cluster(self,do_order=False,do_key_params=False):
         """
         NAME:
 
@@ -1265,7 +1278,7 @@ class StarCluster(object):
             if do_key_params:
                 self.key_params(do_order=do_order)
 
-    def to_galaxy(self,do_order=False,do_key_params=True):
+    def to_galaxy(self,do_order=False,do_key_params=False):
         """
         NAME:
 
@@ -1367,7 +1380,7 @@ class StarCluster(object):
         elif units0=='galpy':
             self.to_galpy()
 
-    def to_origin(self,origin):
+    def to_origin(self,origin,do_order=False):
         """
         NAME:
 
@@ -1391,12 +1404,12 @@ class StarCluster(object):
 
         """    
 
-        if origin=='center':
-            self.to_center(do_order=True,do_key_params=True)
+        if origin=='centre':
+            self.to_centre(do_order=do_order,do_key_params=False)
         elif origin=='cluster':
-            self.to_cluster(do_order=True,do_key_params=True)
+            self.to_cluster(do_order=do_order,do_key_params=False)
         elif origin=='galaxy':
-            self.to_galaxy(do_order=False,do_key_params=True)
+            self.to_galaxy(do_order=do_order,do_key_params=False)
         elif origin=='to_sky':
             self.to_sky()
 
@@ -1517,6 +1530,7 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
         subcluster.rbar=cluster.rbar
         subcluster.vstar=cluster.vstar
         subcluster.tstar=cluster.tstar
+        subcluster.projected=cluster.projected
 
         if len(cluster.logl)>0:
             subcluster.add_se(cluster.kw[indx],cluster.logl[indx],cluster.logr[indx],cluster.ep[indx],cluster.ospin[indx])
@@ -1539,7 +1553,7 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
 
         if reset_nbody_scale or reset_nbody_mass or reset_nbody_radii:
             subcluster.to_realpc()
-            subcluster.key_params()
+            subcluster.key_params(do_order=True)
 
             if reset_nbody_scale or reset_nbody_mass:
                 subcluster.zmbar=subcluster.mtot
@@ -1549,7 +1563,8 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
             subcluster.vstar=0.06557*np.sqrt(subcluster.zmbar/subcluster.rbar)
             subcluster.tstar=subcluster.rbar/subcluster.vstar
         else:
-            subcluster.key_params()
+
+            subcluster.key_params(do_order=True)
 
     else:
         subcluster=StarCluster(0,cluster.tphys)

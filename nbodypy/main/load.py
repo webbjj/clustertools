@@ -125,15 +125,14 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
 
         units0,origin0=save_cluster(cluster)
 
-        cluster.to_cluster()
+        cluster.to_cluster(do_key_params=False)
         cluster.find_centre()
 
         return_cluster(cluster,units0,origin0)
     elif initialize:
         initialize_orbit(cluster)
 
-    cluster.key_params()
-
+    #cluster.key_params()
 
     return cluster
 
@@ -342,6 +341,7 @@ def get_cluster_orbit(cluster,ofile,advance=False,**kwargs):
             vygc=float(data[12])
             vzgc=float(data[13])
     else:
+        tphys=float(data[0])
         xgc=float(data[1])
         ygc=float(data[2])
         zgc=float(data[3])
@@ -349,6 +349,7 @@ def get_cluster_orbit(cluster,ofile,advance=False,**kwargs):
         vygc=float(data[5])
         vzgc=float(data[6])
 
+    if cluster.tphys==0.: cluster.tphys=tphys
 
     if ounits==None and 'gc_orbit.dat' in ofile.name:
         ounits='realkpc'
@@ -503,6 +504,7 @@ def get_gyrfalcon(filein,units='WDunits',origin='galaxy',ofile=None,advance=Fals
 
         cluster.to_cluster()
         cluster.find_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
         cluster.to_galaxy()
 
     return cluster
@@ -544,6 +546,7 @@ def get_snaptrim(filename=None,units='WDunits',origin='galaxy',ofile=None,advanc
     #Default **kwargs
     nzfill=int(kwargs.pop('nzfill',1))
     skiprows=kwargs.pop('skiprows',13)
+    delimiter=kwargs.pop('delimiter',None)
 
     #**kwargs
     nsnap=int(kwargs.get('nsnap','0'))
@@ -596,7 +599,8 @@ def get_snaptrim(filename=None,units='WDunits',origin='galaxy',ofile=None,advanc
 
     filein.close()
 
-    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ofile=ofile,advance=advance,ctype='snaptrim',nzfill=nzfill,skiprows=skiprows,**kwargs)
+
+    cluster=get_snapshot(filename=filename,tphys=tphys,col_names=['m','x','y','z','vx','vy','vz'],col_nums=[0,1,2,3,4,5,6],units=units,origin=origin,ofile=ofile,advance=advance,ctype='snaptrim',nzfill=nzfill,skiprows=skiprows,delimiter=delimiter,**kwargs)
 
 
     return cluster
@@ -796,6 +800,8 @@ def get_nbody6_jarrod(fort82,fort83,ofile=None,advance=False,**kwargs):
 
         #Estimate centre
         cluster.find_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_cluster()
     
     else:
         cluster=StarCluster(0,tphys)
@@ -1014,6 +1020,8 @@ def get_nbody6_out(out9,out34,advance=False,**kwargs):
 
     #Estimate centre of distribution
     cluster.find_centre()
+    cluster.to_centre(do_key_params=True,do_order=True)
+    cluster.to_cluster()
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
@@ -1144,6 +1152,8 @@ def get_nbody6_out34(out34,advance=False,**kwargs):
     
     #Estimate centre of distribution using median function
     cluster.find_centre()
+    cluster.to_centre(do_key_params=True,do_order=True)
+    cluster.to_cluster()
 
     cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
@@ -1169,7 +1179,7 @@ def get_snapshot(filename=None,tphys=0.,ctype='snapshot',col_names=['m','x','y',
        col_names - names corresponding to mass, position, and velocity
 
        col_nums - column numbers corresponding to each column name
-s
+
        units - units of input data (default: realkpc)
 
        origin - origin of input data (default: cluster)
@@ -1192,6 +1202,7 @@ s
        2018 - Written - Webb (UofT)
     """
 
+
     col_names=np.array(col_names)
     col_nums=np.array(col_nums)
 
@@ -1199,11 +1210,11 @@ s
     nzfill=int(kwargs.get('nzfill',5))
     delimiter=kwargs.get('delimiter',None)
     wdir=kwargs.get('wdir','./')
-    advance=kwargs.get('advance',False)
     snapdir=kwargs.get('snapdir','snaps/')
     snapbase=kwargs.get('snapbase','')
     snapend=kwargs.get('snapend','.dat')
     skiprows=kwargs.get('skiprows',0)
+
 
     if units=='WDunits':
         vcon=220.0/bovy_conversion.velocity_in_kpcGyr(220.0,8.0)
@@ -1235,6 +1246,7 @@ s
         cluster=StarCluster()
         print(cluster.ntot)
         return cluster
+
 
     mindx=np.argwhere(col_names=='m')[0][0]
     m=data[:,col_nums[mindx]]*mcon
@@ -1271,6 +1283,7 @@ s
     cluster.add_stars(i_d,m,x,y,z,vx,vy,vz)
     cluster.kw=kw
 
+
     if origin=='galaxy':
         if ofile==None:
             cluster.find_centre()
@@ -1279,11 +1292,14 @@ s
 
         cluster.to_cluster()
         cluster.find_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
         cluster.to_galaxy()
 
     elif origin=='cluster':
         #Estimate centre of distribution
         cluster.find_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_cluster()
 
         if ofile!=None:
             get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)

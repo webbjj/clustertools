@@ -37,8 +37,8 @@ def nbinmaker(x,nbin=10,nsum=False):
 
     x_lower=np.array([])
     x_upper=np.array([])
-    x_hist=np.zeros(nbin)
-    x_sum=np.zeros(nbin)
+    x_hist=np.array([])
+    x_sum=np.array([])
     x_mid=np.array([])
 
     for i in range(0,nbin):
@@ -47,12 +47,14 @@ def nbinmaker(x,nbin=10,nsum=False):
         indx=int(float(i+1)*float(len(x))/float(nbin))-1
         x_upper=np.append(x_upper,x[xorder[indx]])
 
-    x_lower,x_upper=bincheck(x_lower,x_upper)
+    indx=(x_lower!=x_upper)
+    x_lower=x_lower[indx]
+    x_upper=x_upper[indx]
 
-    for i in range(0,nbin):
+    for i in range(0,np.sum(indx)):
         indx=(x>=x_lower[i]) * (x<=x_upper[i])
-        x_hist[i]=np.sum(indx)
-        x_sum[i]=np.sum(x[indx])
+        x_hist=np.append(x_hist,np.sum(indx))
+        x_sum=np.append(x_sum,np.sum(x[indx]))
         x_mid=np.append(x_mid,x_sum[i]/x_hist[i])
 
     if nsum:
@@ -104,8 +106,6 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
     x_lower=steps[:-1]
     x_upper=steps[1:]
 
-    x_lower,x_upper=bincheck(x_lower,x_upper)
-
     x_mid=(x_upper+x_lower)/2.
 
     for j in range(0,nbin):
@@ -117,28 +117,6 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
         return x_lower,x_mid,x_upper,x_hist,x_sum
     else:
         return x_lower,x_mid,x_upper,x_hist
-
-def bincheck(x_lower,x_upper):
-
-    for i in range(0,len(x_lower)):
-        if x_lower[i]==x_upper[i]:
-            if i==0:
-                min_dx=np.fabs(x_lower[i+1]-x_lower[i])
-            elif i==len(x_lower-1):
-                min_dx=np.fabs(x_lower[i-1]-x_lower[i])
-            else:
-                min_dx=np.minimum(np.fabs(x_lower[i+1]-x_lower[i]),np.fabs(x_lower[i-1]-x_lower[i]))
-
-            x_lower[i]-=min_dx/2
-            x_upper[i]+=min_dx/2
-
-            if i!=0:
-                x_upper[i-1]-=min_dx/2
-            if i!=len(x_lower-1):
-                x_lower[i+1]+=min_dx/2
-
-            print('BINCORRECT: ',x_lower,x_upper,min_dx)
-    return x_lower,x_upper
 
 def dx_function(x,nx=10):
     """

@@ -95,7 +95,7 @@ def setup_cluster(ctype,units0='realpc',origin0='cluster',orbit=None,**kwargs):
         t=(cluster.tphys/1000.)/bovy_conversion.time_in_Gyr(ro=8.,vo=220.)
         cluster.add_orbit(orbit.x(t),orbit.y(t),orbit.z(t),orbit.vx(t),orbit.vy(t),orbit.vz(t),'realkpc')
 
-    cluster.key_params()
+    cluster.key_params(do_order=True)
 
     return cluster
 

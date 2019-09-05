@@ -398,7 +398,7 @@ def nhist2d(x,y,nbin=10,xlabel='',ylabel='',title='',xlim=None,ylim=None,filenam
 
     return out
 
-def ndens(x,y,z=[None],normed=False,xstep=1.,ystep=1.,sigx=4.,sigy=4.,order=0,extent=None,interpolation='nearest',cmap='Spectral'):
+def ndens(x,y,z=None,normed=False,xstep=1.,ystep=1.,sigx=4.,sigy=4.,order=0,extent=None,interpolation='nearest',cmap='Spectral'):
     """
     NAME:
 
@@ -442,14 +442,14 @@ def ndens(x,y,z=[None],normed=False,xstep=1.,ystep=1.,sigx=4.,sigy=4.,order=0,ex
     xbins = np.arange(x.min(), x.max()+xstep, xstep)
     ybins = np.arange(y.min(), y.max()+ystep, ystep)
 
-    if None in z:
+    if z is None:
         H, xedges, yedges = np.histogram2d(x, y, bins=[xbins, ybins]) 
     else:
         H, xedges, yedges = np.histogram2d(x, y, bins=[xbins, ybins],normed=normed,weights=z) 
 
     fimg = gaussian_filter(H, sigma=(sigx, sigy), order=order)
 
-    if extent==None:
+    if extent is None:
         extent=[x.min(),x.max(),y.min(),y.max()]
 
     out=plt.imshow(fimg, norm=colors.LogNorm(), interpolation=interpolation, cmap=cmap,extent=extent)

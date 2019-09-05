@@ -33,7 +33,7 @@ def nbinmaker(x,nbin=10,nsum=False):
     """    
     x=np.asarray(x)
  
-    xorder=sorted(range(0,len(x)),key=lambda k:x[k])
+    xorder=np.argsort(x)
 
     x_lower=np.array([])
     x_upper=np.array([])
@@ -47,11 +47,13 @@ def nbinmaker(x,nbin=10,nsum=False):
         indx=int(float(i+1)*float(len(x))/float(nbin))-1
         x_upper=np.append(x_upper,x[xorder[indx]])
 
-    for j in range(0,nbin):
-        indx=(x>=x_lower[j]) * (x<=x_upper[j])
-        x_hist[j]=len(x[indx])
-        x_sum[j]=np.sum(x[indx])
-        x_mid=np.append(x_mid,x_sum[j]/x_hist[j])
+    x_lower,x_upper=bincheck(x_lower,x_upper)
+
+    for i in range(0,nbin):
+        indx=(x>=x_lower[i]) * (x<=x_upper[i])
+        x_hist[i]=np.sum(indx)
+        x_sum[i]=np.sum(x[indx])
+        x_mid=np.append(x_mid,x_sum[i]/x_hist[i])
 
     if nsum:
         return x_lower,x_mid,x_upper,x_hist,x_sum
@@ -101,6 +103,9 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
 
     x_lower=steps[:-1]
     x_upper=steps[1:]
+
+    x_lower,x_upper=bincheck(x_lower,x_upper)
+
     x_mid=(x_upper+x_lower)/2.
 
     for j in range(0,nbin):
@@ -112,6 +117,28 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
         return x_lower,x_mid,x_upper,x_hist,x_sum
     else:
         return x_lower,x_mid,x_upper,x_hist
+
+def bincheck(x_lower,x_upper):
+
+    for i in range(0,len(x_lower)):
+        if x_lower[i]==x_upper[i]:
+            if i==0:
+                min_dx=np.fabs(x_lower[i+1]-x_lower[i])
+            elif i==len(x_lower-1):
+                min_dx=np.fabs(x_lower[i-1]-x_lower[i])
+            else:
+                min_dx=np.minimum(np.fabs(x_lower[i+1]-x_lower[i]),np.fabs(x_lower[i-1]-x_lower[i]))
+
+            x_lower[i]-=min_dx/2
+            x_upper[i]+=min_dx/2
+
+            if i!=0:
+                x_upper[i-1]-=min_dx/2
+            if i!=len(x_lower-1):
+                x_lower[i+1]+=min_dx/2
+
+            print('BINCORRECT: ',x_lower,x_upper,min_dx)
+    return x_lower,x_upper
 
 def dx_function(x,nx=10):
     """

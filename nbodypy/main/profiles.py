@@ -132,7 +132,7 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,v
             yunits=''
 
         x,y,n=rprof,pprof,nprof
-        nlplot(x,y,xlabel='R'+xunits,ylabel='rho'+yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        nlplot(x,y,xlabel=r'$R %s$' % xunits,ylabel=r'$\rho %s$' % yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
 
         if filename!=None:
             plt.savefig(filename)
@@ -255,7 +255,7 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
             yunits=''
 
         x,y,n=rprof,mprof,nprof
-        nlplot(x,y,xlabel=r'$R'+xunits+'$',ylabel=r'$M'+yunits+'$',title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        nlplot(x,y,xlabel=r'$R %s $' % xunits,ylabel=r'$M %s $' % yunits, title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
 
         if filename!=None:
             plt.savefig(filename)
@@ -820,13 +820,17 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
     vcprof=np.array([])
 
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        if self.rproorder is None:
+            self.key_params(do_order=True)
+        r=cluster.rpro[self.rproorder]
+        v=cluster.vpro[self.rproorder]
+        m=cluster.m[self.rproorder]
     else:
-        r=cluster.r
-        v=cluster.v
-
-    m=cluster.m
+        if self.rorder is None:
+            self.key_params(do_order=True)
+        r=cluster.r[self.rorder]
+        v=cluster.v[self.rorder]
+        m=cluster.m[self.rorder]
 
 
     if rmin==None: rmin=np.min(r)
@@ -848,28 +852,15 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
         indx*=(cluster.etot <= emax)
 
     r=r[indx]
-    m=cluster.m[indx]
+    v=v[indx]
+    m=m[indx]
 
-    if self.rorder is None:
-        rorder=np.argsort(cluster.r[indx])
-    else:
-        rorder=cluster.rorder[indx]
-
-    msum=np.cumsum(m[rorder])
-    vcirc=np.sqrt(grav*msum/r[rorder])
+    msum=np.cumsum(m)
+    vcirc=np.sqrt(grav*msum/r)
     vmax=np.amax(vcirc)
-    rvmax=r[rorder][np.argmax(vcirc)]
+    rvmax=r[np.argmax(vcirc)]
 
-    """
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
-
-    for i in range(0,len(r_mean)):
-        rindx=(r >= r_lower[i]) * (r <= r_upper[i])
-        rprof=np.append(rprof,r_mean[i])
-        vcprof=np.append(vcprof,np.mean(vcirc[rindx]))
-    """
-
-    rprof=r[rorder]
+    rprof=r
     vcprof=vcirc
 
     if plot:
@@ -895,7 +886,7 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
             yunits=''
 
         x,y=rprof,vcprof
-        nlplot(x,y,xlabel='R'+xunits,ylabel='vc'+yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        nlplot(x,y,xlabel=r'$R %s$' % xunits,ylabel=r'$vc %s $' % yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
         nlplot([rvmax,rvmax],[np.amin(y),np.amax(y)],'--',overplot=True)
         nlplot([np.amin(x),np.amax(x)],[vmax,vmax],'--',overplot=True)
 

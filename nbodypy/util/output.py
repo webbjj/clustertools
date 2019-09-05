@@ -58,7 +58,7 @@ def extrct_out(cluster,fileout,projected=False):
 
         trh=relaxation_time(cluster,local=False,multimass=True,projected=projected)
 
-        if cluster.ntot > 10:    
+        if cluster.ntot > 10:
             if cluster.rn==None or (origin0!=cluster.origin or units0!=cluster.units):
                 rn=rlagrange(cluster,nlagrange=10,projected=projected)
         else:
@@ -75,6 +75,18 @@ def extrct_out(cluster,fileout,projected=False):
         fileout.write("%f " % cluster.rhpro)
     else:
         fileout.write("-1. ")
+
+    #Write additional parameters if they have been calculated:
+    if self.rv is not None:
+        fileout.write("%f " % cluster.rv)
+    if self.rt is not None:
+        fileout.write("%f " % cluster.rt)
+
+    try:
+        fileout.write("%f %f " % (cluster.rvmax,cluster.vmax))
+    except:
+        pass
+
 
     fileout.write("\n")
 

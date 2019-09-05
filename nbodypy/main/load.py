@@ -7,6 +7,12 @@ from .cluster import StarCluster
 from .operations import *
 from .orbit import initialize_orbit
 
+#Try Importing AMUSE. Only necessary for get_amuse_particles
+try:
+    from amuse.lab import *
+except:
+    pass
+
 def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orbit=None,filename=None,**kwargs):
     """
     NAME:
@@ -49,6 +55,9 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
         intialize - initialize a galpy orbit after reading in orbital information (default: False)
 
         kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
+
+        projected - calculate projected values as well as 3D values (Default: True)
+
 
     OUTPUT:
 
@@ -96,7 +105,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
          #Read in standard generic snapshot
         col_names=kwargs.pop('col_names',['m','x','y','z','vx','vy','vz'])
         col_nums=kwargs.pop('col_nums',[0,1,2,3,4,5,6])
-        cluster=get_snapshot(filename=filename,col_names=col_names,col_nums=col_nums,units=units,origin=origin,ofile=ofile,advance=False,**kwargs)       
+        cluster=get_snapshot(filename=filename,col_names=col_names,col_nums=col_nums,units=units,origin=origin,ofile=ofile,advance=False,**kwargs)    
     elif ctype=='mycode':
         #Read in new cluster type
         cluster=get_mycode()
@@ -268,12 +277,13 @@ def get_advanced_kwargs(cluster,**kwargs):
     snapend=kwargs.get('snapend',cluster.snapend)
     snapdir=kwargs.get('snapdir',cluster.snapdir)
     skiprows=kwargs.get('skiprows',cluster.skiprows)
-    #sfile=kwargs.get('sfile',cluster.sfile)
-    #bfile=kwargs.get('bfile',cluster.bfile)
+
+    projected=kwargs.get('projected',cluster.projected)
+
 
     return {"kwfile":kwfile,"nsnap":nsnap,"delimiter":delimiter,"wdir":wdir,
             "nzfill":nzfill,"snapbase":snapbase,"snapend":snapend,"snapdir":snapdir,
-            "skiprows":skiprows} #,"sfile":sfile,"bfile":bfile}
+            "skiprows":skiprows,"projected":projected} #,"sfile":sfile,"bfile":bfile}
 
 
 def get_cluster_orbit(cluster,ofile,advance=False,**kwargs):
@@ -349,7 +359,7 @@ def get_cluster_orbit(cluster,ofile,advance=False,**kwargs):
         vygc=float(data[5])
         vzgc=float(data[6])
 
-    if cluster.tphys==0.: cluster.tphys=tphys
+        if cluster.tphys==0.: cluster.tphys=tphys
 
     if ounits==None and 'gc_orbit.dat' in ofile.name:
         ounits='realkpc'
@@ -1383,6 +1393,66 @@ def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=Non
     """
    
     cluster=get_snapshot(ctype='nbodypy',filename=filename,col_names=['m','x','y','z','vx','vy','vz','id','kw'],col_nums=[0,1,2,3,4,5,6,7,8],units=units,origin=origin,ofile=ofile,advance=advance,**kwargs)
+
+    return cluster
+
+def get_amuse_particles(particles,npyunits='realkpc',npyorigin='galaxy',**kwargs):
+    """
+    NAME:
+
+       get_amuse_particles
+
+    PURPOSE:
+
+       Convert AMUSE particle dataset to a StarCluster instance
+
+    INPUT:
+
+       particles - AMUSE particle dataset
+
+       npyunits - units of input data (default: realkpc)
+
+       npyorigin - origin of input data (default: cluster)
+       
+    KWARGS:
+
+        same as load_cluster
+
+    OUTPUT:
+
+       StarCluster instance
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+    
+    cluster=StarCluster(len(particles),tphys=0.,units=npyunits,origin=npyorigin,ctype='amuse',**kwargs)
+    i_d=np.linspace(1,len(particles),len(particles),dtype='int')
+    
+    m=particles.mass.value_in(units.MSun)
+
+    if npyunits=='realpc':
+        x=particles.x.value_in(units.parsec)
+        y=particles.y.value_in(units.parsec)
+        z=particles.z.value_in(units.parsec)
+        vx=particles.vx.value_in(units.kms)
+        vy=particles.vy.value_in(units.kms)
+        vz=particles.vz.value_in(units.kms)
+
+    elif npyunits=='realkpc':
+        x=particles.x.value_in(units.kpc)
+        y=particles.y.value_in(units.kpc)
+        z=particles.z.value_in(units.kpc)
+        vx=particles.vx.value_in(units.kms)
+        vy=particles.vy.value_in(units.kms)
+        vz=particles.vz.value_in(units.kms)
+
+    else:
+        print('PLEASE SPECIFY UNITS')
+        return 0
+    
+    cluster.add_stars(i_d,m,x,y,z,vx,vy,vz,do_key_params=True)
 
     return cluster
 

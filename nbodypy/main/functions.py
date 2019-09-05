@@ -101,7 +101,7 @@ def energies(cluster,specific=True,i_d=None,full=True,parallel=False):
 
        full - calculate distance of full array of stars at once with numbra (default: True)
 
-       parllel - calculate distances in parallel if True (default: False)
+       parallel - calculate distances in parallel if True (default: False)
 
     OUTPUT:
 
@@ -302,11 +302,11 @@ def minimum_distance(cluster):
     """
     NAME:
 
-       stellar_distances
+       minimum_distance
 
     PURPOSE:
 
-       Find distances between each star
+       Find distance to each star's nearest neighbour
 
     INPUT:
 
@@ -314,7 +314,7 @@ def minimum_distance(cluster):
 
     OUTPUT:
 
-       distances
+       distance to nearest neighbour
 
     HISTORY:
 
@@ -437,14 +437,112 @@ def rlagrange(cluster,nlagrange=10,projected=False):
         if msum >= mfrac:
             rn.append(cluster.r[rorder[i]])
             nfrac+=1
-        if nfrac>nlagrange:
-            break
-    if len(rn) != nlagrange:
+
+    while len(rn) != nlagrange:
         rn.append(np.max(cluster.r))
+
+    print(len(rn),nlagrange,rn)
 
     return_cluster(cluster,units0,origin0)
 
     return rn
+
+def virial_radius(cluster,projected=False,full=True):
+    """
+    NAME:
+
+       virial_radius
+
+    PURPOSE:
+
+       Calculate virial radius of the cluster
+       --> Note: Here the virial radius is defined as the inverse of the 
+                 average inverse distance between particles, weighted by their masses
+       --> Definition taken from AMUSE (www.amusecode.org)
+
+    INPUT:
+
+       cluster - StarCluster instance
+       projected - calculate projected virial radius (default: False)
+       full - Use Numba (default:True)
+
+    OUTPUT:
+
+       rv
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+
+    """
+
+
+    if full:
+        if projected:
+            x=np.array([cluster.x,cluster.y,np.zeros(cluster.ntot),cluster.m]).T
+        else:
+            x=np.array([cluster.x,cluster.y,cluster.z,cluster.m]).T
+
+        ms=cluster.m
+        partial_sum=weighted_inverse_distance_sum(x)
+
+    else:
+        partial_sum=0.
+
+        ms = cluster.m
+        xs = cluster.x
+        ys = cluster.y
+        if projected:
+            zs=np.zeros(cluster.ntot)
+        else:
+            zs = cluster.z
+
+        for i in range(cluster.ntot - 1):
+            x = xs[i]
+            y = ys[i]
+            z = zs[i]
+            dx = x - xs[i+1:]
+            dy = y - ys[i+1:]
+            dz = z - zs[i+1:]
+            dr2 = (dx * dx) + (dy * dy) + (dz * dz)
+            dr = np.sqrt(dr2)
+            m_m = ms[i] * ms[i+1:]
+            partial_sum += np.sum(m_m / dr)
+
+    return (np.sum(ms)**2) / (2 * partial_sum)
+
+@numba.njit
+def weighted_inverse_distance_sum(cluster):
+    """
+    NAME:
+
+       weighted_inverse_distance_sum
+
+    PURPOSE:
+
+       Find the sum of the mass weighted inverse distance for each star
+
+    INPUT:
+
+       cluster=[x,y,z,m].T
+
+    OUTPUT:
+
+        weighted inverse distance sum
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+    """
+    weighted_sum = 0.
+    for i in range(len(cluster)-1):
+        for j in range(i + 1, len(cluster)):
+            r = distance(cluster[i],cluster[j])
+            m2=cluster[i,3]*cluster[j,3]
+            weighted_sum+=m2/r
+
+    return weighted_sum
 
 def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=False,**kwargs):
     """
@@ -455,7 +553,7 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
     PURPOSE:
 
        Calculate virial radius of the cluster
-       --> Note: virial radius is the radius at which the density is equal to the critical 
+       --> Note: Here the virial radius is defined as the radius at which the density is equal to the critical 
            density of the Universe at the redshift of the system, multiplied by an overdensity constant
 
     INPUT:
@@ -465,7 +563,7 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
        Om - density of matter
        overdens - overdensity constant
        nrad - number of radial bins used to calculate cluster density profile
-       projected - calculate projected lagrange radii (default: False)
+       projected - calculate projected virial radius (default: False)
 
     OUTPUT:
 
@@ -486,11 +584,21 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
     rhocrit=3.0*(H**2.)/(8.0*np.pi*Grav) # Msun/pc^3
  
 
-    indx=cluster.rorder
+    if projected:
+        indx-cluster.rproorder
+    else:
+        indx=cluster.rorder
+
     msum=np.cumsum(cluster.m[indx])
-    vsum=(4./3.)*np.pi*(cluster.r[indx]**3.)
-    pprof=msum/vsum
-    rprof=cluster.r[indx]
+
+    if projected:
+      vsum=(4./3.)*np.pi*(cluster.rpro[indx]**3.)
+      pprof=msum/vsum
+      rprof=cluster.rpro[indx]
+    else:
+      vsum=(4./3.)*np.pi*(cluster.r[indx]**3.)
+      pprof=msum/vsum
+      rprof=cluster.r[indx]
 
 
     #Find radius where maxium density occurs

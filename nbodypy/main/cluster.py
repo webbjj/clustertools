@@ -67,6 +67,9 @@ class StarCluster(object):
 
             advance - is this a snapshot that has been advanced to from initial load_cluster?
 
+            projected - calculate projected values as well as 3D values (Default: True)
+
+
         OUTPUT:
 
            instance
@@ -1424,6 +1427,9 @@ class StarCluster(object):
     def rvirial(self,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False):
         self.rv=rvirial(self,H=H,Om=Om,overdens=overdens,nrad=nrad,projected=projected)
 
+    def virial_radius(self,projected=False):
+        self.rv=virial_radius(self,projected=projected)      
+
     def rtidal(self,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
         self.rt=rtidal(self,pot=pot,rtiterate=rtiterate,rgc=rgc,r0=r0,v0=v0)
 
@@ -1449,6 +1455,10 @@ class StarCluster(object):
         JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz=calc_actions(self,pot=pot,r0=r0,v0=v0,**kwargs)
         self.add_actions(JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz)
 
+    def vcirc_prof(self,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+        rprof,vcprof,rvmax,vmax=vcirc_profvcirc_prof(self,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        self.rvmax=rvmax
+        self.vmax=vmax
 
 def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=[None],projected=False,reset_centre=False,reset_nbody_scale=False,reset_nbody_mass=False,reset_nbody_radii=False):
     """

@@ -820,17 +820,17 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
     vcprof=np.array([])
 
     if projected:
-        if self.rproorder is None:
-            self.key_params(do_order=True)
-        r=cluster.rpro[self.rproorder]
-        v=cluster.vpro[self.rproorder]
-        m=cluster.m[self.rproorder]
+        if cluster.rproorder is None:
+            cluster.key_params(do_order=True)
+        r=cluster.rpro[cluster.rproorder]
+        v=cluster.vpro[cluster.rproorder]
+        m=cluster.m[cluster.rproorder]
     else:
         if cluster.rorder is None:
             cluster.key_params(do_order=True)
-        r=cluster.r[self.rorder]
-        v=cluster.v[self.rorder]
-        m=cluster.m[self.rorder]
+        r=cluster.r[cluster.rorder]
+        v=cluster.v[cluster.rorder]
+        m=cluster.m[cluster.rorder]
 
 
     if rmin==None: rmin=np.min(r)

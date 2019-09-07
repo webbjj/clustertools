@@ -1456,7 +1456,7 @@ class StarCluster(object):
         self.add_actions(JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz)
 
     def vcirc_prof(self,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
-        rprof,vcprof,rvmax,vmax=vcirc_profvcirc_prof(self,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+        rprof,vcprof,rvmax,vmax=vcirc_prof(self,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
         self.rvmax=rvmax
         self.vmax=vmax
 

@@ -826,8 +826,8 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
         v=cluster.vpro[self.rproorder]
         m=cluster.m[self.rproorder]
     else:
-        if self.rorder is None:
-            self.key_params(do_order=True)
+        if cluster.rorder is None:
+            cluster.key_params(do_order=True)
         r=cluster.r[self.rorder]
         v=cluster.v[self.rorder]
         m=cluster.m[self.rorder]

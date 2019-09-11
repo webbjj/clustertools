@@ -79,6 +79,8 @@ def extrct_out(cluster,fileout,projected=False):
     #Write additional parameters if they have been calculated:
     if cluster.rv is not None:
         fileout.write("%f " % cluster.rv)
+    if cluster.rl is not None:
+        fileout.write("%f " % cluster.rl)
     if cluster.rt is not None:
         fileout.write("%f " % cluster.rt)
 

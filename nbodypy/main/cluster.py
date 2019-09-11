@@ -166,8 +166,9 @@ class StarCluster(object):
         self.pot=np.asarray([])
         self.etot=np.asarray([])
 
-        #Lagrange Radii,tidal radius, and virial radius
+        #Lagrange Radii,limiting radius, tidal radius, and virial radius
         self.rn=None
+        self.rl=None
         self.rt=None
         self.rv=None
         self.rorder=None

@@ -441,8 +441,6 @@ def rlagrange(cluster,nlagrange=10,projected=False):
     while len(rn) != nlagrange:
         rn.append(np.max(cluster.r))
 
-    print(len(rn),nlagrange,rn)
-
     return_cluster(cluster,units0,origin0)
 
     return rn

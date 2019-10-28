@@ -1293,7 +1293,6 @@ def get_snapshot(filename=None,tphys=0.,ctype='snapshot',col_names=['m','x','y',
     cluster.add_stars(i_d,m,x,y,z,vx,vy,vz)
     cluster.kw=kw
 
-
     if origin=='galaxy':
         if ofile==None:
             cluster.find_centre()

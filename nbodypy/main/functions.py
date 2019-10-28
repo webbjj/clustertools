@@ -647,7 +647,7 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
     return r_v
 
 
-def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
     """
     NAME:
 
@@ -667,6 +667,7 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
        emin/emax - specific energy range
        kwmin/kwmax - specific stellar evolution type range
        indx - specific subset of stars
+       mcorr - correction for masses
        projected - use projected values
        obs_cut - trim data to match an observed dataset (WIP)
        plot - plot the mass function
@@ -700,7 +701,7 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
 
     #Build subcluster containing only stars in the full radial and mass range:
     indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
-
+ 
     if emin!=None:
         indx*=(cluster.etot >= emin)
     if emin!=None:
@@ -708,8 +709,14 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
 
     if np.sum(indx) >= nmass:
 
-        m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)
-       
+        m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)       
+
+        if mcorr is not None:
+          m_hist=np.zeros(nmass)
+          for i in range(0,len(m_hist)):
+            mindx=(cluster.m>=m_lower[i]) * (cluster.m<=m_upper[i]) * indx
+            m_hist[i]=np.sum(1.0/mcorr[mindx])
+
         lm_mean=np.log10(m_mean)
         dm=m_hist/(m_upper-m_lower)
         ldm=np.log10(dm)

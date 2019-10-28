@@ -45,19 +45,22 @@ def initialize_orbit(cluster,from_centre=False,r0=8.,v0=220.):
 
        2018 - Written - Webb (UofT)
     """
-    units0,origin0=save_cluster(cluster)
-    cluster.to_galpy()
-
-    if from_centre:
-       x,y,z=cluster.xgc+cluster.xc,cluster.ygc+cluster.yc,cluster.zgc+cluster.zc
-       vx,vy,vz=cluster.vxgc+cluster.vxc,cluster.vygc+cluster.vyc,cluster.vzgc+cluster.vzc
+    if cluster.units=='degrees':
+        o=Orbit([cluster.ra_gc,cluster.dec_gc,cluster.dist_gc,cluster.pmra_gc,cluster.pmdec_gc,cluster.vlos_gc],radec=True,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
     else:
-        x,y,z=cluster.xgc,cluster.ygc,cluster.zgc
-        vx,vy,vz=cluster.vxgc,cluster.vygc,cluster.vzgc
+        units0,origin0=save_cluster(cluster)
+        cluster.to_galpy()
 
-    R,phi,z=bovy_coords.rect_to_cyl(x,y,z)
-    vR,vT,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z)
-    o=Orbit([R,vR,vT,z,vz,phi],ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
+        if from_centre:
+           x,y,z=cluster.xgc+cluster.xc,cluster.ygc+cluster.yc,cluster.zgc+cluster.zc
+           vx,vy,vz=cluster.vxgc+cluster.vxc,cluster.vygc+cluster.vyc,cluster.vzgc+cluster.vzc
+        else:
+            x,y,z=cluster.xgc,cluster.ygc,cluster.zgc
+            vx,vy,vz=cluster.vxgc,cluster.vygc,cluster.vzgc
+
+        R,phi,z=bovy_coords.rect_to_cyl(x,y,z)
+        vR,vT,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z)
+        o=Orbit([R,vR,vT,z,vz,phi],ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
 
     cluster.orbit=o
 

@@ -265,7 +265,7 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
     return rprof,mprof,nprof
 
-def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
     """
     NAME:
 
@@ -294,6 +294,8 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
        kwmin/kwmax - minimum and maximum stellar type (kw)
 
        indx - user defined boolean array from which to extract the subset
+
+       mcorr - correction function for masses
 
        projected - use projected values and constraints (Default:False)
 
@@ -326,6 +328,8 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
     units0,origin0=save_cluster(cluster)
     cluster.to_centre()
 
+    if mcorr is None:
+        mcorr=np.ones(cluster.ntot)
 
     lrprofn=[]
     aprof=[]
@@ -360,7 +364,7 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
     for i in range(0,len(r_mean)):
         rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
 
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_function(cluster.m[rindx],nmass)
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_function(cluster.m[rindx],nmass,mcorr[rindx])
 
         if alpha > -100:
             if projected:

@@ -66,7 +66,7 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
     """
     NAME:
 
-       nbinmaker
+       binmaker
 
     PURPOSE:
 
@@ -118,7 +118,49 @@ def binmaker(x,nbin=10,nsum=False,steptype='linear'):
     else:
         return x_lower,x_mid,x_upper,x_hist
 
-def dx_function(x,nx=10):
+def power_law_distribution_function(n,alpha,xmin,xmax):
+    """
+    NAME:
+
+       power_law_distribution_function
+
+    PURPOSE:
+
+       Generate points from a power-law distribution function
+    INPUT:
+
+       n - number of points
+
+       alpha - power-law slope of distribution function
+
+       xmin,xmax - minimum and maximum values of distribution
+
+    OUTPUT:
+
+       c
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+    """
+
+    eta=alpha+1.
+    
+    if xmin==xmax:
+        x=xmin
+    elif alpha==0:
+        x=xmin+np.random.random(n)*(xmax-xmin)
+    elif alpha>0:
+        x=xmin+np.random.power(eta,n)*(xmax-xmin)
+    elif alpha<0 and alpha!=-1.:
+        x=(xmin**eta + (xmax**eta - xmin**eta)*np.random.rand(n))**(1./eta)
+    elif alpha==-1:
+        x=np.log10(xmin)+np.random.random(n)*(np.log10(xmax)-np.log10(xmin))
+        x=10.0**x
+          
+    return np.array(x)
+
+def dx_function(x,nx=10,xcorr=None,bintype='num'):
     """
     NAME:
 
@@ -133,18 +175,32 @@ def dx_function(x,nx=10):
 
        nx - number of bins
 
+       xcorr - correction function for x (default:None)
+
+       bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
+
     OUTPUT:
 
        x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
+
 
     HISTORY:
 
        2018 - Written - Webb (UofT)
 
     """ 
-    
-    x_lower,x_mean,x_upper,x_hist=nbinmaker(x,nx)
-   
+
+    if bintype=='num':
+        x_lower,x_mean,x_upper,x_hist=nbinmaker(x,nx)
+    else:
+        x_lower,x_mean,x_upper,x_hist=binmaker(x,nx)
+
+    if xcorr is not None:
+      x_hist=np.zeros(nx)
+      for i in range(0,len(x_hist)):
+          indx=(x>=x_lower[i]) * (x<=x_upper[i])
+          x_hist[i]=np.sum(1.0/xcorr[indx])
+
     lx_mean=np.log10(x_mean)
     dx=x_hist/(x_upper-x_lower)
     ldx=np.log10(dx)

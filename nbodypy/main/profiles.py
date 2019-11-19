@@ -58,7 +58,7 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,v
     """ 
 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
+    cluster.to_centre(do_order=True,do_key_params=True)
 
 
     rprof=np.array([])
@@ -137,7 +137,7 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,v
         if filename!=None:
             plt.savefig(filename)
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
 
     return rprof,pprof,nprof
 
@@ -191,7 +191,7 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
     """ 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
+    cluster.to_centre(do_order=True,do_key_params=True)
 
     rprof=[]
     mprof=[]
@@ -261,11 +261,11 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
             plt.savefig(filename)
 
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
 
     return rprof,mprof,nprof
 
-def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
     """
     NAME:
 
@@ -294,8 +294,6 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
        kwmin/kwmax - minimum and maximum stellar type (kw)
 
        indx - user defined boolean array from which to extract the subset
-
-       mcorr - correction function for masses
 
        projected - use projected values and constraints (Default:False)
 
@@ -326,10 +324,7 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
     """ 
 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
-
-    if mcorr is None:
-        mcorr=np.ones(cluster.ntot)
+    cluster.to_centre(do_order=True,do_key_params=True)
 
     lrprofn=[]
     aprof=[]
@@ -364,7 +359,7 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
     for i in range(0,len(r_mean)):
         rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
 
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_function(cluster.m[rindx],nmass,mcorr[rindx])
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_function(cluster.m[rindx],nmass)
 
         if alpha > -100:
             if projected:
@@ -399,7 +394,7 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
 
     cluster.dalpha=dalpha
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
 
     return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
 
@@ -456,7 +451,7 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,
     """ 
 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
+    cluster.to_centre(do_order=True,do_key_params=True)
 
 
     lrprofn=[]
@@ -520,7 +515,7 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,
             betaprof.append(beta)
            
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
      
     return lrprofn,sigvprof,betaprof
 
@@ -575,7 +570,7 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
     """ 
 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
+    cluster.to_centre(do_order=True,do_key_params=True)
 
     lrprofn=[]
     sigvprof=[]
@@ -636,7 +631,7 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
             vprof.append(vmean)
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
 
     return lrprofn,vprof
 
@@ -699,7 +694,7 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
     """ 
 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
+    cluster.to_centre(do_order=True,do_key_params=True)
 
     lrprofn=[]
     eprof=[]
@@ -752,7 +747,7 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
         edeta=0.0
         eydeta=0.0
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
 
     return lrprofn,eprof,deta,edeta,ydeta,eydeta
 
@@ -805,7 +800,7 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
     """ 
 
     units0,origin0=save_cluster(cluster)
-    cluster.to_centre()
+    cluster.to_centre(do_order=True,do_key_params=True)
 
     if cluster.units=='nbody':
         grav=1.0
@@ -897,7 +892,7 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
         if filename!=None:
             plt.savefig(filename)
 
-    return_cluster(cluster,units0,origin0)
+    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
 
     return rprof,vcprof,rvmax,vmax
 

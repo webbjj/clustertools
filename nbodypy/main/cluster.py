@@ -972,7 +972,13 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """    
-        if self.units=='galpy': self.to_realkpc()
+        if self.units=='galpy': 
+          self.to_realkpc()
+        elif self.units =='degrees' or self.units=='orthographic':
+          units0,origin0=self.units,self.origin
+          self.to_galaxy()
+          self.to_origin(origin0)
+
 
         if self.units=='nbody':
             self.m*=self.zmbar
@@ -1048,6 +1054,11 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """ 
+        if self.units =='degrees' or self.units=='orthographic':
+          units0,origin0=self.units,self.origin
+          self.to_galaxy()
+          self.to_origin(origin0)
+
         if self.units=='galpy':
             self.m*=bovy_conversion.mass_in_msol(ro=r0,vo=v0)
             self.x*=r0
@@ -1141,7 +1152,6 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """     
-        if self.units=='galpy': self.to_realkpc(do_key_params=False)
         if self.units!='realpc': self.to_realpc(do_key_params=False)
 
         if self.units=='realpc':
@@ -1259,6 +1269,10 @@ class StarCluster(object):
             self.to_realpc(do_key_params=do_key_params)
         elif units=='realkpc':
             self.to_realkpc(do_key_params=do_key_params)
+        elif units=='degrees':
+            origin0=self.origin
+            self.to_sky(do_key_params=do_key_params)
+            self.to_origin(origin0)
 
 
     def to_centre(self,do_order=False,do_key_params=False):
@@ -1350,6 +1364,15 @@ class StarCluster(object):
                               
               self.units='orthographic'
 
+            elif self.origin=='sky':
+              self.x=(self.ra-self.ra_gc)*np.cos(np.radians(self.dec_gc))
+              self.y=(self.dec-self.dec_gc)
+              self.z=np.zeros(len(self.x))
+
+              self.vx=self.pmra-self.pmra_gc
+              self.vy=self.pmdec-self.pmdec_gc
+              self.vz=self.vlos-self.vlos_gc
+
             elif self.origin=='centre':
               self.x+=self.xc
               self.y+=self.yc
@@ -1357,7 +1380,7 @@ class StarCluster(object):
               self.vx+=self.vxc
               self.vy+=self.vyc
               self.vz+=self.vzc
-            elif self.origin=='galaxy' or self.origin=='sky':
+            elif self.origin=='galaxy':
               self.x-=self.xgc
               self.y-=self.ygc
               self.z-=self.zgc
@@ -1473,13 +1496,13 @@ class StarCluster(object):
             x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.xgc,self.ygc,self.zgc,Xsun=8.,Zsun=0.025)
             vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vxgc,self.vygc,self.vzgc,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25])
 
-            self.vlosgc=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
+            self.vlos_gc=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
 
             l0,b0,self.distgc=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True)
-            self.ragc,self.decgc=bovy_coords.lb_to_radec(l0,b0,degree=True)
+            self.ra_gc,self.dec_gc=bovy_coords.lb_to_radec(l0,b0,degree=True)
 
             vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.distgc,degree=True)
-            self.pmragc,self.pmdecgc=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True)
+            self.pmra_gc,self.pmdec_gc=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True)
 
             self.to_origin(origin0)
             self.to_units(units0)
@@ -1509,6 +1532,8 @@ class StarCluster(object):
            2019 - Written - Webb (UofT)
 
         """    
+
+        origin0=self.origin
         
         l,b=bovy_coords.radec_to_lb(self.ra,self.dec,degree=True).T
         x0,y0,z0=bovy_coords.lbd_to_XYZ(l,b,self.dist,degree=True).T
@@ -1521,6 +1546,8 @@ class StarCluster(object):
 
         self.origin='galaxy'
         self.units='realkpc'
+
+        self.to_origin(origin0)
 
         if do_key_params:
             self.key_params(do_order=do_order) 
@@ -1571,7 +1598,7 @@ class StarCluster(object):
 
         return self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail
 
-    def to_origin(self,origin,do_order=False):
+    def to_origin(self,origin,do_order=False,do_key_params=False):
         """
         NAME:
 
@@ -1596,13 +1623,13 @@ class StarCluster(object):
         """    
 
         if origin=='centre':
-            self.to_centre(do_order=do_order,do_key_params=False)
+            self.to_centre(do_order=do_order,do_key_params=do_key_params)
         elif origin=='cluster':
-            self.to_cluster(do_order=do_order,do_key_params=False)
+            self.to_cluster(do_order=do_order,do_key_params=do_key_params)
         elif origin=='galaxy':
-            self.to_galaxy(do_order=do_order,do_key_params=False)
+            self.to_galaxy(do_order=do_order,do_key_params=do_key_params)
         elif origin=='to_sky':
-            self.to_sky()
+            self.to_sky(do_order=do_order,do_key_params=do_key_params)
 
     #Directly call from functions.py and profiles.py (see respective files for documenation):
     def energies(self,specific=True,i_d=None,full=True,parallel=False):
@@ -1699,12 +1726,12 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
         r=cluster.r
         v=cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin==None: rmin=np.amin(r)
+    if rmax==None: rmax=np.amax(r)
+    if vmin==None: vmin=np.amin(v)
+    if vmax==None: vmax=np.amax(v)
+    if mmin==None: mmin=np.amin(cluster.m)
+    if mmax==None: mmax=np.amax(cluster.m)
 
     if emin==None and emax!=None:
         eindx=(cluster.etot<=emax)
@@ -1721,8 +1748,13 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
     indx*=(r>=rmin) * (r<=rmax) * (cluster.m>=mmin) * (cluster.m<=mmax) * (v>=vmin) * (v<=vmax) * (cluster.kw>=kwmin) * (cluster.kw<=kwmax) * eindx
 
     if np.sum(indx)>0:
-        subcluster=StarCluster(len(cluster.id[indx]),cluster.tphys,units=cluster.units,origin=cluster.origin)
+        subcluster=StarCluster(len(cluster.id[indx]),cluster.tphys,units=cluster.units,origin=cluster.origin,ctype=cluster.ctype)
         subcluster.add_stars(cluster.id[indx],cluster.m[indx],cluster.x[indx],cluster.y[indx],cluster.z[indx],cluster.vx[indx],cluster.vy[indx],cluster.vz[indx])
+
+        if cluster.ctype=='observations':
+          subcluster.ra,subcluster.dec,subcluster.dist=cluster.ra[indx],cluster.dec[indx],cluster.dist[indx]
+          subcluster.pmra,subcluster.pmdec,subcluster.vlos=cluster.pmra[indx],cluster.pmdec[indx],cluster.vlos[indx]
+
         subcluster.kw=cluster.kw[indx]
 
         subcluster.zmbar=cluster.zmbar
@@ -1750,6 +1782,10 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
             subcluster.xc,subcluster.yc,subcluster.zc=cluster.xc,cluster.yc,cluster.zc
             subcluster.vxc,subcluster.vyc,subcluster.vzc=cluster.vxc,cluster.vyc,cluster.vzc
 
+            if cluster.ctype=='observations':
+              subcluster.ra_gc,subcluster.dec_gc,subcluster.dist_gc-cluster.ra_gc,cluster.dec_gc,cluster.dist_gc
+              subcluster.pmra_gc,subcluster.pmdec_gc,subcluster.vlos_gc=cluster.pmra_gc,cluster.pmdec_gc,cluster.vlos_gc
+
         if reset_nbody_scale or reset_nbody_mass or reset_nbody_radii:
             subcluster.to_realpc()
             subcluster.key_params(do_order=True)
@@ -1761,19 +1797,18 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
 
             subcluster.vstar=0.06557*np.sqrt(subcluster.zmbar/subcluster.rbar)
             subcluster.tstar=subcluster.rbar/subcluster.vstar
-        else:
-
-            subcluster.key_params(do_order=True)
 
     else:
         subcluster=StarCluster(0,cluster.tphys)
 
     cluster.to_origin(origin0)
     cluster.to_units(units0)
+    cluster.key_params(do_order=True)
 
     if subcluster.ntot > 0:
         subcluster.to_origin(origin0)
         subcluster.to_units(units0)
+        subcluster.key_params(do_order=True)
 
     return subcluster
 

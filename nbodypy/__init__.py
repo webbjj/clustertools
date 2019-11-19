@@ -8,6 +8,8 @@ from .main.orbit import *
 from .main.profiles import *
 from .main.initialize import *
 
+from .observations.observations import *
+
 from .util.constants import *
 from .util.coordinates import *
 from .util.output import *

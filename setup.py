@@ -9,7 +9,7 @@ except ImportError:
 readme = open('README').read()
 history = open('HISTORY').read().replace('.. :changelog:', '')
 
-requirements = ['numpy', 'scipy>=0.14.0', 'galpy', 'numba', 'limepy']
+requirements = ['numpy', 'scipy>=0.14.0', 'galpy', 'numba', 'limepy', 'seaborn']
 
 setup(
     name='nbodypy',
@@ -24,5 +24,6 @@ setup(
     ],
     package_dir={'main':'main','util':'util','custom':'custom'},
     license="BSD",
+    install_requires=requirements,
     keywords='nbodypy'
 )

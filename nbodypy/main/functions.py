@@ -189,39 +189,6 @@ def energies(cluster,specific=True,i_d=None,full=True,parallel=False):
     return ek,pot,etot
 
 @numba.njit
-def distance(star1, star2):
-    """
-    NAME:
-
-       distance
-
-    PURPOSE:
-
-       Find distance between two stars (made for use with numba)
-
-    INPUT:
-
-       star1=[x,y,z]
-       star2=[x,y,z]
-
-    OUTPUT:
-
-       distance
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-
-    dx = star2[0] - star1[0]
-    dy = star2[1] - star1[1]
-    dz = star2[2] - star1[2]
-
-    r = (dx * dx + dy * dy + dz * dz) ** 0.5
-
-    return r
-
-@numba.njit
 def potential_energy(cluster):
     """
     NAME:
@@ -296,45 +263,6 @@ def closest_star(cluster,projected=False):
     else:
         x=np.array([cluster.x,cluster.y,cluster.z]).T
     return minimum_distance(x)
-
-@numba.njit
-def minimum_distance(cluster):
-    """
-    NAME:
-
-       minimum_distance
-
-    PURPOSE:
-
-       Find distance to each star's nearest neighbour
-
-    INPUT:
-
-       cluster=[x,y,z].T
-
-    OUTPUT:
-
-       distance to nearest neighbour
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-    min_distance=[-1.]*len(cluster)
-    for i in range(len(cluster)-1):
-        for j in range(i + 1, len(cluster)):
-            r = distance(cluster[i],cluster[j])
-            if min_distance[i]<0:
-                min_distance[i]=r
-            else:
-                min_distance[i]=np.minimum(min_distance[i],r)
-
-            if min_distance[j]<0:
-                min_distance[j]=r
-            else:
-                min_distance[j]=np.minimum(min_distance[j],r)              
-
-    return min_distance
 
 
 def virialize(cluster,specific=True,full=True):
@@ -647,7 +575,7 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
     return r_v
 
 
-def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
     """
     NAME:
 
@@ -667,7 +595,6 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
        emin/emax - specific energy range
        kwmin/kwmax - specific stellar evolution type range
        indx - specific subset of stars
-       mcorr - correction for masses
        projected - use projected values
        obs_cut - trim data to match an observed dataset (WIP)
        plot - plot the mass function
@@ -710,12 +637,6 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
     if np.sum(indx) >= nmass:
 
         m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)       
-
-        if mcorr is not None:
-          m_hist=np.zeros(nmass)
-          for i in range(0,len(m_hist)):
-            mindx=(cluster.m>=m_lower[i]) * (cluster.m<=m_upper[i]) * indx
-            m_hist[i]=np.sum(1.0/mcorr[mindx])
 
         lm_mean=np.log10(m_mean)
         dm=m_hist/(m_upper-m_lower)
@@ -845,3 +766,82 @@ def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=N
     else:
         print('NOT ENOUGH STARS TO ESTIMATE SIGMA-MASS RELATION')
         return np.zeros(nmass),np.zeros(nmass),np.zeros(nmass),-1000.,-1000.,-1000.,-1000.
+
+def surface_area(cluster,mmin=None,mmax=None,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,coords='xy',thresh=None,nrand=1000,method='sphere',full=False,plot=False):
+    """
+    NAME:
+
+     surface_area
+
+    PURPOSE:
+
+     calculate surface area enclosed by cluster by finding what fraction of a random distribution overlaps with points
+
+    INPUT:
+
+     cluster - StarCluster instance
+     
+     mmin/mmax - specific mass range
+     rmin/rmax - specific radial range
+     vmin/vmax - specific velocity range
+     emin/emax - specific energy range
+     kwmin/kwmax - specific stellar evolution type range
+     indx - specific subset of stars
+     projected - use projected values
+     
+     coords - choose axis to project cluster (Default: xy)
+     
+     thresh - threshold for overlap between random distribution and points (Default: None - use maximum nearest neighbour)
+
+     nrand - number of random points to be generated in uniform distribution (Default: 1000)
+
+     method - generate spherical or rectangular distribution of random points (Default: sphere)
+     
+     plot - plot overlap (Default: False)
+
+    OUTPUT:
+
+     area
+
+    HISTORY:
+
+     2019 - Written - Webb (UofT)
+
+    """ 
+    
+    if projected:
+        r=cluster.rpro
+        v=cluster.vpro
+    else:
+        r=cluster.r
+        v=cluster.v
+
+    if rmin==None: rmin=np.min(r)
+    if rmax==None: rmax=np.max(r)
+    if vmin==None: vmin=np.min(v)
+    if vmax==None: vmax=np.max(v)
+    if mmin==None: mmin=np.min(cluster.m)
+    if mmax==None: mmax=np.max(cluster.m)
+
+    if indx is None:
+        indx=(cluster.id > -1)
+
+    #Build subcluster containing only stars in the full radial and mass range:
+    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+ 
+    if emin!=None:
+        indx*=(cluster.etot >= emin)
+    if emin!=None:
+        indx*=(cluster.etot <= emax)
+    
+    if coords=='xy':
+        x=cluster.x
+        y=cluster.y
+    elif coords=='xz':
+        x=cluster.x
+        y=cluster.z
+    elif coords=='yz':
+        x=cluster.y
+        y=cluster.z
+        
+    return area_enclosed(x,y,thresh=thresh,nrand=nrand,method=method,full=full,plot=plot)

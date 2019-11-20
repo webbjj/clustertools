@@ -1316,7 +1316,7 @@ class StarCluster(object):
                 self.key_params(do_order=do_order)
 
 
-    def to_cluster(self,do_order=False,do_key_params=False,orthographic=False):
+    def to_cluster(self,do_order=False,do_key_params=False,orthographic=False, VandeVen=False):
         """
         NAME:
 
@@ -1365,8 +1365,14 @@ class StarCluster(object):
               self.units='orthographic'
 
             elif self.origin=='sky':
-              self.x=(self.ra-self.ra_gc)*np.cos(np.radians(self.dec_gc))
-              self.y=(self.dec-self.dec_gc)
+
+              if VandeVen:
+                self.x=(10800./np.pi)*np.cos(np.radians(self.dec))*np.sin(np.radians(self.ra)-np.radians(self.ra_gc))
+                self.y=(10800./np.pi)*(np.sin(np.radians(self.dec))*np.cos(np.radians(self.dec_gc))-np.cos(np.radians(self.dec))*np.sin(np.radians(self.dec_gc)))*np.cos(np.radians(self.ra)-np.radians(self.ra_gc))
+              else:
+                self.x=(self.ra-self.ra_gc)*np.cos(np.radians(self.dec_gc))
+                self.y=(self.dec-self.dec_gc)
+
               self.z=np.zeros(len(self.x))
 
               self.vx=self.pmra-self.pmra_gc

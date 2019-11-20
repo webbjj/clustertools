@@ -96,7 +96,8 @@ class TestDocStringCluster(object):
     a
     b
     """
-    return 0
+    def __init__(self,ntot=0):
+      return ntot
 
 class StarCluster(object):
     """

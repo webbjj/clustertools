@@ -500,7 +500,6 @@ def area_enclosed(x,y,thresh=None,nrand=1000,method='sphere',full=False,plot=Fal
         z=np.zeros(len(x))
         rmin=minimum_distance(np.array([x,y,z]).T)
         thresh=np.amax(rmin)
-        print('Threshold = ', thresh)
     
     if method=='rectangle':
         xmin,xmax=np.amin(x),np.amax(x)
@@ -523,10 +522,7 @@ def area_enclosed(x,y,thresh=None,nrand=1000,method='sphere',full=False,plot=Fal
         phi[phi<0]+=2.0*np.pi
         phimin,phimax=np.amin(phi),np.amax(phi)
         
-        if phimin<0: phimin+=2.0*np.pi
-        
-        print(phimin,phimax)
-        
+        if phimin<0: phimin+=2.0*np.pi        
         
         dr=np.amax(r)-np.amin(r)
         
@@ -553,7 +549,6 @@ def area_enclosed(x,y,thresh=None,nrand=1000,method='sphere',full=False,plot=Fal
             drmin=np.append(drmin,np.amin(dr))
 
     indx=(drmin<thresh)
-    print(np.sum(indx),nrand)
 
     area=atot*np.sum(indx)/float(nrand)
     

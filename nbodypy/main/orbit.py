@@ -224,12 +224,9 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
     
     else:
         indx=cluster.id>-1
-    
-    print('DO CLUSTER')
-    
+        
     cluster.orbit=initialize_orbit(cluster,from_centre)
     ts=np.linspace(0,dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),10)
-    print('INTEGRATE ORBIT')
 
     cluster.orbit.integrate(ts,pot)
 
@@ -250,10 +247,6 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
         dvx=cluster.orbit.vx(ts[-1])-cluster.vxgc
         dvy=cluster.orbit.vy(ts[-1])-cluster.vygc
         dvz=cluster.orbit.vz(ts[-1])-cluster.vzgc
-    
-    print(dx,dy,dz,dvx,dvy,dvz)
-
-    print('MOVING CLUSTER STARS')
     
     cluster.x[indx]+=dx
     cluster.y[indx]+=dy
@@ -293,12 +286,8 @@ def orbit_interpolate(cluster,dt,pot=MWPotential2014,from_centre=False,do_tails=
 
         ts=np.linspace(0,dt/bovy_conversion.time_in_Gyr(ro=r0,vo=v0),10)
 
-        print('INTEGRATE ORBITS')
-
         otail.integrate(ts,pot)
         
-        print('MOVING TAIL STARS')
-
         cluster.x[tindx]=np.array(otail.x(ts[-1]))
         cluster.y[tindx]=np.array(otail.y(ts[-1]))
         cluster.z[tindx]=np.array(otail.z(ts[-1]))
@@ -478,7 +467,6 @@ def orbital_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fal
     vz=o.vz(ts)
 
     pindx=np.argmin(np.fabs(ts))
-    print('CENTRE OF ORBIT: ',pindx,ts[0],ts[pindx],ts[-1],dt,len(ts))
 
     dx=np.tile(np.array(o.x(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.x,len(ts)).reshape(cluster.ntot,len(ts))
     dy=np.tile(np.array(o.y(ts)),cluster.ntot).reshape(cluster.ntot,len(ts))-np.repeat(cluster.y,len(ts)).reshape(cluster.ntot,len(ts))
@@ -729,7 +717,7 @@ def stream_path_match(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=Fals
 
     return np.array(tstar),np.array(dprog),np.array(dpath)
 
-def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
+def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0, rtconverge=0.9, rgc=None,r0=8.,v0=220., verbose=False):
     """
     NAME:
 
@@ -750,6 +738,8 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
        pot - GALPY potential used to calculate actions
 
        rtiterate - how many times to iterate on the calculation of r_t
+
+       rtconverge - criteria for tidal radius convergence within iterations
 
        rgc - Set galactocentric distance at which the tidal radius is to be evaluated
 
@@ -787,14 +777,14 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
 
         rtnew=rtide(pot,R,z,M=msum)
         
-        print(rt,rtnew,rtnew/rt,msum/cluster.mtot)
+        if verbose: print(rt,rtnew,rtnew/rt,msum/cluster.mtot)
 
-        if rtnew/rt>=0.9:
+        if rtnew/rt>=rtconverge:
             break
         rt=rtnew
         nit+=1
 
-    print('FINAL RT: ',rt*r0*1000.0, 'pc after',nit,' of ',rtiterate,' iterations')
+    if verbose: print('FINAL RT: ',rt*r0*1000.0, 'pc after',nit,' of ',rtiterate,' iterations')
 
     if units0=='realpc':
         rt*=1000.0*r0
@@ -809,7 +799,7 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
 
     return rt
 
-def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,**kwargs):
+def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,verbose=False,**kwargs):
     """
     NAME:
 
@@ -879,7 +869,7 @@ def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projec
 
         rl=interpolate(r1,r2,y=rho_local)
 
-    print('FINAL RL: ',rl*r0*1000.0, 'pc')
+    if verbose: print('FINAL RL: ',rl*r0*1000.0, 'pc')
 
     if units0=='realpc':
         rl*=(1000.0*r0)
@@ -893,7 +883,7 @@ def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projec
     return_cluster(cluster,units0,origin0)
 
     if plot:
-        print('LOCAL DENSITY = ',rho_local)    
+        if verbose: print('LOCAL DENSITY = ',rho_local)    
 
         filename=kwargs.pop('filename',None)   
         overplot=kwargs.pop('overplot',False)        
@@ -1029,12 +1019,10 @@ def get_cluster_orbit(gcname='list',names=False,r0=8.,v0=220.):
         print('COULD NOT FIND CLUSTER')
         return -1
     elif np.sum(indx)==1:
-        print('GETTING ORBIT: ',name[indx])
         vxvv=[ra[indx][0],dec[indx][0],dist[indx][0],pmra[indx][0],pmdec[indx][0],vlos[indx][0]]
         o=Orbit(vxvv,ro=r0,vo=v0,radec=True,solarmotion=[-11.1,24.,7.25])
         oname=name[indx]
     else:
-        print('GETTING ORBIT: ',name[indx])
         vxvv=np.column_stack([ra[indx],dec[indx],dist[indx],pmra[indx],pmdec[indx],vlos[indx]])
         o=Orbit(vxvv,radec=True,ro=r0,vo=v0,solarmotion=[-11.1,24.,7.25])
         oname=name[indx]

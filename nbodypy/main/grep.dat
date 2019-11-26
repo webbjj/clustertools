@@ -1,0 +1,39 @@
+    def add_stars(self,id,m,x,y,z,vx,vy,vz,do_key_params=False,do_order=False,radec=False):
+           do_key_params - call key_params() after adding stars (default: False)
+            do_key_params - order stars by radius when calling key_params() (default: False)
+        if do_key_params:
+    def to_realpc(self,do_key_params=True):
+        if do_key_params:
+    def to_realkpc(self,do_key_params=True,r0=8.,v0=220.):
+        if do_key_params:
+    def to_nbody(self,do_key_params=True,r0=8.,v0=220.):
+        if self.units!='realpc': self.to_realpc(do_key_params=False)
+        if do_key_params:
+    def to_galpy(self,do_key_params=True,r0=8.,v0=220.):
+            self.to_realkpc(do_key_params=False)
+        if do_key_params:
+    def to_units(self,units,do_key_params=True,r0=8.,v0=220.):
+            self.to_nbody(do_key_params=do_key_params)
+            self.to_galpy(do_key_params=do_key_params,r0=r0,v0=v0)
+            self.to_realpc(do_key_params=do_key_params)
+            self.to_realkpc(do_key_params=do_key_params)
+            self.to_sky(do_key_params=do_key_params)
+    def to_centre(self,do_order=False,do_key_params=False,orthographic=False, VandeVen=False):
+                self.to_cluster(do_key_params=False,orthographic=orthographic,VandeVen=VandeVen)
+            if do_key_params:
+    def to_cluster(self,do_order=False,do_key_params=False,orthographic=False, VandeVen=False):
+           do_key_params - call key_params after shift (default: False)
+            if do_key_params:
+    def to_galaxy(self,do_order=False,do_key_params=False):
+            self.from_sky(do_key_params=False)
+                self.to_cluster(do_key_params=False)
+            if do_key_params:
+    def to_sky(self,do_order=False,do_key_params=False):
+            if do_key_params:
+    def from_sky(self,do_order=False,do_key_params=False):
+        if do_key_params:
+    def to_origin(self,origin,do_order=False,do_key_params=False):
+            self.to_centre(do_order=do_order,do_key_params=do_key_params)
+            self.to_cluster(do_order=do_order,do_key_params=do_key_params)
+            self.to_galaxy(do_order=do_order,do_key_params=do_key_params)
+            self.to_sky(do_order=do_order,do_key_params=do_key_params)

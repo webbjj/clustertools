@@ -300,8 +300,6 @@ def virialize(cluster,specific=True,full=True):
         energies(cluster,specific=specific,full=full)
         qv=np.sqrt(np.abs(0.5/cluster.qvir))
 
-    print('QV = ',qv)
-
     cluster.vx*=qv
     cluster.vy*=qv
     cluster.vz*=qv
@@ -531,8 +529,6 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
     rindx=np.argmax(pprof)
     rmax=rprof[rindx]
 
-    print('RMAX AT ',rindx,rmax)
-
     indx1=(rprof > rmax) * (pprof > rhocrit*overdens)
     indx2=(rprof > rmax) * (pprof < rhocrit*overdens)
 
@@ -550,7 +546,6 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
         r_v=interpolate([r1,rho1],[r2,rho2],y=rhocrit*overdens)
 
     if plot:
-        print('OVERDENSITY = ',rhocrit*overdens)    
         rho_local=rhocrit*overdens
 
         filename=kwargs.pop('filename',None)   

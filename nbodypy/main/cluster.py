@@ -100,9 +100,7 @@ class TestDocStringCluster(object):
       return ntot
 
 class StarCluster(object):
-    """
-    Class representing a star cluster
-    """    
+
     def __init__(self,ntot=0,tphys=0.0,units=None,origin=None,ctype='snapshot',**kwargs):
         """
         NAME:
@@ -218,7 +216,7 @@ class StarCluster(object):
         self.vygc=0.
         self.vzgc=0.
 
-        if ctype=='observations':
+        if ctype=='observations' or units=='radec':
           self.ra=np.array([])
           self.dec=np.array([])
           self.dist=np.array([])
@@ -355,7 +353,7 @@ class StarCluster(object):
         #Number of particles (from NBODY6 when tidal tail is being integrated)
         self.np=np
     
-    def add_stars(self,id,m,x,y,z,vx,vy,vz,do_key_params=False,do_order=False,radec=False):
+    def add_stars(self,id,m,x,y,z,vx,vy,vz,do_key_params=False,do_order=False):
         """
         NAME:
 
@@ -381,7 +379,8 @@ class StarCluster(object):
 
             do_key_params - order stars by radius when calling key_params() (default: False)
 
-            radec - If true, input is m,ra,dec,dist,pmra,pmdec,vlos with units of (degrees, kpc, mas, km/s)
+        NOTES:
+         if self.units==radec, input is m,ra,dec,dist,pmra,pmdec,vlos with units of (degrees, kpc, mas, km/s)
 
 
         OUTPUT:
@@ -418,7 +417,7 @@ class StarCluster(object):
             if len(self.vy)==1:self.vy=np.ones(nmax)*self.vy
             if len(self.vz)==1:self.vz=np.ones(nmax)*self.vz 
 
-        if radec:
+        if self.units=='radec':
             self.ra=copy(self.x)
             self.dec=copy(self.y)
             self.dist=copy(self.z)
@@ -434,6 +433,12 @@ class StarCluster(object):
         if len(self.id)!=self.ntot:
             print('Added %i stars to instance' % (len(self.id)-self.ntot))
             self.ntot=len(self.id)
+
+
+        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+        self.rpro=np.sqrt(self.x**2.+self.y**2.)
+        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
 
     def add_se(self,kw,logl,logr,ep,ospin):
         """
@@ -661,7 +666,7 @@ class StarCluster(object):
         self.vygc=vygc
         self.vzgc=vzgc
 
-        if self.units=='degrees':
+        if self.units=='radec':
             self.ra_gc=xgc
             self.dec_gc=ygc
             self.dist_gc=zgc
@@ -702,7 +707,8 @@ class StarCluster(object):
         vyc=np.sum(self.m*self.vy)/self.mtot
         vzc=np.sum(self.m*self.vz)/self.mtot
     
-        return xc,yc,zc,vxc,vyc,vzc
+        self.xc,self.yc,self.zc=xc,yc,zc
+        self.vxc,self.vyc,self.vzc=vxc,vyc,vzc
 
     def find_centre_of_density(self,xstart=0.,ystart=0.,zstart=0.,vxstart=0.,vystart=0.,vzstart=0.,indx=None,rmin=0.1,nmax=100,r0=8.,v0=220.):
         """
@@ -802,8 +808,6 @@ class StarCluster(object):
         self.xc,self.yc,self.zc=xdc,ydc,zdc
         self.vxc,self.vyc,self.vzc=vxdc,vydc,vzdc
 
-        return xdc,ydc,zdc,vxdc,vydc,vzdc
-
     def find_centre(self,xstart=0.,ystart=0.,zstart=0.,vxstart=0.,vystart=0.,vzstart=0.,indx=None,nsigma=1.,nsphere=100,density=True,rmin=0.1,nmax=100,r0=8.,v0=220.):
         """
         NAME:
@@ -891,8 +895,6 @@ class StarCluster(object):
             self.xc,self.yc,self.zc=xc,yc,zc
             self.vxc,self.vyc,self.vzc=vxc,vyc,vzc
 
-        return xc,yc,zc,vxc,vyc,vzc
-
     def add_rotation(self,qrot):
         """
         NAME:
@@ -978,17 +980,6 @@ class StarCluster(object):
 
         """  
 
-        if self.origin=='sky':
-            self.r=np.sqrt((self.x*np.cos(np.radians(self.ygc)))**2.+self.y**2.)
-            self.rpro=self.r           
-            self.v=np.sqrt(self.vx**2.+self.vy**2.)
-            self.vpro=self.v      
-        else:
-            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt(self.x**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
-
         self.mtot=np.sum(self.m)
         self.mmean=np.mean(self.m)
         self.rmean=np.mean(self.r)
@@ -1035,7 +1026,7 @@ class StarCluster(object):
                 self.rhpro=0.
                 self.rh10pro=0.
 
-    def to_realpc(self,do_key_params=True):
+    def to_realpc(self,do_key_params=False):
         """
         NAME:
 
@@ -1058,13 +1049,8 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """    
-        if self.units=='galpy': 
+        if self.units=='galpy' or self.units--'radec': 
           self.to_realkpc()
-        elif self.units =='degrees' or self.units=='orthographic':
-          units0,origin0=self.units,self.origin
-          self.to_galaxy()
-          self.to_origin(origin0)
-
 
         if self.units=='nbody':
             self.m*=self.zmbar
@@ -1114,10 +1100,15 @@ class StarCluster(object):
             
             self.units='realpc'
 
+        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+        self.rpro=np.sqrt(self.x**2.+self.y**2.)
+        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
         if do_key_params:
             self.key_params()
 
-    def to_realkpc(self,do_key_params=True,r0=8.,v0=220.):
+    def to_realkpc(self,do_key_params=False,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1140,10 +1131,8 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """ 
-        if self.units =='degrees' or self.units=='orthographic':
-          units0,origin0=self.units,self.origin
-          self.to_galaxy()
-          self.to_origin(origin0)
+        if self.units =='radec':
+          self.from_radec()
 
         if self.units=='galpy':
             self.m*=bovy_conversion.mass_in_msol(ro=r0,vo=v0)
@@ -1210,10 +1199,15 @@ class StarCluster(object):
             
             self.units='realkpc'
 
+        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+        self.rpro=np.sqrt(self.x**2.+self.y**2.)
+        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
         if do_key_params:
             self.key_params()
 
-    def to_nbody(self,do_key_params=True,r0=8.,v0=220.):
+    def to_nbody(self,do_key_params=False,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1265,10 +1259,173 @@ class StarCluster(object):
             
             self.units='nbody'
 
+        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+        self.rpro=np.sqrt(self.x**2.+self.y**2.)
+        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
         if do_key_params:
             self.key_params()
 
-    def to_galpy(self,do_key_params=True,r0=8.,v0=220.):
+    def to_radec(self,do_key_params=False,r0=8.,v0=220.):
+        """
+        NAME:
+
+           to_radec
+
+        PURPOSE:
+
+           Convert to on-sky position, proper motion, and radial velocity of cluster
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+            ra,dec,dist,pmra,pmdec,vlos
+
+        HISTORY:
+
+           2019 - Written - Webb (UofT)
+
+        """    
+
+        try:
+            self.x=copy(self.ra)
+            self.y=copy(self.dec)
+            self.z=copy(self.dist)
+            self.vx=copy(self.pmra)
+            self.vy=copy(self.pmdec)
+            self.vz=copy(self.vlos)
+
+            self.units='radec'
+            self.origin='sky'
+
+            self.r=np.sqrt((self.x*np.cos(np.radians(self.xgc)))**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt((self.x*np.cos(np.radians(self.xgc)))**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
+            if do_key_params:
+                self.key_params(do_order=do_order)
+
+        except:
+
+            units0,origin0=self.units,self.origin
+
+            self.to_galaxy()
+            self.to_realkpc()
+
+            x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.x,self.y,self.z,Xsun=8.,Zsun=0.025).T
+
+            self.dist=np.sqrt(x0**2.+y0**2.+z0**2.)
+
+            vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vx,self.vy,self.vz,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25]).T
+
+            self.vlos=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
+
+            l0,b0,self.dist=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True).T
+            self.ra,self.dec=bovy_coords.lb_to_radec(l0,b0,degree=True).T
+
+            vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.dist,degree=True).T
+            self.pmra,self.pmdec=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True).T
+
+            x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.xgc,self.ygc,self.zgc,Xsun=8.,Zsun=0.025)
+            vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vxgc,self.vygc,self.vzgc,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25])
+
+            self.vlos_gc=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
+
+            l0,b0,self.distgc=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True)
+            self.ra_gc,self.dec_gc=bovy_coords.lb_to_radec(l0,b0,degree=True)
+
+            vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.distgc,degree=True)
+            self.pmra_gc,self.pmdec_gc=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True)
+
+            self.x=copy(self.ra)
+            self.y=copy(self.dec)
+            self.z=copy(self.dist)
+            self.vx=copy(self.pmra)
+            self.vy=copy(self.pmdec)
+            self.vz=copy(self.vlos)
+
+
+            self.xgc=copy(self.ra_gc)
+            self.ygc=copy(self.dec_gc)
+            self.zgc=copy(self.dist_gc)
+            self.vxgc=copy(self.pmra_gc)
+            self.vygc=copy(self.pmdec_gc)
+            self.vzgc=copy(self.vlos_gc)
+
+            self.units='radec'
+            self.origin='sky'
+
+            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt(self.x**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
+            if do_key_params:
+                self.key_params(do_order=do_order)
+
+    def from_radec(self,do_order=False,do_key_params=False):
+        """
+        NAME:
+
+           from_radec
+
+        PURPOSE:
+
+           Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
+
+        INPUT:
+
+           None
+
+        OUTPUT:
+
+            x,y,z,vx,vy,vz
+
+        HISTORY:
+
+           2019 - Written - Webb (UofT)
+
+        """    
+
+        if self.units=='radec' and self.origin=='sky':
+
+            origin0=self.origin
+            
+            l,b=bovy_coords.radec_to_lb(self.ra,self.dec,degree=True).T
+            x0,y0,z0=bovy_coords.lbd_to_XYZ(l,b,self.dist,degree=True).T
+            self.x,self.y,self.z=bovy_coords.XYZ_to_galcenrect(x0,y0,z0,Xsun=8.,Zsun=0.025).T 
+
+            pml,pmb=bovy_coords.pmrapmdec_to_pmllpmbb(self.pmra,self.pmdec,self.ra,self.dec,degree=True).T
+            vx0,vy0,vz0=bovy_coords.vrpmllpmbb_to_vxvyvz(self.vlos,pml,pmb,l,b,self.dist,degree=True).T
+            self.vx,self.vy,self.vz=bovy_coords.vxvyvz_to_galcenrect(vx0,vy0,vz0,vsun=[0.,220.,0.],Xsun=8.,Zsun=0.025,_extra_rot=True).T      
+
+            l_gc,b_gc=bovy_coords.radec_to_lb(self.ra_gc,self.dec_gc,degree=True)
+            x0_gc,y0_gc,z0_gc=bovy_coords.lbd_to_XYZ(l_gc,b_gc,self.dist_gc,degree=True)
+            self.xgc,self.ygc,self.zgc=bovy_coords.XYZ_to_galcenrect(x0_gc,y0_gc,z0_gc,Xsun=8.,Zsun=0.025)
+
+            pml_gc,pmb_gc=bovy_coords.pmrapmdec_to_pmllpmbb(self.pmra_gc,self.pmdec_gc,self.ra_gc,self.dec_gc,degree=True)
+            vx0_gc,vy0_gc,vz0_gc=bovy_coords.vrpmllpmbb_to_vxvyvz(self.vlos_gc,pml_gc,pmb_gc,l_gc,b_gc,self.dist_gc,degree=True)
+            self.vx_gc,self.vy_gc,self.vz_gc=bovy_coords.vxvyvz_to_galcenrect(vx0_gc,vy0_gc,vz0_gc,vsun=[0.,220.,0.],Xsun=8.,Zsun=0.025,_extra_rot=True)    
+
+            self.origin='galaxy'
+            self.units='realkpc'
+
+            self.to_origin(origin0)
+
+            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt(self.x**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
+            if do_key_params:
+                self.key_params(do_order=do_order) 
+
+    def to_galpy(self,do_key_params=False,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1319,11 +1476,16 @@ class StarCluster(object):
             
             self.units='galpy'
 
+        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+        self.rpro=np.sqrt(self.x**2.+self.y**2.)
+        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+
         if do_key_params:
             self.key_params()
 
 
-    def to_units(self,units,do_key_params=True,r0=8.,v0=220.):
+    def to_units(self,units,do_order=False,do_key_params=False,r0=8.,v0=220.):
         """
         NAME:
 
@@ -1355,13 +1517,13 @@ class StarCluster(object):
             self.to_realpc(do_key_params=do_key_params)
         elif units=='realkpc':
             self.to_realkpc(do_key_params=do_key_params)
-        elif units=='degrees':
+        elif units=='radec':
             origin0=self.origin
-            self.to_sky(do_key_params=do_key_params)
-            self.to_origin(origin0)
+            self.to_radec(do_key_params=do_key_params)
+            self.to_origin(origin0,do_order=do_order,do_key_params=do_key_params)
 
 
-    def to_centre(self,do_order=False,do_key_params=False):
+    def to_centre(self,do_order=False,do_key_params=False, orthographic=False, VandeVen=False):
         """
         NAME:
 
@@ -1386,9 +1548,10 @@ class StarCluster(object):
         """ 
         if self.origin!='centre':
 
-            if self.origin=='galaxy':
-                self.to_cluster(do_key_params=False)
-        
+            if self.origin!='cluster':
+                self.to_cluster(do_key_params=False,orthographic=orthographic,VandeVen=VandeVen)
+
+
             self.x-=self.xc
             self.y-=self.yc
             self.z-=self.zc
@@ -1397,6 +1560,11 @@ class StarCluster(object):
             self.vz-=self.vzc
             
             self.origin='centre'
+
+            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt(self.x**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
 
             if do_key_params:
                 self.key_params(do_order=do_order)
@@ -1430,40 +1598,38 @@ class StarCluster(object):
         """
 
         if self.origin!='cluster':
-            if orthographic and self.origin=='sky':
-              ra=np.radians(self.ra)
-              dec=np.radians(self.dec)
+            if self.units=='radec' and self.origin=='sky':
+              if orthographic:
+                  ra=np.radians(self.x)
+                  dec=np.radians(self.y)
 
-              pmra=np.radians(self.pmra/(1000.0*3600.0))
-              pmdec=np.radians(self.pmdec/(1000.0*3600.0))
-              
-              ra_gc=np.radians(self.ra_gc)
-              dec_gc=np.radians(self.dec_gc)
+                  pmra=np.radians(self.vx/(1000.0*3600.0))
+                  pmdec=np.radians(self.vy/(1000.0*3600.0))
+                  
+                  ra_gc=np.radians(self.vxgc)
+                  dec_gc=np.radians(self.vygc)
 
-              self.x=np.cos(dec)*np.sin(ra-ra_gc)
-              self.y=np.sin(dec)*np.cos(dec_gc)-np.cos(dec)*np.sin(dec_gc)*np.cos(ra-ra_gc)
-              self.z=np.zeros(len(self.x))
+                  self.x=np.cos(dec)*np.sin(ra-ra_gc)
+                  self.y=np.sin(dec)*np.cos(dec_gc)-np.cos(dec)*np.sin(dec_gc)*np.cos(ra-ra_gc)
+                  self.z=np.zeros(len(self.x))
 
-              self.vx=pmra*np.cos(ra-ra_gc)-pmdec*np.sin(dec)*np.sin(ra-ra_gc)
-              self.vy=pmra*np.sin(dec_gc)*np.sin(ra-ra_gc)+self.pmdec*(np.cos(dec)*np.cos(dec_gc)+np.sin(dec)*np.sin(dec_gc)*np.cos(ra-ra_gc))
-              self.vz=np.zeros(len(self.x))
-                              
-              self.units='orthographic'
-
-            elif self.origin=='sky':
-
-              if VandeVen:
-                self.x=(10800./np.pi)*np.cos(np.radians(self.dec))*np.sin(np.radians(self.ra)-np.radians(self.ra_gc))/60.0
-                self.y=(10800./np.pi)*(np.sin(np.radians(self.dec))*np.cos(np.radians(self.dec_gc))-np.cos(np.radians(self.dec))*np.sin(np.radians(self.dec_gc)))*np.cos(np.radians(self.ra)-np.radians(self.ra_gc))/60.0
+                  self.vx=pmra*np.cos(ra-ra_gc)-pmdec*np.sin(dec)*np.sin(ra-ra_gc)
+                  self.vy=pmra*np.sin(dec_gc)*np.sin(ra-ra_gc)+self.pmdec*(np.cos(dec)*np.cos(dec_gc)+np.sin(dec)*np.sin(dec_gc)*np.cos(ra-ra_gc))
+                  self.vz=np.zeros(len(self.x))
+                                  
               else:
-                self.x=(self.ra-self.ra_gc)*np.cos(np.radians(self.dec_gc))
-                self.y=(self.dec-self.dec_gc)
+                  if VandeVen:
+                    self.x=(10800./np.pi)*np.cos(np.radians(self.y))*np.sin(np.radians(self.x)-np.radians(self.xgc))/60.0
+                    self.y=(10800./np.pi)*(np.sin(np.radians(self.y))*np.cos(np.radians(self.ygc))-np.cos(np.radians(self.y))*np.sin(np.radians(self.ygc)))*np.cos(np.radians(self.x)-np.radians(self.xgc))/60.0
+                  else:
+                    self.x=(self.x-self.xgc)*np.cos(np.radians(self.xgc))
+                    self.y=(self.y-self.ygc)
 
-              self.z=np.zeros(len(self.x))
+                  self.z=np.zeros(len(self.x))
 
-              self.vx=self.pmra-self.pmra_gc
-              self.vy=self.pmdec-self.pmdec_gc
-              self.vz=self.vlos-self.vlos_gc
+                  self.vx-=-self.vxgc
+                  self.vy-=self.vygc
+                  self.vz-=self.vzgc
 
             elif self.origin=='centre':
               self.x+=self.xc
@@ -1479,6 +1645,11 @@ class StarCluster(object):
               self.vx-=self.vxgc
               self.vy-=self.vygc
               self.vz-=self.vzgc
+
+            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt(self.x**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
 
             self.origin='cluster'
             if do_key_params:
@@ -1506,8 +1677,8 @@ class StarCluster(object):
 
            2018 - Written - Webb (UofT)
         """
-        if self.origin=='sky':
-            self.from_sky(do_key_params=False)
+        if self.units=='radec' and self.origin=='sky':
+            self.from_radec(do_key_params=False)
 
         elif self.origin!='galaxy':
             if self.origin=='centre':
@@ -1522,6 +1693,11 @@ class StarCluster(object):
             
 
             self.origin='galaxy'
+
+            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt(self.x**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
         
             if do_key_params:
                 self.key_params(do_order=do_order)
@@ -1535,14 +1711,14 @@ class StarCluster(object):
         PURPOSE:
 
            Calculate on-sky position, proper motion, and radial velocity of cluster
-
+            --> Also changes units to radec
         INPUT:
 
            None
 
         OUTPUT:
 
-            ra,dec,dist,pmra,pmdec,vlos
+            None
 
         HISTORY:
 
@@ -1550,74 +1726,26 @@ class StarCluster(object):
 
         """    
 
-        if (self.units=='orthographic' or self.units=='degrees') and self.origin!='sky':
-            self.x=copy(self.ra)
-            self.y=copy(self.dec)
-            self.z=copy(self.dist)
-            self.vx=copy(self.pmra)
-            self.vy=copy(self.pmdec)
-            self.vz=copy(self.vlos)
+        self.to_radec(self,do_order=do_order,do_key_params=do_key_params)
 
-            self.units='degrees'
-            self.origin='sky'
-
-            if do_key_params:
-                self.key_params(do_order=do_order)
-
-        else:
-
-            units0,origin0=self.units,self.origin
-
-            self.to_galaxy()
-            self.to_realkpc()
-
-            x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.x,self.y,self.z,Xsun=8.,Zsun=0.025).T
-
-            self.dist=np.sqrt(x0**2.+y0**2.+z0**2.)
-
-            vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vx,self.vy,self.vz,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25]).T
-
-            self.vlos=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
-
-            l0,b0,self.dist=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True).T
-            self.ra,self.dec=bovy_coords.lb_to_radec(l0,b0,degree=True).T
-
-            vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.dist,degree=True).T
-            self.pmra,self.pmdec=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True).T
-
-            x0,y0,z0=bovy_coords.galcenrect_to_XYZ(self.xgc,self.ygc,self.zgc,Xsun=8.,Zsun=0.025)
-            vx0,vy0,vz0=bovy_coords.galcenrect_to_vxvyvz(self.vxgc,self.vygc,self.vzgc,Xsun=8.,Zsun=0.025,vsun=[-11.1,244.,7.25])
-
-            self.vlos_gc=(vx0*x0+vy0*y0+vz0*z0)/np.sqrt(x0**2.+y0**2.+z0**2.)
-
-            l0,b0,self.distgc=bovy_coords.XYZ_to_lbd(x0,y0,z0,degree=True)
-            self.ra_gc,self.dec_gc=bovy_coords.lb_to_radec(l0,b0,degree=True)
-
-            vr0,pmll0,pmbb0=bovy_coords.vxvyvz_to_vrpmllpmbb(vx0,vy0,vz0,l0,b0,self.distgc,degree=True)
-            self.pmra_gc,self.pmdec_gc=bovy_coords.pmllpmbb_to_pmrapmdec(pmll0,pmbb0,l0,b0,degree=True)
-
-            self.to_origin(origin0)
-            self.to_units(units0)
-
-        return self.ra,self.dec,self.dist,self.pmra,self.pmdec,self.vlos
 
     def from_sky(self,do_order=False,do_key_params=False):
         """
         NAME:
 
-           to_sky
+           from_sky
 
         PURPOSE:
 
            Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
-
+            -> Also changes units to realkpc
         INPUT:
 
            None
 
         OUTPUT:
 
-            x,y,z,vx,vy,vz
+            None
 
         HISTORY:
 
@@ -1625,27 +1753,8 @@ class StarCluster(object):
 
         """    
 
-        origin0=self.origin
-        
-        l,b=bovy_coords.radec_to_lb(self.ra,self.dec,degree=True).T
-        x0,y0,z0=bovy_coords.lbd_to_XYZ(l,b,self.dist,degree=True).T
-        self.x,self.y,self.z=bovy_coords.XYZ_to_galcenrect(x0,y0,z0,Xsun=8.,Zsun=0.025).T
-            
+        self.from_radec(self,do_order=do_order,do_key_params=do_key_params)
 
-        pml,pmb=bovy_coords.pmrapmdec_to_pmllpmbb(self.pmra,self.pmdec,self.ra,self.dec,degree=True).T
-        vx0,vy0,vz0=bovy_coords.vrpmllpmbb_to_vxvyvz(self.vlos,pml,pmb,l,b,self.dist,degree=True).T
-        self.vx,self.vy,self.vz=bovy_coords.vxvyvz_to_galcenrect(vx0,vy0,vz0,vsun=[0.,220.,0.],Xsun=8.,Zsun=0.025,_extra_rot=True).T         
-
-        self.origin='galaxy'
-        self.units='realkpc'
-
-        self.to_origin(origin0)
-
-        if do_key_params:
-            self.key_params(do_order=do_order) 
-
-
-        return self.x,self.y,self.z,self.vx,self.vy,self.vz
 
     def to_tail(self,plot=False):
         """
@@ -1686,6 +1795,9 @@ class StarCluster(object):
         self.vy_tail=self.vx*rot[:,0,1]+self.vy*rot[:,1,1]+self.vz*rot[:,2,1]
         self.vz_tail=self.vx*rot[:,0,2]+self.vy*rot[:,1,2]+self.vz*rot[:,2,2]  
         
+        self.r_tail=np.sqrt(self.x_tail**2.+self.y_tail**2.+self.z_tail**2.)
+        self.v_tail=np.sqrt(self.vx_tail**2.+self.vy_tail**2.+self.vz_tail**2.)
+
         self.to_origin(origin0)
 
         return self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail
@@ -1720,7 +1832,7 @@ class StarCluster(object):
             self.to_cluster(do_order=do_order,do_key_params=do_key_params)
         elif origin=='galaxy':
             self.to_galaxy(do_order=do_order,do_key_params=do_key_params)
-        elif origin=='to_sky':
+        elif origin=='sky':
             self.to_sky(do_order=do_order,do_key_params=do_key_params)
 
     #Directly call from functions.py and profiles.py (see respective files for documenation):

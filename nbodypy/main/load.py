@@ -491,7 +491,6 @@ def get_gyrfalcon(filein,units='WDunits',origin='galaxy',ofile=None,advance=Fals
         else:
             data=filein.readline().split()
         if '#' in data:
-            print('REACHED HEADER')
             break
 
         i_d.append(j+1)
@@ -590,8 +589,6 @@ def get_snaptrim(filename=None,units='WDunits',origin='galaxy',ofile=None,advanc
     tphys=0.
 
     filein=open(filename,'r')
-
-    print(filein,skiprows)
 
     for j in range(0,skiprows):
         data=filein.readline().split()
@@ -1395,7 +1392,7 @@ def get_nbodypy_snapshot(filename=None,units='realpc',origin='cluster',ofile=Non
 
     return cluster
 
-def get_amuse_particles(particles,npyunits='realkpc',npyorigin='galaxy',**kwargs):
+def get_amuse_particles(particles,npyunits='realkpc',npyorigin='galaxy',ofile=None,**kwargs):
     """
     NAME:
 
@@ -1452,6 +1449,26 @@ def get_amuse_particles(particles,npyunits='realkpc',npyorigin='galaxy',**kwargs
         return 0
     
     cluster.add_stars(i_d,m,x,y,z,vx,vy,vz,do_key_params=True)
+
+    if npyorigin=='galaxy':
+        if ofile==None:
+            cluster.find_centre()
+        else:
+            get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)
+
+        cluster.to_cluster()
+        cluster.find_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_galaxy()
+
+    elif npyorigin=='cluster':
+        #Estimate centre of distribution
+        cluster.find_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_cluster()
+
+        if ofile!=None:
+            get_cluster_orbit(cluster,ofile,advance=advance,**kwargs)
 
     return cluster
 

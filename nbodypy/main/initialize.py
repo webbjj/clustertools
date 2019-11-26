@@ -8,7 +8,7 @@ from .cluster import StarCluster
 from .profiles import m_prof
 from .orbit import get_cluster_orbit
 
-def setup_cluster(ctype,units0='realpc',origin0='cluster',orbit=None,**kwargs):
+def setup_cluster(ctype,units='realpc',origin='cluster',orbit=None,**kwargs):
     """
     NAME:
 
@@ -24,9 +24,9 @@ def setup_cluster(ctype,units0='realpc',origin0='cluster',orbit=None,**kwargs):
        ctype - Type of model used to generate cluster ('SPES',LIMEPY','WOOLEY','KING','WILSON',Name/List of Galactic Clusters)
              --> To add: PLUMMER
 
-       units0 - units of generated model (Default: 'realpc')
+       units - units of generated model (Default: 'realpc')
 
-       origin0 - origin of generated model (Default: 'cluster')
+       origin - origin of generated model (Default: 'cluster')
 
        orbit - Galpy orbit of cluster to be generate
 
@@ -577,7 +577,6 @@ def get_deBoer_cluster(data,gcname,mbar=0.4,names=False):
     gcname=gcname.upper()
     indx=(name==gcname)
     i_d=np.argwhere(indx==True)[0]
-    print('GETTING: ',name[i_d])
 
     if spes:
         #W_pe e_W_pe eta_pe e_eta_pe log1minB_pe e_log1minB_pe rt_pe e_rt_pe M_pe e_M_pe log_fpe e_log_fpe
@@ -645,7 +644,6 @@ def get_harris_cluster(data,gcname,mbar=0.4,names=False):
 
     indx=np.logical_or(np.in1d(name,gcname),np.in1d(name2,gcname))
     i_d=np.argwhere(indx==True)[0]
-    print('GETTING: ',name[i_d])
     mgc=data[i_d,2].astype(float)
     rc=data[i_d,3].astype(float)
     rh=data[i_d,4].astype(float)

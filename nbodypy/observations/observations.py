@@ -123,7 +123,7 @@ def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,v
 
         m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)       
 
-        m_corr_hist=np.zeros(nmass)
+        m_corr_hist=np.zeros(len(m_hist))
         for i in range(0,len(m_hist)):
           mindx=(cluster.m>=m_lower[i]) * (cluster.m<=m_upper[i]) * indx
           m_corr_hist[i]=np.sum(1.0/mcorr[mindx])

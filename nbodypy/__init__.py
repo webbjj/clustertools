@@ -1,4 +1,12 @@
-__version__ = "1.0"
+
+from . import (
+	community,
+	custom,
+	main,
+	observations,
+	tables,
+	util
+)
 
 from .main.cluster import * 
 from .main.functions import * 

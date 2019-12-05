@@ -1,8 +1,9 @@
-#Perform an operation on a cluster and return a new cluster
+# Perform an operation on a cluster and return a new cluster
 
 import numpy as np
 from ..util.recipes import rotate
 from galpy.util import bovy_conversion
+
 
 def save_cluster(cluster):
     """
@@ -27,9 +28,10 @@ def save_cluster(cluster):
        2018 - Written - Webb (UofT)
     """
 
-    return cluster.units,cluster.origin
+    return cluster.units, cluster.origin
 
-def return_cluster(cluster,units0,origin0,do_order=False,do_key_params=False):
+
+def return_cluster(cluster, units0, origin0, do_order=False, do_key_params=False):
     """
     NAME:
 
@@ -58,7 +60,7 @@ def return_cluster(cluster,units0,origin0,do_order=False,do_key_params=False):
     """
 
     cluster.to_units(units0)
-    cluster.to_origin(origin0,do_order=do_order,do_key_params=do_key_params)
+    cluster.to_origin(origin0, do_order=do_order, do_key_params=do_key_params)
 
 
 def rotate_to_stream(cluster):
@@ -84,20 +86,21 @@ def rotate_to_stream(cluster):
        2018 - Written - Webb (UofT)
     """
 
-    if cluster.origin!='cluster':
+    if cluster.origin != "cluster":
         cluster.to_cluster()
-    v=np.array([cluster.vxgc,cluster.vygc,cluster.vzgc])
-    thetax=np.arccos(np.dot([0.,0.,1.],v)/np.linalg.norm(v))
-    thetay=np.arccos(np.dot([0.,1.,0.],v)/np.linalg.norm(v))
-    thetaz=np.arccos(np.dot([1.,0.,0.],v)/np.linalg.norm(v))
+    v = np.array([cluster.vxgc, cluster.vygc, cluster.vzgc])
+    thetax = np.arccos(np.dot([0.0, 0.0, 1.0], v) / np.linalg.norm(v))
+    thetay = np.arccos(np.dot([0.0, 1.0, 0.0], v) / np.linalg.norm(v))
+    thetaz = np.arccos(np.dot([1.0, 0.0, 0.0], v) / np.linalg.norm(v))
 
-    x,y,z=rotate(cluster.x,cluster.y,cluster.z,thetax,thetay,thetaz)
+    x, y, z = rotate(cluster.x, cluster.y, cluster.z, thetax, thetay, thetaz)
 
-    cluster.x=x
-    cluster.y=y
-    cluster.z=z
+    cluster.x = x
+    cluster.y = y
+    cluster.z = z
 
-def add_rotation(cluster,qrot):
+
+def add_rotation(cluster, qrot):
     """
     NAME:
 
@@ -122,17 +125,22 @@ def add_rotation(cluster,qrot):
        2018 - Written - Webb (UofT)
     """
 
-    r,theta,z=bovy_coords.rect_to_cyl(cluster.x,cluster.y,cluster.z)
-    vr,vtheta,vz=bovy_coords.rect_to_cyl_vec(cluster.vx,cluster.vy,cluster.vz,cluster.x,cluster.y,cluster.z)
-    
-    indx=(vtheta < 0.)
-    rindx=(np.random.rand(cluster.ntot) < qrot)
+    r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+    vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+        cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+    )
 
-    vtheta[indx*rindx]=np.sqrt(vtheta[indx*rindx]*vtheta[indx*rindx])
-    cluster.x,cluster.y,cluster.z=bovy_coords.cyl_to_rect(r,theta,z)
-    cluster.vx,cluster.vy,cluster.vz=bovy_coords.cyl_to_rect_vec(vr,vtheta,vz,theta)
+    indx = vtheta < 0.0
+    rindx = np.random.rand(cluster.ntot) < qrot
 
-def reset_nbody_scale(cluster,mass=True,radii=True,rvirial=False,**kwargs):
+    vtheta[indx * rindx] = np.sqrt(vtheta[indx * rindx] * vtheta[indx * rindx])
+    cluster.x, cluster.y, cluster.z = bovy_coords.cyl_to_rect(r, theta, z)
+    cluster.vx, cluster.vy, cluster.vz = bovy_coords.cyl_to_rect_vec(
+        vr, vtheta, vz, theta
+    )
+
+
+def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=False, **kwargs):
     """
     NAME:
 
@@ -165,33 +173,29 @@ def reset_nbody_scale(cluster,mass=True,radii=True,rvirial=False,**kwargs):
        2018 - Written - Webb (UofT)
     """
 
-
-    units0,origin0=save_cluster(cluster)
+    units0, origin0 = save_cluster(cluster)
     cluster.to_centre()
     cluster.to_realpc()
 
     if mass:
-        cluster.zmbar=cluster.mtot
+        cluster.zmbar = cluster.mtot
 
     if radii:
         if rvirial:
 
-            H=kwargs.get('H',70.)
-            Om=kwargs.get('Om',0.3)
-            overdens=kwargs.get('overdens',200.)
-            nrad=kwargs.get('nrad',20.)
-            projected=kwargs.get('projected',False)
+            H = kwargs.get("H", 70.0)
+            Om = kwargs.get("Om", 0.3)
+            overdens = kwargs.get("overdens", 200.0)
+            nrad = kwargs.get("nrad", 20.0)
+            projected = kwargs.get("projected", False)
 
-            cluster.rvirial(H=H,Om=Om,overdens=overdens,nrad=nrad,projected=projected)
+            cluster.rvirial(
+                H=H, Om=Om, overdens=overdens, nrad=nrad, projected=projected
+            )
         else:
-            cluster.rbar=4.0*cluster.rm/3.0
+            cluster.rbar = 4.0 * cluster.rm / 3.0
 
-    cluster.vstar=0.06557*np.sqrt(cluster.zmbar/cluster.rbar)
-    cluster.tstar=cluster.rbar/cluster.vstar
+    cluster.vstar = 0.06557 * np.sqrt(cluster.zmbar / cluster.rbar)
+    cluster.tstar = cluster.rbar / cluster.vstar
 
-    return_cluster(cluster,units0,origin0)
-    
-
-
-
-
+    return_cluster(cluster, units0, origin0)

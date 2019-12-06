@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def def_dc(m, x, v=None, r_min=0.0045):
     """
     Calculates the center of density. Translated to Python from phiGRAPE.
@@ -23,18 +22,18 @@ def def_dc(m, x, v=None, r_min=0.0045):
         v_ = v.copy()
         vdc = np.zeros(3)
     else:
-        v_ = None
-    r_lim = np.sqrt(np.max(np.sum(x ** 2, axis=1)))
+      v_ = None
+    r_lim = np.sqrt(np.max(np.sum(x**2, axis=1)))
     num_iter = 0
 
     while (r_lim > r_min) and (num_iter < 100):
         ncm, mcm, xcm, vcm = cenmas_lim(m, x_, v_, r_lim)
-        if (mcm > 0) and (ncm > 100):
+        if((mcm > 0) and (ncm > 100)):
             x_ -= xcm
             xdc += xcm
             if calc_vdc:
-                v_ -= vcm
-                vdc += vcm
+              v_ -= vcm
+              vdc += vcm
         else:
             break
         r_lim *= 0.8
@@ -44,17 +43,13 @@ def def_dc(m, x, v=None, r_min=0.0045):
     else:
         return xdc
 
-
 def cenmas_lim(m, x, v, r_lim):
-    r2 = np.sum(x ** 2, axis=1)
-    cond = r2 < r_lim ** 2
+    r2 = np.sum(x**2, axis=1)
+    cond = r2 < r_lim**2
     ncm = np.sum(cond)
     mcm = np.sum(m[cond])
-    if mcm == 0:
-        return ncm, 0.0, np.zeros(3), np.zeros(3)
-    xcm = np.sum(m[cond, None] * x[cond, :], axis=0) / mcm
-    if not v is None:
-        vcm = np.sum(m[cond, None] * v[cond, :], axis=0) / mcm
-    else:
-        vcm = None
+    if mcm == 0: return ncm, 0., np.zeros(3), np.zeros(3)
+    xcm = np.sum(m[cond,None] * x[cond,:], axis=0) / mcm
+    if not v is None: vcm = np.sum(m[cond,None] * v[cond,:], axis=0) / mcm
+    else: vcm = None
     return ncm, mcm, xcm, vcm

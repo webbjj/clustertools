@@ -1,18 +1,10 @@
+from . import community, custom, main, observations, tables, util
 
-from . import (
-	community,
-	custom,
-	main,
-	observations,
-	tables,
-	util
-)
-
-from .main.cluster import * 
-from .main.functions import * 
-from .main.load import * 
-from .main.operations import * 
-from .main.orbit import * 
+from .main.cluster import *
+from .main.functions import *
+from .main.load import *
+from .main.operations import *
+from .main.orbit import *
 from .main.profiles import *
 from .main.initialize import *
 

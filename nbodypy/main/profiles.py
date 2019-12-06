@@ -1,4 +1,4 @@
-#Determine radial profiles of key properties
+# Determine radial profiles of key properties
 
 import numpy as np
 from galpy.util import bovy_coords
@@ -9,7 +9,25 @@ from .operations import *
 from ..util.plots import *
 from ..util.coordinates import rect_to_sphere
 
-def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,plot=False,**kwargs):
+
+def rho_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    indx=None,
+    projected=False,
+    plot=False,
+    **kwargs
+):
     """
     NAME:
 
@@ -53,93 +71,134 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,v
 
        2018 - Written - Webb (UofT)
 
-    """ 
+    """
 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-
-    rprof=np.array([])
-    pprof=np.array([])
-    nprof=np.array([])
+    rprof = np.array([])
+    pprof = np.array([])
+    nprof = np.array([])
 
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        r = cluster.rpro
+        v = cluster.vpro
     else:
-        r=cluster.r
-        v=cluster.v
+        r = cluster.r
+        v = cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
     if indx is None:
-        indx=(cluster.id > -1)
+        indx = cluster.id > -1
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx*=(r >= rmin) * (r <= rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
-    for i in range(0,len(r_mean)):
-        rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
-        rprof=np.append(rprof,r_mean[i])
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
+        rprof = np.append(rprof, r_mean[i])
         if projected:
-            vol=np.pi*(r_upper[i]**2-r_lower[i]**2.)
+            vol = np.pi * (r_upper[i] ** 2 - r_lower[i] ** 2.0)
         else:
-            vol=(4./3.)*np.pi*(r_upper[i]**3-r_lower[i]**3.)
+            vol = (4.0 / 3.0) * np.pi * (r_upper[i] ** 3 - r_lower[i] ** 3.0)
 
-        pprof=np.append(pprof,np.sum(cluster.m[rindx]/vol))
-        nprof=np.append(nprof,np.sum(rindx))
-
+        pprof = np.append(pprof, np.sum(cluster.m[rindx] / vol))
+        nprof = np.append(nprof, np.sum(rindx))
 
     if plot:
-        filename=kwargs.pop('filename',None)   
-        overplot=kwargs.pop('overplot',False)        
-     
-        if cluster.units=='nbody':
-            xunits=' (NBODY)'
-            yunits=' (NBODY)'
-        elif cluster.units=='realpc':
-            xunits=' (pc)'
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if cluster.units == "nbody":
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+        elif cluster.units == "realpc":
+            xunits = " (pc)"
             if projected:
-                yunits=' Msun/pc^2'
+                yunits = " Msun/pc^2"
             else:
-                yunits=' Msun/pc^3'
-        elif cluster.units=='realkpc':
-            xunits=' (kpc)'
+                yunits = " Msun/pc^3"
+        elif cluster.units == "realkpc":
+            xunits = " (kpc)"
             if projected:
-                yunits=' Msun/kpc^2'
+                yunits = " Msun/kpc^2"
             else:
-                yunits=' Msun/kpc^3'
-        elif cluster.units=='galpy':
-            xunits=' (GALPY)'
-            yunits=' (GALPY)'
+                yunits = " Msun/kpc^3"
+        elif cluster.units == "galpy":
+            xunits = " (GALPY)"
+            yunits = " (GALPY)"
 
         else:
-            xunits=''
-            yunits=''
+            xunits = ""
+            yunits = ""
 
-        x,y,n=rprof,pprof,nprof
-        nlplot(x,y,xlabel=r'$R %s$' % xunits,ylabel=r'$\rho %s$' % yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        x, y, n = rprof, pprof, nprof
+        nlplot(
+            x,
+            y,
+            xlabel=r"$R %s$" % xunits,
+            ylabel=r"$\rho %s$" % yunits,
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
 
-        if filename!=None:
+        if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return rprof,pprof,nprof
+    return rprof, pprof, nprof
 
-def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,cumulative=False,plot=False,**kwargs):
+
+def m_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    indx=None,
+    projected=False,
+    cumulative=False,
+    plot=False,
+    **kwargs
+):
     """
     NAME:
 
@@ -185,83 +244,125 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
        2018 - Written - Webb (UofT)
 
-    """ 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    """
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-    rprof=[]
-    mprof=[]
-    nprof=[]
+    rprof = []
+    mprof = []
+    nprof = []
 
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        r = cluster.rpro
+        v = cluster.vpro
     else:
-        r=cluster.r
-        v=cluster.v
+        r = cluster.r
+        v = cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
     if indx is None:
-        indx=(cluster.id > -1)
+        indx = cluster.id > -1
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
-    for i in range(0,len(r_mean)):
+    for i in range(0, len(r_mean)):
         if cumulative:
-            rindx=indx * (r <= r_upper[i])
+            rindx = indx * (r <= r_upper[i])
         else:
-            rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
+            rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
         rprof.append(r_mean[i])
 
         mprof.append(np.sum(cluster.m[rindx]))
         nprof.append(np.sum(rindx))
 
     if plot:
-        filename=kwargs.pop('filename',None)   
-        overplot=kwargs.pop('overplot',False)        
-     
-        if cluster.units=='nbody':
-            xunits=' (NBODY)'
-            yunits=' (NBODY)'
-        elif cluster.units=='realpc':
-            xunits=' (pc)'
-            yunits=' Msun'
-        elif cluster.units=='realkpc':
-            xunits=' (kpc)'
-            yunits=' Msun'
-        elif cluster.units=='galpy':
-            xunits=' (GALPY)'
-            yunits=' (GALPY)'
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if cluster.units == "nbody":
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+        elif cluster.units == "realpc":
+            xunits = " (pc)"
+            yunits = " Msun"
+        elif cluster.units == "realkpc":
+            xunits = " (kpc)"
+            yunits = " Msun"
+        elif cluster.units == "galpy":
+            xunits = " (GALPY)"
+            yunits = " (GALPY)"
         else:
-            xunits=''
-            yunits=''
+            xunits = ""
+            yunits = ""
 
-        x,y,n=rprof,mprof,nprof
-        nlplot(x,y,xlabel=r'$R %s $' % xunits,ylabel=r'$M %s $' % yunits, title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
+        x, y, n = rprof, mprof, nprof
+        nlplot(
+            x,
+            y,
+            xlabel=r"$R %s $" % xunits,
+            ylabel=r"$M %s $" % yunits,
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
 
-        if filename!=None:
+        if filename != None:
             plt.savefig(filename)
 
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
+    return rprof, mprof, nprof
 
-    return rprof,mprof,nprof
 
-def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,plot=False,**kwargs):
+def alpha_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    plot=False,
+    **kwargs
+):
     """
     NAME:
 
@@ -315,84 +416,123 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
 
        2018 - Written - Webb (UofT)
 
-    """ 
+    """
 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-    lrprofn=[]
-    aprof=[]
-    
+    lrprofn = []
+    aprof = []
+
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        r = cluster.rpro
+        v = cluster.vpro
     else:
-        r=cluster.r
-        v=cluster.v
+        r = cluster.r
+        v = cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
     if indx is None:
-        indx=(cluster.id > -1)
+        indx = cluster.id > -1
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
-    for i in range(0,len(r_mean)):
-        rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
 
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_function(cluster.m[rindx],nmass)
+        m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_function(
+            cluster.m[rindx], nmass
+        )
 
         if alpha > -100:
             if projected:
-                lrprofn.append(np.log(r_mean[i]/cluster.rmpro))
+                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
             else:
-                lrprofn.append(np.log(r_mean[i]/cluster.rm))
+                lrprofn.append(np.log(r_mean[i] / cluster.rm))
 
             aprof.append(alpha)
 
-    if len(lrprofn)>3:
-        (dalpha,ydalpha),V=np.polyfit(lrprofn,aprof,1,cov=True)
-        edalpha=np.sqrt(V[0][0])
-        eydalpha=np.sqrt(V[1][1])
+    if len(lrprofn) > 3:
+        (dalpha, ydalpha), V = np.polyfit(lrprofn, aprof, 1, cov=True)
+        edalpha = np.sqrt(V[0][0])
+        eydalpha = np.sqrt(V[1][1])
     else:
-        dalpha=-100.0
-        ydalpha=0.0
-        edalpha=0.0
-        eydalpha=0.0
+        dalpha = -100.0
+        ydalpha = 0.0
+        edalpha = 0.0
+        eydalpha = 0.0
 
     if plot:
-        filename=kwargs.pop('filename',None)
-        overplot=kwargs.pop('overplot',False)        
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
 
-        nplot(lrprofn,aprof,xlabel=r'$\ln(r/r_m)$',ylabel=r'$\alpha$',overplot=overplot,**kwargs)
-        rfit=np.linspace(np.min(lrprofn),np.max(lrprofn),nrad)
-        afit=dalpha*rfit+ydalpha
-        nlplot(rfit,afit,overplot=True,label=(r'd$\alpha$ = %f' % dalpha))
+        nplot(
+            lrprofn,
+            aprof,
+            xlabel=r"$\ln(r/r_m)$",
+            ylabel=r"$\alpha$",
+            overplot=overplot,
+            **kwargs
+        )
+        rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
+        afit = dalpha * rfit + ydalpha
+        nlplot(rfit, afit, overplot=True, label=(r"d$\alpha$ = %f" % dalpha))
         plt.legend()
 
-        if filename!=None:
+        if filename != None:
             plt.savefig(filename)
 
-    cluster.dalpha=dalpha
+    cluster.dalpha = dalpha
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
+    return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha
 
-def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,projected=False):
+
+def sigv_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    projected=False,
+):
     """
     NAME:
 
@@ -440,78 +580,109 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,
 
        2018 - Written - Webb (UofT)
 
-    """ 
+    """
 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-
-    lrprofn=[]
-    sigvprof=[]
-    betaprof=[]
+    lrprofn = []
+    sigvprof = []
+    betaprof = []
 
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        r = cluster.rpro
+        v = cluster.vpro
     else:
-        r=cluster.r
-        v=cluster.v
+        r = cluster.r
+        v = cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx = (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
-   
-    #Convert to cylindrical or spherical coordinates:
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    # Convert to cylindrical or spherical coordinates:
     if projected:
-        r,theta,z=bovy_coords.rect_to_cyl(cluster.x,cluster.y,cluster.z)
-        vr,vtheta,vz=bovy_coords.rect_to_cyl_vec(cluster.vx,cluster.vy,cluster.vz,cluster.x,cluster.y,cluster.z)
+        r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+            cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+        )
     else:
-        r,theta,phi,vr,vt,vp=rect_to_sphere(cluster)
+        r, theta, phi, vr, vt, vp = rect_to_sphere(cluster)
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
-    for i in range(0,len(r_mean)):
-        rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
 
-        if np.sum(rindx) > 3.:
+        if np.sum(rindx) > 3.0:
 
-            sigr=np.std(vr[rindx])
-            sigt=np.std(vt[rindx])
-
-            if projected:
-                sigp=np.zeros(len(vr))
-                beta=sigt/sigr-1.
-            else:
-                sigp=np.std(vp[rindx])
-                beta=1.0-(sigt**2.0+sigp**2.0)/(2.*(sigr**2.0))
-            
-            sigv=np.sqrt(sigr**2.0+sigt**2.0+sigp**2.0)
+            sigr = np.std(vr[rindx])
+            sigt = np.std(vt[rindx])
 
             if projected:
-                lrprofn.append(np.log(r_mean[i]/cluster.rmpro))
+                sigp = np.zeros(len(vr))
+                beta = sigt / sigr - 1.0
             else:
-                lrprofn.append(np.log(r_mean[i]/cluster.rm))
+                sigp = np.std(vp[rindx])
+                beta = 1.0 - (sigt ** 2.0 + sigp ** 2.0) / (2.0 * (sigr ** 2.0))
+
+            sigv = np.sqrt(sigr ** 2.0 + sigt ** 2.0 + sigp ** 2.0)
+
+            if projected:
+                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            else:
+                lrprofn.append(np.log(r_mean[i] / cluster.rm))
 
             sigvprof.append(sigv)
             betaprof.append(beta)
-           
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
-     
-    return lrprofn,sigvprof,betaprof
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False):
+    return lrprofn, sigvprof, betaprof
+
+
+def v_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    indx=None,
+    projected=False,
+):
     """
     NAME:
 
@@ -557,75 +728,109 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
        2018 - Written - Webb (UofT)
 
-    """ 
+    """
 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-    lrprofn=[]
-    sigvprof=[]
+    lrprofn = []
+    sigvprof = []
 
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        r = cluster.rpro
+        v = cluster.vpro
     else:
-        r=cluster.r
-        v=cluster.v
+        r = cluster.r
+        v = cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
     if indx is None:
-        indx=(cluster.id > -1)
+        indx = cluster.id > -1
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
-  
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    #Convert to cylindrical or spherical coordinates:
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    # Convert to cylindrical or spherical coordinates:
     if projected:
-        r,theta,z=bovy_coords.rect_to_cyl(cluster.x,cluster.y,cluster.z)
-        vr,vtheta,vz=bovy_coords.rect_to_cyl_vec(cluster.vx,cluster.vy,cluster.vz,cluster.x,cluster.y,cluster.z)
+        r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+            cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+        )
     else:
-        r,theta,phi,vr,vt,vp=rect_to_sphere(cluster)
+        r, theta, phi, vr, vt, vp = rect_to_sphere(cluster)
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
-    for i in range(0,len(r_mean)):
-        rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
 
-        if np.sum(rindx) > 3.:
+        if np.sum(rindx) > 3.0:
 
-            vrmean=np.mean(vr[rindx])
-            vtmean=np.mean(vt[rindx])
-
-            if projected:
-                vpmean=np.zeros(len(vr))
-            else:
-                vpmean=np.mean(vp[rindx])
-            
-            vmean=np.sqrt(vrmean**2.0+vtmean**2.0+vpmean**2.0)
+            vrmean = np.mean(vr[rindx])
+            vtmean = np.mean(vt[rindx])
 
             if projected:
-                lrprofn.append(np.log(r_mean[i]/cluster.rmpro))
+                vpmean = np.zeros(len(vr))
             else:
-                lrprofn.append(np.log(r_mean[i]/cluster.rm))
+                vpmean = np.mean(vp[rindx])
+
+            vmean = np.sqrt(vrmean ** 2.0 + vtmean ** 2.0 + vpmean ** 2.0)
+
+            if projected:
+                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            else:
+                lrprofn.append(np.log(r_mean[i] / cluster.rm))
 
             vprof.append(vmean)
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return lrprofn,vprof
+    return lrprofn, vprof
 
-def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False):
+
+def eta_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+):
     """
     NAME:
 
@@ -679,67 +884,112 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
 
        2018 - Written - Webb (UofT)
 
-    """ 
+    """
 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-    lrprofn=[]
-    eprof=[]
-    
+    lrprofn = []
+    eprof = []
+
     if projected:
-        r=cluster.rpro
-        v=cluster.vpro
+        r = cluster.rpro
+        v = cluster.vpro
     else:
-        r=cluster.r
-        v=cluster.v
+        r = cluster.r
+        v = cluster.v
 
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
     if indx is None:
-        indx=(cluster.id > -1)
+        indx = cluster.id > -1
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx*=(r >= rmin) * (r<=rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
-  
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(cluster.r[indx],nrad)
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
 
-    for i in range(0,len(r_mean)):
-        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin,mmax=mmax,nmass=nmass,rmin=r_lower[i],rmax=r_upper[i],vmin=vmin,vmax=vmax,kwmin=kwmin,kwmax=kwmax,projected=projected)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
+
+    for i in range(0, len(r_mean)):
+        m_mean, sigvm, eta, eeta, yeta, eyeta = eta_function(
+            cluster,
+            mmin=mmin,
+            mmax=mmax,
+            nmass=nmass,
+            rmin=r_lower[i],
+            rmax=r_upper[i],
+            vmin=vmin,
+            vmax=vmax,
+            kwmin=kwmin,
+            kwmax=kwmax,
+            projected=projected,
+        )
 
         if alpha > -100:
             if projected:
-                lrprofn.append(np.log(r_mean[i]/cluster.rmpro))
+                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
             else:
-                lrprofn.append(np.log(r_mean[i]/cluster.rm))
+                lrprofn.append(np.log(r_mean[i] / cluster.rm))
 
             eprof.append(eta)
 
-    if len(lrprofn)>3:
-        (deta,ydeta),V=np.polyfit(lrprofn,eprof,1,cov=True)
-        edeta=np.sqrt(V[0][0])
-        eydeta=np.sqrt(V[1][1])
+    if len(lrprofn) > 3:
+        (deta, ydeta), V = np.polyfit(lrprofn, eprof, 1, cov=True)
+        edeta = np.sqrt(V[0][0])
+        eydeta = np.sqrt(V[1][1])
     else:
-        deta=-100.0
-        ydeta=0.0
-        edeta=0.0
-        eydeta=0.0
+        deta = -100.0
+        ydeta = 0.0
+        edeta = 0.0
+        eydeta = 0.0
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return lrprofn,eprof,deta,edeta,ydeta,eydeta
+    return lrprofn, eprof, deta, edeta, ydeta, eydeta
 
-def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,plot=False,**kwargs):
+
+def vcirc_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    indx=None,
+    projected=False,
+    plot=False,
+    **kwargs
+):
     """
     NAME:
 
@@ -783,102 +1033,122 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
 
        2019 - Written - Webb (UofT)
 
-    """ 
+    """
 
-    units0,origin0=save_cluster(cluster)
-    cluster.to_centre(do_order=True,do_key_params=True)
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
 
-    if cluster.units=='nbody':
-        grav=1.0
-    elif cluster.units=='realpc':
-        #G has units of pc (km/s)^2 / Msun
-        grav=4.302e-3
-    elif cluster.units=='realkpc':
-        #G has units of kpc (km/s)^2 / Msun
-        grav=4.302e-6
+    if cluster.units == "nbody":
+        grav = 1.0
+    elif cluster.units == "realpc":
+        # G has units of pc (km/s)^2 / Msun
+        grav = 4.302e-3
+    elif cluster.units == "realkpc":
+        # G has units of kpc (km/s)^2 / Msun
+        grav = 4.302e-6
     else:
-        grav=1.0
+        grav = 1.0
 
-
-
-    rprof=np.array([])
-    vcprof=np.array([])
+    rprof = np.array([])
+    vcprof = np.array([])
 
     if projected:
         if cluster.rproorder is None:
             cluster.key_params(do_order=True)
-        r=cluster.rpro[cluster.rproorder]
-        v=cluster.vpro[cluster.rproorder]
-        m=cluster.m[cluster.rproorder]
+        r = cluster.rpro[cluster.rproorder]
+        v = cluster.vpro[cluster.rproorder]
+        m = cluster.m[cluster.rproorder]
     else:
         if cluster.rorder is None:
             cluster.key_params(do_order=True)
-        r=cluster.r[cluster.rorder]
-        v=cluster.v[cluster.rorder]
-        m=cluster.m[cluster.rorder]
+        r = cluster.r[cluster.rorder]
+        v = cluster.v[cluster.rorder]
+        m = cluster.m[cluster.rorder]
 
-
-    if rmin==None: rmin=np.min(r)
-    if rmax==None: rmax=np.max(r)
-    if vmin==None: vmin=np.min(v)
-    if vmax==None: vmax=np.max(v)
-    if mmin==None: mmin=np.min(cluster.m)
-    if mmax==None: mmax=np.max(cluster.m)
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
 
     if indx is None:
-        indx=(cluster.id > -1)
+        indx = cluster.id > -1
 
-    #Build subcluster containing only stars in the full radial and mass range:
-    indx*=(r >= rmin) * (r <= rmax) * (cluster.m >= mmin) * (cluster.m <= mmax) * (v >=vmin) * (v <=vmax) * (cluster.kw >=kwmin) * (cluster.kw <=kwmax)
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
 
-    if emin!=None:
-        indx*=(cluster.etot >= emin)
-    if emin!=None:
-        indx*=(cluster.etot <= emax)
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
 
-    r=r[indx]
-    v=v[indx]
-    m=m[indx]
+    r = r[indx]
+    v = v[indx]
+    m = m[indx]
 
-    msum=np.cumsum(m)
-    vcirc=np.sqrt(grav*msum/r)
-    vmax=np.amax(vcirc)
-    rvmax=r[np.argmax(vcirc)]
+    msum = np.cumsum(m)
+    vcirc = np.sqrt(grav * msum / r)
+    vmax = np.amax(vcirc)
+    rvmax = r[np.argmax(vcirc)]
 
-    rprof=r
-    vcprof=vcirc
+    rprof = r
+    vcprof = vcirc
 
     if plot:
-        filename=kwargs.pop('filename',None)   
-        overplot=kwargs.pop('overplot',False)        
-     
-        if cluster.units=='nbody':
-            xunits=' (NBODY)'
-            yunits=' (NBODY)'
-        elif cluster.units=='realpc':
-            xunits=' (pc)'
-            yunits=' km/s'
-        elif cluster.units=='realkpc':
-            xunits=' (kpc)'
-            yunits=' km/s'
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
 
-        elif cluster.units=='galpy':
-            xunits=' (GALPY)'
-            yunits=' (GALPY)'
+        if cluster.units == "nbody":
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+        elif cluster.units == "realpc":
+            xunits = " (pc)"
+            yunits = " km/s"
+        elif cluster.units == "realkpc":
+            xunits = " (kpc)"
+            yunits = " km/s"
+
+        elif cluster.units == "galpy":
+            xunits = " (GALPY)"
+            yunits = " (GALPY)"
 
         else:
-            xunits=''
-            yunits=''
+            xunits = ""
+            yunits = ""
 
-        x,y=rprof,vcprof
-        nlplot(x,y,xlabel=r'$R %s$' % xunits,ylabel=r'$vc %s $' % yunits,title='Time = %f' % cluster.tphys,log=True,overplot=overplot,filename=filename)
-        nlplot([rvmax,rvmax],[np.amin(y),np.amax(y)],'--',overplot=True)
-        nlplot([np.amin(x),np.amax(x)],[vmax,vmax],'--',overplot=True)
+        x, y = rprof, vcprof
+        nlplot(
+            x,
+            y,
+            xlabel=r"$R %s$" % xunits,
+            ylabel=r"$vc %s $" % yunits,
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
+        nlplot([rvmax, rvmax], [np.amin(y), np.amax(y)], "--", overplot=True)
+        nlplot([np.amin(x), np.amax(x)], [vmax, vmax], "--", overplot=True)
 
-        if filename!=None:
+        if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster,units0,origin0,do_order=True,do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return rprof,vcprof,rvmax,vmax
-
+    return rprof, vcprof, rvmax, vmax

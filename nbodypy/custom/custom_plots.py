@@ -132,7 +132,7 @@ def aplot(data,nsnap=0,tsnap=None,prefix='',nmass=10,nrad=20,filename=None,**kwa
 
     return out 
 
-def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=15,projected=False,cumulative=False,obs_cut=None,log=False, filename=None,overplot=False,**kwargs):
+def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=15,projected=False,cumulative=False,log=False, filename=None,overplot=False,**kwargs):
 
     if not overplot:
         plt.figure()
@@ -155,7 +155,7 @@ def mplot(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=
         xunits=''
         yunits=''
 
-    x,y,n=m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=15,projected=False,cumulative=cumulative,obs_cut=None)
+    x,y,n=m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,kwmin=0,kwmax=15,projected=False,cumulative=cumulative)
 
     if log:
         out=plt.loglog(x,y,**kwargs)

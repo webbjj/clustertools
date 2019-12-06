@@ -17,6 +17,7 @@ from .main.profiles import *
 from .main.initialize import *
 
 from .observations.observations import *
+from .observations.mask import *
 
 from .util.constants import *
 from .util.coordinates import *

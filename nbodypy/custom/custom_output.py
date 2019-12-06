@@ -11,6 +11,7 @@ from ..util.coordinates import sky_coords
 from ..main.functions import *
 from ..main.profiles import *
 from ..main.operations import *
+from ..observations.observations import *
 
 
 from .custom_plots import dvplot, bplot, aplot
@@ -68,10 +69,10 @@ def p_prof_out(cluster,fileout,nrad=20,projected=False):
 
     fileout.write("\n")
 
-def alpha_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None):
+def alpha_prof_out(cluster,fileout,mmin=None,mmax=None,rmin=None,rmax=None,kwmin=None,kwmax=None,projected=False):
     #Write alpha_profile and dalpha for a given mass and radius range (alpha_prof.npy)
-    m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
-    lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
+    m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected)
+    lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected)
 
     fileout.write("%f %f %f %f %f " % (cluster.tphys,alpha,ealpha,yalpha,eyalpha))
     for i in range(0,len(m_mean)):
@@ -85,13 +86,30 @@ def alpha_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,kwmin=0
 
     fileout.write("%f %f %f %f\n" % (dalpha,edalpha,ydalpha,eydalpha))
 
-def dalpha_out(cluster,fileout,mmin=[0.1,0.3,0.5],mmax=[0.5,0.8,0.8],rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None):
+def obs_alpha_prof_out(cluster,fileout,mmin=None,mmax=None,rmin=None,rmax=None,kwmin=None,kwmax=None,projected=False, omask=None, **kwargs):
+    #Write alpha_profile and dalpha for a given mass and radius range (alpha_prof.npy)
+    m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha,mbincorr=obs_mass_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected, omask=omask)
+    lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=obs_alpha_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected, omask=omask,**kwargs)
+
+    fileout.write("%f %f %f %f %f " % (cluster.tphys,alpha,ealpha,yalpha,eyalpha))
+    for i in range(0,len(m_mean)):
+        fileout.write("%f " % m_mean[i])
+    for i in range(0,len(dm)):
+        fileout.write("%f " % dm[i])
+    for i in range(0,len(lrprofn)):
+        fileout.write("%f " % lrprofn[i])
+    for i in range(0,len(aprof)):
+        fileout.write("%f " % aprof[i])
+
+    fileout.write("%f %f %f %f\n" % (dalpha,edalpha,ydalpha,eydalpha))
+
+def dalpha_out(cluster,fileout,mmin=[0.1,0.3,0.5],mmax=[0.5,0.8,0.8],rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False):
     #Output alpha and dalpha for a range of values (dalpha_prof.npy)
 
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
 
     for i in range(0,len(mmin)):
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,mmin=mmin[i],mmax=mmax[i],nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(cluster,mmin=mmin[i],mmax=mmax[i],nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected)
         fileout.write("%f " % alpha)
 
     for i in range(0,len(mmin)):
@@ -114,12 +132,12 @@ def sigv_out(cluster,fileout,projected=False):
 
     fileout.write("%f\n" % (cluster.rm))
 
-def eta_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None):
+def eta_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False):
     #output eta profile (eta_prof.npy)
 
 
-    m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
-    lrprofn,eprof,deta,edeta,ydeta,eydeta=eta_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
+    m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin,mmax=mmax,nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected)
+    lrprofn,eprof,deta,edeta,ydeta,eydeta=eta_prof(cluster,mmin=mmin,mmax=mmax,nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected)
 
     fileout.write("%f %f %f %f %f " % (cluster.tphys,eta,eeta,yeta,eyeta))
     for i in range(0,len(m_mean)):
@@ -133,18 +151,18 @@ def eta_prof_out(cluster,fileout,mmin=0.3,mmax=0.8,rmin=None,rmax=None,kwmin=0,k
 
     fileout.write("%f %f %f %f\n" % (deta,edeta,ydeta,eydeta))
 
-def eta_out(cluster,fileout,mmin=[0.1,0.3,0.5],mmax=[0.5,0.8,0.8],rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None):
+def eta_out(cluster,fileout,mmin=[0.1,0.3,0.5],mmax=[0.5,0.8,0.8],rmin=None,rmax=None,kwmin=0,kwmax=1,projected=False):
     #Output eta and deta for a range of values (deta_prof.npy)
 
 
     fileout.write("%f %f " % (cluster.tphys,cluster.mtot))
 
     for i in range(0,len(mmin)):
-        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin[i],mmax=mmax[i],nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
+        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin[i],mmax=mmax[i],nmass=10,rmin=rmin,rmax=rmax,kwmin=kwmin,kwmax=kwmax,projected=projected)
         fileout.write("%f " % eta)
 
     for i in range(0,len(mmin)):
-        lrprofn,eprof,deta,edeta,ydeta,eydeta=eta_prof(cluster,mmin=mmin[i],mmax=mmax[i],nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
+        lrprofn,eprof,deta,edeta,ydeta,eydeta=eta_prof(cluster,mmin=mmin[i],mmax=mmax[i],nmass=10,kwmin=kwmin,kwmax=kwmax,projected=projected)
         fileout.write("%f %f %f\n " % deta,ydeta,cluster.rm)
 
 

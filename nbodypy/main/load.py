@@ -134,7 +134,7 @@ def load_cluster(ctype='snapshot',units='realpc',origin='cluster',ofile=None,orb
 
         units0,origin0=save_cluster(cluster)
 
-        cluster.to_cluster(do_key_params=False)
+        cluster.to_cluster()
         cluster.find_centre()
 
         return_cluster(cluster,units0,origin0)

@@ -799,7 +799,7 @@ def rtidal(cluster,pot=MWPotential2014 ,rtiterate=0, rtconverge=0.9, rgc=None,r0
 
     return rt
 
-def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,verbose=False,**kwargs):
+def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,plot=False,verbose=False,**kwargs):
     """
     NAME:
 
@@ -823,8 +823,6 @@ def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projec
        nrad - number of radial bins used to calculate density profile (Default: 20)
 
        projected - use projected values (Default: False)
-
-       obs_cut - apply an observational mask over the dataset (Default: False)
 
        plot - plot the density profile and mark the limiting radius of the cluster (Default: False)
 
@@ -856,7 +854,7 @@ def rlimiting(cluster,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projec
     #Calculate local density:
     rho_local=potential.evaluateDensities(pot,R,z,ro=r0,vo=v0)/bovy_conversion.dens_in_msolpc3(ro=r0,vo=v0)
 
-    rprof,pprof,nprof=rho_prof(cluster,nrad=nrad,projected=projected,obs_cut=obs_cut)
+    rprof,pprof,nprof=rho_prof(cluster,nrad=nrad,projected=projected)
 
     if pprof[-1] > rho_local:
         rl=rprof[-1]

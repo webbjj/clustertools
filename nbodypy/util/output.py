@@ -39,8 +39,6 @@ def extrct_out(cluster,fileout,projected=False):
     """    
     units0,origin0=save_cluster(cluster)
 
-    #print('DEBUG: ',cluster.units,cluster.origin,np.amax(cluster.r))
-
     
     if cluster.ntot==0:
         nb=0
@@ -93,8 +91,6 @@ def extrct_out(cluster,fileout,projected=False):
     fileout.write("\n")
 
     return_cluster(cluster,units0,origin0)
-
-    #print('DEBUG: ',cluster.units,cluster.origin,np.amax(cluster.r),rn[0],rn[-1])
 
 
 def snapout(cluster,filename,energies=False,observations=False):

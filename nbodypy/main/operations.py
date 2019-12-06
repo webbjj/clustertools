@@ -56,9 +56,10 @@ def return_cluster(cluster,units0,origin0,do_order=False,do_key_params=False):
 
        2018 - Written - Webb (UofT)
     """
-
-    cluster.to_units(units0)
-    cluster.to_origin(origin0,do_order=do_order,do_key_params=do_key_params)
+    if cluster.units!=units0:
+        cluster.to_units(units0)
+    if cluster.origin!=origin0:
+        cluster.to_origin(origin0,do_order=do_order,do_key_params=do_key_params)
 
 
 def rotate_to_stream(cluster):

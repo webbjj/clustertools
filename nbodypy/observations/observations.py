@@ -4,61 +4,7 @@ from ..main.operations import save_cluster,return_cluster
 from ..util.recipes import *
 from ..util.plots import *
 
-def obsrbinmaker(r,rm,obs_mask):
-    """
-    NAME:
-
-       obsrbinmaker (WORK IN PROGRESS)
-
-    PURPOSE:
-
-       Radially bin data based on a set of observations
-       --> Want to include spatial and magnitude/mass cuts 
-
-    INPUT:
-
-       r - stellar radii
-
-       rm - cluster half-mass radius
-
-       obs_mask - name of observational mask to be placed on cluster (Only current working mask is M30)
-
-    OUTPUT:
-
-       r_lower,r_mean,r_upper,r_hist
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-    """
-
-    if obs_mask=='M30':
-        rh=61.800000000000004
-        #In arcseconds:
-        r_lower=np.array([10.0,20.0,40.0,200.0,250.0,350.0,650.0])
-        r_upper=np.array([20.0,40.0,100.0,250.0,350.0,650.0,1000.0])
-
-        r_lower=rm*r_lower/rh
-        r_upper=rm*r_upper/rh
-
-        r_hist=np.zeros(len(r_lower))
-        r_sum=np.zeros(len(r_lower))
-
-        for j in range(0,len(r_lower)):
-            indx=(r>=r_lower[j]) * (r<=r_upper[j])
-            r_hist[j]=len(r[indx])
-            r_sum[j]=np.sum(r[indx])
-
-        r_mean=[]
-        for i in range(0,len(r_lower)):
-            if r_hist[i]>0:
-                r_mean=np.append(r_mean,r_sum[i]/r_hist[i])
-            else:
-                r_mean=np.append(r_mean,(r_lower[i]+r_upper[i])/2.0)
-
-    return r_lower,r_mean,r_upper,r_hist
-
-def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,omask=None,plot=False,**kwargs):
     """
     NAME:
 
@@ -81,7 +27,7 @@ def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,v
        indx - specific subset of stars
        mcorr - correction for masses
        projected - use projected values
-       obs_cut - trim data to match an observed dataset (WIP)
+       omask - place a mask over the dataset and (WIP)
        plot - plot the mass function
        **kwargs - key words for plotting
 
@@ -93,6 +39,19 @@ def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,v
 
        2018 - Written - Webb (UofT)
     """
+
+    if mcorr is None:
+        if omask is not None:
+            try:
+                mcorr=omask.mcorr
+            except:
+                mcorr=np.ones(cluster.ntot)
+
+            #if len(mcorr) > cluster.ntot:
+            #    mcorr=mcorr[omask.oindx]
+        else:
+            mcorr=np.ones(cluster.ntot)
+
 
     if projected:
         r=cluster.rpro
@@ -107,6 +66,8 @@ def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,v
     if vmax==None: vmax=np.max(v)
     if mmin==None: mmin=np.min(cluster.m)
     if mmax==None: mmax=np.max(cluster.m)
+    if kwmin==None: kwmin=np.min(cluster.kw)
+    if kwmax==None: kwmax=np.max(cluster.kw)
 
     if indx is None:
         indx=(cluster.id > -1)
@@ -121,17 +82,26 @@ def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,v
 
     if np.sum(indx) >= nmass:
 
-        m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)       
+        if omask is None:
+            m_lower,m_mean,m_upper,m_hist=nbinmaker(cluster.m[indx],nmass)  
+        elif omask.mbintype=='num':
+            m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_corr_function(cluster.m[rindx],nmass,mcorr[rindx]) 
+        else:
+            omask.load_mbins()
+            m_lower,m_mean,m_upper=omask.m_lower,omask.m_mean,omask.m_upper
+            nmass=len(m_mean) 
+            m_hist=np.zeros(nmass)
 
         m_corr_hist=np.zeros(len(m_hist))
         for i in range(0,len(m_hist)):
-          mindx=(cluster.m>=m_lower[i]) * (cluster.m<=m_upper[i]) * indx
+          mindx=(cluster.m>=m_lower[i]) * (cluster.m<m_upper[i]) * indx
           m_corr_hist[i]=np.sum(1.0/mcorr[mindx])
+          m_hist[i]=np.sum(mindx)
 
         mbincorr=m_hist/m_corr_hist
 
         lm_mean=np.log10(m_mean)
-        dm=m_hist/(m_upper-m_lower)
+        dm=m_corr_hist/(m_upper-m_lower)
         ldm=np.log10(dm)
 
         (alpha,yalpha),V=np.polyfit(lm_mean,ldm,1,cov=True)
@@ -151,12 +121,12 @@ def obs_mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,v
                 plt.savefig(filename)
 
 
-        return m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha,mbincorr
+        return m_mean,m_corr_hist,dm,alpha,ealpha,yalpha,eyalpha,mbincorr
     else:
         print('NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION')
         return np.zeros(nmass),np.zeros(nmass),np.zeros(nmass),-1000.,-1000.,-1000.,-1000.
 
-def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,omask=None,plot=False,**kwargs):
     """
     NAME:
 
@@ -190,7 +160,7 @@ def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad
 
        projected - use projected values and constraints (Default:False)
 
-       obs_cut - apply an observational mask to the dataset (Default: False)
+       omask - place a mask over the dataset and (WIP)
 
        plot - plot the density profile (Default: False)
 
@@ -220,7 +190,16 @@ def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad
     cluster.to_centre(do_order=True,do_key_params=True)
 
     if mcorr is None:
-        mcorr=np.ones(cluster.ntot)
+        if omask is not None:
+            try:
+                mcorr=omask.mcorr
+            except:
+                mcorr=np.ones(cluster.ntot)
+
+            #if len(mcorr) > cluster.ntot:
+            #    mcorr=mcorr[omask.oindx]
+        else:
+            mcorr=np.ones(cluster.ntot)
 
     lrprofn=[]
     aprof=[]
@@ -238,6 +217,8 @@ def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad
     if vmax==None: vmax=np.max(v)
     if mmin==None: mmin=np.min(cluster.m)
     if mmax==None: mmax=np.max(cluster.m)
+    if kwmin==None: kwmin=np.min(cluster.kw)
+    if kwmax==None: kwmax=np.max(cluster.kw)
 
     if indx is None:
         indx=(cluster.id > -1)
@@ -250,12 +231,25 @@ def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad
     if emin!=None:
         indx*=(cluster.etot <= emax)
 
-    r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    if omask is None:
+        r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)
+    elif omask.rbintype=='num':
+        r_lower,r_mean,r_upper,r_hist=nbinmaker(r[indx],nrad)      
+    else:
+        omask.load_rbins()
+        r_lower,r_mean,r_upper=omask.r_lower,omask.r_mean,omask.r_upper
 
     for i in range(0,len(r_mean)):
-        rindx=indx * (r >= r_lower[i]) * (r <= r_upper[i])
+        rindx=indx * (r >= r_lower[i]) * (r < r_upper[i])
 
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_corr_function(cluster.m[rindx],nmass,mcorr[rindx])
+        if omask is None:
+            m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_corr_function(cluster.m[rindx],nmass,mcorr[rindx])
+        elif omask.mbintype=='num':
+            m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_corr_function(cluster.m[rindx],nmass,mcorr[rindx])          
+        else:
+            omask.load_mbins()
+            m_lower,m_mean,m_upper=omask.m_lower,omask.m_mean,omask.m_upper             
+            m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=dx_corr_function(cluster.m[rindx],nmass,mcorr[rindx],x_lower=m_lower,x_mean=m_mean,x_upper=m_upper)
 
         if alpha > -100:
             if projected:
@@ -294,7 +288,7 @@ def obs_alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad
 
     return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
 
-def dx_corr_function(x, nx=10, xcorr=None, bintype='num'):
+def dx_corr_function(x, nx=10, xcorr=None, bintype='num', x_lower=None,x_mean=None,x_upper=None):
   """
   NAME:
 
@@ -313,6 +307,8 @@ def dx_corr_function(x, nx=10, xcorr=None, bintype='num'):
 
      bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
 
+     omask - place a mask over the dataset and (WIP)
+
   OUTPUT:
 
      x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
@@ -324,16 +320,23 @@ def dx_corr_function(x, nx=10, xcorr=None, bintype='num'):
 
   """
 
-  if bintype == 'num':
-    x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
+  if x_lower is None:
+    if bintype == 'num':
+      x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
+    else:
+      x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
   else:
-    x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
+      nx=len(x_lower)
 
   if xcorr is not None:
     x_hist = np.zeros(nx)
     for i in range(0, len(x_hist)):
-      indx = (x >= x_lower[i]) * (x <= x_upper[i])
+      indx = (x >= x_lower[i]) * (x < x_upper[i])
       x_hist[i] = np.sum(1.0 / xcorr[indx])
+  else:
+    for i in range(0, len(x_hist)):
+      indx = (x >= x_lower[i]) * (x < x_upper[i])
+      x_hist[i] = np.sum(indx)
 
   lx_mean = np.log10(x_mean)
   dx = x_hist / (x_upper - x_lower)

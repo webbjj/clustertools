@@ -154,6 +154,8 @@ class StarCluster(object):
 
             projected - calculate projected values as well as 3D values (Default: True)
 
+            centre_method - method convert to clustercentric coordinates in degrees (Default: None)
+
 
         OUTPUT:
 
@@ -185,6 +187,7 @@ class StarCluster(object):
         self.sfile=kwargs.get('sfile','')
         self.bfile=kwargs.get('bfile','')
         self.projected=kwargs.get('projected',True)
+        self.centre_method=kwargs.get('centre_method',None)
 
         #Initial arrays
         self.id=np.array([])
@@ -417,7 +420,7 @@ class StarCluster(object):
             if len(self.vy)==1:self.vy=np.ones(nmax)*self.vy
             if len(self.vz)==1:self.vz=np.ones(nmax)*self.vz 
 
-        if self.units=='radec':
+        if self.units=='radec' and self.origin=='sky':
             self.ra=copy(self.x)
             self.dec=copy(self.y)
             self.dist=copy(self.z)
@@ -427,6 +430,8 @@ class StarCluster(object):
 
         self.kw=np.append(self.kw,np.zeros(len(self.id)))
 
+        self.rv3d()
+
         if do_key_params:
             self.key_params(do_order=do_order)
         
@@ -434,11 +439,6 @@ class StarCluster(object):
             print('Added %i stars to instance' % (len(self.id)-self.ntot))
             self.ntot=len(self.id)
 
-
-        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-        self.rpro=np.sqrt(self.x**2.+self.y**2.)
-        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
 
     def add_se(self,kw,logl,logr,ep,ospin):
         """
@@ -587,7 +587,7 @@ class StarCluster(object):
         else:
             self.qvir=self.ektot/self.ptot
 
-    def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=None,radec=False, initialize=False,r0=8.,v0=220.):
+    def add_orbit(self,xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=None, initialize=False,r0=8.,v0=220.):
         """
         NAME:
 
@@ -851,7 +851,7 @@ class StarCluster(object):
             return 0.,0.,0.,0.,0.,0.
 
         if density: 
-           xc,yc,zc,vxc,vyc,vzc=self.find_centre_of_density(xstart=xstart,ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,rmin=rmin,nmax=nmax,r0=r0,v0=v0)
+           self.find_centre_of_density(xstart=xstart,ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,rmin=rmin,nmax=nmax,r0=r0,v0=v0)
         else:
 
             x=self.x[indx]-xstart
@@ -884,16 +884,15 @@ class StarCluster(object):
             vyc=np.sum(self.m[indx]*self.vy[indx])/np.sum(self.m[indx])
             vzc=np.sum(self.m[indx]*self.vz[indx])/np.sum(self.m[indx])
 
+            self.xc,self.yc,self.zc=xc,yc,zc
+            self.vxc,self.vyc,self.vzc=vxc,vyc,vzc
+
         if self.origin=='galaxy':
-            self.xgc,self.ygc,self.zgc=xc,yc,zc
-            self.vxgc,self.vygc,self.vzgc=vxc,vyc,vzc
+            self.xgc,self.ygc,self.zgc=self.xc,self.yc,self.zc
+            self.vxgc,self.vygc,self.vzgc=self.vxc,self.vyc,self.vzc
 
             self.xc,self.yc,self.zc=0.0,0.0,0.0
             self.vxc,self.vyc,self.vzc=0.0,0.0,0.0
-
-        elif self.origin=='cluster':
-            self.xc,self.yc,self.zc=xc,yc,zc
-            self.vxc,self.vyc,self.vzc=vxc,vyc,vzc
 
     def add_rotation(self,qrot):
         """
@@ -954,6 +953,18 @@ class StarCluster(object):
         self.JR,self.Jphi,self.Jz=JR,Jphi,Jz
         self.OR,self.Ophi,self.Oz=OR,Ophi,Oz
         self.TR,self.Tphi,self.Tz=TR,Tphi,Tz
+
+    def rv3d(self):
+        if self.units=='radec':
+            self.r=np.sqrt(self.x**2.+self.y**2.)
+            self.rpro=self.r
+            self.v=np.sqrt(self.vx**2.+self.vy**2.)
+            self.vpro=self.v
+        else:
+            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
+            self.rpro=np.sqrt(self.x**2.+self.y**2.)
+            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
+            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
 
 
     def key_params(self,do_order=False):
@@ -1049,7 +1060,7 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """    
-        if self.units=='galpy' or self.units--'radec': 
+        if self.units=='galpy' or self.units=='radec': 
           self.to_realkpc()
 
         if self.units=='nbody':
@@ -1100,10 +1111,7 @@ class StarCluster(object):
             
             self.units='realpc'
 
-        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-        self.rpro=np.sqrt(self.x**2.+self.y**2.)
-        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+        self.rv3d()
 
         if do_key_params:
             self.key_params()
@@ -1199,10 +1207,7 @@ class StarCluster(object):
             
             self.units='realkpc'
 
-        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-        self.rpro=np.sqrt(self.x**2.+self.y**2.)
-        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+        self.rv3d()
 
         if do_key_params:
             self.key_params()
@@ -1259,10 +1264,7 @@ class StarCluster(object):
             
             self.units='nbody'
 
-        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-        self.rpro=np.sqrt(self.x**2.+self.y**2.)
-        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+        self.rv3d()
 
         if do_key_params:
             self.key_params()
@@ -1301,14 +1303,6 @@ class StarCluster(object):
 
             self.units='radec'
             self.origin='sky'
-
-            self.r=np.sqrt((self.x*np.cos(np.radians(self.xgc)))**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt((self.x*np.cos(np.radians(self.xgc)))**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
-
-            if do_key_params:
-                self.key_params(do_order=do_order)
 
         except:
 
@@ -1360,13 +1354,10 @@ class StarCluster(object):
             self.units='radec'
             self.origin='sky'
 
-            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt(self.x**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+        self.rv3d()
 
-            if do_key_params:
-                self.key_params(do_order=do_order)
+        if do_key_params:
+            self.key_params(do_order=do_order)
 
     def from_radec(self,do_order=False,do_key_params=False):
         """
@@ -1417,13 +1408,10 @@ class StarCluster(object):
 
             self.to_origin(origin0)
 
-            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt(self.x**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+        self.rv3d()
 
-            if do_key_params:
-                self.key_params(do_order=do_order) 
+        if do_key_params:
+            self.key_params(do_order=do_order) 
 
     def to_galpy(self,do_key_params=False,r0=8.,v0=220.):
         """
@@ -1476,10 +1464,8 @@ class StarCluster(object):
             
             self.units='galpy'
 
-        self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-        self.rpro=np.sqrt(self.x**2.+self.y**2.)
-        self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-        self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+        self.rv3d()
+
 
         if do_key_params:
             self.key_params()
@@ -1523,7 +1509,7 @@ class StarCluster(object):
             self.to_origin(origin0,do_order=do_order,do_key_params=do_key_params)
 
 
-    def to_centre(self,do_order=False,do_key_params=False, orthographic=False, VandeVen=False):
+    def to_centre(self,do_order=False,do_key_params=False, centre_method=None):
         """
         NAME:
 
@@ -1546,10 +1532,11 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
 
         """ 
+
         if self.origin!='centre':
 
             if self.origin!='cluster':
-                self.to_cluster(do_key_params=False,orthographic=orthographic,VandeVen=VandeVen)
+                self.to_cluster(do_key_params=False,centre_method=centre_method)
 
 
             self.x-=self.xc
@@ -1561,16 +1548,13 @@ class StarCluster(object):
             
             self.origin='centre'
 
-            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt(self.x**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+            self.rv3d()
 
             if do_key_params:
                 self.key_params(do_order=do_order)
 
 
-    def to_cluster(self,do_order=False,do_key_params=False,orthographic=False, VandeVen=False):
+    def to_cluster(self,do_order=False,do_key_params=False,centre_method=None):
         """
         NAME:
 
@@ -1586,7 +1570,7 @@ class StarCluster(object):
 
            do_key_params - call key_params after shift (default: False)
 
-           orthographic - shift to orthographic coordinates
+           centre_method - method for shifting to clustercentric coordinates
 
         OUTPUT:
 
@@ -1597,18 +1581,18 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
         """
 
+        self.centre_method=centre_method
+
         if self.origin!='cluster':
             if self.units=='radec' and self.origin=='sky':
-              if orthographic:
-                  ra=np.radians(self.x)
-                  dec=np.radians(self.y)
+              ra=np.radians(self.x)
+              dec=np.radians(self.y)
+              pmra=np.radians(self.vx/(1000.0*3600.0))
+              pmdec=np.radians(self.vy/(1000.0*3600.0))
+              ra_gc=np.radians(self.xgc)
+              dec_gc=np.radians(self.ygc)
 
-                  pmra=np.radians(self.vx/(1000.0*3600.0))
-                  pmdec=np.radians(self.vy/(1000.0*3600.0))
-                  
-                  ra_gc=np.radians(self.vxgc)
-                  dec_gc=np.radians(self.vygc)
-
+              if self.centre_method=='orthographic':
                   self.x=np.cos(dec)*np.sin(ra-ra_gc)
                   self.y=np.sin(dec)*np.cos(dec_gc)-np.cos(dec)*np.sin(dec_gc)*np.cos(ra-ra_gc)
                   self.z=np.zeros(len(self.x))
@@ -1618,9 +1602,9 @@ class StarCluster(object):
                   self.vz=np.zeros(len(self.x))
                                   
               else:
-                  if VandeVen:
-                    self.x=(10800./np.pi)*np.cos(np.radians(self.y))*np.sin(np.radians(self.x)-np.radians(self.xgc))/60.0
-                    self.y=(10800./np.pi)*(np.sin(np.radians(self.y))*np.cos(np.radians(self.ygc))-np.cos(np.radians(self.y))*np.sin(np.radians(self.ygc)))*np.cos(np.radians(self.x)-np.radians(self.xgc))/60.0
+                  if self.centre_method=='VandeVen':
+                    self.x=(10800./np.pi)*np.cos(dec)*np.sin(ra-ra_gc)/60.0
+                    self.y=(10800./np.pi)*(np.sin(dec)*np.cos(dec_gc)-np.cos(dec)*np.sin(dec_gc)*np.cos(ra-ra_gc))/60.0
                   else:
                     self.x=(self.x-self.xgc)*np.cos(np.radians(self.xgc))
                     self.y=(self.y-self.ygc)
@@ -1646,10 +1630,7 @@ class StarCluster(object):
               self.vy-=self.vygc
               self.vz-=self.vzgc
 
-            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt(self.x**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
+            self.rv3d()
 
             self.origin='cluster'
             if do_key_params:
@@ -1694,11 +1675,8 @@ class StarCluster(object):
 
             self.origin='galaxy'
 
-            self.r=np.sqrt(self.x**2.+self.y**2.+self.z**2.)
-            self.rpro=np.sqrt(self.x**2.+self.y**2.)
-            self.v=np.sqrt(self.vx**2.+self.vy**2.+self.vz**2.)
-            self.vpro=np.sqrt(self.vx**2.+self.vy**2.)
-        
+            self.rv3d()
+
             if do_key_params:
                 self.key_params(do_order=do_order)
 
@@ -1726,7 +1704,7 @@ class StarCluster(object):
 
         """    
 
-        self.to_radec(self,do_order=do_order,do_key_params=do_key_params)
+        self.to_radec(do_key_params=do_key_params)
 
 
     def from_sky(self,do_order=False,do_key_params=False):
@@ -1753,7 +1731,7 @@ class StarCluster(object):
 
         """    
 
-        self.from_radec(self,do_order=do_order,do_key_params=do_key_params)
+        self.from_radec(do_order=do_order,do_key_params=do_key_params)
 
 
     def to_tail(self,plot=False):
@@ -1852,35 +1830,35 @@ class StarCluster(object):
     def rtidal(self,pot=MWPotential2014 ,rtiterate=0,rgc=None,r0=8.,v0=220.):
         self.rt=rtidal(self,pot=pot,rtiterate=rtiterate,rgc=rgc,r0=r0,v0=v0)
 
-    def rlimiting(self,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,obs_cut=False,plot=False,**kwargs):
-        self.rl=rlimiting(self,pot=pot,rgc=rgc,r0=r0,v0=v0,nrad=nrad,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+    def rlimiting(self,pot=MWPotential2014 ,rgc=None,r0=8.,v0=220.,nrad=20,projected=False,plot=False,**kwargs):
+        self.rl=rlimiting(self,pot=pot,rgc=rgc,r0=r0,v0=v0,nrad=nrad,projected=projected,plot=plot,**kwargs)
 
-    def mass_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=None,mcorr=None,projected=projected,obs_cut=obs_cut,plot=plot,title='GLOBAL',**kwargs)
+    def mass_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,plot=False,**kwargs):
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=None,mcorr=None,projected=projected,plot=plot,title='GLOBAL',**kwargs)
         self.alpha=alpha 
         self.rn=rlagrange(self,nlagrange=10,projected=projected)
-        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=self.rn[4],rmax=self.rn[6],vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=None,mcorr=None,projected=projected,obs_cut=obs_cut,plot=plot,title='AT R50',**kwargs)
+        m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha=mass_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=self.rn[4],rmax=self.rn[6],vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=None,mcorr=None,projected=projected,plot=plot,title='AT R50',**kwargs)
         self.alpha50=alpha 
 
-    def eta_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,obs_cut=None,plot=False,**kwargs):
-        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+    def eta_function(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,projected=False,plot=False,**kwargs):
+        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,projected=projected,plot=plot,**kwargs)
         self.eta=eta
 
 
-    def alpha_prof(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,obs_cut=None,plot=False,**kwargs):
-        lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,mcorr=mcorr,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+    def alpha_prof(self,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,mcorr=None,projected=False,plot=False,**kwargs):
+        lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha=alpha_prof(self,mmin=mmin,mmax=mmax,nmass=nmass,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,mcorr=mcorr,projected=projected,plot=plot,**kwargs)
         self.dalpha=dalpha
 
     def calc_actions(self,pot=MWPotential2014,r0=8.,v0=220.,**kwargs):
         JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz=calc_actions(self,pot=pot,r0=r0,v0=v0,**kwargs)
         self.add_actions(JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz)
 
-    def vcirc_prof(self,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
-        rprof,vcprof,rvmax,vmax=vcirc_prof(self,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,projected=projected,obs_cut=obs_cut,plot=plot,**kwargs)
+    def vcirc_prof(self,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,plot=False,**kwargs):
+        rprof,vcprof,rvmax,vmax=vcirc_prof(self,mmin=mmin,mmax=mmax,rmin=rmin,rmax=rmax,nrad=nrad,vmin=vmin,vmax=vmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,indx=indx,projected=projected,plot=plot,**kwargs)
         self.rvmax=rvmax
         self.vmax=vmax
 
-def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=[None],projected=False,reset_centre=False,reset_nbody_scale=False,reset_nbody_mass=False,reset_nbody_radii=False):
+def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=[None],projected=False,reset_centre=False,reset_nbody_scale=False,reset_nbody_mass=False,reset_nbody_radii=False,do_order=False,do_key_params=False):
     """
     NAME:
 
@@ -1966,6 +1944,7 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
         subcluster.vstar=cluster.vstar
         subcluster.tstar=cluster.tstar
         subcluster.projected=cluster.projected
+        subcluster.centre_method=cluster.centre_method
 
         if len(cluster.logl)>0:
             subcluster.add_se(cluster.kw[indx],cluster.logl[indx],cluster.logr[indx],cluster.ep[indx],cluster.ospin[indx])
@@ -2007,12 +1986,13 @@ def sub_cluster(cluster,rmin=None,rmax=None,mmin=None,mmax=None,vmin=None,vmax=N
 
     cluster.to_origin(origin0)
     cluster.to_units(units0)
-    cluster.key_params(do_order=True)
 
     if subcluster.ntot > 0:
         subcluster.to_origin(origin0)
         subcluster.to_units(units0)
-        subcluster.key_params(do_order=True)
+
+    if do_key_params:
+        subcluster.key_params(do_order=do_order)
 
     return subcluster
 

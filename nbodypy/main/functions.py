@@ -570,7 +570,7 @@ def rvirial(cluster,H=70.0,Om=0.3,overdens=200.,nrad=20,projected=False,plot=Fal
     return r_v
 
 
-def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,plot=False,**kwargs):
     """
     NAME:
 
@@ -591,7 +591,6 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
        kwmin/kwmax - specific stellar evolution type range
        indx - specific subset of stars
        projected - use projected values
-       obs_cut - trim data to match an observed dataset (WIP)
        plot - plot the mass function
        **kwargs - key words for plotting
 
@@ -659,7 +658,7 @@ def mass_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=
         print('NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION')
         return np.zeros(nmass),np.zeros(nmass),np.zeros(nmass),-1000.,-1000.,-1000.,-1000.
 
-def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,plot=False,**kwargs):
     """
     NAME:
 
@@ -688,8 +687,6 @@ def eta_function(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,vmin=N
        indx - specific subset of stars
 
        projected - use projected values
-
-       obs_cut - trim data to match an observed dataset (WIP)
 
        plot - plot the mass function
        

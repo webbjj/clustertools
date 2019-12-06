@@ -9,7 +9,7 @@ from .operations import *
 from ..util.plots import *
 from ..util.coordinates import rect_to_sphere
 
-def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,plot=False,**kwargs):
     """
     NAME:
 
@@ -38,8 +38,6 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,v
        indx - user defined boolean array from which to extract the subset
 
        projected - use projected values and constraints (Default:False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 
@@ -141,7 +139,7 @@ def rho_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,v
 
     return rprof,pprof,nprof
 
-def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,cumulative=False,obs_cut=None,plot=False,**kwargs):
+def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,cumulative=False,plot=False,**kwargs):
     """
     NAME:
 
@@ -172,8 +170,6 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
        projected - use projected values and constraints (Default:False)
 
        cumalitive - determine the cumulative mass profile instead (Default: False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 
@@ -265,7 +261,7 @@ def m_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
     return rprof,mprof,nprof
 
-def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,plot=False,**kwargs):
     """
     NAME:
 
@@ -296,8 +292,6 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
        indx - user defined boolean array from which to extract the subset
 
        projected - use projected values and constraints (Default:False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 
@@ -398,7 +392,7 @@ def alpha_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,
 
     return lrprofn,aprof,dalpha,edalpha,ydalpha,eydalpha
 
-def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,projected=False,obs_cut=None):
+def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,projected=False):
     """
     NAME:
 
@@ -427,8 +421,6 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,
        indx - user defined boolean array from which to extract the subset
 
        projected - use projected values and constraints (Default:False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 
@@ -519,7 +511,7 @@ def sigv_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,
      
     return lrprofn,sigvprof,betaprof
 
-def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None):
+def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False):
     """
     NAME:
 
@@ -548,8 +540,6 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
        indx - user defined boolean array from which to extract the subset
 
        projected - use projected values and constraints (Default:False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 
@@ -635,7 +625,7 @@ def v_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vma
 
     return lrprofn,vprof
 
-def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False,obs_cut=None):
+def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=1,indx=None,projected=False):
     """
     NAME:
 
@@ -666,8 +656,6 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
        indx - user defined boolean array from which to extract the subset
 
        projected - use projected values and constraints (Default:False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 
@@ -727,7 +715,7 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
     r_lower,r_mean,r_upper,r_hist=nbinmaker(cluster.r[indx],nrad)
 
     for i in range(0,len(r_mean)):
-        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin,mmax=mmax,nmass=nmass,rmin=r_lower[i],rmax=r_upper[i],vmin=vmin,vmax=vmax,kwmin=kwmin,kwmax=kwmax,projected=projected,obs_cut=obs_cut)
+        m_mean,sigvm,eta,eeta,yeta,eyeta=eta_function(cluster,mmin=mmin,mmax=mmax,nmass=nmass,rmin=r_lower[i],rmax=r_upper[i],vmin=vmin,vmax=vmax,kwmin=kwmin,kwmax=kwmax,projected=projected)
 
         if alpha > -100:
             if projected:
@@ -751,7 +739,7 @@ def eta_prof(cluster,mmin=None,mmax=None,nmass=10,rmin=None,rmax=None,nrad=20,vm
 
     return lrprofn,eprof,deta,edeta,ydeta,eydeta
 
-def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,obs_cut=None,plot=False,**kwargs):
+def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None,vmax=None,emin=None,emax=None,kwmin=0,kwmax=15,indx=None,projected=False,plot=False,**kwargs):
     """
     NAME:
 
@@ -780,8 +768,6 @@ def vcirc_prof(cluster,mmin=None,mmax=None,rmin=None,rmax=None,nrad=20,vmin=None
        indx - user defined boolean array from which to extract the subset
 
        projected - use projected values and constraints (Default:False)
-
-       obs_cut - apply an observational mask to the dataset (Default: False)
 
        plot - plot the density profile (Default: False)
 

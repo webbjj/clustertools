@@ -66,9 +66,6 @@ def obs_mass_function(
                 mcorr = omask.mcorr
             except:
                 mcorr = np.ones(cluster.ntot)
-
-            # if len(mcorr) > cluster.ntot:
-            #    mcorr=mcorr[omask.oindx]
         else:
             mcorr = np.ones(cluster.ntot)
 
@@ -120,12 +117,7 @@ def obs_mass_function(
 
         if omask is None:
             m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
-        elif omask.mbintype == "num":
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
-                cluster.m[rindx], nmass, mcorr[rindx]
-            )
         else:
-            omask.load_mbins()
             m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
             nmass = len(m_mean)
             m_hist = np.zeros(nmass)
@@ -263,9 +255,6 @@ def obs_alpha_prof(
                 mcorr = omask.mcorr
             except:
                 mcorr = np.ones(cluster.ntot)
-
-            # if len(mcorr) > cluster.ntot:
-            #    mcorr=mcorr[omask.oindx]
         else:
             mcorr = np.ones(cluster.ntot)
 
@@ -318,11 +307,11 @@ def obs_alpha_prof(
 
     if omask is None:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
-    elif omask.rbintype == "num":
-        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
     else:
-        omask.load_rbins()
-        r_lower, r_mean, r_upper = omask.r_lower, omask.r_mean, omask.r_upper
+        try:
+            r_lower, r_mean, r_upper = omask.r_lower, omask.r_mean, omask.r_upper
+        except:
+            r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
@@ -331,21 +320,22 @@ def obs_alpha_prof(
             m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
                 cluster.m[rindx], nmass, mcorr[rindx]
             )
-        elif omask.mbintype == "num":
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
-                cluster.m[rindx], nmass, mcorr[rindx]
-            )
         else:
-            omask.load_mbins()
-            m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
-                cluster.m[rindx],
-                nmass,
-                mcorr[rindx],
-                x_lower=m_lower,
-                x_mean=m_mean,
-                x_upper=m_upper,
-            )
+            try:
+                m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
+
+                m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
+                    cluster.m[rindx],
+                    nmass,
+                    mcorr[rindx],
+                    x_lower=m_lower,
+                    x_mean=m_mean,
+                    x_upper=m_upper,
+                )
+            except:
+                m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
+                    cluster.m[rindx], nmass, mcorr[rindx]
+                )                
 
         if alpha > -100:
             if projected:

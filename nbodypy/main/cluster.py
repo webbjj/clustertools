@@ -1757,7 +1757,8 @@ class StarCluster(object):
            2018 - Written - Webb (UofT)
         """
 
-        self.centre_method = centre_method
+        if centre_method is not None:
+            self.centre_method = centre_method
 
         if self.origin != "cluster":
             if self.units == "radec" and self.origin == "sky":

@@ -1125,16 +1125,16 @@ class StarCluster(object):
         if self.rorder is not None:
             msum = np.cumsum(self.m[self.rorder])
             indx = msum >= 0.5 * self.mtot
-            self.rm = self.r[self.rorder[indx]][0]
+            self.rm = self.r[self.rorder[indx][0]] #Moved [0] inside: TODO to all
             indx = msum >= 0.1 * self.mtot
-            self.r10 = self.r[self.rorder[indx]][0]
+            self.r10 = self.r[self.rorder[indx][0]]
 
         if self.projected and self.rproorder is not None:
             msum = np.cumsum(self.m[self.rproorder])
             indx = msum >= 0.5 * self.mtot
-            self.rmpro = self.r[self.rproorder[indx]][0]
+            self.rmpro = self.r[self.rproorder[indx][0]]
             indx = msum >= 0.1 * self.mtot
-            self.r10pro = self.r[self.rproorder[indx]][0]
+            self.r10pro = self.r[self.rproorder[indx][0]]
         else:
             self.rmpro = 0.0
             self.r10pro = 0.0
@@ -1142,16 +1142,16 @@ class StarCluster(object):
         if len(self.logl) > 0 and self.rorder is not None:
             lsum = np.cumsum(self.lum[self.rorder])
             indx = lsum >= 0.5 * self.ltot
-            self.rh = self.r[self.rorder[indx]][0]
+            self.rh = self.r[self.rorder[indx][0]]
             indx = lsum >= 0.1 * self.ltot
-            self.rh10 = self.r[self.rorder[indx]][0]
+            self.rh10 = self.r[self.rorder[indx][0]]
 
             if self.projected and self.rproorder is not None:
                 lsum = np.cumsum(self.lum[self.rproorder])
                 indx = lsum >= 0.5 * self.ltot
-                self.rhpro = self.rpro[self.rproorder[indx]][0]
+                self.rhpro = self.rpro[self.rproorder[indx][0]]
                 indx = lsum >= 0.1 * self.ltot
-                self.rh10pro = self.rpro[self.rproorder[indx]][0]
+                self.rh10pro = self.rpro[self.rproorder[indx][0]]
             else:
                 self.rhpro = 0.0
                 self.rh10pro = 0.0

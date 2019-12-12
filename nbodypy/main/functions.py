@@ -608,6 +608,174 @@ def rvirial(
     return r_v
 
 
+def new_mass_function(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    mcorr=None,
+    omask=None,
+    plot=False,
+    **kwargs
+):
+    """
+    NAME:
+
+       mass_function
+
+    PURPOSE:
+
+       Find mass function over a given mass range using nmass bins containing an equal number of stars
+
+    INPUT:
+
+       cluster - StarCluster instance
+       mmin/mmax - specific mass range
+       nmass - number of mass bins used to calculate alpha
+       rmin/rmax - specific radial range
+       vmin/vmax - specific velocity range
+       emin/emax - specific energy range
+       kwmin/kwmax - specific stellar evolution type range
+       indx - specific subset of stars
+       projected - use projected values
+       mcorr - correction for masses
+       omask - place a mask over the dataset to mimic observed data
+       plot - plot the mass function
+       **kwargs - key words for plotting
+
+    OUTPUT:
+
+       if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
+       if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+    """
+
+    if mcorr is None:
+        if omask is not None:
+            try:
+                mcorr = omask.mcorr
+                return_error=True
+            except:
+                mcorr = np.ones(cluster.ntot)
+                return_error=False
+        else:
+            mcorr = np.ones(cluster.ntot)
+            return_error=False
+    else:
+        return_error=True
+
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
+
+    if indx is None:
+        indx = cluster.id > -1
+
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m < mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
+
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    if np.sum(indx) >= nmass:
+        if omask is None:
+            m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
+            m_corr_hist=m_hist
+            mbinerror=np.ones(nmass)
+        else:
+            try:
+                m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
+                nmass = len(m_mean)
+                m_hist = np.zeros(nmass)
+            except:
+                m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
+
+            m_corr_hist = np.zeros(len(m_hist))
+            for i in range(0, len(m_hist)):
+                mindx = (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i]) * indx
+                m_hist[i]=np.sum(mindx)
+                m_corr_hist[i] = np.sum(1.0 / mcorr[mindx])
+
+            mbinerror = m_hist / m_corr_hist
+
+        lm_mean = np.log10(m_mean)
+        dm = m_corr_hist / (m_upper - m_lower)
+        ldm = np.log10(dm)
+
+        (alpha, yalpha), V = np.polyfit(lm_mean, ldm, 1, cov=True)
+        ealpha = np.sqrt(V[0][0])
+        eyalpha = np.sqrt(V[1][1])
+
+        if plot:
+            filename = kwargs.get("filename", None)
+            nplot(m_mean, np.log10(dm), xlabel="M", ylabel="LOG(dN/dM)", **kwargs)
+            mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
+            dmfit = 10.0 ** (alpha * np.log10(mfit) + yalpha)
+            nlplot(
+                mfit, np.log10(dmfit), overplot=True, label=(r"$\alpha$ = %f" % alpha)
+            )
+
+            plt.legend()
+
+            if filename != None:
+                plt.savefig(filename)
+
+        if return_error:
+            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror
+        else:
+            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
+    else:
+        print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
+        return (
+            np.zeros(nmass),
+            np.zeros(nmass),
+            np.zeros(nmass),
+            -1000.0,
+            -1000.0,
+            -1000.0,
+            -1000.0,
+        )
+
 def mass_function(
     cluster,
     mmin=None,
@@ -651,7 +819,8 @@ def mass_function(
 
     OUTPUT:
 
-       m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
+       if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
+       if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, binerror
 
     HISTORY:
 
@@ -846,7 +1015,7 @@ def eta_function(
         lsigvm = []
         for i in range(0, nmass):
 
-            mindx = indx * (cluster.m >= m_lower[i]) * (cluster.m <= m_upper[i])
+            mindx = indx * (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i])
             sigvm.append(np.std(v[mindx]))
             lsigvm.append(np.log10(sigvm[-1]))
 

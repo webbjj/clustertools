@@ -55,7 +55,7 @@ def nbinmaker(x, nbin=10, nsum=False):
     x_upper = x_upper[indx]
 
     for i in range(0, np.sum(indx)):
-        indx = (x >= x_lower[i]) * (x <= x_upper[i])
+        indx = (x >= x_lower[i]) * (x < x_upper[i])
         x_hist = np.append(x_hist, np.sum(indx))
         x_sum = np.append(x_sum, np.sum(x[indx]))
         x_mid = np.append(x_mid, x_sum[i] / x_hist[i])
@@ -113,7 +113,7 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
     x_mid = (x_upper + x_lower) / 2.0
 
     for j in range(0, nbin):
-        indx = (x >= x_lower[j]) * (x <= x_upper[j])
+        indx = (x >= x_lower[j]) * (x < x_upper[j])
         x_hist[j] = len(x[indx])
         x_sum[j] = np.sum(x[indx])
 
@@ -274,7 +274,7 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
     x_bin = []
 
     for i in range(0, nbin):
-        indx = (x >= x_lower[i]) * (x <= x_upper[i])
+        indx = (x >= x_lower[i]) * (x < x_upper[i])
 
         if True in indx:
             x_bin = np.append(x_bin, x_mid[i])
@@ -348,7 +348,7 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
     y_min = []
 
     for i in range(0, nbin):
-        indx = (x >= x_lower[i]) * (x <= x_upper[i])
+        indx = (x >= x_lower[i]) * (x < x_upper[i])
 
         if True in indx:
             x_bin = np.append(x_bin, x_mid[i])

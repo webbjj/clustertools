@@ -183,7 +183,7 @@ def tsep(ctype,**kwargs):
             if energies:
                 rtcluster=npy.sub_cluster(cluster,emax=0.0,indx=bindx)
             if calc_rtide:
-                rtide=npy.rtidal(cluster,pot,rtiterate,rgc)
+                rtide=npy.rtidal(cluster,pot,rtiterate,rgc=rgc)
                 rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rtide,indx=bindx)
             elif calc_rlim:
                 rlim=npy.rlimiting(cluster,pot,rgc,nrad=nrad,projected=projected,obs_cut=obscut)

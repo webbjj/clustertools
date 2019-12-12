@@ -8,6 +8,7 @@ from ..util.recipes import *
 from .operations import *
 from ..util.plots import *
 from ..util.coordinates import rect_to_sphere
+from .functions import new_mass_function
 
 
 def rho_prof(
@@ -123,7 +124,7 @@ def rho_prof(
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
         rprof = np.append(rprof, r_mean[i])
         if projected:
             vol = np.pi * (r_upper[i] ** 2 - r_lower[i] ** 2.0)
@@ -296,9 +297,9 @@ def m_prof(
 
     for i in range(0, len(r_mean)):
         if cumulative:
-            rindx = indx * (r <= r_upper[i])
+            rindx = indx * (r < r_upper[i])
         else:
-            rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
+            rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
         rprof.append(r_mean[i])
 
         mprof.append(np.sum(cluster.m[rindx]))
@@ -343,6 +344,214 @@ def m_prof(
 
     return rprof, mprof, nprof
 
+def new_alpha_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    mcorr=None,
+    omask=None,
+    plot=False,
+    **kwargs
+):
+    """
+    NAME:
+
+       alpha_prof
+
+    PURPOSE:
+
+       Measure the radial variation in the mass function
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       mmin/mmax - minimum and maximum stellar mass
+
+       nmass - number of mass bins to calculate slope of mass function
+
+       rmin/rmax - minimum and maximum stellar radii
+
+       nrad - number of radial bins
+
+       vmin/vmax - minimum and maximum stellar velocity
+
+       emin/emax - minimum and maximum stellar energy
+
+       kwmin/kwmax - minimum and maximum stellar type (kw)
+
+       indx - user defined boolean array from which to extract the subset
+
+       projected - use projected values and constraints (Default:False)
+
+       mcorr - correction for masses
+   
+       omask - place a mask over the dataset to mimic observed data
+
+       plot - plot the density profile (Default: False)
+
+    KWARGS:
+
+       Same as for ..util.plot.nplot
+
+    OUTPUT:
+
+        lrprofn - natural log of radius (normalized by half-mass radius)
+
+        aprof - slope of the mass function
+
+        dalpha - delta_alpha = d(alpha)/d(ln(r/rm) 
+
+        edalpha - error in dalpha
+
+        ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)
+
+        rbinerror - if mcorr is not None, output lowest corrected mass fraction at each radius
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
+
+    if mcorr is None:
+        if omask is not None:
+            try:
+                mcorr = omask.mcorr
+                return_error=True
+            except:
+                mcorr = np.ones(cluster.ntot)
+                return_error=False
+        else:
+            mcorr = np.ones(cluster.ntot)
+            return_error=False
+    else:
+        return_error=True
+
+    lrprofn = []
+    aprof = []
+
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
+
+    if indx is None:
+        indx = cluster.id > -1
+
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
+
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    if omask is None:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    else:
+        try:
+            r_lower, r_mean, r_upper = omask.r_lower, omask.r_mean, omask.r_upper
+        except:
+            r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    rbinerror=np.zeros(len(r_mean))
+
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+
+        if return_error:
+            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = new_mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,omask=omask,plot=False,**kwargs)
+            rbinerror[i]=np.amin(mbinerror)
+        else:
+            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = new_mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,omask=omask,plot=False,**kwargs)
+            rbinerror[i]=1.
+
+        if alpha > -100:
+            if projected:
+                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            else:
+                lrprofn.append(np.log(r_mean[i] / cluster.rm))
+
+            aprof.append(alpha)
+
+    if len(lrprofn) > 3:
+        (dalpha, ydalpha), V = np.polyfit(lrprofn, aprof, 1, cov=True)
+        edalpha = np.sqrt(V[0][0])
+        eydalpha = np.sqrt(V[1][1])
+    else:
+        dalpha = -100.0
+        ydalpha = 0.0
+        edalpha = 0.0
+        eydalpha = 0.0
+
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        nplot(
+            lrprofn,
+            aprof,
+            xlabel=r"$\ln(r/r_m)$",
+            ylabel=r"$\alpha$",
+            overplot=overplot,
+            **kwargs
+        )
+        rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
+        afit = dalpha * rfit + ydalpha
+        nlplot(rfit, afit, overplot=True, label=(r"d$\alpha$ = %f" % dalpha))
+        plt.legend()
+
+        if filename != None:
+            plt.savefig(filename)
+
+    cluster.dalpha = dalpha
+
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+
+    if return_error:
+        return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, rbinerror
+    else:
+        return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha
 
 def alpha_prof(
     cluster,
@@ -467,7 +676,7 @@ def alpha_prof(
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_function(
             cluster.m[rindx], nmass
@@ -638,7 +847,7 @@ def sigv_prof(
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if np.sum(rindx) > 3.0:
 
@@ -788,7 +997,7 @@ def v_prof(
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r <= r_upper[i])
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if np.sum(rindx) > 3.0:
 

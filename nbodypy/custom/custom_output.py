@@ -14,9 +14,6 @@ from ..main.operations import *
 from ..observations.observations import *
 
 
-from .custom_plots import dvplot, bplot, aplot
-
-
 def trelax_prof_out(cluster, fileout, multimass=True, projected=False):
     # Write relaxation time profile (trhprof.npy)
     trelax = relaxation_time(
@@ -129,6 +126,7 @@ def obs_alpha_prof_out(
     fileout,
     mmin=None,
     mmax=None,
+    nmass=10,
     rmin=None,
     rmax=None,
     kwmin=None,
@@ -142,7 +140,7 @@ def obs_alpha_prof_out(
         cluster,
         mmin=mmin,
         mmax=mmax,
-        nmass=10,
+        nmass=nmass,
         rmin=rmin,
         rmax=rmax,
         kwmin=kwmin,
@@ -150,17 +148,21 @@ def obs_alpha_prof_out(
         projected=projected,
         omask=omask,
     )
-    lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = obs_alpha_prof(
+
+    lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, mbincorr = obs_alpha_prof(
         cluster,
         mmin=mmin,
         mmax=mmax,
-        nmass=10,
+        nmass=nmass,
         kwmin=kwmin,
         kwmax=kwmax,
         projected=projected,
         omask=omask,
         **kwargs
     )
+
+    print('a_g \t R/rm \t',lrprofn,'\t da/dlogr \t rm')
+    print(alpha,aprof,dalpha,cluster.rm)
 
     fileout.write("%f %f %f %f %f " % (cluster.tphys, alpha, ealpha, yalpha, eyalpha))
     for i in range(0, len(m_mean)):
@@ -330,202 +332,3 @@ def v_out(cluster, fileout, coord=None, projected=False):
         fileout.write("%f " % v)
 
     fileout.write("%f\n" % (cluster.rm))
-
-
-def dvanimate(data, nsnap=0, tsnap=None, prefix="", nrad=20, save=True, **kwargs):
-    """
-    NAME:
-
-       dvanimate
-
-    PURPOSE:
-
-       Plot velocity dispersion profiles using dvplot over a range of timesteps
-       To Do:
-        - use data from StarCluster as opposed to a written file
-
-    INPUT:
-
-       data - array from custom_output.sigv_out (t,m,rm,r[0:nrad],sig[0:nrad],beta[0:nrad])
-
-       nsnap - starting snapshot (default:0)
-
-       tsnap - starting time step (default: 0 Myr, overwrites nsnap)
-
-       prefix - string noting the begining of directory to save images
-
-       nrad - number of radial bins in profile
-
-       save - option to save images or simply just show them (default: True)
-
-    KWARGS:
-
-       kwargs - for passing to plots.dvplot
-
-    OUTPUT:
-
-       None
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-    t = data[:, 0]
-    m = data[:, 1]
-    rm = data[:, -1]
-
-    if not os.path.exists("./%sdvmovie/" % prefix):
-        os.makedirs("./%sdvmovie/" % prefix)
-
-    if tsnap != None:
-        nsnap = int(np.argwhere(t >= tsnap)[0])
-
-    for i in range(nsnap, len(t) + 1):
-
-        if save:
-            filename = "./%sdvmovie/%sdvplot%s.png" % (prefix, prefix, str(i))
-        else:
-            filename = None
-
-        npy.dvplot(
-            data,
-            nsnap,
-            tsnap,
-            prefix="",
-            nrad=nrad,
-            nsnap=i,
-            filename=filename,
-            **kwargs
-        )
-
-    return 0
-
-
-def banimate(data, nsnap=0, tsnap=None, prefix="", nrad=20, save=True, **kwargs):
-    """
-    NAME:
-
-       banimate
-
-    PURPOSE:
-
-       Plot anisotropy profiles using bplot over a range of timesteps
-       To Do:
-        - use data from StarCluster as opposed to a written file
-
-    INPUT:
-
-       data - array from custom_output.sigv_out (t,m,rm,r[0:nrad],sig[0:nrad],beta[0:nrad])
-
-       nsnap - starting snapshot (default:0)
-
-       tsnap - starting time step (default: 0 Myr, overwrites nsnap)
-
-       prefix - string noting the begining of directory to save images
-
-       nrad - number of radial bins in profile
-
-       save - option to save images or simply just show them (default: True)
-
-    KWARGS:
-
-       kwargs - for passing to plots.bplot
-
-    OUTPUT:
-
-       None
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-    t = data[:, 0]
-    m = data[:, 1]
-    rm = data[:, -1]
-
-    if not os.path.exists("./%sbmovie/" % prefix):
-        os.makedirs("./%sbmovie/" % prefix)
-
-    if tsnap != None:
-        nsnap = int(np.argwhere(t >= tsnap)[0])
-
-    for i in range(nsnap, len(t) + 1):
-
-        if save:
-            filename = "./%sbmovie/%sbplot%s.png" % (prefix, prefix, str(i))
-        else:
-            filename = None
-
-        npy.bplot(data, i, tsnap, prefix="", nrad=nrad, filename=filename, **kwargs)
-
-    return 0
-
-
-def aanimate(
-    data, nsnap=0, tsnap=None, prefix="", nmass=10, nrad=20, save=True, **kwargs
-):
-    """
-    NAME:
-
-       aanimate
-
-    PURPOSE:
-
-       Plot alpha profiles using aplot over a range of timesteps
-       To Do:
-        - use data from StarCluster as opposed to a written file
-
-    INPUT:
-
-       data - array from custom_output.alpha_prof_out (t,alpha,ealpha,yalpha,eyalpha,mmean,dm,lr,ar,dalpha,edalpha,ydalpha,eydalpha,)
-
-       nsnap - starting snapshot (default:0)
-
-       tsnap - starting time step (default: 0 Myr, overwrites nsnap)
-
-       prefix - string noting the begining of directory to save images
-
-       nrad - number of radial bins in profile
-
-       save - option to save images or simply just show them (default: True)
-
-    KWARGS:
-
-       kwargs - for passing to plots.aplot
-
-    OUTPUT:
-
-       None
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-    t = data[:, 0]
-
-    if not os.path.exists("./%samovie/" % prefix):
-        os.makedirs("./%samovie/" % prefix)
-
-    if tsnap != None:
-        nsnap = int(np.argwhere(t >= tsnap)[0])
-
-    for i in range(nsnap, len(t) + 1):
-
-        if save:
-            filename = "./%samovie/%saplot%s.png" % (prefix, prefix, str(i))
-        else:
-            filename = None
-
-        aplot(
-            data,
-            i,
-            tsnap,
-            prefix="",
-            nmass=nmass,
-            nrad=nrad,
-            filename=filename,
-            **kwargs
-        )
-        plt.close()
-
-    return 0

@@ -1,5 +1,5 @@
 from ..main.cluster import sub_cluster
-
+from ..util.recipes import *
 import numpy as np
 from scipy.spatial import ConvexHull
 
@@ -30,10 +30,6 @@ class ObservationalMask(object):
         # Se mass correction for entire dataset
         self.mcorr = mcorr
 
-    def set_cluster(self, cluster):
-        # Set base cluster to use values of rm for
-        self.cluster = cluster
-
     def set_rlims(self,rmin,rmax):
         self.rmin=rmin
         self.rmax=rmax
@@ -43,20 +39,48 @@ class ObservationalMask(object):
         self.r_mean=r_mean
         self.r_upper=r_upper
 
+    def calc_rbins(self,cluster,nsplit,nrbin,rmin,rmax,indx=None,projected=True):
+
+        if indx is None:
+            indx=np.ones(cluster.ntot,bool)
+
+        if projected:
+            r=cluster.rpro
+        else:
+            r=cluster.r
+
+        if nsplit==0:
+            if not isinstance(rmin,float): rmin=rmin[0]
+            if not isinstance(rmax,float): rmax=rmax[0]
+            if not isinstance(nrbin,int): rmax=int(nrbin[0])
+
+            rindx=(r>=rmin) * (r<=rmax) * indx
+
+            self.r_lower,self.r_mean,self.r_upper,r_hist=npy.nbinmaker(r[rindx],nrbin)
+        else:
+            self.r_lower=np.array([])
+            self.r_mean=np.array([])
+            self.r_upper=np.array([])
+
+            for i in range(0,nsplit):
+                rindx=(r>=rmin[i]) * (r<=rmax[i])
+                r_lower,r_mean,r_upper,r_hist=nbinmaker(r[rindx],nrbin[i])
+                self.r_lower=np.append(self.r_lower,r_lower[:])
+                self.r_mean=np.append(self.r_mean,r_mean[:])
+                self.r_upper=np.append(self.r_upper,r_upper[:])
+
     def set_mbins(self,m_lower,m_mean,m_upper):
         self.m_lower=m_lower
         self.m_mean=m_mean
         self.m_upper=m_upper
 
-    def apply_mask(self):
-        # Mask simulated data to reflect fields of view of observational
+    def calc_mbins(self,cluster,mmin=0.1,mmax=0.8):
+        mindx=(cluster.m >= mmin) * (cluster.m<=mmax)
+        self.m_lower,self.m_mean,self.m_upper=nbinmaker(cluster.m[mindx])
 
-        self.apply_orbit()
-        self.apply_key_params()
-
-    def apply_orbit(self):
+    def apply_orbit(self,cluster):
         # Apply orbit to self.cluster based on mask
-        self.cluster.add_orbit(
+        cluster.add_orbit(
             self.ra,
             self.dec,
             self.dist,
@@ -65,10 +89,10 @@ class ObservationalMask(object):
             self.vlos,
         )
 
-    def apply_key_params(self):
+    def apply_key_params(self,cluster):
         # Force key parameters to be specific values - useful if only part of the data is provided
-        self.cluster.rm = self.rm
-        self.cluster.rt = self.rt
+        cluster.rm = self.rm
+        cluster.rt = self.rt
 
     def apply_rnorm(self):
         self.rnorm=True

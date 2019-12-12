@@ -67,6 +67,10 @@ def load_cluster(
 
         projected - calculate projected values as well as 3D values (Default: True)
 
+        do_key_params - calculate key parameters
+
+        do_rorder - sort stars in order from closes to the origin to the farthest
+
 
     OUTPUT:
 
@@ -656,10 +660,12 @@ def get_gyrfalcon(
         else:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        cluster.to_cluster()
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=True)
-        cluster.to_galaxy()
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+            cluster.to_cluster()
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_galaxy()
 
     return cluster
 
@@ -1017,10 +1023,12 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
         if ofile != None:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        # Estimate centre
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=True)
-        cluster.to_cluster()
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+            # Estimate centre
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_cluster()
 
     else:
         cluster = StarCluster(0, tphys)
@@ -1253,10 +1261,12 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
             id1, id2, kw1, kw2, kcm, ecc, pb, semi, m1, m2, logl1, logl2, logr1, logr2
         )
 
-    # Estimate centre of distribution
-    cluster.find_centre()
-    cluster.to_centre(do_key_params=True, do_order=True)
-    cluster.to_cluster()
+    if kwargs.get("do_key_params", True):
+        do_order=kwargs.get("do_key_params", True)
+        # Estimate centre of distribution
+        cluster.find_centre()
+        cluster.to_centre(do_key_params=True, do_order=do_order)
+        cluster.to_cluster()
 
     cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc)
 
@@ -1396,10 +1406,13 @@ def get_nbody6_out34(out34, advance=False, **kwargs):
     cluster.add_se(kw, logl, logr, np.zeros(nbnd), np.zeros(nbnd))
     cluster.add_energies(kin, pot, etot)
 
-    # Estimate centre of distribution using median function
-    cluster.find_centre()
-    cluster.to_centre(do_key_params=True, do_order=True)
-    cluster.to_cluster()
+    if kwargs.get("do_key_params", True):
+        do_order=kwargs.get("do_key_params", True)
+
+        # Estimate centre of distribution using median function
+        cluster.find_centre()
+        cluster.to_centre(do_key_params=True, do_order=do_order)
+        cluster.to_cluster()
 
     cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc)
 
@@ -1580,16 +1593,21 @@ def get_snapshot(
         else:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        cluster.to_cluster()
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=True)
-        cluster.to_galaxy()
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+
+            cluster.to_cluster()
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_galaxy()
 
     elif origin == "cluster":
-        # Estimate centre of distribution
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=True)
-        cluster.to_cluster()
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+            # Estimate centre of distribution
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_cluster()
 
         if ofile != None:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
@@ -1775,16 +1793,20 @@ def get_amuse_particles(
         else:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        cluster.to_cluster()
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=True)
-        cluster.to_galaxy()
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+            cluster.to_cluster()
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_galaxy()
 
     elif npyorigin == "cluster":
-        # Estimate centre of distribution
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=True)
-        cluster.to_cluster()
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+            # Estimate centre of distribution
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_cluster()
 
         if ofile != None:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)

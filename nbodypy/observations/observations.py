@@ -20,7 +20,7 @@ def obs_mass_function(
     kwmax=1,
     indx=None,
     mcorr=None,
-    projected=False,
+    projected=True,
     omask=None,
     plot=False,
     **kwargs
@@ -85,13 +85,13 @@ def obs_mass_function(
     if vmax == None:
         vmax = np.max(v)
     if mmin == None:
-        mmin = np.min(cluster.m)
+        mmin = np.amin(cluster.m)
     if mmax == None:
-        mmax = np.max(cluster.m)
+        mmax = np.amax(cluster.m)
     if kwmin == None:
-        kwmin = np.min(cluster.kw)
+        kwmin = np.amin(cluster.kw)
     if kwmax == None:
-        kwmax = np.max(cluster.kw)
+        kwmax = np.amax(cluster.kw)
 
     if indx is None:
         indx = cluster.id > -1
@@ -118,9 +118,12 @@ def obs_mass_function(
         if omask is None:
             m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
         else:
-            m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
-            nmass = len(m_mean)
-            m_hist = np.zeros(nmass)
+            try:
+                m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
+                nmass = len(m_mean)
+                m_hist = np.zeros(nmass)
+            except:
+                m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
 
         m_corr_hist = np.zeros(len(m_hist))
         for i in range(0, len(m_hist)):
@@ -182,7 +185,7 @@ def obs_alpha_prof(
     kwmax=1,
     indx=None,
     mcorr=None,
-    projected=False,
+    projected=True,
     omask=None,
     plot=False,
     **kwargs
@@ -252,14 +255,14 @@ def obs_alpha_prof(
     if mcorr is None:
         if omask is not None:
             try:
-                mcorr = omask.mcorr
+                mcorr = np.array(omask.mcorr)
             except:
                 mcorr = np.ones(cluster.ntot)
         else:
             mcorr = np.ones(cluster.ntot)
 
-    lrprofn = []
-    aprof = []
+    lrprofn = np.array([])
+    aprof = np.array([])
 
     if projected:
         r = cluster.rpro
@@ -313,40 +316,49 @@ def obs_alpha_prof(
         except:
             r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    mbincorr=np.zeros(len(r_mean))
+
+
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if omask is None:
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
+            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbincorr[i] = dx_corr_function(
                 cluster.m[rindx], nmass, mcorr[rindx]
             )
         else:
             try:
                 m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
 
-                m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
+                m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbincorr[i]= dx_corr_function(
                     cluster.m[rindx],
                     nmass,
                     mcorr[rindx],
                     x_lower=m_lower,
                     x_mean=m_mean,
-                    x_upper=m_upper,
+                    x_upper=m_upper
                 )
             except:
-                m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = dx_corr_function(
-                    cluster.m[rindx], nmass, mcorr[rindx]
-                )                
+                m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbincorr[i]= dx_corr_function(
+                    cluster.m[rindx],
+                    nmass,
+                    mcorr[rindx]
+                )
 
+        if projected:
+            lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rmpro))
+        else:
+            lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rm))
         if alpha > -100:
-            if projected:
-                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
-            else:
-                lrprofn.append(np.log(r_mean[i] / cluster.rm))
+            aprof=np.append(aprof,alpha)
+        else:
+            aprof=np.append(aprof,-100.)
 
-            aprof.append(alpha)
 
-    if len(lrprofn) > 3:
-        (dalpha, ydalpha), V = np.polyfit(lrprofn, aprof, 1, cov=True)
+    aindx=(aprof>-100.)
+
+    if np.sum(aindx) > 3:
+        (dalpha, ydalpha), V = np.polyfit(lrprofn[aindx], aprof[aindx], 1, cov=True)
         edalpha = np.sqrt(V[0][0])
         eydalpha = np.sqrt(V[1][1])
     else:
@@ -379,11 +391,17 @@ def obs_alpha_prof(
 
     return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
-    return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha
+    return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, mbincorr
 
 
 def dx_corr_function(
-    x, nx=10, xcorr=None, bintype="num", x_lower=None, x_mean=None, x_upper=None
+    x, 
+    nx=10, 
+    xcorr=None, 
+    bintype="num", 
+    x_lower=None, 
+    x_mean=None, 
+    x_upper=None
 ):
     """
   NAME:
@@ -425,21 +443,24 @@ def dx_corr_function(
         nx = len(x_lower)
 
     if xcorr is not None:
+        x_hist_corr = np.zeros(nx)
         x_hist = np.zeros(nx)
-        for i in range(0, len(x_hist)):
+
+        for i in range(0, len(x_hist_corr)):
             indx = (x >= x_lower[i]) * (x < x_upper[i])
-            x_hist[i] = np.sum(1.0 / xcorr[indx])
+            x_hist_corr[i] = np.sum(1.0 / xcorr[indx])
+            x_hist[i]=np.sum(indx)
     else:
-        for i in range(0, len(x_hist)):
-            indx = (x >= x_lower[i]) * (x < x_upper[i])
-            x_hist[i] = np.sum(indx)
+        x_hist_corr=x_hist
+
+    xbincorr=np.amin(x_hist/x_hist_corr)
 
     lx_mean = np.log10(x_mean)
-    dx = x_hist / (x_upper - x_lower)
+    dx = x_hist_corr / (x_upper - x_lower)
     ldx = np.log10(dx)
 
     (alpha, yalpha), V = np.polyfit(lx_mean, ldx, 1, cov=True)
     ealpha = np.sqrt(V[0][0])
     eyalpha = np.sqrt(V[1][1])
 
-    return x_mean, x_hist, dx, alpha, ealpha, yalpha, eyalpha
+    return x_mean, x_hist, dx, alpha, ealpha, yalpha, eyalpha, xbincorr

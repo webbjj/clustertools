@@ -874,7 +874,7 @@ def rtidal(
     v0=220.0,
     verbose=False,
 ):
-    """
+    """Calculate rtidal.
     NAME:
 
        rtidal

@@ -2,8 +2,9 @@ import numpy as np
 from galpy.util import bovy_conversion
 import os
 
-# import limepy
-from ..community.limepy import *
+import limepy
+from limepy import limepy,spes,sample
+#from ..community.limepy import *
 
 from .cluster import StarCluster
 from .profiles import m_prof

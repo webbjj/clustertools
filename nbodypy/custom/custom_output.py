@@ -163,6 +163,7 @@ def obs_alpha_prof_out(
 
     print('a_g \t R/rm \t',lrprofn,'\t da/dlogr \t rm')
     print(alpha,aprof,dalpha,cluster.rm)
+    print(mbincorr < 0.5)
 
     fileout.write("%f %f %f %f %f " % (cluster.tphys, alpha, ealpha, yalpha, eyalpha))
     for i in range(0, len(m_mean)):

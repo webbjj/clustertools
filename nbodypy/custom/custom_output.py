@@ -131,6 +131,7 @@ def obs_alpha_prof_out(
     rmax=None,
     kwmin=None,
     kwmax=None,
+    indx=None,
     projected=False,
     omask=None,
     **kwargs
@@ -145,6 +146,7 @@ def obs_alpha_prof_out(
         rmax=rmax,
         kwmin=kwmin,
         kwmax=kwmax,
+        indx=indx,
         projected=projected,
         omask=omask,
     )
@@ -156,6 +158,7 @@ def obs_alpha_prof_out(
         nmass=nmass,
         kwmin=kwmin,
         kwmax=kwmax,
+        indx=indx,
         projected=projected,
         omask=omask,
         **kwargs

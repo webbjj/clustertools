@@ -60,6 +60,7 @@ def initialize_orbit(cluster, from_centre=False, r0=8.0, v0=220.0):
             ro=r0,
             vo=v0,
             solarmotion=[-11.1, 24.0, 7.25],
+            use_physical=False,
         )
     else:
         units0, origin0 = save_cluster(cluster)
@@ -83,7 +84,7 @@ def initialize_orbit(cluster, from_centre=False, r0=8.0, v0=220.0):
         R, phi, z = bovy_coords.rect_to_cyl(x, y, z)
         vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
         o = Orbit(
-            [R, vR, vT, z, vz, phi], ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25]
+            [R, vR, vT, z, vz, phi], ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False
         )
 
     cluster.orbit = o
@@ -132,7 +133,7 @@ def initialize_orbits(cluster, r0=8.0, v0=220.0):
     vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
 
     vxvv = np.column_stack([R, vR, vT, z, vz, phi])
-    os = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25])
+    os = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
 
     return_cluster(cluster, units0, origin0)
 
@@ -331,7 +332,7 @@ def orbit_interpolate(
         vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
 
         vxvv = np.column_stack([R, vR, vT, z, vz, phi])
-        otail = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25])
+        otail = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
 
         cluster.to_realkpc()
 
@@ -412,6 +413,7 @@ def orbital_path(
         ro=r0,
         vo=v0,
         solarmotion=[-11.1, 24.0, 7.25],
+        use_physical=False,
     )
     ts = np.linspace(
         -1.0 * dt / bovy_conversion.time_in_Gyr(ro=r0, vo=v0),
@@ -1224,13 +1226,13 @@ def get_cluster_orbit(gcname="list", names=False, r0=8.0, v0=220.0):
             pmdec[indx][0],
             vlos[indx][0],
         ]
-        o = Orbit(vxvv, ro=r0, vo=v0, radec=True, solarmotion=[-11.1, 24.0, 7.25])
+        o = Orbit(vxvv, ro=r0, vo=v0, radec=True, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
         oname = name[indx]
     else:
         vxvv = np.column_stack(
             [ra[indx], dec[indx], dist[indx], pmra[indx], pmdec[indx], vlos[indx]]
         )
-        o = Orbit(vxvv, radec=True, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25])
+        o = Orbit(vxvv, radec=True, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
         oname = name[indx]
 
     if names:

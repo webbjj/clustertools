@@ -97,7 +97,7 @@ def load_cluster(
         )
     elif ctype == "nbody6":
         # With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
-        if os.path.isfile("%sOUT9"):
+        if os.path.isfile("%sOUT9" % wdir):
             out9 = open("%sOUT9" % wdir, "r")
         else:
             out9 = None

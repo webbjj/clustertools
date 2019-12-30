@@ -12,6 +12,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
    
@@ -35,49 +36,8 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-nbodypy.community.limepy.limepy.limepy">
-<span id="nbodypy-community-limepy-limepy-limepy-module"></span><h2>nbodypy.community.limepy.limepy.limepy module<a class="headerlink" href="#module-nbodypy.community.limepy.limepy.limepy" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="nbodypy.community.limepy.limepy.limepy.limepy">
-<em class="property">class </em><code class="sig-prename descclassname">nbodypy.community.limepy.limepy.limepy.</code><code class="sig-name descname">limepy</code><span class="sig-paren">(</span><em class="sig-param">phi0</em>, <em class="sig-param">g</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.limepy.limepy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.limepy.limepy.df">
-<code class="sig-name descname">df</code><span class="sig-paren">(</span><em class="sig-param">*arg</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.limepy.limepy.df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the value of the normalised DF at a given position in phase
-space, can only be called after solving Poisson’s equation</p>
-<dl class="simple">
-<dt>Arguments can be:</dt><dd><ul class="simple">
-<li><p>r, v                   (isotropic single-mass models)</p></li>
-<li><p>r, v, j                (isotropic multi-mass models)</p></li>
-<li><p>r, v, theta, j         (anisotropic models)</p></li>
-<li><p>x, y, z, vx, vy, vz, j (all models)</p></li>
-</ul>
-</dd>
-</dl>
-<p>Here j specifies the mass bin, j=0 for single mass
-Works with scalar and array input</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.limepy.limepy.get_Paz">
-<code class="sig-name descname">get_Paz</code><span class="sig-paren">(</span><em class="sig-param">az_data</em>, <em class="sig-param">R_data</em>, <em class="sig-param">jns</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.limepy.limepy.get_Paz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes probability of line of sight acceleration at projected R : P(az|R)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.limepy.limepy.interp_phi">
-<code class="sig-name descname">interp_phi</code><span class="sig-paren">(</span><em class="sig-param">r</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.limepy.limepy.interp_phi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns interpolated potential at r, works on scalar and arrays</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.limepy.limepy.legendre_Ul">
-<code class="sig-name descname">legendre_Ul</code><span class="sig-paren">(</span><em class="sig-param">l</em>, <em class="sig-param">theta</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.limepy.limepy.legendre_Ul" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+<div class="section" id="nbodypy-community-limepy-limepy-limepy-module">
+<h2>nbodypy.community.limepy.limepy.limepy module<a class="headerlink" href="#nbodypy-community-limepy-limepy-limepy-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-nbodypy.community.limepy.limepy.sample">
 <span id="nbodypy-community-limepy-limepy-sample-module"></span><h2>nbodypy.community.limepy.limepy.sample module<a class="headerlink" href="#module-nbodypy.community.limepy.limepy.sample" title="Permalink to this headline">¶</a></h2>
@@ -88,47 +48,11 @@ Works with scalar and array input</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-nbodypy.community.limepy.limepy.spes">
-<span id="nbodypy-community-limepy-limepy-spes-module"></span><h2>nbodypy.community.limepy.limepy.spes module<a class="headerlink" href="#module-nbodypy.community.limepy.limepy.spes" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="nbodypy.community.limepy.limepy.spes.spes">
-<em class="property">class </em><code class="sig-prename descclassname">nbodypy.community.limepy.limepy.spes.</code><code class="sig-name descname">spes</code><span class="sig-paren">(</span><em class="sig-param">phi0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.spes.spes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.spes.spes.df">
-<code class="sig-name descname">df</code><span class="sig-paren">(</span><em class="sig-param">*arg</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.spes.spes.df" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the value of the normalised DF at a given position in phase
-space, can only be called after solving Poisson’s equation</p>
-<dl class="simple">
-<dt>Arguments can be:</dt><dd><ul class="simple">
-<li><p>r, v                   (isotropic single-mass models)</p></li>
-<li><p>r, v, j                (isotropic multi-mass models)</p></li>
-<li><p>r, v, theta, j         (anisotropic models)</p></li>
-<li><p>x, y, z, vx, vy, vz, j (all models)</p></li>
-</ul>
-</dd>
-</dl>
-<p>Here j specifies the mass bin, j=0 for single mass
-Works with scalar and array input</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.spes.spes.get_Paz">
-<code class="sig-name descname">get_Paz</code><span class="sig-paren">(</span><em class="sig-param">az_data</em>, <em class="sig-param">R_data</em>, <em class="sig-param">jns</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.spes.spes.get_Paz" title="Permalink to this definition">¶</a></dt>
-<dd><p>Computes probability of line of sight acceleration at projected R : P(az|R)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="nbodypy.community.limepy.limepy.spes.spes.interp_phi">
-<code class="sig-name descname">interp_phi</code><span class="sig-paren">(</span><em class="sig-param">r</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.community.limepy.limepy.spes.spes.interp_phi" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns interpolated potential at r, works on scalar and arrays</p>
-</dd></dl>
-
-</dd></dl>
-
+<div class="section" id="nbodypy-community-limepy-limepy-spes-module">
+<h2>nbodypy.community.limepy.limepy.spes module<a class="headerlink" href="#nbodypy-community-limepy-limepy-spes-module" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-nbodypy.community.limepy.limepy">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-nbodypy.community.limepy.limepy" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
 </div>
 </div>
 

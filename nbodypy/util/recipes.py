@@ -3,6 +3,7 @@
 import numpy as np
 import numba
 import matplotlib.pyplot as plt
+from ..util.plots import *
 
 
 def nbinmaker(x, nbin=10, nsum=False):
@@ -190,7 +191,7 @@ def distribution_function(n, x=None, xfunc=None, galpy=False, galpy_param=None):
     return 0
 
 
-def dx_function(x, nx=10, bintype="num"):
+def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None, plot=False, **kwargs):
     """
   NAME:
 
@@ -207,6 +208,8 @@ def dx_function(x, nx=10, bintype="num"):
 
      bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
 
+     x_lower,x_mean,x_upper - preset bins
+
   OUTPUT:
 
      x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
@@ -218,10 +221,16 @@ def dx_function(x, nx=10, bintype="num"):
 
   """
 
-    if bintype == "num":
-        x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
+    if x_lower is None:
+        if bintype == "num":
+            x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
+        else:
+            x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
     else:
-        x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
+        x_hist=np.array([])
+        for i in range(0, len(x_lower)):
+            indx = (x >= x_lower[i]) * (x < x_upper[i])
+            x_hist = np.append(x_hist, np.sum(indx))
 
     lx_mean = np.log10(x_mean)
     dx = x_hist / (x_upper - x_lower)
@@ -231,8 +240,64 @@ def dx_function(x, nx=10, bintype="num"):
     ealpha = np.sqrt(V[0][0])
     eyalpha = np.sqrt(V[1][1])
 
+    if plot:
+            filename = kwargs.get("filename", None)
+            nplot(x_mean, np.log10(dx), xlabel="M", ylabel="LOG(dN/dM)", **kwargs)
+            xfit = np.linspace(np.min(x_mean), np.max(x_mean), nx)
+            dxfit = 10.0 ** (alpha * np.log10(xfit) + yalpha)
+            nlplot(
+                xfit, np.log10(dxfit), overplot=True, label=(r"$\alpha$ = %f" % alpha)
+            )
+
+            plt.legend()
+
+            if filename != None:
+                plt.savefig(filename)
+
     return x_mean, x_hist, dx, alpha, ealpha, yalpha, eyalpha
 
+def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
+    """
+  NAME:
+
+     x_hist
+
+  PURPOSE:
+
+     Find histogram
+  INPUT:
+
+     x - input array
+
+     nx - number of bins
+
+     bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
+
+     x_lower,x_mean,x_upper - preset bins
+
+  OUTPUT:
+
+     x_mean,x_hist
+
+
+  HISTORY:
+
+     2019 - Written - Webb (UofT)
+
+  """
+
+    if x_lower is None:
+        if bintype == "num":
+            x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
+        else:
+            x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
+    else:
+        x_hist=np.array([])
+        for i in range(0, len(x_lower)):
+            indx = (x >= x_lower[i]) * (x < x_upper[i])
+            x_hist = np.append(x_hist, np.sum(indx))
+
+    return x_mean,x_hist
 
 def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
     """

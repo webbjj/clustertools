@@ -67,143 +67,28 @@
 <div class="section" id="module-nbodypy.custom.custom_output">
 <span id="nbodypy-custom-custom-output-module"></span><h2>nbodypy.custom.custom_output module<a class="headerlink" href="#module-nbodypy.custom.custom_output" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="nbodypy.custom.custom_output.aanimate">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">aanimate</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nsnap=0</em>, <em class="sig-param">tsnap=None</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">save=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.aanimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
-<blockquote>
-<div><p>aanimate</p>
-</div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Plot alpha profiles using aplot over a range of timesteps
-To Do:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>use data from StarCluster as opposed to a written file</p></li>
-</ul>
-</div></blockquote>
-</div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>data - array from custom_output.alpha_prof_out (t,alpha,ealpha,yalpha,eyalpha,mmean,dm,lr,ar,dalpha,edalpha,ydalpha,eydalpha,)</p>
-<p>nsnap - starting snapshot (default:0)</p>
-<p>tsnap - starting time step (default: 0 Myr, overwrites nsnap)</p>
-<p>prefix - string noting the begining of directory to save images</p>
-<p>nrad - number of radial bins in profile</p>
-<p>save - option to save images or simply just show them (default: True)</p>
-</div></blockquote>
-<p>KWARGS:</p>
-<blockquote>
-<div><p>kwargs - for passing to plots.aplot</p>
-</div></blockquote>
-<p>OUTPUT:</p>
-<blockquote>
-<div><p>None</p>
-</div></blockquote>
-<p>HISTORY:</p>
-<blockquote>
-<div><p>2019 - Written - Webb (UofT)</p>
-</div></blockquote>
-</dd></dl>
-
-<dl class="function">
 <dt id="nbodypy.custom.custom_output.alpha_prof_out">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">alpha_prof_out</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">fileout</em>, <em class="sig-param">mmin=0.3</em>, <em class="sig-param">mmax=0.8</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">obs_cut=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.alpha_prof_out" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">alpha_prof_out</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">fileout</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">kwmin=None</em>, <em class="sig-param">kwmax=None</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.alpha_prof_out" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="function">
-<dt id="nbodypy.custom.custom_output.banimate">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">banimate</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nsnap=0</em>, <em class="sig-param">tsnap=None</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">save=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.banimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
-<blockquote>
-<div><p>banimate</p>
-</div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Plot anisotropy profiles using bplot over a range of timesteps
-To Do:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>use data from StarCluster as opposed to a written file</p></li>
-</ul>
-</div></blockquote>
-</div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>data - array from custom_output.sigv_out (t,m,rm,r[0:nrad],sig[0:nrad],beta[0:nrad])</p>
-<p>nsnap - starting snapshot (default:0)</p>
-<p>tsnap - starting time step (default: 0 Myr, overwrites nsnap)</p>
-<p>prefix - string noting the begining of directory to save images</p>
-<p>nrad - number of radial bins in profile</p>
-<p>save - option to save images or simply just show them (default: True)</p>
-</div></blockquote>
-<p>KWARGS:</p>
-<blockquote>
-<div><p>kwargs - for passing to plots.bplot</p>
-</div></blockquote>
-<p>OUTPUT:</p>
-<blockquote>
-<div><p>None</p>
-</div></blockquote>
-<p>HISTORY:</p>
-<blockquote>
-<div><p>2019 - Written - Webb (UofT)</p>
-</div></blockquote>
-</dd></dl>
 
 <dl class="function">
 <dt id="nbodypy.custom.custom_output.dalpha_out">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">dalpha_out</code><span class="sig-paren">(</span><em class="sig-param">cluster, fileout, mmin=[0.1, 0.3, 0.5], mmax=[0.5, 0.8, 0.8], rmin=None, rmax=None, kwmin=0, kwmax=1, projected=False, obs_cut=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.dalpha_out" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">dalpha_out</code><span class="sig-paren">(</span><em class="sig-param">cluster, fileout, mmin=[0.1, 0.3, 0.5], mmax=[0.5, 0.8, 0.8], rmin=None, rmax=None, kwmin=0, kwmax=1, projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.dalpha_out" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="nbodypy.custom.custom_output.dvanimate">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">dvanimate</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nsnap=0</em>, <em class="sig-param">tsnap=None</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">save=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.dvanimate" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
-<blockquote>
-<div><p>dvanimate</p>
-</div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Plot velocity dispersion profiles using dvplot over a range of timesteps
-To Do:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>use data from StarCluster as opposed to a written file</p></li>
-</ul>
-</div></blockquote>
-</div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>data - array from custom_output.sigv_out (t,m,rm,r[0:nrad],sig[0:nrad],beta[0:nrad])</p>
-<p>nsnap - starting snapshot (default:0)</p>
-<p>tsnap - starting time step (default: 0 Myr, overwrites nsnap)</p>
-<p>prefix - string noting the begining of directory to save images</p>
-<p>nrad - number of radial bins in profile</p>
-<p>save - option to save images or simply just show them (default: True)</p>
-</div></blockquote>
-<p>KWARGS:</p>
-<blockquote>
-<div><p>kwargs - for passing to plots.dvplot</p>
-</div></blockquote>
-<p>OUTPUT:</p>
-<blockquote>
-<div><p>None</p>
-</div></blockquote>
-<p>HISTORY:</p>
-<blockquote>
-<div><p>2019 - Written - Webb (UofT)</p>
-</div></blockquote>
-</dd></dl>
-
-<dl class="function">
 <dt id="nbodypy.custom.custom_output.eta_out">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">eta_out</code><span class="sig-paren">(</span><em class="sig-param">cluster, fileout, mmin=[0.1, 0.3, 0.5], mmax=[0.5, 0.8, 0.8], rmin=None, rmax=None, kwmin=0, kwmax=1, projected=False, obs_cut=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.eta_out" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">eta_out</code><span class="sig-paren">(</span><em class="sig-param">cluster, fileout, mmin=[0.1, 0.3, 0.5], mmax=[0.5, 0.8, 0.8], rmin=None, rmax=None, kwmin=0, kwmax=1, projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.eta_out" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="nbodypy.custom.custom_output.eta_prof_out">
-<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">eta_prof_out</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">fileout</em>, <em class="sig-param">mmin=0.3</em>, <em class="sig-param">mmax=0.8</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">obs_cut=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.eta_prof_out" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">eta_prof_out</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">fileout</em>, <em class="sig-param">mmin=0.3</em>, <em class="sig-param">mmax=0.8</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.eta_prof_out" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="nbodypy.custom.custom_output.obs_alpha_prof_out">
+<code class="sig-prename descclassname">nbodypy.custom.custom_output.</code><code class="sig-name descname">obs_alpha_prof_out</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">fileout</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">kwmin=None</em>, <em class="sig-param">kwmax=None</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">omask=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_output.obs_alpha_prof_out" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -227,33 +112,8 @@ To Do:</p>
 <dd></dd></dl>
 
 </div>
-<div class="section" id="module-nbodypy.custom.custom_plots">
-<span id="nbodypy-custom-custom-plots-module"></span><h2>nbodypy.custom.custom_plots module<a class="headerlink" href="#module-nbodypy.custom.custom_plots" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="nbodypy.custom.custom_plots.aplot">
-<code class="sig-prename descclassname">nbodypy.custom.custom_plots.</code><code class="sig-name descname">aplot</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nsnap=0</em>, <em class="sig-param">tsnap=None</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_plots.aplot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="nbodypy.custom.custom_plots.bplot">
-<code class="sig-prename descclassname">nbodypy.custom.custom_plots.</code><code class="sig-name descname">bplot</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nsnap=0</em>, <em class="sig-param">tsnap=None</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_plots.bplot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="nbodypy.custom.custom_plots.dvplot">
-<code class="sig-prename descclassname">nbodypy.custom.custom_plots.</code><code class="sig-name descname">dvplot</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">nsnap=0</em>, <em class="sig-param">tsnap=None</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_plots.dvplot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="nbodypy.custom.custom_plots.explot">
-<code class="sig-prename descclassname">nbodypy.custom.custom_plots.</code><code class="sig-name descname">explot</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">prefix=''</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_plots.explot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="nbodypy.custom.custom_plots.mplot">
-<code class="sig-prename descclassname">nbodypy.custom.custom_plots.</code><code class="sig-name descname">mplot</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=15</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">cumulative=False</em>, <em class="sig-param">obs_cut=None</em>, <em class="sig-param">log=False</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">overplot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.custom.custom_plots.mplot" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+<div class="section" id="nbodypy-custom-custom-plots-module">
+<h2>nbodypy.custom.custom_plots module<a class="headerlink" href="#nbodypy-custom-custom-plots-module" title="Permalink to this headline">¶</a></h2>
 </div>
 <div class="section" id="module-nbodypy.custom">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-nbodypy.custom" title="Permalink to this headline">¶</a></h2>

@@ -675,7 +675,7 @@ nhalo+=1</p>
 
 <dl class="function">
 <dt id="nbodypy.util.recipes.dx_function">
-<code class="sig-prename descclassname">nbodypy.util.recipes.</code><code class="sig-name descname">dx_function</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">bintype='num'</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.util.recipes.dx_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.util.recipes.</code><code class="sig-name descname">dx_function</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">bintype='num'</em>, <em class="sig-param">x_lower=None</em>, <em class="sig-param">x_mean=None</em>, <em class="sig-param">x_upper=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.util.recipes.dx_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>dx_function</p>
@@ -689,6 +689,7 @@ nhalo+=1</p>
 <div><p>x - input array</p>
 <p>nx - number of bins</p>
 <p>bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</p>
+<p>x_lower,x_mean,x_upper - preset bins</p>
 </div></blockquote>
 <p>OUTPUT:</p>
 <blockquote>
@@ -892,6 +893,34 @@ nhalo+=1</p>
 <p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="nbodypy.util.recipes.x_hist">
+<code class="sig-prename descclassname">nbodypy.util.recipes.</code><code class="sig-name descname">x_hist</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">bintype='num'</em>, <em class="sig-param">x_lower=None</em>, <em class="sig-param">x_mean=None</em>, <em class="sig-param">x_upper=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.util.recipes.x_hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>x_hist</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find histogram</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x - input array</p>
+<p>nx - number of bins</p>
+<p>bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</p>
+<p>x_lower,x_mean,x_upper - preset bins</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_mean,x_hist</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
 </div></blockquote>
 </dd></dl>
 

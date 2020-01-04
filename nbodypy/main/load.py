@@ -331,7 +331,7 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
 
         if os.path.exists(wdir):
             cluster = load_cluster(
-                ctype=cluster.ctype, ofile=ofile, kwfile=kwfile, wdir=wdir
+                ctype=cluster.ctype, ofile=ofile, wdir=wdir
             )
 
     if cluster.ntot != 0.0:
@@ -615,7 +615,7 @@ def get_gyrfalcon(
             break
         if len(data) == 0:
             print("END OF FILE")
-            return StarCluster()
+            return StarCluster(0,0.0,ctype="gyrfalcon")
         if any("Ntot" in dat for dat in data):
             sntot = data[2]
             ntot = int(sntot[:-1])
@@ -731,7 +731,7 @@ def get_snaptrim(
             )
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
-            cluster = StarCluster()
+            cluster = StarCluster(0, 0.0, ctype='snaptrim')
             print(cluster.ntot)
             return cluster
     elif os.path.isfile(
@@ -760,7 +760,7 @@ def get_snaptrim(
             str(nsnap).zfill(nzfill),
             snapend,
         )
-        cluster = StarCluster(sfile=filename)
+        cluster = StarCluster(0, 0., , ctype='snaptrim', sfile=filename)
         print(cluster.ntot)
         return cluster
 
@@ -776,7 +776,7 @@ def get_snaptrim(
             break
         if len(data) == 0:
             print("END OF FILE")
-            return StarCluster(0, 0.0)
+            return StarCluster(0, 0.0, ctype="snaptrim")
         if any("Ntot" in dat for dat in data):
             sntot = data[2]
             ntot = int(sntot[:-1])
@@ -842,7 +842,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
     line1 = fort83.readline().split()
     if len(line1) == 0:
         print("END OF FILE")
-        return StarCluster(0, 0.0)
+        return StarCluster(0, 0.0,ctype='nbody6se')
 
     line2 = fort83.readline().split()
     line3 = fort83.readline().split()
@@ -1074,7 +1074,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
     line1 = out34.readline().split()
     if len(line1) == 0:
         print("END OF FILE")
-        return StarCluster(0, 0.0)
+        return StarCluster(0, 0.0, ctype='nbody6')
 
     line2 = out34.readline().split()
     line3 = out34.readline().split()
@@ -1307,7 +1307,7 @@ def get_nbody6_out34(out34, advance=False, **kwargs):
     line1 = out34.readline().split()
     if len(line1) == 0:
         print("END OF FILE")
-        return StarCluster(0, 0.0)
+        return StarCluster(0, 0.0, ctype='nbody6')
 
     line2 = out34.readline().split()
     line3 = out34.readline().split()
@@ -1505,7 +1505,7 @@ def get_snapshot(
             )
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
-            cluster = StarCluster()
+            cluster = StarCluster(0, 0., ctype=ctype)
             print(cluster.ntot)
             return cluster
     elif os.path.isfile(
@@ -1547,7 +1547,7 @@ def get_snapshot(
             str(nsnap).zfill(nzfill),
             snapend,
         )
-        cluster = StarCluster()
+        cluster = StarCluster(0, 0., ctype=ctype)
         print(cluster.ntot)
         return cluster
 

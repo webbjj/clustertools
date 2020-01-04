@@ -9,7 +9,7 @@ from .orbit import initialize_orbit
 
 # Try Importing AMUSE. Only necessary for get_amuse_particles
 try:
-    from amuse.lab import *
+    import amuse.units.units as u
 except:
     pass
 
@@ -313,7 +313,7 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
     elif cluster.ctype == "mycode":
         cluster = get_mycode()
     else:
-        cluster = StarCuster()
+        cluster = StarCuster(ctype=cluster.ctype)
 
     # Check for restart
     if cluster.ntot == 0.0:
@@ -330,8 +330,8 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             ofile = None
 
         if os.path.exists(wdir):
-            cluster = npy.get_cluster(
-                cluster.ctype, ofile=ofile, kwfile=kwfile, wdir=wdir
+            cluster = load_cluster(
+                ctype=cluster.ctype, ofile=ofile, kwfile=kwfile, wdir=wdir
             )
 
     if cluster.ntot != 0.0:
@@ -1031,7 +1031,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
             cluster.to_cluster()
 
     else:
-        cluster = StarCluster(0, tphys)
+        cluster = StarCluster(0, tphys, ctype="nbody6se")
 
     return cluster
 
@@ -1721,7 +1721,7 @@ def get_nbodypy_snapshot(
 
 
 def get_amuse_particles(
-    particles, npyunits="realkpc", npyorigin="galaxy", ofile=None, **kwargs
+    particles, units="realkpc", origin="galaxy", ofile=None, **kwargs
 ):
     """
     NAME:
@@ -1736,9 +1736,9 @@ def get_amuse_particles(
 
        particles - AMUSE particle dataset
 
-       npyunits - units of input data (default: realkpc)
+       units - units of input data (default: realkpc)
 
-       npyorigin - origin of input data (default: cluster)
+       origin - origin of input data (default: cluster)
        
     KWARGS:
 
@@ -1756,30 +1756,30 @@ def get_amuse_particles(
     cluster = StarCluster(
         len(particles),
         tphys=0.0,
-        units=npyunits,
-        origin=npyorigin,
+        units=units,
+        origin=origin,
         ctype="amuse",
         **kwargs
     )
     i_d = np.linspace(1, len(particles), len(particles), dtype="int")
 
-    m = particles.mass.value_in(units.MSun)
+    m = particles.mass.value_in(u.MSun)
 
-    if npyunits == "realpc":
-        x = particles.x.value_in(units.parsec)
-        y = particles.y.value_in(units.parsec)
-        z = particles.z.value_in(units.parsec)
-        vx = particles.vx.value_in(units.kms)
-        vy = particles.vy.value_in(units.kms)
-        vz = particles.vz.value_in(units.kms)
+    if units == "realpc":
+        x = particles.x.value_in(u.parsec)
+        y = particles.y.value_in(u.parsec)
+        z = particles.z.value_in(u.parsec)
+        vx = particles.vx.value_in(u.kms)
+        vy = particles.vy.value_in(u.kms)
+        vz = particles.vz.value_in(u.kms)
 
-    elif npyunits == "realkpc":
-        x = particles.x.value_in(units.kpc)
-        y = particles.y.value_in(units.kpc)
-        z = particles.z.value_in(units.kpc)
-        vx = particles.vx.value_in(units.kms)
-        vy = particles.vy.value_in(units.kms)
-        vz = particles.vz.value_in(units.kms)
+    elif units == "realkpc":
+        x = particles.x.value_in(u.kpc)
+        y = particles.y.value_in(u.kpc)
+        z = particles.z.value_in(u.kpc)
+        vx = particles.vx.value_in(u.kms)
+        vy = particles.vy.value_in(u.kms)
+        vz = particles.vz.value_in(u.kms)
 
     else:
         print("PLEASE SPECIFY UNITS")
@@ -1787,7 +1787,7 @@ def get_amuse_particles(
 
     cluster.add_stars(i_d, m, x, y, z, vx, vy, vz, do_key_params=True)
 
-    if npyorigin == "galaxy":
+    if origin == "galaxy":
         if ofile == None:
             cluster.find_centre()
         else:
@@ -1800,7 +1800,7 @@ def get_amuse_particles(
             cluster.to_centre(do_key_params=True, do_order=do_order)
             cluster.to_galaxy()
 
-    elif npyorigin == "cluster":
+    elif origin == "cluster":
         if kwargs.get("do_key_params", True):
             do_order=kwargs.get("do_key_params", True)
             # Estimate centre of distribution

@@ -710,11 +710,10 @@ def get_snaptrim(
     """
 
     # Default **kwargs
-    nzfill = int(kwargs.pop("nzfill", 1))
-    skiprows = kwargs.pop("skiprows", 13)
-    delimiter = kwargs.pop("delimiter", None)
 
-    # **kwargs
+    nzfill = int(kwargs.get("nzfill", 1))
+    skiprows = kwargs.get("skiprows", 13)
+    delimiter = kwargs.get("delimiter", None)
     nsnap = int(kwargs.get("nsnap", "0"))
     wdir = kwargs.get("wdir", "./")
     snapdir = kwargs.get("snapdir", "snaps/")
@@ -995,6 +994,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
             ctype="nbody6se",
             sfile=fort83,
             bfile=fort82,
+            **kwargs
         )
         cluster.add_nbody6(
             nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd
@@ -1251,6 +1251,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
         ctype="nbody6",
         sfile=out34,
         bfile=out9,
+        **kwargs
     )
     cluster.add_nbody6(
         nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd, n_p
@@ -1400,6 +1401,7 @@ def get_nbody6_out34(out34, advance=False, **kwargs):
         ctype="nbody6",
         sfile=out34,
         bfile=None,
+        **kwargs
     )
     cluster.add_nbody6(
         nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd, n_p

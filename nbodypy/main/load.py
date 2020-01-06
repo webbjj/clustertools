@@ -331,7 +331,7 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
 
         if os.path.exists(wdir):
             cluster = load_cluster(
-                ctype=cluster.ctype, ofile=ofile, wdir=wdir
+                ctype=cluster.ctype, ofile=ofile, wdir=wdir, **kwargs
             )
 
     if cluster.ntot != 0.0:
@@ -731,7 +731,7 @@ def get_snaptrim(
             )
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
-            cluster = StarCluster(0, 0.0, ctype='snaptrim')
+            cluster = StarCluster(0, 0.0, ctype='snaptrim', **kwargs)
             print(cluster.ntot)
             return cluster
     elif os.path.isfile(
@@ -760,7 +760,7 @@ def get_snaptrim(
             str(nsnap).zfill(nzfill),
             snapend,
         )
-        cluster = StarCluster(0, 0., , ctype='snaptrim', sfile=filename)
+        cluster = StarCluster(0, 0.,ctype='snaptrim', sfile=filename, **kwargs)
         print(cluster.ntot)
         return cluster
 
@@ -1031,7 +1031,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
             cluster.to_cluster()
 
     else:
-        cluster = StarCluster(0, tphys, ctype="nbody6se")
+        cluster = StarCluster(0, tphys, ctype="nbody6se", **kwargs)
 
     return cluster
 
@@ -1505,7 +1505,7 @@ def get_snapshot(
             )
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
-            cluster = StarCluster(0, 0., ctype=ctype)
+            cluster = StarCluster(0, 0., ctype=ctype, **kwargs)
             print(cluster.ntot)
             return cluster
     elif os.path.isfile(
@@ -1547,7 +1547,7 @@ def get_snapshot(
             str(nsnap).zfill(nzfill),
             snapend,
         )
-        cluster = StarCluster(0, 0., ctype=ctype)
+        cluster = StarCluster(0, 0., ctype=ctype, **kwargs)
         print(cluster.ntot)
         return cluster
 

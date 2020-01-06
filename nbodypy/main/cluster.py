@@ -182,7 +182,7 @@ class StarCluster(object):
         # Kwargs
         self.nsnap = int(kwargs.get("nsnap", "0"))
         self.delimiter = kwargs.get("delimiter", None)
-        self.wdir = kwargs.get("wdir", "")
+        self.wdir = kwargs.get("wdir", "./")
         self.nzfill = int(kwargs.get("nzfill", "5"))
         self.snapbase = kwargs.get("snapbase", "")
         self.snapend = kwargs.get("snapend", ".dat")
@@ -545,10 +545,10 @@ class StarCluster(object):
         logl2,
         logr1,
         logr2,
-        ep1,
-        ep2,
-        ospin1,
-        ospin2,
+        ep1=None,
+        ep2=None,
+        ospin1=None,
+        ospin2=None,
     ):
         """
         NAME:
@@ -608,10 +608,11 @@ class StarCluster(object):
         self.logl2 = np.asarray(logl2)
         self.logr1 = np.asarray(logr1)
         self.logr2 = np.asarray(logr2)
-        self.ep1 = np.asarray(ep1)
-        self.ep2 = np.asarray(ep2)
-        self.ospin1 = np.asarray(ospin1)
-        self.ospin2 = np.asarray(ospin2)
+        if ep1 is not None:
+            self.ep1 = np.asarray(ep1)
+            self.ep2 = np.asarray(ep2)
+            self.ospin1 = np.asarray(ospin1)
+            self.ospin2 = np.asarray(ospin2)
 
     def add_energies(self, kin, pot, etot):
         """

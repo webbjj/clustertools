@@ -330,9 +330,12 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             ofile = None
 
         if os.path.exists(wdir):
+            old_wdir=wdir.pop(**advance_kwargs)
             cluster = load_cluster(
-                ctype=cluster.ctype, ofile=ofile, wdir=wdir, **kwargs
+                ctype=cluster.ctype, ofile=ofile, wdir=wdir, **advance_kwargs
             )
+            print('DEBUG WDIR: ',old_wdir,wdir,cluster.wdir)
+
 
     if cluster.ntot != 0.0:
         if "kwfile" in kwargs:

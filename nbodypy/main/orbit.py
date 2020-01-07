@@ -60,7 +60,6 @@ def initialize_orbit(cluster, from_centre=False, r0=8.0, v0=220.0):
             ro=r0,
             vo=v0,
             solarmotion=[-11.1, 24.0, 7.25],
-            use_physical=False,
         )
     else:
         units0, origin0 = save_cluster(cluster)
@@ -84,7 +83,7 @@ def initialize_orbit(cluster, from_centre=False, r0=8.0, v0=220.0):
         R, phi, z = bovy_coords.rect_to_cyl(x, y, z)
         vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
         o = Orbit(
-            [R, vR, vT, z, vz, phi], ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False
+            [R, vR, vT, z, vz, phi], ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25]
         )
 
     cluster.orbit = o
@@ -133,7 +132,7 @@ def initialize_orbits(cluster, r0=8.0, v0=220.0):
     vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
 
     vxvv = np.column_stack([R, vR, vT, z, vz, phi])
-    os = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
+    os = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25])
 
     return_cluster(cluster, units0, origin0)
 
@@ -332,7 +331,7 @@ def orbit_interpolate(
         vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
 
         vxvv = np.column_stack([R, vR, vT, z, vz, phi])
-        otail = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
+        otail = Orbit(vxvv, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25])
 
         cluster.to_realkpc()
 
@@ -413,7 +412,6 @@ def orbital_path(
         ro=r0,
         vo=v0,
         solarmotion=[-11.1, 24.0, 7.25],
-        use_physical=False,
     )
     ts = np.linspace(
         -1.0 * dt / bovy_conversion.time_in_Gyr(ro=r0, vo=v0),
@@ -925,7 +923,7 @@ def rtidal(
         z = cluster.zgc
 
     # Calculate rtide
-    rt = rtide(pot, R, z, M=cluster.mtot)
+    rt = rtide(pot, R, z, M=cluster.mtot,use_physical=False)
     nit = 0
     for i in range(0, rtiterate):
         msum = 0.0
@@ -933,7 +931,7 @@ def rtidal(
         indx = cluster.r < rt
         msum = np.sum(cluster.m[indx])
 
-        rtnew = rtide(pot, R, z, M=msum)
+        rtnew = rtide(pot, R, z, M=msum,use_physical=False)
 
         if verbose:
             print(rt, rtnew, rtnew / rt, msum / cluster.mtot)
@@ -1033,7 +1031,7 @@ def rlimiting(
 
     # Calculate local density:
     rho_local = potential.evaluateDensities(
-        pot, R, z, ro=r0, vo=v0
+        pot, R, z, ro=r0, vo=v0, use_physical=False
     ) / bovy_conversion.dens_in_msolpc3(ro=r0, vo=v0)
 
     rprof, pprof, nprof = rho_prof(cluster, nrad=nrad, projected=projected)
@@ -1226,13 +1224,13 @@ def get_cluster_orbit(gcname="list", names=False, r0=8.0, v0=220.0):
             pmdec[indx][0],
             vlos[indx][0],
         ]
-        o = Orbit(vxvv, ro=r0, vo=v0, radec=True, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
+        o = Orbit(vxvv, ro=r0, vo=v0, radec=True, solarmotion=[-11.1, 24.0, 7.25])
         oname = name[indx]
     else:
         vxvv = np.column_stack(
             [ra[indx], dec[indx], dist[indx], pmra[indx], pmdec[indx], vlos[indx]]
         )
-        o = Orbit(vxvv, radec=True, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25],use_physical=False)
+        o = Orbit(vxvv, radec=True, ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25])
         oname = name[indx]
 
     if names:

@@ -299,7 +299,7 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
     elif cluster.ctype == "snapshot":
         col_names = kwargs.pop("col_names", ["m", "x", "y", "z", "vx", "vy", "vz"])
         col_nums = kwargs.pop("col_nums", [0, 1, 2, 3, 4, 5, 6])
-        # nsnap=np.maximum(int(kwargs.pop('nsnap','0')),cluster.nsnap)+1
+
         cluster = get_snapshot(
             filename=filename,
             col_names=col_names,
@@ -317,6 +317,7 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
 
     # Check for restart
     if cluster.ntot == 0.0:
+        print('NTOT = 0',cluster.wdir,advance_kwargs.get('wdir','./'))
         try:
             wdir = cluster.wdir + "cont/"
         except:
@@ -595,7 +596,7 @@ def get_gyrfalcon(
         mcon = 1.0
 
     # Default **kwargs
-    skiprows = kwargs.pop("skiprows", 13)
+    skiprows = kwargs.get("skiprows", 13)
 
     i_d = []
     m = []
@@ -618,7 +619,7 @@ def get_gyrfalcon(
             break
         if len(data) == 0:
             print("END OF FILE")
-            return StarCluster(0,0.0,ctype="gyrfalcon")
+            return StarCluster(0,0.0,ctype="gyrfalcon",**kwargs)
         if any("Ntot" in dat for dat in data):
             sntot = data[2]
             ntot = int(sntot[:-1])
@@ -633,7 +634,6 @@ def get_gyrfalcon(
         ctype="gyrfalcon",
         sfile=filein,
         bfile=None,
-        skiprows=skiprows,
         **kwargs
     )
 
@@ -778,7 +778,7 @@ def get_snaptrim(
             break
         if len(data) == 0:
             print("END OF FILE")
-            return StarCluster(0, 0.0, ctype="snaptrim")
+            return StarCluster(0, 0.0, ctype="snaptrim",**kwargs)
         if any("Ntot" in dat for dat in data):
             sntot = data[2]
             ntot = int(sntot[:-1])
@@ -844,7 +844,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
     line1 = fort83.readline().split()
     if len(line1) == 0:
         print("END OF FILE")
-        return StarCluster(0, 0.0,ctype='nbody6se')
+        return StarCluster(0, 0.0,ctype='nbody6se',**kwargs)
 
     line2 = fort83.readline().split()
     line3 = fort83.readline().split()
@@ -1077,7 +1077,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
     line1 = out34.readline().split()
     if len(line1) == 0:
         print("END OF FILE")
-        return StarCluster(0, 0.0, ctype='nbody6')
+        return StarCluster(0, 0.0, ctype='nbody6',**kwargs)
 
     line2 = out34.readline().split()
     line3 = out34.readline().split()
@@ -1311,7 +1311,7 @@ def get_nbody6_out34(out34, advance=False, **kwargs):
     line1 = out34.readline().split()
     if len(line1) == 0:
         print("END OF FILE")
-        return StarCluster(0, 0.0, ctype='nbody6')
+        return StarCluster(0, 0.0, ctype='nbody6',**kwargs)
 
     line2 = out34.readline().split()
     line3 = out34.readline().split()

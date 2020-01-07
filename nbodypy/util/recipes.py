@@ -480,7 +480,6 @@ def interpolate(r1, r2, x=None, y=None):
         print("NO INTERMEDIATE COORDINATE GIVEN")
         return 0
 
-
 def rotate(x, y, z, thetax=0.0, thetay=0.0, thetaz=0.0):
     """
   NAME:

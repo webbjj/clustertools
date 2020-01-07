@@ -1,5 +1,6 @@
 import numpy as np
 from galpy.util import bovy_conversion
+from galpy import potential
 import os
 
 import limepy
@@ -11,7 +12,7 @@ from .profiles import m_prof
 from .orbit import get_cluster_orbit
 
 
-def setup_cluster(ctype, units="realpc", origin="cluster", orbit=None, **kwargs):
+def setup_cluster(ctype, units="realpc", origin="cluster", orbit=None,pot=None, **kwargs):
     """
     NAME:
 
@@ -79,6 +80,8 @@ def setup_cluster(ctype, units="realpc", origin="cluster", orbit=None, **kwargs)
         elif ctype == "wilson":
             g = kwargs.pop("g", 2)
             cluster = get_limepy(g=g, **kwargs)
+        elif ctype=='galpy':
+            cluster=get_galpy(pot,**kwargs)
         else:
             source = kwargs.pop("source", "default")
             mbar = kwargs.pop("mbar", 0.4)
@@ -1072,3 +1075,80 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
         cluster.orbit = None
 
     return cluster
+
+def get_galpy(pot,**kwargs):
+    N = int(kwargs.get("N", 1000))
+    rmin=kwargs.get('rmin',0.01)
+    rmax=kwargs.get('rmax',100.)
+    coordinates=kwargs.get('coordinates','cartesian')
+    ro=kwargs.get('ro',8.)
+    vo=kwargs.get('vo',220.)
+
+    x,y,z,vx,vy,vz=sample_galpy_potential(pot,N,rmin,rmax,ro=ro,vo=vo,coordinates=coordinates)
+
+    mbar = kwargs.get("mbar", 1.)
+    m=np.ones(N)*mbar
+
+    cluster = StarCluster(N, units='realkpc', origin="cluster")
+    cluster.ctype = "galpy"
+    cluster.add_stars(
+        np.linspace(1, N, N, dtype=int),
+        m,
+        x,
+        y,
+        z,
+        vx,
+        vy,
+        vz,
+    )
+    cluster.find_centre()
+    cluster.key_params()
+
+    return cluster
+
+def sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian'):
+    ran=np.random.rand(n)
+    rad=np.linspace(rmin,rmax,n)
+    
+    try:
+        menc=pot.mass(rad/ro,z=0,t=0,forceint=False)
+    except:
+        vc= potential.vcirc(pot,rad/ro,phi=0,t=0.,ro=ro,vo=vo,use_physical=False)
+        menc=vc**2.*(rad/ro)
+
+    menc*=bovy_conversion.mass_in_msol(ro=ro,vo=vo)       
+    
+    r=np.interp(ran, menc/menc[-1], rad)
+    phi=2.0*np.pi*np.random.rand(n)
+    theta=np.arccos(1.0-2.0*np.random.rand(n))
+    
+    x=r*np.sin(theta)*np.cos(phi)
+    y=r*np.sin(theta)*np.sin(phi)
+    z=r*np.cos(theta)
+    
+    sigma_v_1d=vo*potential.vcirc(pot,rad/ro,phi=0,t=0.,ro=ro,vo=vo,use_physical=False)/np.sqrt(3.)
+
+    vx=np.random.normal(0.,sigma_v_1d,n)        
+    vy=np.random.normal(0.,sigma_v_1d,n)        
+    vz=np.random.normal(0.,sigma_v_1d,n) 
+    
+    if coordinates=='spherical':
+        vr = (vx * np.sin(theta) * np.cos(phi)
+            + vy * np.sin(theta) * np.sin(phi)
+            + vz * np.cos(theta)
+        )
+        vtheta = (
+            vx * np.cos(theta) * np.cos(phi)
+            + vy * np.cos(theta) * np.sin(phi)
+            - vz * np.sin(theta)
+        )
+        vphi = vx * -np.sin(phi) + vy * np.cos(phi)
+        
+        x,y,z=r,phi,theta
+        vx,vy,vz=vr,vphi,vtheta
+        
+    elif coordinates=='cylindrical':
+        x,y,z=bovy_coords.rect_to_cyl(x,y,z)
+        vx,vy,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z,True)
+    
+    return x,y,z,vx,vy,vz

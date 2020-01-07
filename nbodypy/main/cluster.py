@@ -209,70 +209,70 @@ class StarCluster(object):
         self, ntot=0, tphys=0.0, units=None, origin=None, ctype="snapshot", **kwargs
     ):
 
-    """
-    NAME:
+        """
+        NAME:
 
-       __init__
+           __init__
 
-    PURPOSE:
+        PURPOSE:
 
-       Initialize a Star Cluster
-       Notes:
-        - key stellar attributes are initialized so they can be added
-        directly to the instance (self.x = x) or through one of the add
-        functions below.
+           Initialize a Star Cluster
+           Notes:
+            - key stellar attributes are initialized so they can be added
+            directly to the instance (self.x = x) or through one of the add
+            functions below.
 
-    INPUT:
+        INPUT:
 
-       ntot - number of stars (default:0)
+           ntot - number of stars (default:0)
 
-       tphys - age of cluster (default:0)
+           tphys - age of cluster (default:0)
 
-       units - units of input data (nbody/realpc/realkpc/galpy,default:None)
+           units - units of input data (nbody/realpc/realkpc/galpy,default:None)
 
-       origin - origin of input data (cluster/galaxy/default:None)
+           origin - origin of input data (cluster/galaxy/default:None)
 
-       ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
-
-
-    KWARGS:
-
-        sfile - name of file containing stellar data
-
-        bfile - name of file contain binary star data
-
-        ofilename - orbit filename if ofile is not given
-
-        ounits - units of orbital information (else assumed equal to StarCluster.units)
-
-        nsnap - if a specific snapshot is to be read in instead of starting from zero
-    
-        nzfill - value for zfill when reading and writing snapshots (Default: 5)
-    
-        delimiter - choice of delimiter when reading ascii/csv files (Default: ',')
-    
-        wdir - working directory of snapshots if not current directory
-
-        intialize - initialize a galpy orbit after reading in orbital information (default: False)
-
-        kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
-
-        advance - is this a snapshot that has been advanced to from initial load_cluster?
-
-        projected - calculate projected values as well as 3D values (Default: True)
-
-        centre_method - method convert to clustercentric coordinates in degrees (Default: None)
+           ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
 
 
-    OUTPUT:
+        KWARGS:
 
-       instance
+            sfile - name of file containing stellar data
 
-    HISTORY:
+            bfile - name of file contain binary star data
 
-       2018 - Written - Webb (UofT)
+            ofilename - orbit filename if ofile is not given
 
-    """
+            ounits - units of orbital information (else assumed equal to StarCluster.units)
+
+            nsnap - if a specific snapshot is to be read in instead of starting from zero
+        
+            nzfill - value for zfill when reading and writing snapshots (Default: 5)
+        
+            delimiter - choice of delimiter when reading ascii/csv files (Default: ',')
+        
+            wdir - working directory of snapshots if not current directory
+
+            intialize - initialize a galpy orbit after reading in orbital information (default: False)
+
+            kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
+
+            advance - is this a snapshot that has been advanced to from initial load_cluster?
+
+            projected - calculate projected values as well as 3D values (Default: True)
+
+            centre_method - method convert to clustercentric coordinates in degrees (Default: None)
+
+
+        OUTPUT:
+
+           instance
+
+        HISTORY:
+
+           2018 - Written - Webb (UofT)
+
+        """
         # Total Number of Stars + Binaries in the cluster
         self.ntot = ntot
         self.nb = 0

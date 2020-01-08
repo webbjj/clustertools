@@ -166,7 +166,7 @@ def tsep(ctype,**kwargs):
         print('MOVE TO CENTER: ',cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc)
 
         cluster.to_realpc()
-        cluster.to_centre()
+        cluster.to_centre(do_key_params=True,do_order=True)
 
         if extrct:npy.extrct_out(cluster,exfile,projected=projected)
         if dvprof:npy.sigv_out(cluster,dvfile,projected=projected)
@@ -191,6 +191,8 @@ def tsep(ctype,**kwargs):
             else:
                 rtcluster=npy.sub_cluster(cluster,rmin=0.0,rmax=rtmax,indx=bindx)
            
+            rtcluster.key_params()
+            
             bound_id=rtcluster.id
 
         if rtextrct and rtcluster.ntot>0:

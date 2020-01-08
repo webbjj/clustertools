@@ -12,6 +12,9 @@ class ObservationalMask(object):
         self.name = name
         self.rnorm=False
 
+        self.rmlower=None
+        self.rmupper=None
+
     def set_orbit(self,ra,dec,dist,pmra,pmdec,vlos):
 
         self.ra = ra
@@ -23,9 +26,15 @@ class ObservationalMask(object):
 
     def set_key_params(self,**kwargs):
 
-        self.rm = kwargs.get("rm", 0.)
-        self.rt = kwargs.get("rt", 0.)
-
+        if 'rm' in kwargs:
+            self.rm = kwargs.get("rm")
+        if 'rt' in kwargs:
+            self.rt = kwargs.get("rt")
+        if 'rmlower' in kwargs:
+            self.rmlower = kwargs.get("rmlower")
+        if 'rmupper' in kwargs:
+            self.rmupper = kwargs.get("rmupper")
+ 
     def set_mcorr(self, mcorr):
         # Se mass correction for entire dataset
         self.mcorr = mcorr

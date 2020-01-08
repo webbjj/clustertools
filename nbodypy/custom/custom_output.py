@@ -149,19 +149,65 @@ def obs_alpha_prof_out(
         indx=indx,
         projected=projected,
         omask=omask,
+        **kwargs,
     )
 
+    if omask is None:
+        rn=rlagrange(cluster,projected=projected)
+        r50lower=rn[3]
+        r50upper=rn[5]
+    else:
+        try:
+            if projected:
+                r50lower=omask.rmlower*(cluster.rmpro/omask.rm)
+                r50upper=omask.rmupper*(cluster.rmpro/omask.rm) 
+            else:
+                r50lower=omask.rmlower*(cluster.rm/omask.rm)
+                r50upper=omask.rmupper*(cluster.rm/omask.rm)  
+        except:
+            r50lower=None
+            r50upper=None
+
+        if r50lower==None:
+            rn=rlagrange(cluster,projected=projected)
+            r50lower=rn[3]
+            r50upper=rn[5] 
+
+
+    if projected:
+        print('ALPHA50PRO: ',r50lower,cluster.rmpro,r50upper)
+    else:
+        print('ALPHA50', r50lower,cluster.rm,r50upper)
+
+      
     lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, mbincorr = obs_alpha_prof(
         cluster,
         mmin=mmin,
         mmax=mmax,
         nmass=nmass,
+        rmin=rmin,
+        rmax=rmax,
         kwmin=kwmin,
         kwmax=kwmax,
         indx=indx,
         projected=projected,
         omask=omask,
-        **kwargs
+        **kwargs,
+    )
+
+    m_mean50, m_hist50, dm50, alpha50, ealpha50, yalpha50, eyalpha50, mbincorr50 = obs_mass_function(
+        cluster,
+        mmin=mmin,
+        mmax=mmax,
+        nmass=nmass,
+        rmin=r50lower,
+        rmax=r50upper,
+        kwmin=kwmin,
+        kwmax=kwmax,
+        indx=indx,
+        projected=projected,
+        omask=omask,
+        **kwargs,
     )
 
     print('a_g \t R/rm \t',lrprofn,'\t da/dlogr \t rm')
@@ -178,7 +224,7 @@ def obs_alpha_prof_out(
     for i in range(0, len(aprof)):
         fileout.write("%f " % aprof[i])
 
-    fileout.write("%f %f %f %f\n" % (dalpha, edalpha, ydalpha, eydalpha))
+    fileout.write("%f %f %f %f %f %f %f %f\n" % (dalpha, edalpha, ydalpha, eydalpha, alpha50, ealpha50, yalpha50, eyalpha50))
 
 
 def dalpha_out(

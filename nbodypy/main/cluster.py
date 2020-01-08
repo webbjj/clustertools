@@ -1973,10 +1973,10 @@ class StarCluster(object):
 
             self.origin = "galaxy"
 
-            self.rv3d()
+        self.rv3d()
 
-            if do_key_params:
-                self.key_params(do_order=do_order)
+        if do_key_params:
+            self.key_params(do_order=do_order)
 
     def to_sky(self, do_order=False, do_key_params=False):
         """

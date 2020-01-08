@@ -166,6 +166,7 @@ def obs_mass_function(
             -1000.0,
             -1000.0,
             -1000.0,
+            np.zeros(nmass),
         )
 
 
@@ -327,6 +328,7 @@ def obs_alpha_prof(
                 cluster.m[rindx], nmass, mcorr[rindx]
             )
         else:
+
             try:
                 m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
 

@@ -214,7 +214,14 @@ def obs_alpha_prof_out(
     print(alpha,aprof,dalpha,cluster.rm)
     print(mbincorr < 0.5)
 
-    fileout.write("%f %f %f %f %f " % (cluster.tphys, alpha, ealpha, yalpha, eyalpha))
+    mtot=kwargs.get('mtot',cluster.mtot)
+    rm=kwargs.get('rm',cluster.rmpro)
+    trh=kwargs.get('trh',relaxation_time(cluster,projected=True))
+
+    fileout.write("%f %f %f %f " % (cluster.tphys, mtot, rm, trh))
+    fileout.write("%f %f %f %f " % (alpha50, ealpha50, yalpha50, eyalpha50))
+    fileout.write("%f %f %f %f " % (alpha, ealpha, yalpha, eyalpha))
+
     for i in range(0, len(m_mean)):
         fileout.write("%f " % m_mean[i])
     for i in range(0, len(dm)):
@@ -224,8 +231,7 @@ def obs_alpha_prof_out(
     for i in range(0, len(aprof)):
         fileout.write("%f " % aprof[i])
 
-    fileout.write("%f %f %f %f %f %f %f %f\n" % (dalpha, edalpha, ydalpha, eydalpha, alpha50, ealpha50, yalpha50, eyalpha50))
-
+    fileout.write("%f %f %f %f\n" % (dalpha, edalpha, ydalpha, eydalpha))
 
 def dalpha_out(
     cluster,

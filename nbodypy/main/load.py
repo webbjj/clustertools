@@ -1027,7 +1027,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
             # Estimate centre
             cluster.find_centre()
             cluster.to_centre(do_key_params=True, do_order=do_order)

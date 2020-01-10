@@ -21,7 +21,7 @@ def extrct_out(cluster, fileout, projected=False):
     PURPOSE:
 
        Extrct key cluster properties and write to file
-       --> N, Nbinary, trh, mtot, rlagrange_1-10
+       --> N, Nbinary, trh, mtot, rlagrange_1-10, rmpro, rhpro, rv, rl, rt, rvmax, vmax
 
     INPUT:
 
@@ -46,8 +46,8 @@ def extrct_out(cluster, fileout, projected=False):
         trh = 0.0
         rn = np.zeros(10)
     else:
-        cluster.to_centre()
         cluster.to_realpc()
+        cluster.to_centre(do_order=True, do_key_params=True)
 
         if cluster.nb > 0:
             nb = len(cluster.m2)

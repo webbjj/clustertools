@@ -14,40 +14,6 @@ from ..main.operations import *
 from ..observations.observations import *
 
 
-def trelax_prof_out(cluster, fileout, multimass=True, projected=False):
-    # Write relaxation time profile (trhprof.npy)
-    trelax = relaxation_time(
-        cluster, local=False, multimass=multimass, projected=projected
-    )
-    fileout.write("%f %f " % (cluster.tphys, trelax))
-    if cluster.rn == None:
-        rn = rlagrange(cluster, nlagrange=10, projected=projected)
-    trelax_prof = []
-
-    for r in rn:
-        fileout.write("%f " % (r))
-
-    for i in range(0, len(rn)):
-        if i == 0:
-            rmin = 0.0
-            rmax = rn[i]
-        else:
-            rmin = rn[i - 1]
-            rmax = rn[i]
-
-        rcluster = sub_cluster(cluster, rmin=rmin, rmax=rmax, projected=projected)
-        trelax_prof.append(
-            relaxation_time(
-                rcluster, local=True, multimass=multimass, projected=projected
-            )
-        )
-        fileout.write("%f " % (trelax_prof[-1]))
-
-    fileout.write("%f %f " % (cluster.rmpro, cluster.rhpro))
-
-    fileout.write("\n")
-
-
 def p_prof_out(cluster, fileout, nrad=20, projected=False):
     # Write density profile (pprof.npy)
     fileout.write("%f " % (cluster.tphys))

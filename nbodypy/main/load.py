@@ -711,9 +711,9 @@ def get_snaptrim(
 
     # Default **kwargs
 
-    nzfill = int(kwargs.get("nzfill", 1))
-    skiprows = kwargs.get("skiprows", 13)
-    delimiter = kwargs.get("delimiter", None)
+    nzfill = int(kwargs.pop("nzfill", 1))
+    skiprows = kwargs.pop("skiprows", 13)
+    delimiter = kwargs.pop("delimiter", None)
     nsnap = int(kwargs.get("nsnap", "0"))
     wdir = kwargs.get("wdir", "./")
     snapdir = kwargs.get("snapdir", "snaps/")
@@ -918,8 +918,8 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
         kw.append(max(kw1[-1], kw2[-1]))
         kcm.append(float(data[4]))
         ecc.append(float(data[5]))
-        pb.append(float(data[6]))
-        semi.append(float(data[7]))
+        pb.append(10.0**float(data[6]))
+        semi.append(10.0**float(data[7]))
         m1.append(float(data[8]) / zmbar)
         m2.append(float(data[9]) / zmbar)
         m.append(m1[-1] + m2[-1])
@@ -1201,17 +1201,14 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
             logl.append(1.0)
             logr.append(1.0)
 
-            r1 = np.sqrt(
-                (x1 - x[-1]) ** 2.0 + (y1 - y[-1]) ** 2.0 + (z1 - z[-1]) ** 2.0
-            )
-            r2 = np.sqrt(
-                (x2 - x[-1]) ** 2.0 + (y2 - y[-1]) ** 2.0 + (z2 - z[-1]) ** 2.0
-            )
+            r1 = np.sqrt((x1 - x[-1]) ** 2.0 + (y1 - y[-1]) ** 2.0 + (z1 - z[-1]) ** 2.0)
+            r2 = np.sqrt((x2 - x[-1]) ** 2.0 + (y2 - y[-1]) ** 2.0 + (z2 - z[-1]) ** 2.0)
 
-            semi.append((abs((pb[-1] ** 2.0) * (m[-1] / 2.0))) ** (1.0 / 3.0))
+            semi.append((pb[-1]**2.*m[-1])**(1./3.))
 
     data = out34.readline().split()
-    while int(float(data[0])) >= -999 and len(data) > 0:
+
+    while int(float(data[0])) >= -999:
         # IGNORE GHOST PARTICLES
         if float(data[2]) == 0.0:
             ns -= 1
@@ -1240,6 +1237,9 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
 
             nsbnd += 1
         data = out34.readline().split()
+
+        if len(data)==0:
+            break
 
     nbnd = nsbnd + nbbnd
 

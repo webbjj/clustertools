@@ -717,6 +717,8 @@ class StarCluster(object):
             self.ospin1 = np.asarray(ospin1)
             self.ospin2 = np.asarray(ospin2)
 
+        self.eb=0.5*self.m1*self.m2/self.semi
+
     def add_energies(self, kin, pot, etot):
         """
         NAME:
@@ -1311,15 +1313,15 @@ class StarCluster(object):
 
             self.units = "realpc"
 
-            if self.nb > 0:
-                yrs = (self.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(
-                    self.zmbar
-                )
-                days = 365.25 * yrs
-                pctoau = 206265.0
+            #if self.nb > 0:
+            #    yrs = (self.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(
+            #        self.zmbar
+            #    )
+            #    days = 365.25 * yrs
+            #    pctoau = 206265.0
 
-                self.pb *= days
-                self.semi *= self.rbar * pctoau
+            #    self.pb *= days
+            #    self.semi *= self.rbar * pctoau
 
         elif self.units == "realkpc":
             self.x *= 1000.0
@@ -1791,6 +1793,82 @@ class StarCluster(object):
             self.to_radec(do_key_params=do_key_params)
             self.to_origin(origin0, do_order=do_order, do_key_params=do_key_params)
 
+
+    def convert_binary_units(self,param,from_units,to_units):
+        yrs = (self.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(self.zmbar)
+        days = 365.25 * yrs
+        au = 1.49597870700e13
+        pc = 1296000.0e0/(2.0*np.pi)*au
+        rsun=6.960e10
+        su=pc/rsun*self.rbar
+
+
+        param=np.array(param)
+        from_units=np.array(from_units)
+        tp_units=np.array(to_units)
+
+        for i in range(0,len(param)):
+            p=param[i]
+
+            if p=='pb':
+                #Convert to nbody first
+                if from_units[i]=='days':
+                    self.pb/=days
+                elif from_units[i]=='years':
+                    self.pb/=yrs
+                elif from_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % from_units[i])
+
+                if to_units[i]=='days':
+                    self.pb*=days
+                elif to_units[i]=='years':
+                    self.pb*=yrs
+                elif to_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % from_units[i])
+
+            elif p=='semi':
+                #Convert to nbody first
+                if from_units[i]=='pc':
+                    self.semi/=self.rbar
+                elif from_units[i]=='su':
+                    self.semi/=su
+                elif from_units[i]=='au':
+                    self.semi/=(pc/au)*self.rbar
+                elif from_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % from_units[i])
+
+                if to_units[i]=='pc':
+                    self.semi*=self.rbar
+                elif to_units[i]=='su':
+                    self.semi*=su
+                elif to_units[i]=='au':
+                    self.semi*=(pc/au)*self.rbar
+                elif to_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % to_units[i])
+
+            elif p=='mass':
+                if from_units[i]=='Msun' or from_units[i]=='msun' :
+                    self.m1/=self.zmbar
+                    self.m2/=self.zmbar
+                elif from_units[i]=='nbody':
+                    pass
+
+                if to_units=='Msun' or to_units[i]=='msun' :
+                    self.m1*=self.zmbar
+                    self.m2*=self.zmbar
+                elif to_units[i]=='nbody':
+                    pass
+
+
+
     def to_centre(self, do_order=False, do_key_params=False, centre_method=None):
         """
         NAME:
@@ -1831,8 +1909,8 @@ class StarCluster(object):
 
             self.rv3d()
 
-            if do_key_params:
-                self.key_params(do_order=do_order)
+        if do_key_params:
+            self.key_params(do_order=do_order)
 
     def to_cluster(self, do_order=False, do_key_params=False, centre_method=None):
         """

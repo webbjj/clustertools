@@ -169,28 +169,6 @@ def power_law_distribution_function(n, alpha, xmin, xmax):
     return np.array(x)
 
 
-def distribution_function(n, x=None, xfunc=None, galpy=False, galpy_param=None):
-    """
-  rad=np.array([])
-  n=10000
-  nhalo=0
-
-  #Amp - total mass of sub-halos
-  amp=pot.mass(100./8.,0.,ro=8.,vo=220.)
-
-  #Assume they all have the same mass
-  m=np.ones(n)*amp/float(n)
-
-  while nhalo<n:
-      rtemp=np.random.rand()*100.0
-      
-      if np.random.rand()*amp > pot.mass(rtemp/8.,0.,ro=8.,vo=220.):
-          rad=np.append(rad,rtemp)
-          nhalo+=1
-  """
-    return 0
-
-
 def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None, plot=False, **kwargs):
     """
   NAME:
@@ -242,7 +220,7 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
 
     if plot:
             filename = kwargs.get("filename", None)
-            nplot(x_mean, np.log10(dx), xlabel="M", ylabel="LOG(dN/dM)", **kwargs)
+            nplot(x_mean, np.log10(dx), xlabel="x", ylabel="LOG(dN/dx)", **kwargs)
             xfit = np.linspace(np.min(x_mean), np.max(x_mean), nx)
             dxfit = 10.0 ** (alpha * np.log10(xfit) + yalpha)
             nlplot(

@@ -54,7 +54,7 @@ def extrct_out(cluster, fileout, projected=False):
         else:
             nb = 0
 
-        trh = relaxation_time(cluster, multimass=True, projected=projected)
+        trh = half_mass_relaxation_time(cluster, multimass=True, projected=projected)
 
         if cluster.ntot > 10:
             if cluster.rn == None or (

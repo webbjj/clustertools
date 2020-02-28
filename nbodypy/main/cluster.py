@@ -105,8 +105,8 @@ class TestDocStringCluster(object):
 class StarCluster(object):
     r"""A class that represents a star cluster population that functions can be performed on
 
-    The StarCluster class, which represents a population of star particles, that all nbodpy
-    functions are written to act on. Functions can be called internally (which results in new class
+    The StarCluster class, which represents a population of star particles, is what all nbodpy
+    functions and operations are written to act on. Functions can be called internally (which results in new class
     variables beings set) or externally (where calculated variables are outputs). Measurements
     of variable profiles (i.e. density profile) can only be calculated externally.
 
@@ -137,142 +137,95 @@ class StarCluster(object):
         (default: 'snapshot')
     **kwargs
 
-    long_var_name : {'hi', 'ho'}, optional
-        Choices in brackets, default first when optional.
+    sfile : name of file containing single star data
+    bfile : name of file contain binary star data
+    ofilename : orbit filename if ofile is not given
+    ounits : {'realpc','realkpc','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
+    nsnap : if a specific snapshot is to be read in instead of starting from zero
+    nzfill : value for zfill when reading and writing snapshots (Default: 5)
+    snapbase: string of characters in filename before nsnap (Default: '')
+    snapend: string of character in filename after nsnap (Default: '.dat')
+    snapdir: directory of snapshots if different than wdir (Default: '')
+    delimiter : choice of delimiter when reading ascii/csv files (Default: ',')
+    wdir : working directory of snapshots if not current directory
+    intialize : initialize a galpy orbit after reading in orbital information (default: False)
+    kwfile : open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
+    advance : set to True if this a snapshot that has been advanced to from an initial one?
+    projected : calculate projected values as well as 3D values (Default: True)
+    centre_method : {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
 
     Returns
     -------
-    type
-        Explanation of anonymous return value of type ``type``.
-    describe : type
-        Explanation of return value named `describe`.
-    out : type
-        Explanation of `out`.
-    type_without_description
+    class
+        StarCluster
+
+    Variables that can be set:
+
+        ntot : number stars + binaries
+        nb : number of binary stars
+        tphys : time associated with snapshot
+        ctype : code used to generate snapshot
+        id : star id
+        x,y,z: position of stars
+        vx,vy,vz: velocity of stars
+        kw : stellar type of stars
+        zmbar : scaling from N-body masses to solar masses
+        rbar : scaling from N-body units to parsecs
+        vstar : scaling from N-body units to km/s
+        tstar : scaling from N-body units to Myr
+
+    Variables that can be set or calculated:
+
+        xc,yc,zc,vxc,vyc,vzc : position and velocity of centre of mass (calcualte via def find_centre)
+        xgc,ygc,zgc,vxgc,vygc,vzgc : position and velocity of centre of mass in Galactocentric coordinates (calcualte via def find_centre in Galaxy coordinate system)
+        ra,dec,dist,pmra,pmdec,vlos : sky positions and velocities of stars
+        ra_gc,dec_gc,dist_gc,pmra_gc,pmdec_gc,vlos_gc : sky positions and velocities of centre of mass
+        orbit : a galpy orbit instance
+
+
+
+
+        All kwargs can be called via StarCluster.kwarg_name
+
+
 
     Other Parameters
     ----------------
-    only_seldom_used_keywords : type
-        Explanation
-    common_parameters_listed_above : type
-        Explanation
+    None
 
     Raises
     ------
-    BadException
-        Because you shouldn't have done that.
+    None
 
     See Also
     --------
-    numpy.array : Relationship (optional).
-    numpy.ndarray : Relationship (optional), which could be fairly long, in
-                    which case the line wraps here.
-    numpy.dot, numpy.linalg.norm, numpy.eye
+    None
 
     Notes
     -----
-    Notes about the implementation algorithm (if needed).
-
-    This can have multiple paragraphs.
-
-    You may include some math:
-
-    .. math:: X(e^{j\omega } ) = x(n)e^{ - j\omega n}
-
-    And even use a Greek symbol like :math:`\omega` inline.
+    History - 2018 - Written - Webb (UofT)
 
     References
     ----------
-    Cite the relevant literature, e.g. [1]_.  You may also cite these
-    references in the notes section above.
-
-    .. [1] O. McNoleg, "The integration of GIS, remote sensing,
-       expert systems and adaptive co-kriging for environmental habitat
-       modelling of the Highland Haggis using object-oriented, fuzzy-logic
-       and neural-network techniques," Computers & Geosciences, vol. 22,
-       pp. 585-588, 1996.
+    None
 
     Examples
     --------
-    These are written in doctest format, and should illustrate how to
-    use the function.
 
-    >>> a = [1, 2, 3]
-    >>> print([x + 3 for x in a])
-    [4, 5, 6]
-    >>> print("a\nb")
-    a
-    b
+    Set up a 10,000 Msun StarCluster with a half-mass radius of 10 pc
+    after id, masses, position, and velocities have been read in from a
+    snapshot in clustercentric coordinates
+
+    >>> cluster=Starcluster(units='realpc',origin='cluster',ctype='snapshot')
+    >>> cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+    >>> print(cluster.rm)
+    10.0
     """
     
     def __init__(
         self, ntot=0, tphys=0.0, units=None, origin=None, ctype="snapshot", **kwargs
     ):
 
-        """
-        NAME:
-
-           __init__
-
-        PURPOSE:
-
-           Initialize a Star Cluster
-           Notes:
-            - key stellar attributes are initialized so they can be added
-            directly to the instance (self.x = x) or through one of the add
-            functions below.
-
-        INPUT:
-
-           ntot - number of stars (default:0)
-
-           tphys - age of cluster (default:0)
-
-           units - units of input data (nbody/realpc/realkpc/galpy,default:None)
-
-           origin - origin of input data (cluster/galaxy/default:None)
-
-           ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
-
-
-        KWARGS:
-
-            sfile - name of file containing stellar data
-
-            bfile - name of file contain binary star data
-
-            ofilename - orbit filename if ofile is not given
-
-            ounits - units of orbital information (else assumed equal to StarCluster.units)
-
-            nsnap - if a specific snapshot is to be read in instead of starting from zero
-        
-            nzfill - value for zfill when reading and writing snapshots (Default: 5)
-        
-            delimiter - choice of delimiter when reading ascii/csv files (Default: ',')
-        
-            wdir - working directory of snapshots if not current directory
-
-            intialize - initialize a galpy orbit after reading in orbital information (default: False)
-
-            kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
-
-            advance - is this a snapshot that has been advanced to from initial load_cluster?
-
-            projected - calculate projected values as well as 3D values (Default: True)
-
-            centre_method - method convert to clustercentric coordinates in degrees (Default: None)
-
-
-        OUTPUT:
-
-           instance
-
-        HISTORY:
-
-           2018 - Written - Webb (UofT)
-
-        """
         # Total Number of Stars + Binaries in the cluster
         self.ntot = ntot
         self.nb = 0
@@ -1112,7 +1065,7 @@ class StarCluster(object):
             self.xc, self.yc, self.zc = xc, yc, zc
             self.vxc, self.vyc, self.vzc = vxc, vyc, vzc
 
-        if self.origin == "galaxy":
+        if self.origin == "galaxy" or self.origin=='sky':
             self.xgc, self.ygc, self.zgc = self.xc, self.yc, self.zc
             self.vxgc, self.vygc, self.vzgc = self.vxc, self.vyc, self.vzc
 
@@ -1584,11 +1537,11 @@ class StarCluster(object):
                 x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0
             )
 
-            l0, b0, self.distgc = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True)
+            l0, b0, self.dist_gc = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True)
             self.ra_gc, self.dec_gc = bovy_coords.lb_to_radec(l0, b0, degree=True)
 
             vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
-                vx0, vy0, vz0, l0, b0, self.distgc, degree=True
+                vx0, vy0, vz0, l0, b0, self.dist_gc, degree=True
             )
             self.pmra_gc, self.pmdec_gc = bovy_coords.pmllpmbb_to_pmrapmdec(
                 pmll0, pmbb0, l0, b0, degree=True
@@ -1983,7 +1936,7 @@ class StarCluster(object):
                             / 60.0
                         )
                     else:
-                        self.x = (self.x - self.xgc) * np.cos(np.radians(self.xgc))
+                        self.x = (self.x - self.xgc) * np.cos(np.radians(self.ygc))
                         self.y = self.y - self.ygc
 
                     self.z = np.zeros(len(self.x))

@@ -14,7 +14,7 @@ from ..util.recipes import *
 from .operations import *
 from ..util.plots import *
 
-def relaxation_time(cluster, multimass=True, projected=False,method='spitzer'):
+def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='spitzer'):
     """
     NAME:
 
@@ -22,7 +22,68 @@ def relaxation_time(cluster, multimass=True, projected=False,method='spitzer'):
 
     PURPOSE:
 
-       Calculate the relaxation time (Spitzer 1958) of the cluster (Default is half mass relaxation time)
+       Calculate the relaxation time (Spitzer & Hart 1971) within a given radius of the cluster
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       rad - radius within which to calculate the relaxation time
+
+       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
+
+       projected - use projected values (default: False)
+
+       method - choose between Spitzer & Hart 1971 and other methods to be added later
+
+    OUTPUT:
+
+       trelax
+
+    HISTORY:
+
+       2020 - Written - Webb (UofT)
+
+    """
+
+    if rad is None:
+        rad=cluster.rm
+
+    grav=4.302e-3
+
+    if projected:
+        rindx=cluster.rpro < rad
+    else:
+        rindx=cluster.r < rad
+        
+    ntot=np.sum(rindx)
+    mbar=np.mean(cluster.m[rindx])
+    vol=4.0*np.pi*(rad**3.)/3.0
+    nrho=ntot/vol
+    
+    v2=np.mean(cluster.v**2.)
+    
+    #v2=0.4*grav*cluster.mtot/rad
+    
+    lnlambda=np.log(0.4*cluster.ntot)
+    
+    trelax=v2**(3./2.)/(15.4*grav**2.*mbar**2.*nrho*lnlambda)
+
+    # Units of Myr
+    trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
+
+    return trelax
+
+
+def half_mass_relaxation_time(cluster, multimass=True, projected=False,method='spitzer'):
+    """
+    NAME:
+
+       relaxation_time
+
+    PURPOSE:
+
+       Calculate the half-mass relaxation time (Spitzer 1958) of the cluster
 
     INPUT:
 
@@ -32,7 +93,7 @@ def relaxation_time(cluster, multimass=True, projected=False,method='spitzer'):
 
        projected - use projected values (default: False)
 
-       method - choose between Spitzer 1958 and Meylan 2011 calculations
+       method - choose between Spitzer 1987 and other methods to be added later
 
     OUTPUT:
 
@@ -45,11 +106,9 @@ def relaxation_time(cluster, multimass=True, projected=False,method='spitzer'):
     """
 
     if method=='spitzer':
-        return relaxation_time_spitzer(cluster=cluster,multimass=multimass,projected=projected)
-    elif method=='meylan':
-        return relaxation_time_meylan(cluster=cluster,projected=projected)
+        return half_mass_relaxation_time_spitzer(cluster=cluster,multimass=multimass,projected=projected)
 
-def relaxation_time_spitzer(cluster, multimass=True, projected=False):
+def half_mass_relaxation_time_spitzer(cluster, multimass=True, projected=False):
     """
     NAME:
 
@@ -57,7 +116,7 @@ def relaxation_time_spitzer(cluster, multimass=True, projected=False):
 
     PURPOSE:
 
-       Calculate the relaxation time (Spitzer 1958) of the cluster (Default is half mass relaxation time)
+       Calculate the half-mass relaxation time (Spitzer 1987) of the cluster
 
     INPUT:
 
@@ -73,87 +132,27 @@ def relaxation_time_spitzer(cluster, multimass=True, projected=False):
 
     HISTORY:
 
-       2018 - Written - Webb (UofT)
-
-    """
-    # Gravitational Constant (pc km/s^2 / Msun)
-    grav = 4.302e-3
-
-    # Find Density within Half-Mass Radius
-    if projected:
-        p50 = 3.0 * (0.5 * cluster.mtot) / (4.0 * np.pi * (cluster.rmpro ** 3.0))
-    else:
-        p50 = 3.0 * (0.5 * cluster.mtot) / (4.0 * np.pi * (cluster.rm ** 3.0))
-
-    # Find 1D Global Velocity Dispersion
-    if projected:
-        sigv_1d = np.std(cluster.vx)
-    else:
-        sigv_1d = np.sqrt(
-            (
-                np.std(cluster.vx) ** 2.0
-                + np.std(cluster.vy) ** 2.0
-                + np.std(cluster.vz) ** 2.0
-            )
-            / 3.0
-        )
-
-    # Mean stellar mass
-    mbar = np.mean(cluster.m)
-
-    if multimass:
-        lnlambda = np.log(0.02 * cluster.ntot)
-    else:
-        lnlambda = np.log(0.11 * cluster.ntot)
-
-    # Units of seconds * (pc/km)
-    trelax = 0.34 * (sigv_1d ** 3.0) / ((grav ** 2.0) * mbar * p50 * lnlambda)
-
-    # Units of Myr
-    trelax = trelax * 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
-
-    return trelax
-
-def relaxation_time_meylan(cluster, projected=False):
-    """
-    NAME:
-
-       relaxation_time
-
-    PURPOSE:
-
-       Calculate the relaxation time (Meylan 2011) of the cluster (Default is half mass relaxation time)
-
-    INPUT:
-
-       cluster - StarCluster instance
-
-       projected - use projected values (default: False)
-
-    OUTPUT:
-
-       trelax
-
-    HISTORY:
-
        2019 - Written - Webb (UofT)
 
     """
 
-
+    grav=4.302e-3
     mass=cluster.mtot
     ntot=float(cluster.ntot)
+    mbar=mass/ntot
+    lnlambda = np.log(0.4*ntot)
 
     if projected:
         rm=cluster.rmpro
     else:
         rm=cluster.rm
 
-    trelax=892000.0*((mass**0.5)/(mass/ntot))*(rm**(1.5))/np.log10(0.4*ntot)
-    trelax/=1000000.0
+
+    trelax=0.138*(mass**0.5)*(rm**1.5)/(mbar*np.sqrt(grav)*lnlambda)
+    # Units of Myr
+    trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
     return trelax
-
 
 def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
     """

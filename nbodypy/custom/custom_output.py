@@ -106,7 +106,7 @@ def obs_alpha_prof_out(
     #Get custom values of provided:
     mtot=kwargs.pop('mtot',cluster.mtot)
     rm=kwargs.pop('rm',cluster.rmpro)
-    trh=kwargs.pop('trh',relaxation_time(cluster,projected=True))
+    trh=kwargs.pop('trh',half_mass_relaxation_time(cluster,projected=True))
 
     # Write alpha_profile and dalpha for a given mass and radius range (alpha_prof.npy)
     m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbincorr = obs_mass_function(

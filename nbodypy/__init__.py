@@ -1,5 +1,3 @@
-from . import community, custom, main, observations, tables, util
-
 from .main.cluster import *
 from .main.functions import *
 from .main.load import *
@@ -19,3 +17,7 @@ from .util.recipes import *
 
 from .custom.custom_output import *
 from .custom.custom_functions import *
+
+from .community import *
+
+from .tables import *

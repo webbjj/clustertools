@@ -1,5 +1,5 @@
 import numpy as np
-from galpy.util import bovy_conversion
+from galpy.util import bovy_conversion,bovy_coords
 from galpy import potential
 import os
 

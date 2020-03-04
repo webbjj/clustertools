@@ -245,7 +245,6 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
        2018 - Written - Webb (UofT)
 
     """
-
     advance_kwargs = get_advanced_kwargs(cluster, **kwargs)
 
     if "kwfile" in kwargs:
@@ -270,6 +269,7 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             **advance_kwargs
         )
     elif cluster.ctype == "gyrfalcon":
+
         cluster = get_gyrfalcon(
             cluster.sfile,
             units="WDunits",
@@ -596,7 +596,7 @@ def get_gyrfalcon(
         mcon = 1.0
 
     # Default **kwargs
-    skiprows = kwargs.get("skiprows", 13)
+    skiprows = kwargs.pop("skiprows", 13)
 
     i_d = []
     m = []
@@ -634,6 +634,7 @@ def get_gyrfalcon(
         ctype="gyrfalcon",
         sfile=filein,
         bfile=None,
+        skiprows=skiprows,
         **kwargs
     )
 

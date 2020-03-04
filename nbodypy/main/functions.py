@@ -46,7 +46,9 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
 
     """
 
-    if rad is None:
+    if rad is None and projected:
+        rad=cluster.rmprpo
+    elif rad is None:
         rad=cluster.rm
 
     grav=4.302e-3
@@ -59,7 +61,7 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
     ntot=np.sum(rindx)
     mbar=np.mean(cluster.m[rindx])
     vol=4.0*np.pi*(rad**3.)/3.0
-    nrho=ntot/vol
+    rho=ntot/vol
     
     v2=np.mean(cluster.v**2.)
     
@@ -67,48 +69,14 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
     
     lnlambda=np.log(0.4*cluster.ntot)
     
-    trelax=v2**(3./2.)/(15.4*grav**2.*mbar**2.*nrho*lnlambda)
+    trelax=v2**(3./2.)/(15.4*grav**2.*mbar**2.*rho*lnlambda)
 
     # Units of Myr
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
     return trelax
 
-
-def half_mass_relaxation_time(cluster, multimass=True, projected=False,method='spitzer'):
-    """
-    NAME:
-
-       relaxation_time
-
-    PURPOSE:
-
-       Calculate the half-mass relaxation time (Spitzer 1958) of the cluster
-
-    INPUT:
-
-       cluster - StarCluster instance
-
-       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
-
-       projected - use projected values (default: False)
-
-       method - choose between Spitzer 1987 and other methods to be added later
-
-    OUTPUT:
-
-       trelax
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
-    """
-
-    if method=='spitzer':
-        return half_mass_relaxation_time_spitzer(cluster=cluster,multimass=multimass,projected=projected)
-
-def half_mass_relaxation_time_spitzer(cluster, multimass=True, projected=False):
+def half_mass_relaxation_time(cluster, multimass=True, projected=False):
     """
     NAME:
 
@@ -153,6 +121,49 @@ def half_mass_relaxation_time_spitzer(cluster, multimass=True, projected=False):
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
     return trelax
+
+
+def core_relaxation_time(cluster, multimass=True, projected=False):
+    """
+    NAME:
+
+       core_relaxation_time
+
+    PURPOSE:
+
+       Calculate the core relaxation time (Stone & Ostriker 2015) of the cluster
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
+
+       projected - use projected values (default: False)
+
+       method - choose between Spitzer 1987 and other methods to be added later
+
+    OUTPUT:
+
+       trelax
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """
+
+    lnlambda=np.log(0.4*cluster.ntot)
+    mtot=cluster.mtot
+    mbar=np.mean(cluster.m)
+    rc=cluster.r10
+    rh=cluster.rm
+    grav=4.302e-3
+
+    trelax=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
+
+    return trelax
+
 
 def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
     """

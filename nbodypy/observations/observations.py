@@ -317,6 +317,8 @@ def obs_alpha_prof(
         except:
             r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    print('DEBUG: ',r_lower,r_mean,r_upper,omask.r_lower)
+
     mbincorr=np.zeros(len(r_mean))
 
 

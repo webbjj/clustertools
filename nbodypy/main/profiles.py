@@ -7,7 +7,7 @@ from ..util.constants import *
 from ..util.recipes import *
 from .operations import *
 from ..util.plots import *
-from ..util.coordinates import rect_to_sphere
+from ..util.coordinates import sphere_coords
 from .functions import new_mass_function
 
 
@@ -738,9 +738,13 @@ def sigv_prof(
     vmax=None,
     emin=None,
     emax=None,
-    kwmin=0,
-    kwmax=15,
+    kwmin=None,
+    kwmax=None,
+    indx=None,
     projected=False,
+    rcustom=None,
+    coord=None,
+    normalize=True,
 ):
     """
     NAME:
@@ -771,7 +775,11 @@ def sigv_prof(
 
        projected - use projected values and constraints (Default:False)
 
-       plot - plot the density profile (Default: False)
+       rcustom - use custom radius to bin data (not well implemented)
+
+       coord - choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2)
+
+       normalize - normalize radial bins by cluster's half-mass radius (default: True)
 
     KWARGS:
 
@@ -826,13 +834,16 @@ def sigv_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
 
-    if emin != None:
+    if kwmin is not None:
+        indx*=(cluster.kw >= kwmin)
+    if kwmax is not None:
+        indx*=(cluster.kw <= kwmax)
+
+    if emin is not None:
         indx *= cluster.etot >= emin
-    if emin != None:
+    if emin is not None:
         indx *= cluster.etot <= emax
 
     # Convert to cylindrical or spherical coordinates:
@@ -842,7 +853,10 @@ def sigv_prof(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
     else:
-        r, theta, phi, vr, vt, vp = rect_to_sphere(cluster)
+        r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+    if rcustom is not None:
+        r=rcustom
 
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
@@ -861,12 +875,22 @@ def sigv_prof(
                 sigp = np.std(vp[rindx])
                 beta = 1.0 - (sigt ** 2.0 + sigp ** 2.0) / (2.0 * (sigr ** 2.0))
 
-            sigv = np.sqrt(sigr ** 2.0 + sigt ** 2.0 + sigp ** 2.0)
+            if coord is None:
+                sigv = np.sqrt(sigr ** 2.0 + sigt ** 2.0 + sigp ** 2.0)
+            elif coord=='r':
+                sigv=sigr
+            elif coord=='phi':
+                sigv=sigp
+            elif coord=='theta':
+                sigv=sigt 
 
-            if projected:
-                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            if normalize:
+                if projected:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+                else:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
             else:
-                lrprofn.append(np.log(r_mean[i] / cluster.rm))
+                lrprofn.append(np.log(r_mean[i]))
 
             sigvprof.append(sigv)
             betaprof.append(beta)
@@ -992,7 +1016,7 @@ def v_prof(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
     else:
-        r, theta, phi, vr, vt, vp = rect_to_sphere(cluster)
+        r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 

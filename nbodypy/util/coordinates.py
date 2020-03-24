@@ -10,11 +10,11 @@ import numpy as np
 from galpy.util import bovy_coords
 
 
-def rect_to_sphere(cluster):
+def sphere_coords(cluster):
     """
     NAME:
 
-       rect_to_sphere
+       cart_to_sphere
 
     PURPOSE:
 
@@ -34,24 +34,108 @@ def rect_to_sphere(cluster):
 
     """
 
-    r = np.sqrt(cluster.x ** 2.0 + cluster.y ** 2.0 + cluster.z ** 2.0)
-    theta = np.arccos(cluster.z / r)
-    phi = np.arctan2(cluster.y, cluster.x)
+    return cart_to_sphere(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
 
-    vr = (
-        cluster.vx * np.sin(theta) * np.cos(phi)
-        + cluster.vy * np.sin(theta) * np.sin(phi)
-        + cluster.vz * np.cos(theta)
+
+def cart_to_sphere(x,y,z,vx,vy,vz):
+    """
+    NAME:
+
+       cart_to_sphere
+
+    PURPOSE:
+
+       Convert cartesian coordinates to spherical coordinates
+
+    INPUT:
+
+       x,y,z,vx,vy,vz
+
+    OUTPUT:
+
+       r,theta,phi,vr,vtheta,vphi
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+
+    r=np.sqrt(x**2.+y**2.+z**2.)
+    theta=np.arccos(z/r)
+    phi=np.arctan2(y,x)
+    
+    rhatx=x/r
+    rhaty=y/r
+    rhatz=z/r
+    
+    thatx=np.cos(theta)*np.cos(phi)
+    thaty=np.cos(theta)*np.sin(phi)
+    thatz=-1.*np.sin(theta)
+    
+    phatx=-1.*np.sin(phi)
+    phaty=np.cos(phi)
+    phatz=0.
+    
+    vr=vx*rhatx+vy*rhaty+vz*rhatz
+    vtheta=vx*thatx+vy*thaty+vz*thatz
+    vphi=vx*phatx+vy*phaty+vz*phatz
+    
+    return r,phi,theta,vr,vphi,vtheta
+
+def cyl_coords(cluster):
+    """
+    NAME:
+
+       cyl_coords
+
+    PURPOSE:
+
+       Get the cylindrical coordinates of every star in the cluster
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+    OUTPUT:
+
+       r,theta,z,vr,vtheta,vz
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+    return cart_to_cyl(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
+
+def cart_to_cyl(x,y,z,vx,vy,vz):
+    """
+    NAME:
+
+       cart_to_cyl
+
+    PURPOSE:
+
+       Convert cylindrical to spherical coordinates
+
+    INPUT:
+
+       x,y,z,vx,vy,vz
+
+    OUTPUT:
+
+       r,theta,z,vr,vtheta,vz
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+    r, theta, z = bovy_coords.rect_to_cyl(x, y, z)
+    vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+        vx, vy, vz, x, y, z
     )
-    vtheta = (
-        cluster.vx * np.cos(theta) * np.cos(phi)
-        + cluster.vy * np.cos(theta) * np.sin(phi)
-        - cluster.vz * np.sin(theta)
-    )
-    vphi = cluster.vx * -np.sin(phi) + cluster.vy * np.cos(phi)
-
-    return r, theta, phi, vr, vtheta, vphi
-
+    return r, theta, z, vr, vtheta, vz
 
 def sky_coords(cluster):
     """
@@ -107,33 +191,3 @@ def sky_coords(cluster):
         cluster.to_cluster()
 
     return ra, dec, d0, pmra, pmdec, vr0
-
-
-def cyl_coords(cluster):
-    """
-    NAME:
-
-       cyl_coords
-
-    PURPOSE:
-
-       Get the cylindrical coordinates of every star in the cluster
-
-    INPUT:
-
-       cluster - a StarCluster-class object
-
-    OUTPUT:
-
-       r,theta,z,vr,vtheta,vz
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-
-    """
-    r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-    vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
-        cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
-    )
-    return r, theta, z, vr, vtheta, vz

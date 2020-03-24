@@ -46,7 +46,7 @@ def initialize_orbit(cluster, from_centre=False, r0=8.0, v0=220.0):
 
        2018 - Written - Webb (UofT)
     """
-    if cluster.units == "degrees":
+    if cluster.units == "radec":
         o = Orbit(
             [
                 cluster.ra_gc,
@@ -85,10 +85,12 @@ def initialize_orbit(cluster, from_centre=False, r0=8.0, v0=220.0):
         o = Orbit(
             [R, vR, vT, z, vz, phi], ro=r0, vo=v0, solarmotion=[-11.1, 24.0, 7.25]
         )
+        
+        return_cluster(cluster, units0, origin0)
+
 
     cluster.orbit = o
 
-    return_cluster(cluster, units0, origin0)
 
     return o
 

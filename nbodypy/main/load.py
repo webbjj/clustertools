@@ -335,8 +335,6 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             cluster = load_cluster(
                 ctype=cluster.ctype, ofile=ofile, wdir=wdir, **advance_kwargs
             )
-            print('DEBUG WDIR: ',old_wdir,wdir,cluster.wdir)
-
 
     if cluster.ntot != 0.0:
         if "kwfile" in kwargs:
@@ -657,7 +655,7 @@ def get_gyrfalcon(
 
     if ntot > 0:
 
-        cluster.add_stars(i_d, m, x, y, z, vx, vy, vz)
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
 
         if ofile == None:
             cluster.find_centre()
@@ -1000,7 +998,7 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
         cluster.add_nbody6(
             nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd
         )
-        cluster.add_stars(i_d, m, x, y, z, vx, vy, vz)
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_se(kw, logl, logr, ep, ospin)
         cluster.add_bse(
             id1,
@@ -1258,7 +1256,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
         nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd, n_p
     )
     # Add back on the centre of mass which has been substracted off by NBODY6
-    cluster.add_stars(i_d, m, x, y, z, vx, vy, vz)
+    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
     cluster.add_se(kw, logl, logr, np.zeros(nbnd), np.zeros(nbnd))
     cluster.add_energies(kin, pot, etot)
     if out9 != None:
@@ -1408,7 +1406,7 @@ def get_nbody6_out34(out34, advance=False, **kwargs):
         nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd, n_p
     )
     # Add back on the centre of mass which has been substracted off by NBODY6
-    cluster.add_stars(i_d, m, x + xc, y + yc, z + zc, vx, vy, vz)
+    cluster.add_stars(x + xc, y + yc, z + zc, vx, vy, vz, m, i_d)
     cluster.add_se(kw, logl, logr, np.zeros(nbnd), np.zeros(nbnd))
     cluster.add_energies(kin, pot, etot)
 
@@ -1590,7 +1588,7 @@ def get_snapshot(
     cluster = StarCluster(
         nbnd, tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
-    cluster.add_stars(i_d, m, x, y, z, vx, vy, vz)
+    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
     cluster.kw = kw
 
     if origin == "galaxy":
@@ -1791,7 +1789,7 @@ def get_amuse_particles(
         print("PLEASE SPECIFY UNITS")
         return 0
 
-    cluster.add_stars(i_d, m, x, y, z, vx, vy, vz, do_key_params=True)
+    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d, do_key_params=True)
 
     if origin == "galaxy":
         if ofile == None:

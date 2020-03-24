@@ -217,7 +217,7 @@ class StarCluster(object):
     snapshot in clustercentric coordinates
 
     >>> cluster=Starcluster(units='realpc',origin='cluster',ctype='snapshot')
-    >>> cluster.add_stars(id,m,x,y,z,vx,vy,vz)
+    >>> cluster.add_stars(x,y,z,vx,vy,vz,m,id)
     >>> print(cluster.rm)
     10.0
     """
@@ -431,7 +431,7 @@ class StarCluster(object):
         self.np = np
 
     def add_stars(
-        self, id, m, x, y, z, vx, vy, vz, do_key_params=False, do_order=False
+        self, x, y, z, vx, vy, vz,m=None,id=None,do_key_params=False, do_order=False
     ):
         """
         NAME:
@@ -472,14 +472,22 @@ class StarCluster(object):
 
         """
 
-        self.id = np.append(self.id, np.asarray(id))
-        self.m = np.append(self.m, np.asarray(m))
         self.x = np.append(self.x, np.asarray(x))
         self.y = np.append(self.y, np.asarray(y))
         self.z = np.append(self.z, np.asarray(z))
         self.vx = np.append(self.vx, np.asarray(vx))
         self.vy = np.append(self.vy, np.asarray(vy))
         self.vz = np.append(self.vz, np.asarray(vz))
+
+        if m is None:
+            self.m = np.append(self.m, np.ones(len(x),float))
+        else:
+            self.m = np.append(self.m, np.asarray(m))
+
+        if id is None:
+            self.id = np.linspace(0, self.ntot - 1, self.ntot, dtype=int)
+        else:
+            self.id = np.append(self.id, np.asarray(id))
 
         # Check lengths:
         nmax = np.amax(
@@ -2512,14 +2520,14 @@ def sub_cluster(
             ctype=cluster.ctype,
         )
         subcluster.add_stars(
-            cluster.id[indx],
-            cluster.m[indx],
             cluster.x[indx],
             cluster.y[indx],
             cluster.z[indx],
             cluster.vx[indx],
             cluster.vy[indx],
             cluster.vz[indx],
+            cluster.id[indx],
+            cluster.m[indx],
         )
 
         if cluster.ctype == "observations":

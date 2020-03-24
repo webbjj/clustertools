@@ -179,14 +179,14 @@ def get_limepy(g=1, **kwargs):
     cluster = StarCluster(N, units=units, origin="cluster")
     cluster.ctype = "limepy"
     cluster.add_stars(
-        np.linspace(1, N, N, dtype=int),
-        ldata.m,
         ldata.x,
         ldata.y,
         ldata.z,
         ldata.vx,
         ldata.vy,
         ldata.vz,
+        np.linspace(1, N, N, dtype=int),
+        ldata.m,
     )
     cluster.find_centre()
     cluster.key_params()
@@ -270,14 +270,14 @@ def get_spes(**kwargs):
     cluster = StarCluster(N, units=units, origin="cluster")
     cluster.ctype = "spes"
     cluster.add_stars(
-        np.linspace(1, N, N, dtype=int),
-        sdata.m,
         sdata.x,
         sdata.y,
         sdata.z,
         sdata.vx,
         sdata.vy,
         sdata.vz,
+        np.linspace(1, N, N, dtype=int),
+        sdata.m,
     )
     cluster.find_centre()
     cluster.key_params()
@@ -1092,14 +1092,14 @@ def get_galpy(pot,**kwargs):
     cluster = StarCluster(N, units='realkpc', origin="cluster")
     cluster.ctype = "galpy"
     cluster.add_stars(
-        np.linspace(1, N, N, dtype=int),
-        m,
         x,
         y,
         z,
         vx,
         vy,
         vz,
+        np.linspace(1, N, N, dtype=int),
+        m,
     )
     cluster.find_centre()
     cluster.key_params()

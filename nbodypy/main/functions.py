@@ -47,7 +47,7 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
     """
 
     if rad is None and projected:
-        rad=cluster.rmprpo
+        rad=cluster.rmpro
     elif rad is None:
         rad=cluster.rm
 

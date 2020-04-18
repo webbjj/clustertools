@@ -2526,8 +2526,8 @@ def sub_cluster(
             cluster.vx[indx],
             cluster.vy[indx],
             cluster.vz[indx],
-            cluster.id[indx],
             cluster.m[indx],
+            cluster.id[indx],
         )
 
         if cluster.ctype == "observations":

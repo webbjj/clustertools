@@ -548,6 +548,7 @@ class StarCluster(object):
             self.key_params(do_order=do_order)
 
         if len(self.id) != self.ntot:
+            print('Number Error:',len(self.id),self.ntot)
             print("Added %i stars to instance" % (len(self.id) - self.ntot))
             self.ntot = len(self.id)
 
@@ -1653,8 +1654,6 @@ class StarCluster(object):
 
             self.origin = "galaxy"
             self.units = "realkpc"
-
-            self.to_origin(origin0)
 
         self.rv3d()
 

@@ -8,6 +8,7 @@ import os
 from scipy.ndimage import gaussian_filter
 import matplotlib.colors as colors
 
+
 bovy_plot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
 current_palette = sns.color_palette()
 
@@ -813,7 +814,11 @@ def skyplot(
        2019 - Written - Webb (UofT)
 
     """
-    cluster.to_sky()
+
+    units0, origin0 = cluster.units,cluster.origin
+
+    cluster.to_radec()
+
     alpha = kwargs.pop("alpha", 0.1)
 
     if not overplot:
@@ -829,11 +834,17 @@ def skyplot(
     out = plt.plot(x, y, ".", alpha=alpha, **kwargs)
 
     if overplot:
+        cluster.to_units(units0)
+        cluster.to_origin(origin0)
+
         return out
     else:
         if do_centre:
             xgc, ygc = cluster.ragc, cluster.decgc
             plt.plot(xgc, ygc, ".", alpha=1.0, label="COM", **kwargs)
+
+        cluster.to_units(units0)
+        cluster.to_origin(origin0)
 
         if coords == "radec":
             plt.xlabel("Ra (degree)")

@@ -1095,7 +1095,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
         line3b = out9.readline().split()
 
         if nb != int(line1b[0]):
-            print("ERROR: NUMBER OF BINARIES DO NOT MATCH")
+            print("ERROR: NUMBER OF BINARIES DO NOT MATCH - ",nb,int(line1b[0]))
 
     nc = int(line2[0])
     rc = max(float(line2[1]), 0.01)
@@ -1158,52 +1158,60 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
 
         for i in range(0, nb):
             data = out9.readline().split()
-            nbbnd += 1
 
-            ecc.append(float(data[1]))
-            m1.append(float(data[4]) / zmbar)
-            m2.append(float(data[5]) / zmbar)
-            pb.append(float(data[6]) / days)
-            id1.append(int(float(data[7])))
-            id2.append(int(float(data[8])))
-            kw1.append(int(data[9]))
-            kw2.append(int(data[10]))
-            kcm.append(int(data[11]))
+            #Ignore massless ghost particles ouput by NBODY6
+            if (data[4]+data[5]) > 0:
 
-            logl1.append(1.0)
-            logl2.append(1.0)
-            logr1.append(1.0)
-            logr2.append(1.0)
+                nbbnd += 1
 
-            x1 = float(data[12])
-            y1 = float(data[13])
-            z1 = float(data[14])
-            vx1 = float(data[15])
-            vy1 = float(data[16])
-            vz1 = float(data[17])
-            x2 = float(data[18])
-            y2 = float(data[19])
-            z2 = float(data[20])
-            vx2 = float(data[21])
-            vy2 = float(data[22])
-            vz2 = float(data[23])
+                ecc.append(float(data[1]))
+                m1.append(float(data[4]) / zmbar)
+                m2.append(float(data[5]) / zmbar)
+                pb.append(float(data[6]) / days)
+                id1.append(int(float(data[7])))
+                id2.append(int(float(data[8])))
+                kw1.append(int(data[9]))
+                kw2.append(int(data[10]))
+                kcm.append(int(data[11]))
 
-            x.append((x1 * m1[-1] + x2 * m2[-1]) / (m1[-1] + m2[-1]) + xc)
-            y.append((y1 * m1[-1] + y2 * m2[-1]) / (m1[-1] + m2[-1]) + yc)
-            z.append((z1 * m1[-1] + z2 * m2[-1]) / (m1[-1] + m2[-1]) + zc)
-            vx.append((vx1 * m1[-1] + vx2 * m2[-1]) / (m1[-1] + m2[-1]))
-            vy.append((vy1 * m1[-1] + vy2 * m2[-1]) / (m1[-1] + m2[-1]))
-            vz.append((vz1 * m1[-1] + vz2 * m2[-1]) / (m1[-1] + m2[-1]))
-            m.append(m1[-1] + m2[-1])
-            i_d.append(id1[-1])
-            kw.append(max(kw1[-1], kw2[-1]))
-            logl.append(1.0)
-            logr.append(1.0)
+                logl1.append(1.0)
+                logl2.append(1.0)
+                logr1.append(1.0)
+                logr2.append(1.0)
 
-            r1 = np.sqrt((x1 - x[-1]) ** 2.0 + (y1 - y[-1]) ** 2.0 + (z1 - z[-1]) ** 2.0)
-            r2 = np.sqrt((x2 - x[-1]) ** 2.0 + (y2 - y[-1]) ** 2.0 + (z2 - z[-1]) ** 2.0)
+                x1 = float(data[12])
+                y1 = float(data[13])
+                z1 = float(data[14])
+                vx1 = float(data[15])
+                vy1 = float(data[16])
+                vz1 = float(data[17])
+                x2 = float(data[18])
+                y2 = float(data[19])
+                z2 = float(data[20])
+                vx2 = float(data[21])
+                vy2 = float(data[22])
+                vz2 = float(data[23])
 
-            semi.append((pb[-1]**2.*m[-1])**(1./3.))
+                ''' It seems binary COM information is included in OUT34
+                x.append((x1 * m1[-1] + x2 * m2[-1]) / (m1[-1] + m2[-1]) + xc)
+                y.append((y1 * m1[-1] + y2 * m2[-1]) / (m1[-1] + m2[-1]) + yc)
+                z.append((z1 * m1[-1] + z2 * m2[-1]) / (m1[-1] + m2[-1]) + zc)
+                vx.append((vx1 * m1[-1] + vx2 * m2[-1]) / (m1[-1] + m2[-1]))
+                vy.append((vy1 * m1[-1] + vy2 * m2[-1]) / (m1[-1] + m2[-1]))
+                vz.append((vz1 * m1[-1] + vz2 * m2[-1]) / (m1[-1] + m2[-1]))
+                m.append(m1[-1] + m2[-1])
+                i_d.append(id1[-1])
+                kw.append(max(kw1[-1], kw2[-1]))
+                logl.append(1.0)
+                logr.append(1.0)
+                
+
+                r1 = np.sqrt((x1 - x[-1]) ** 2.0 + (y1 - y[-1]) ** 2.0 + (z1 - z[-1]) ** 2.0)
+                r2 = np.sqrt((x2 - x[-1]) ** 2.0 + (y2 - y[-1]) ** 2.0 + (z2 - z[-1]) ** 2.0)
+                '''
+                mb=(m1[-1] + m2[-1])
+
+                semi.append((pb[-1]**2.*mb)**(1./3.))
 
     data = out34.readline().split()
 
@@ -1243,7 +1251,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
     nbnd = nsbnd + nbbnd
 
     cluster = StarCluster(
-        nbnd,
+        nsbnd,
         tphys,
         units="nbody",
         origin="cluster",

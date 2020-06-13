@@ -44,6 +44,104 @@
 <dt id="nbodypy.main.cluster.StarCluster">
 <em class="property">class </em><code class="sig-prename descclassname">nbodypy.main.cluster.</code><code class="sig-name descname">StarCluster</code><span class="sig-paren">(</span><em class="sig-param">ntot=0</em>, <em class="sig-param">tphys=0.0</em>, <em class="sig-param">units=None</em>, <em class="sig-param">origin=None</em>, <em class="sig-param">ctype='snapshot'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class that represents a star cluster population that functions can be performed on</p>
+<p>The StarCluster class, which represents a population of star particles, is what all nbodpy
+functions and operations are written to act on. Functions can be called internally (which results in new class
+variables beings set) or externally (where calculated variables are outputs). Measurements
+of variable profiles (i.e. density profile) can only be calculated externally.</p>
+<p>To declare a StarCluster, no initial variables are necessary and stars can be added
+separately. It is, however, important to set ‘units’ and ‘origin’ if any unit conversion
+or changes of origin are going to be performed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ntot</strong> (<em>int</em>) – Number of stars in the cluster (default: 0)</p></li>
+<li><p><strong>tphys</strong> (<em>float</em>) – Time (units not necessary) associated with the population (default: 0)</p></li>
+<li><p><strong>units</strong> (<em>str</em>) – Units of stellar positions and velocties. Options include ‘realpc’,
+‘realkpc’,’radec’,’nbody’,and ‘galpy’. For ‘realpc’ and ‘realkpc’,
+stellar velocities are assumed to be km/s. (default: None)</p></li>
+<li><p><strong>origin</strong> (<em>str</em>) – Origin of coordinate system within which stellar positions and velocities are defined.
+Options include ‘centre’, ‘cluster’, ‘galaxy’ and ‘sky’. Note that ‘centre’ corresponds
+to the systems centre of density or mass (as calculated by nbodypy) while ‘cluster’ corresponds
+to the orbital position of the cluster’s initial centre of mass given ‘tphys’. In some cases
+these two coordinate systems may be the same. (default: None)</p></li>
+<li><p><strong>ctype</strong> (<em>str</em>) – Code type used to generate the cluster population. Current options include ‘snapshot’,
+‘nbody6’,’nbody6se’,’gyrfalcon’,’snaptrim’, amuse’,’nbodypy’,’snapauto’. The parameter
+informs nbodypy how to load the stellar popuation and advance to the next snapshot.
+(default: ‘snapshot’)</p></li>
+<li><p><strong>**kwargs</strong></p></li>
+<li><p><strong>sfile</strong> (<em>name of file containing single star data</em>)</p></li>
+<li><p><strong>bfile</strong> (<em>name of file contain binary star data</em>)</p></li>
+<li><p><strong>ofilename</strong> (<em>orbit filename if ofile is not given</em>)</p></li>
+<li><p><strong>ounits</strong> (<em>{‘realpc’,’realkpc’,’radec’,’nbody’,’galpy’} units of orbital information (else assumed equal to StarCluster.units)</em>)</p></li>
+<li><p><strong>nsnap</strong> (<em>if a specific snapshot is to be read in instead of starting from zero</em>)</p></li>
+<li><p><strong>nzfill</strong> (<em>value for zfill when reading and writing snapshots (Default: 5)</em>)</p></li>
+<li><p><strong>snapbase</strong> (<em>string of characters in filename before nsnap (Default: ‘’)</em>)</p></li>
+<li><p><strong>snapend</strong> (<em>string of character in filename after nsnap (Default: ‘.dat’)</em>)</p></li>
+<li><p><strong>snapdir</strong> (<em>directory of snapshots if different than wdir (Default: ‘’)</em>)</p></li>
+<li><p><strong>delimiter</strong> (<em>choice of delimiter when reading ascii/csv files (Default: ‘,’)</em>)</p></li>
+<li><p><strong>wdir</strong> (<em>working directory of snapshots if not current directory</em>)</p></li>
+<li><p><strong>intialize</strong> (<em>initialize a galpy orbit after reading in orbital information (default: False)</em>)</p></li>
+<li><p><strong>kwfile</strong> (<em>open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)</em>)</p></li>
+<li><p><strong>advance</strong> (<em>set to True if this a snapshot that has been advanced to from an initial one?</em>)</p></li>
+<li><p><strong>projected</strong> (<em>calculate projected values as well as 3D values (Default: True)</em>)</p></li>
+<li><p><strong>centre_method</strong> (<em>{None,’orthographic’,’VandeVen’} method to convert to clustercentric coordinates when units are in degrees (Default: None)</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><dl class="simple">
+<dt><em>class</em> – StarCluster</dt><dd><ul>
+<li><p><em>Variables that can be set</em> – ntot : number stars + binaries
+nb : number of binary stars
+tphys : time associated with snapshot
+ctype : code used to generate snapshot
+id : star id
+x,y,z: position of stars
+vx,vy,vz: velocity of stars
+kw : stellar type of stars
+zmbar : scaling from N-body masses to solar masses
+rbar : scaling from N-body units to parsecs
+vstar : scaling from N-body units to km/s
+tstar : scaling from N-body units to Myr</p></li>
+<li><p><em>Variables that can be set or calculated</em> – xc,yc,zc,vxc,vyc,vzc : position and velocity of centre of mass (calcualte via def find_centre)
+xgc,ygc,zgc,vxgc,vygc,vzgc : position and velocity of centre of mass in Galactocentric coordinates (calcualte via def find_centre in Galaxy coordinate system)
+ra,dec,dist,pmra,pmdec,vlos : sky positions and velocities of stars
+ra_gc,dec_gc,dist_gc,pmra_gc,pmdec_gc,vlos_gc : sky positions and velocities of centre of mass
+orbit : a galpy orbit instance</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+<p>All kwargs can be called via StarCluster.kwarg_name</p>
+</p>
+</dd>
+<dt class="field-odd">Other Parameters</dt>
+<dd class="field-odd"><p><strong>None</strong></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>None</strong> – </p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">None</span></code></p>
+</div>
+<p class="rubric">Notes</p>
+<p>History - 2018 - Written - Webb (UofT)</p>
+<p class="rubric">References</p>
+<p>None</p>
+<p class="rubric">Examples</p>
+<p>Set up a 10,000 Msun StarCluster with a half-mass radius of 10 pc
+after id, masses, position, and velocities have been read in from a
+snapshot in clustercentric coordinates</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">=</span><span class="n">Starcluster</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s1">&#39;realpc&#39;</span><span class="p">,</span><span class="n">origin</span><span class="o">=</span><span class="s1">&#39;cluster&#39;</span><span class="p">,</span><span class="n">ctype</span><span class="o">=</span><span class="s1">&#39;snapshot&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">add_stars</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="nb">id</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">)</span>
+<span class="go">10.0</span>
+</pre></div>
+</div>
 <dl class="method">
 <dt id="nbodypy.main.cluster.StarCluster.add_actions">
 <code class="sig-name descname">add_actions</code><span class="sig-paren">(</span><em class="sig-param">JR</em>, <em class="sig-param">Jphi</em>, <em class="sig-param">Jz</em>, <em class="sig-param">OR</em>, <em class="sig-param">Ophi</em>, <em class="sig-param">Oz</em>, <em class="sig-param">TR</em>, <em class="sig-param">Tphi</em>, <em class="sig-param">Tz</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.add_actions" title="Permalink to this definition">¶</a></dt>
@@ -71,7 +169,7 @@
 
 <dl class="method">
 <dt id="nbodypy.main.cluster.StarCluster.add_bse">
-<code class="sig-name descname">add_bse</code><span class="sig-paren">(</span><em class="sig-param">id1</em>, <em class="sig-param">id2</em>, <em class="sig-param">kw1</em>, <em class="sig-param">kw2</em>, <em class="sig-param">kcm</em>, <em class="sig-param">ecc</em>, <em class="sig-param">pb</em>, <em class="sig-param">semi</em>, <em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">logl1</em>, <em class="sig-param">logl2</em>, <em class="sig-param">logr1</em>, <em class="sig-param">logr2</em>, <em class="sig-param">ep1</em>, <em class="sig-param">ep2</em>, <em class="sig-param">ospin1</em>, <em class="sig-param">ospin2</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.add_bse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_bse</code><span class="sig-paren">(</span><em class="sig-param">id1</em>, <em class="sig-param">id2</em>, <em class="sig-param">kw1</em>, <em class="sig-param">kw2</em>, <em class="sig-param">kcm</em>, <em class="sig-param">ecc</em>, <em class="sig-param">pb</em>, <em class="sig-param">semi</em>, <em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">logl1</em>, <em class="sig-param">logl2</em>, <em class="sig-param">logr1</em>, <em class="sig-param">logr2</em>, <em class="sig-param">ep1=None</em>, <em class="sig-param">ep2=None</em>, <em class="sig-param">ospin1=None</em>, <em class="sig-param">ospin2=None</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.add_bse" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_bse</p>
@@ -274,7 +372,7 @@ Notes:</p>
 
 <dl class="method">
 <dt id="nbodypy.main.cluster.StarCluster.add_stars">
-<code class="sig-name descname">add_stars</code><span class="sig-paren">(</span><em class="sig-param">id</em>, <em class="sig-param">m</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">vx</em>, <em class="sig-param">vy</em>, <em class="sig-param">vz</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.add_stars" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_stars</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">vx</em>, <em class="sig-param">vy</em>, <em class="sig-param">vz</em>, <em class="sig-param">m=None</em>, <em class="sig-param">id=None</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.add_stars" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_stars</p>
@@ -317,6 +415,11 @@ Notes:</p>
 <dl class="method">
 <dt id="nbodypy.main.cluster.StarCluster.calc_actions">
 <code class="sig-name descname">calc_actions</code><span class="sig-paren">(</span><em class="sig-param">pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], r0=8.0, v0=220.0, **kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.calc_actions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="nbodypy.main.cluster.StarCluster.convert_binary_units">
+<code class="sig-name descname">convert_binary_units</code><span class="sig-paren">(</span><em class="sig-param">param</em>, <em class="sig-param">from_units</em>, <em class="sig-param">to_units</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.cluster.StarCluster.convert_binary_units" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -1016,6 +1119,34 @@ calculate key parameters</p>
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="nbodypy.main.functions.core_relaxation_time">
+<code class="sig-prename descclassname">nbodypy.main.functions.</code><code class="sig-name descname">core_relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.functions.core_relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>core_relaxation_time</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate the core relaxation time (Stone &amp; Ostriker 2015) of the cluster</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
+<p>projected - use projected values (default: False)</p>
+<p>method - choose between Spitzer 1987 and other methods to be added later</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>trelax</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
 <dt id="nbodypy.main.functions.energies">
 <code class="sig-prename descclassname">nbodypy.main.functions.</code><code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.functions.energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
@@ -1076,6 +1207,33 @@ calculate key parameters</p>
 <p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="nbodypy.main.functions.half_mass_relaxation_time">
+<code class="sig-prename descclassname">nbodypy.main.functions.</code><code class="sig-name descname">half_mass_relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.functions.half_mass_relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>relaxation_time</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate the half-mass relaxation time (Spitzer 1987) of the cluster</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
+<p>projected - use projected values (default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>trelax</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
 </div></blockquote>
 </dd></dl>
 
@@ -1205,21 +1363,22 @@ if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror</p
 
 <dl class="function">
 <dt id="nbodypy.main.functions.relaxation_time">
-<code class="sig-prename descclassname">nbodypy.main.functions.</code><code class="sig-name descname">relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">local=False</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.functions.relaxation_time" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.main.functions.</code><code class="sig-name descname">relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">rad=None</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">method='spitzer'</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.functions.relaxation_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>relaxation_time</p>
 </div></blockquote>
 <p>PURPOSE:</p>
 <blockquote>
-<div><p>Calculate the relaxation time (Spitzer 1958) of the cluster (Default is half mass relaxation time)</p>
+<div><p>Calculate the relaxation time (Spitzer &amp; Hart 1971) within a given radius of the cluster</p>
 </div></blockquote>
 <p>INPUT:</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
-<p>local - calcuate relaxation time at each lagrange bin (True) or the half mass radius (False) (default: False)</p>
+<p>rad - radius within which to calculate the relaxation time</p>
 <p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
 <p>projected - use projected values (default: False)</p>
+<p>method - choose between Spitzer &amp; Hart 1971 and other methods to be added later</p>
 </div></blockquote>
 <p>OUTPUT:</p>
 <blockquote>
@@ -1227,7 +1386,7 @@ if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror</p
 </div></blockquote>
 <p>HISTORY:</p>
 <blockquote>
-<div><p>2018 - Written - Webb (UofT)</p>
+<div><p>2020 - Written - Webb (UofT)</p>
 </div></blockquote>
 </dd></dl>
 
@@ -1518,6 +1677,11 @@ full - do full array of stars at once with numbra (default: True)</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="nbodypy.main.initialize.get_galpy">
+<code class="sig-prename descclassname">nbodypy.main.initialize.</code><code class="sig-name descname">get_galpy</code><span class="sig-paren">(</span><em class="sig-param">pot</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.initialize.get_galpy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="nbodypy.main.initialize.get_harris_cluster">
 <code class="sig-prename descclassname">nbodypy.main.initialize.</code><code class="sig-name descname">get_harris_cluster</code><span class="sig-paren">(</span><em class="sig-param">data</em>, <em class="sig-param">gcname</em>, <em class="sig-param">mbar=0.4</em>, <em class="sig-param">names=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.initialize.get_harris_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
@@ -1624,8 +1788,13 @@ full - do full array of stars at once with numbra (default: True)</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="nbodypy.main.initialize.sample_galpy_potential">
+<code class="sig-prename descclassname">nbodypy.main.initialize.</code><code class="sig-name descname">sample_galpy_potential</code><span class="sig-paren">(</span><em class="sig-param">pot</em>, <em class="sig-param">n</em>, <em class="sig-param">rmin</em>, <em class="sig-param">rmax</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em>, <em class="sig-param">coordinates='cartesian'</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.initialize.sample_galpy_potential" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="nbodypy.main.initialize.setup_cluster">
-<code class="sig-prename descclassname">nbodypy.main.initialize.</code><code class="sig-name descname">setup_cluster</code><span class="sig-paren">(</span><em class="sig-param">ctype</em>, <em class="sig-param">units='realpc'</em>, <em class="sig-param">origin='cluster'</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.initialize.setup_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.main.initialize.</code><code class="sig-name descname">setup_cluster</code><span class="sig-paren">(</span><em class="sig-param">ctype</em>, <em class="sig-param">units='realpc'</em>, <em class="sig-param">origin='cluster'</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">pot=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.initialize.setup_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>setup_cluster</p>
@@ -1757,7 +1926,7 @@ full - do full array of stars at once with numbra (default: True)</p>
 
 <dl class="function">
 <dt id="nbodypy.main.load.get_amuse_particles">
-<code class="sig-prename descclassname">nbodypy.main.load.</code><code class="sig-name descname">get_amuse_particles</code><span class="sig-paren">(</span><em class="sig-param">particles</em>, <em class="sig-param">npyunits='realkpc'</em>, <em class="sig-param">npyorigin='galaxy'</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.load.get_amuse_particles" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.main.load.</code><code class="sig-name descname">get_amuse_particles</code><span class="sig-paren">(</span><em class="sig-param">particles</em>, <em class="sig-param">units='realkpc'</em>, <em class="sig-param">origin='galaxy'</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.load.get_amuse_particles" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>get_amuse_particles</p>
@@ -1769,8 +1938,8 @@ full - do full array of stars at once with numbra (default: True)</p>
 <p>INPUT:</p>
 <blockquote>
 <div><p>particles - AMUSE particle dataset</p>
-<p>npyunits - units of input data (default: realkpc)</p>
-<p>npyorigin - origin of input data (default: cluster)</p>
+<p>units - units of input data (default: realkpc)</p>
+<p>origin - origin of input data (default: cluster)</p>
 </div></blockquote>
 <p>KWARGS:</p>
 <blockquote>
@@ -2958,7 +3127,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="nbodypy.main.profiles.sigv_prof">
-<code class="sig-prename descclassname">nbodypy.main.profiles.</code><code class="sig-name descname">sigv_prof</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=15</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.profiles.sigv_prof" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">nbodypy.main.profiles.</code><code class="sig-name descname">sigv_prof</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=None</em>, <em class="sig-param">kwmax=None</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">rcustom=None</em>, <em class="sig-param">coord=None</em>, <em class="sig-param">normalize=True</em><span class="sig-paren">)</span><a class="headerlink" href="#nbodypy.main.profiles.sigv_prof" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>sigv_prof</p>
@@ -2978,7 +3147,9 @@ NAME:</p>
 <p>kwmin/kwmax - minimum and maximum stellar type (kw)</p>
 <p>indx - user defined boolean array from which to extract the subset</p>
 <p>projected - use projected values and constraints (Default:False)</p>
-<p>plot - plot the density profile (Default: False)</p>
+<p>rcustom - use custom radius to bin data (not well implemented)</p>
+<p>coord - choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2)</p>
+<p>normalize - normalize radial bins by cluster’s half-mass radius (default: True)</p>
 </div></blockquote>
 <p>KWARGS:</p>
 <blockquote>

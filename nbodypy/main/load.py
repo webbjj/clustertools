@@ -1160,7 +1160,7 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
             data = out9.readline().split()
 
             #Ignore massless ghost particles ouput by NBODY6
-            if (data[4]+data[5]) > 0:
+            if (float(data[4])+float(data[5])) > 0:
 
                 nbbnd += 1
 

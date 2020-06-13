@@ -1024,6 +1024,7 @@ def rlimiting(
     cluster.to_centre()
     cluster.to_galpy()
 
+
     if rgc != None:
         R = rgc / r0
         z = 0.0
@@ -1056,12 +1057,12 @@ def rlimiting(
         rl *= 1000.0 * r0
     elif units0 == "realkpc":
         rl *= r0
-    elif units == "nbody":
+    elif units0 == "nbody":
         rl *= 1000.0 * r0 / cluster.rbar
 
     cluster.rl = rl
 
-    return_cluster(cluster, units0, origin0)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
     if plot:
         if verbose:

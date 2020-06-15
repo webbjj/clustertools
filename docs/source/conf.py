@@ -18,7 +18,7 @@ import datetime
 
 # -- Project information -----------------------------------------------------
 
-project = 'streamtools'
+project = 'clustertools'
 if datetime.datetime.now().year > 2020:
     copyright = u'2020 - {}, Jeremy J. Webb'.format(datetime.datetime.now().year)
 else:

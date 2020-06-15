@@ -1,3 +1,0 @@
-[submodule "nbodypy/community/limepy"]
-	path = nbodypy/community/limepy
-	url = https://github.com/webbjj/limepy.git

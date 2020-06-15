@@ -1,29 +1,17 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+import setuptools
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+with open("README.md", "r") as fh:
+    long_description = fh.read()
 
-readme = open('README').read()
-history = open('HISTORY').read().replace('.. :changelog:', '')
-
-requirements = ['numpy', 'scipy>=0.14.0', 'galpy', 'numba', 'limepy', 'seaborn']
-
-setup(
-    name='nbodypy',
-    version='0.1.0',
-    description='Package to Analyse N-body Simulations of Star Clusters',
-    long_description=readme + '\n\n' + history,
-    author='Jeremy Webb',
-    author_email='webb@astro.utoronto.ca',
-    url='https://github.com/webbjj/nbodypy.git',
-    packages=[
-        'nbodypy'
-    ],
-    package_dir={'main':'main','util':'util','custom':'custom'},
-    license="BSD",
-    install_requires=requirements,
-    keywords='nbodypy'
-)
+setuptools.setup(
+    name="clustertools",
+    version="0.1.dev1",
+    author="Jeremy J. Webb",
+    author_email="webb@astro.utoronto.ca",
+    description="A python packaged for analysing star clusters",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    license='MIT',
+    packages=["clustertools","clustertools/main","clustertools/util","clustertools/observations","clustertools/tables",,"clustertools/custom"],
+    install_requires=['numpy>=1.7','scipy','galpy','numba','limepy','seaborn']
+    )

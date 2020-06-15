@@ -8,7 +8,9 @@ Welcome to clustertools's documentation!
 
 .. toctree::
    :maxdepth: 2
+
    contents.rst
+
    modules.rst
 
 

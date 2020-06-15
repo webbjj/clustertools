@@ -29,8 +29,8 @@ c_to_w0=initialize.c_to_w0
 w0_to_c=initialize.w0_to_c
 sample_galpy_potential=initialize.sample_galpy_potential
 
-load_cluster-load.load_cluster
-advance_cluster=oad.advance_cluster
+load_cluster=load.load_cluster
+advance_cluster=load.advance_cluster
 
 save_cluster=operations.save_cluster
 return_cluster=operations.return_cluster

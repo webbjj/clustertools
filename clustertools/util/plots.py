@@ -657,9 +657,9 @@ def starplot(
                 plt.plot(xgc, ygc, ".", alpha=1.0, label="COM", **kwargs)
             if cluster.units == "nbody":
                 units = "(NBODY)"
-            elif cluster.units == "realpc":
+            elif cluster.units == "pckms":
                 units = "(pc)"
-            elif cluster.units == "realkpc":
+            elif cluster.units == "kpckms":
                 units = "(kpc)"
             elif cluster.units == "galpy":
                 units = "(GALPY)"
@@ -700,9 +700,9 @@ def starplot(
 
         if cluster.units == "nbody":
             units = "(NBODY)"
-        elif cluster.units == "realpc":
+        elif cluster.units == "pckms":
             units = "(pc)"
-        elif cluster.units == "realkpc":
+        elif cluster.units == "kpckms":
             units = "(kpc)"
         elif cluster.units == "galpy":
             units = "(GALPY)"

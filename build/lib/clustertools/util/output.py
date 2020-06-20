@@ -6,10 +6,9 @@ from galpy.util import bovy_conversion
 
 
 from .coordinates import sky_coords
-from ..main.cluster import *
-from ..main.functions import *
-from ..main.profiles import *
-from ..main.operations import *
+from ..analysis.functions import *
+from ..analysis.profiles import *
+from ..analysis.operations import *
 
 
 def extrct_out(cluster, fileout, projected=False):
@@ -46,7 +45,7 @@ def extrct_out(cluster, fileout, projected=False):
         trh = 0.0
         rn = np.zeros(10)
     else:
-        cluster.to_realpc()
+        cluster.to_pckms()
         cluster.to_centre(do_order=True, do_key_params=True)
 
         if cluster.nb > 0:
@@ -316,7 +315,7 @@ def gyrout(cluster, filename="init.nemo.dat"):
 
     units0, origin0 = save_cluster(cluster)
     cluster.to_galaxy()
-    cluster.to_realkpc()
+    cluster.to_kpckms()
 
     np.savetxt(
         filename,

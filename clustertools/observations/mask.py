@@ -1,4 +1,4 @@
-from ..main.cluster import sub_cluster
+from ..analysis.cluster import sub_cluster
 from ..util.recipes import *
 import numpy as np
 from scipy.spatial import ConvexHull

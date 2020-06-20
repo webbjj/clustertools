@@ -6,11 +6,11 @@ import matplotlib.pyplot as plt
 from galpy.util import bovy_plot
 import os
 
-from ..main.cluster import sub_cluster
+from ..analysis.cluster import sub_cluster
 from ..util.coordinates import sky_coords
-from ..main.functions import *
-from ..main.profiles import *
-from ..main.operations import *
+from ..analysis.functions import *
+from ..analysis.profiles import *
+from ..analysis.operations import *
 from ..observations.observations import *
 
 

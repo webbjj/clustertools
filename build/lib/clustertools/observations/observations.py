@@ -1,6 +1,6 @@
 # Routines for analysing Nbody models as if they were Observations
 import numpy as np
-from ..main.operations import save_cluster, return_cluster
+from ..analysis.operations import save_cluster, return_cluster
 from ..util.recipes import *
 from ..util.plots import *
 

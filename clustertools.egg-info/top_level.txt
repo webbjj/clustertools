@@ -1,6 +1,6 @@
 clustertools
+clustertools/analysis
 clustertools/custom
-clustertools/main
 clustertools/observations
 clustertools/tables
 clustertools/util

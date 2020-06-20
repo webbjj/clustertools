@@ -6,6 +6,8 @@ from . import recipes
 # 
 # Functions
 #
+kwtypes=constants.kwtypes
+
 sphere_coords=coordinates.sphere_coords
 cart_to_sphere=coordinates.cart_to_sphere
 cyl_coords=coordinates.cyl_coords

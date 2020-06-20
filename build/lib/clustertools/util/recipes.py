@@ -171,14 +171,14 @@ def power_law_distribution_function(n, alpha, xmin, xmax):
 
 def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None, plot=False, **kwargs):
     """
-  NAME:
+    NAME:
 
      dx_function
 
-  PURPOSE:
+    PURPOSE:
 
      Find distribution function using nx bins containing an equal number of points
-  INPUT:
+    INPUT:
 
      x - input array
 
@@ -188,16 +188,16 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
 
      x_lower,x_mean,x_upper - preset bins
 
-  OUTPUT:
+    OUTPUT:
 
      x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
 
 
-  HISTORY:
+    HISTORY:
 
      2018 - Written - Webb (UofT)
 
-  """
+    """
 
     if x_lower is None:
         if bintype == "num":
@@ -236,33 +236,33 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
 
 def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
     """
-  NAME:
+    NAME:
 
-     x_hist
+        x_hist
 
-  PURPOSE:
+    PURPOSE:
 
-     Find histogram
-  INPUT:
+        Find histogram
 
-     x - input array
+    INPUT:
 
-     nx - number of bins
+        x input array
 
-     bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
+        nx number of bins
 
-     x_lower,x_mean,x_upper - preset bins
+        bintype bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
 
-  OUTPUT:
+        x_lower,x_mean,x_upper
 
-     x_mean,x_hist
+    OUTPUT:
 
+        x_mean,x_hist
 
-  HISTORY:
+    HISTORY:
 
-     2019 - Written - Webb (UofT)
+        2019 - Written - Webb (UofT)
 
-  """
+    """
 
     if x_lower is None:
         if bintype == "num":
@@ -279,14 +279,14 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
 
 def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
     """
-  NAME:
+    NAME:
 
      mean_prof
 
-  PURPOSE:
+    PURPOSE:
 
      Calculate mean profile of parameter y that depends on x  
-  INPUT:
+    INPUT:
 
      x,y coordinates from which to measure the mean profile
 
@@ -298,15 +298,15 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
 
      median - find median instead of mean (Default: False)
 
-  OUTPUT:
+    OUTPUT:
 
      x_bin,y_bin,y_sig
 
-  HISTORY:
+    HISTORY:
 
      2018 - Written - Webb (UofT)
 
-  """
+    """
     if bintype == "num":
         x_lower, x_mid, x_upper, x_hist = nbinmaker(x, nbin)
     else:
@@ -340,15 +340,15 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
 
 def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
     """
-  NAME:
+    NAME:
 
      smooth
 
-  PURPOSE:
+    PURPOSE:
 
      Smooth a profile
 
-  INPUT:
+    INPUT:
 
      x,y coordinates from which to measure the mean profile
 
@@ -358,19 +358,19 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
 
      median - find median instead of mean (Default: False)
 
-  KWARGS:
+    KWARGS:
 
      dx - width of smoothening bin
 
-  OUTPUT:
+    OUTPUT:
 
      x_bin,y_bin,y_sig
 
-  HISTORY:
+    HISTORY:
 
      2018 - Written - Webb (UofT)
 
-  """
+    """
     x = np.array(x)
     y = np.array(y)
 
@@ -419,15 +419,15 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
 
 def interpolate(r1, r2, x=None, y=None):
     """
-  NAME:
+    NAME:
 
      interpolate
 
-  PURPOSE:
+    PURPOSE:
 
      Perform simple linear interpolate between two points in 2D
 
-  INPUT:
+    INPUT:
 
      r1,r2 - x,y coordinates from which to interpolate
 
@@ -435,15 +435,15 @@ def interpolate(r1, r2, x=None, y=None):
 
      y - y-value from which to interpolate x
 
-  OUTPUT:
+    OUTPUT:
 
      interpolated value
 
-  HISTORY:
+    HISTORY:
 
      2019 - Written - Webb (UofT)
 
-  """
+    """
     x1, y1 = r1
     x2, y2 = r2
 
@@ -460,30 +460,30 @@ def interpolate(r1, r2, x=None, y=None):
 
 def rotate(x, y, z, thetax=0.0, thetay=0.0, thetaz=0.0):
     """
-  NAME:
+    NAME:
 
      rotate
      --> This function is a work in progress. It is meant to eventually be a function for rotating streams to phi1/phi2 coordinates
 
-  PURPOSE:
+    PURPOSE:
 
      Rotate StarCluster
 
-  INPUT:
+    INPUT:
 
      x,y,z - coordinates of stars
 
      thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates
 
-  OUTPUT:
+    OUTPUT:
 
      rotated values of x,y,z
 
-  HISTORY:
+    HISTORY:
 
      2019 - Written - Webb (UofT)
 
-  """
+    """
     # rotate about x axis:
     y2 = y * np.cos(thetax) - z * np.sin(thetax)
     z2 = -y * np.sin(thetax) + z * np.cos(thetax)
@@ -654,24 +654,24 @@ def distance(x1, x2):
     """
     NAME:
 
-       distance
+    distance
 
     PURPOSE:
 
-       Find distance between two points (made for use with numba)
+    Find distance between two points (made for use with numba)
 
     INPUT:
 
-       x1=[x,y,z]
-       x2=[x,y,z]
+    x1=[x,y,z]
+    x2=[x,y,z]
 
     OUTPUT:
 
-       distance
+    distance
 
     HISTORY:
 
-       2019 - Written - Webb (UofT)
+    2019 - Written - Webb (UofT)
     """
 
     dx = x2[0] - x1[0]

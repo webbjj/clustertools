@@ -39,7 +39,7 @@ It is also possible to include stellar masses ``m`` and ids ``id`` if they are k
 
 Otherwise, masses will be set to 1 and ids will simply be set to integer values between 1 and the number of stars in the cluster.
 
-Finally, using ``add_stars`` results in ``cluster.ntot`` being recalculated. Hence if the total number of stars is not initially known when ``StarCluster`` is first initialized, or perhaps changes, ``cluster.ntot`` is adjusted accordingly.
+Finally, using ``add_stars`` results in ``cluster.ntot`` being calculated. Otherwise it would have to be set manually.
 
 Two other features in ``add_stars`` that are by default set to ``False`` are ``do_order`` and ``do_key_params`` for computational efficiency. Setting ``do_key_params=True`` will cause the total mass ``cluster.mtot``, mean mass ``cluster.mmean``, mean radius ``cluster.meanr``, and maximum radius ``cluster.rmax`` to be calculated. If ``do_order=True``, then stars will be sorted based on their distance from the origin (information stored in ``cluster.rorder``) and the half-mass radius ``rm`` and 10\% Lagrange radius ``r10`` will be calculated as well. Alternatively, one can call:
 
@@ -57,7 +57,8 @@ It is beneficial to use ``add_orbit`` as opposed to setting variables like ``clu
 
 >>> cluster.add_nbody6(nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd)
 >>> cluster.add_sse(kw, logl, logr, ep, ospin)
->>> cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2,ep1,ep2,ospin1,ospin2)
+>>> cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,
+                    logr2,ep1,ep2,ospin1,ospin2)
 
 For those not familiar with ``NBODY6``, please consult the documention for ``add_nbody6``, ``add_sse``, and ``add_bse`` for the defintion of each variable. It is important to note that each of the above variables are intialized with upon the initialization of ``StarCluster``, hence they can be set manually as well if you are using a code other than ``NBODY6`` and would like to define some of these parameters. Note, no units or origin are associated with any of the values provided via ``add_nbody6``, ``add_sse``, and ``add_bse`` such that they are not adjusted when unit and coordinate transformations are performed. 
 

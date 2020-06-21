@@ -1,0 +1,426 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.util.recipes module &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="clustertools.util.plots module" href="clustertools.util.plots.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.html" title="clustertools.util.plots module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.util.html" accesskey="U">clustertools.util package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.util.plots.html"
+                        title="previous chapter">clustertools.util.plots module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/clustertools.util.recipes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-clustertools.util.recipes">
+<span id="clustertools-util-recipes-module"></span><h1>clustertools.util.recipes module<a class="headerlink" href="#module-clustertools.util.recipes" title="Permalink to this headline">¶</a></h1>
+<p>Generic recipes for making key calculations</p>
+<dl class="function">
+<dt id="clustertools.util.recipes.nbinmaker">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">nbinmaker</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nbin=10</em>, <em class="sig-param">nsum=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#nbinmaker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.nbinmaker" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>nbinmaker</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Split an array into nbin bin’s of equal number elements</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x - input array</p>
+<p>nbin - number of bins</p>
+<p>nsum - return number of points in each bin</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_lower,x_mid,x_upper,x_hist (if nsum==False)</p>
+<p>x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.binmaker">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">binmaker</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nbin=10</em>, <em class="sig-param">nsum=False</em>, <em class="sig-param">steptype='linear'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#binmaker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.binmaker" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>binmaker</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Split an array into nbin bin’s of equal size</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x - input array</p>
+<p>nbin - number of bins</p>
+<p>nsum - return number of points in each bin</p>
+<p>steptype - linear or logarithmic steps</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_lower,x_mid,x_upper,x_hist (if nsum==False)</p>
+<p>x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.power_law_distribution_function">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">power_law_distribution_function</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">alpha</em>, <em class="sig-param">xmin</em>, <em class="sig-param">xmax</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#power_law_distribution_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.power_law_distribution_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>power_law_distribution_function</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Generate points from a power-law distribution function</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>n - number of points</p>
+<p>alpha - power-law slope of distribution function</p>
+<p>xmin,xmax - minimum and maximum values of distribution</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>c</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.dx_function">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">dx_function</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">bintype='num'</em>, <em class="sig-param">x_lower=None</em>, <em class="sig-param">x_mean=None</em>, <em class="sig-param">x_upper=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#dx_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.dx_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>dx_function</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find distribution function using nx bins containing an equal number of points</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x - input array</p>
+<p>nx - number of bins</p>
+<p>bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</p>
+<p>x_lower,x_mean,x_upper - preset bins</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.x_hist">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">x_hist</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">bintype='num'</em>, <em class="sig-param">x_lower=None</em>, <em class="sig-param">x_mean=None</em>, <em class="sig-param">x_upper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#x_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.x_hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>x_hist</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find histogram</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x input array</p>
+<p>nx number of bins</p>
+<p>bintype bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</p>
+<p>x_lower,x_mean,x_upper</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_mean,x_hist</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.mean_prof">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">mean_prof</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">nbin=10</em>, <em class="sig-param">bintype='fix'</em>, <em class="sig-param">steptype='linear'</em>, <em class="sig-param">median=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#mean_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.mean_prof" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>mean_prof</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate mean profile of parameter y that depends on x</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x,y coordinates from which to measure the mean profile</p>
+<p>nbin - number of bins</p>
+<p>bintype - can be bins of fixed size (‘fix’) or equal number of stars (‘num’)</p>
+<p>steptype - for fixed size arrays, set step size to ‘linear’ or ‘log’</p>
+<p>median - find median instead of mean (Default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_bin,y_bin,y_sig</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.smooth">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">smooth</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">nbin=10</em>, <em class="sig-param">bintype='fix'</em>, <em class="sig-param">median=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#smooth"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>smooth</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Smooth a profile</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x,y coordinates from which to measure the mean profile</p>
+<p>nbin - number of bins to smooth over</p>
+<p>bintype - can be bins of fixed size (‘fix’) or equal number of stars (‘num’)</p>
+<p>median - find median instead of mean (Default: False)</p>
+</div></blockquote>
+<p>KWARGS:</p>
+<blockquote>
+<div><p>dx - width of smoothening bin</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_bin,y_bin,y_sig</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.interpolate">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="sig-param">r1</em>, <em class="sig-param">r2</em>, <em class="sig-param">x=None</em>, <em class="sig-param">y=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.interpolate" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>interpolate</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Perform simple linear interpolate between two points in 2D</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>r1,r2 - x,y coordinates from which to interpolate</p>
+<p>x - x-value from which to interpolate y</p>
+<p>y - y-value from which to interpolate x</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>interpolated value</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.rotate">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">rotate</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">thetax=0.0</em>, <em class="sig-param">thetay=0.0</em>, <em class="sig-param">thetaz=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#rotate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.rotate" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>rotate
+–&gt; This function is a work in progress. It is meant to eventually be a function for rotating streams to phi1/phi2 coordinates</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Rotate StarCluster</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x,y,z - coordinates of stars</p>
+<p>thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>rotated values of x,y,z</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.recipes.area_enclosed">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">area_enclosed</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">thresh=None</em>, <em class="sig-param">nrand=1000</em>, <em class="sig-param">method='sphere'</em>, <em class="sig-param">full=False</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#area_enclosed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.area_enclosed" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>area_enclosed</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>calculate area enclosed by a collection of points by finding what fraction of a random distribution overlaps with points</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x,y - x and y coorindates</p>
+<p>thresh - threshold for overlap between random distribution and points (Default: None - use maximum nearest neighbour)</p>
+<p>nrand - number of random points to be generated in uniform distribution (Default: 1000)</p>
+<p>method - generate spherical or rectangular distribution of random points (Default: sphere)</p>
+<p>plot - plot overlap (Default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>area</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="clustertools.util.recipes.minimum_distance">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">minimum_distance</code><a class="reference internal" href="../_modules/clustertools/util/recipes.html#minimum_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.minimum_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>minimum_distance</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find distance to each point’s nearest neighbour</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x=[x,y,z].T</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>distance to nearest neighbour</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="clustertools.util.recipes.distance">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">distance</code><a class="reference internal" href="../_modules/clustertools/util/recipes.html#distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<p>distance</p>
+<p>PURPOSE:</p>
+<p>Find distance between two points (made for use with numba)</p>
+<p>INPUT:</p>
+<p>x1=[x,y,z]
+x2=[x,y,z]</p>
+<p>OUTPUT:</p>
+<p>distance</p>
+<p>HISTORY:</p>
+<p>2019 - Written - Webb (UofT)</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.html" title="clustertools.util.plots module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.util.html" >clustertools.util package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

@@ -35,7 +35,7 @@ from galpy.util import bovy_conversion
 
 
 def find_centre(
-    self,
+    cluster,
     xstart=0.0,
     ystart=0.0,
     zstart=0.0,
@@ -93,7 +93,8 @@ def find_centre(
         return 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
     if density:
-        xc,yc,zc,vxc,vyc,vzc=cluster.find_centre_of_density(
+        xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(
+            cluster=cluster,
             xstart=xstart,
             ystart=ystart,
             zstart=zstart,
@@ -138,10 +139,10 @@ def find_centre(
         vyc = np.sum(cluster.m[indx] * cluster.vy[indx]) / np.sum(cluster.m[indx])
         vzc = np.sum(cluster.m[indx] * cluster.vz[indx]) / np.sum(cluster.m[indx])
 
-        return xc, yc, zc, vxc, vyc, vzc
+    return xc, yc, zc, vxc, vyc, vzc
 
 def find_centre_of_density(
-    self,
+    cluster,
     xstart=0.0,
     ystart=0.0,
     zstart=0.0,
@@ -251,7 +252,7 @@ def find_centre_of_density(
     return xdc, ydc, zdc,vxdc, vydc, vzdc
 
 
-def find_centre_of_mass(self):
+def find_centre_of_mass(cluster):
     """
     NAME:
 
@@ -364,7 +365,7 @@ def to_pckms(cluster, do_key_params=False):
     if do_key_params:
         cluster.key_params()
 
-def to_kpckms(self, do_key_params=False, ro=8.0, vo=220.0):
+def to_kpckms(cluster, do_key_params=False, ro=8.0, vo=220.0):
     """
     NAME:
 
@@ -460,7 +461,7 @@ def to_kpckms(self, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params()
 
-def to_nbody(self, do_key_params=False, ro=8.0, vo=220.0):
+def to_nbody(cluster, do_key_params=False, ro=8.0, vo=220.0):
     """
     NAME:
 
@@ -518,7 +519,7 @@ def to_nbody(self, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params()
 
-def to_radec(self, do_key_params=False, ro=8.0, vo=220.0):
+def to_radec(cluster, do_key_params=False, ro=8.0, vo=220.0):
     """
     NAME:
 
@@ -637,7 +638,7 @@ def to_radec(self, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params(do_order=do_order)
 
-def from_radec(self, do_order=False, do_key_params=False):
+def from_radec(cluster, do_order=False, do_key_params=False):
     """
     NAME:
 
@@ -719,7 +720,7 @@ def from_radec(self, do_order=False, do_key_params=False):
     if do_key_params:
         cluster.key_params(do_order=do_order)
 
-def to_galpy(self, do_key_params=False, ro=8.0, vo=220.0):
+def to_galpy(cluster, do_key_params=False, ro=8.0, vo=220.0):
     """
     NAME:
 
@@ -775,7 +776,7 @@ def to_galpy(self, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params()
 
-def to_units(self, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
+def to_units(cluster, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
     """
     NAME:
 
@@ -848,7 +849,7 @@ def rotate_to_tail(cluster):
     cluster.y = y
     cluster.z = z
 
-def to_centre(self, do_order=False, do_key_params=False, centre_method=None):
+def to_centre(cluster, do_order=False, do_key_params=False, centre_method=None):
     """
     NAME:
 
@@ -891,7 +892,7 @@ def to_centre(self, do_order=False, do_key_params=False, centre_method=None):
     if do_key_params:
         cluster.key_params(do_order=do_order)
 
-def to_cluster(self, do_order=False, do_key_params=False, centre_method=None):
+def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None):
     """
     NAME:
 
@@ -992,7 +993,7 @@ def to_cluster(self, do_order=False, do_key_params=False, centre_method=None):
         if do_key_params:
             cluster.key_params(do_order=do_order)
 
-def to_galaxy(self, do_order=False, do_key_params=False):
+def to_galaxy(cluster, do_order=False, do_key_params=False):
     """
     NAME:
 
@@ -1035,7 +1036,7 @@ def to_galaxy(self, do_order=False, do_key_params=False):
     if do_key_params:
         cluster.key_params(do_order=do_order)
 
-def to_sky(self, do_order=False, do_key_params=False):
+def to_sky(cluster, do_order=False, do_key_params=False):
     """
     NAME:
 
@@ -1061,7 +1062,7 @@ def to_sky(self, do_order=False, do_key_params=False):
 
     cluster.to_radec(do_key_params=do_key_params)
 
-def from_sky(self, do_order=False, do_key_params=False):
+def from_sky(cluster, do_order=False, do_key_params=False):
     """
     NAME:
 
@@ -1087,7 +1088,7 @@ def from_sky(self, do_order=False, do_key_params=False):
 
     cluster.from_radec(do_order=do_order, do_key_params=do_key_params)
 
-def to_tail(self, plot=False):
+def to_tail(cluster, plot=False):
     """
     NAME:
 
@@ -1144,7 +1145,7 @@ def to_tail(self, plot=False):
 
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
-def to_origin(self, origin, do_order=False, do_key_params=False):
+def to_origin(cluster, origin, do_order=False, do_key_params=False):
     """
     NAME:
 
@@ -1296,7 +1297,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=False, **kwargs):
 
     return_cluster(cluster, units0, origin0)
 
-def convert_binary_units(self,param,from_units,to_units):
+def convert_binary_units(cluster,param,from_units,to_units):
     yrs = (cluster.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(cluster.zmbar)
     days = 365.25 * yrs
     au = 1.49597870700e13

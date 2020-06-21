@@ -7,7 +7,7 @@ __author__ = "Jeremy J Webb"
 
 __all__ = [
     "StarCluster",
-    "subcluster"
+    "sub_cluster"
 ]
 
 import numpy as np
@@ -805,7 +805,7 @@ class StarCluster(object):
         self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             nsigma=nsigma,nsphere=nsphere,density=density,
-            rmin=rmin,rmax=rmax,ro=ro,vo=vo)
+            rmin=rmin,nmax=nmax,ro=ro,vo=vo)
 
         if self.origin == "galaxy" or self.origin=='sky':
             self.xgc, self.ygc, self.zgc = self.xc, self.yc, self.zc
@@ -828,9 +828,9 @@ class StarCluster(object):
         ro=8.0,
         vo=220.0,
     ):
-        self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre_of_mass(self,xstart=xstart,
+        self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre_of_density(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-            rmin=rmin,rmax=rmax,ro=ro,vo=vo)
+            rmin=rmin,nmax=nmax,ro=ro,vo=vo)
 
     def find_centre_of_mass(self):
         self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre_of_mass(self)
@@ -1225,7 +1225,6 @@ def sub_cluster(
 
     if np.sum(indx) > 0:
         subcluster = StarCluster(
-            len(cluster.id[indx]),
             cluster.tphys,
             units=cluster.units,
             origin=cluster.origin,
@@ -1354,7 +1353,7 @@ def sub_cluster(
             subcluster.tstar = subcluster.rbar / subcluster.vstar
 
     else:
-        subcluster = StarCluster(0, cluster.tphys)
+        subcluster = StarCluster(cluster.tphys)
 
     cluster.to_origin(origin0)
     cluster.to_units(units0)

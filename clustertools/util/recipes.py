@@ -1,4 +1,23 @@
-# Generic recipes for making key calculations
+""" Generic recipes for making key calculations
+
+"""
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "nbinmaker",
+    "binmaker",
+    "power_law_distribution_function",
+    "dx_function",
+    "x_hist",
+    "mean_prof",
+    "smooth",
+    "interpolate",
+    "rotate",
+    "area_enclosed",
+    "minimum_distance",
+    "distance"
+]
 
 import numpy as np
 import numba

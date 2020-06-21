@@ -1,10 +1,19 @@
-"""
-COORDINATES
+"""For changing coordinate systems
 
 Designed to accept StarCluster instance as in put to
 calculate stellar positions and velocities in different coordinates
 
 """
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "sphere_coords",
+    "cart_to_sphere",
+    "cyl_coords",
+    "cart_to_cyl",
+    "sky_coords"
+]
 
 import numpy as np
 from galpy.util import bovy_coords

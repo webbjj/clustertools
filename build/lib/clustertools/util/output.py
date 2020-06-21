@@ -1,5 +1,15 @@
-# Output files containing key cluster properties
-# Only functions and profiles should be called here
+""" Output files containing key cluster properties
+
+"""
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "extrct_out",
+    "snapout",
+    "fortout",
+    "gyrout",
+]
 
 import numpy as np
 from galpy.util import bovy_conversion

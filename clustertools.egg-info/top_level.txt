@@ -2,5 +2,4 @@ clustertools
 clustertools/analysis
 clustertools/custom
 clustertools/observations
-clustertools/tables
 clustertools/util

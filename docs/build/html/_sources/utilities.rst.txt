@@ -1,0 +1,42 @@
+Utilities
+===============
+
+Plotting
+----------------------------------
+
+There exists several built in plotting tools to help visualize a ``StarCluster``.
+
+.. automodapi:: clustertools.util.plots
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:
+
+Output
+----------------------------------
+
+There exists several built in tools for creating standardized output files.
+
+.. automodapi:: clustertools.util.output
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:
+
+Coordinates
+----------------------------------
+
+While coordinate transformations to a ``StarCluster``  are handled via :ref:`Operations <operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions are wrappers around ``galpy`` coordinate transformations.
+
+.. automodapi:: clustertools.util.coordinates
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:
+
+Recipes
+----------------------------------
+
+Finally, several functions that are used throughout ``StarCluster`` that users may find helpful are listed below. 
+
+.. automodapi:: clustertools.util.recipes
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:

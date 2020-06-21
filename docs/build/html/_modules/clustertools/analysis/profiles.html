@@ -1,0 +1,1692 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.analysis.profiles &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for clustertools.analysis.profiles</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Determine radial profiles of key properties</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jeremy J Webb&quot;</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;rho_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;m_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;alpha_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sigv_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;beta_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;v_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;eta_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;vcirc_prof&quot;</span>
+<span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">galpy.util</span> <span class="kn">import</span> <span class="n">bovy_coords</span>
+
+<span class="kn">from</span> <span class="nn">..util.constants</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..util.recipes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">.operations</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..util.plots</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">..util.coordinates</span> <span class="kn">import</span> <span class="n">sphere_coords</span>
+<span class="kn">from</span> <span class="nn">.functions</span> <span class="kn">import</span> <span class="n">new_mass_function</span>
+
+
+<div class="viewcode-block" id="rho_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.rho_prof">[docs]</a><span class="k">def</span> <span class="nf">rho_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       rho_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the density profile of the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       plot - plot the density profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">        Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        rprof,pprof,nprof (radius, density, number of stars)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">rprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">pprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">nprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">rprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rprof</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+            <span class="n">vol</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">vol</span> <span class="o">=</span> <span class="p">(</span><span class="mf">4.0</span> <span class="o">/</span> <span class="mf">3.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span>
+
+        <span class="n">pprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pprof</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">rindx</span><span class="p">]</span> <span class="o">/</span> <span class="n">vol</span><span class="p">))</span>
+        <span class="n">nprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nprof</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rindx</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (pc)&quot;</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/pc^2&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/pc^3&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (kpc)&quot;</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/kpc^2&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/kpc^3&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;galpy&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">pprof</span><span class="p">,</span> <span class="n">nprof</span>
+        <span class="n">nlplot</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$R </span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="n">xunits</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\rho </span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="n">yunits</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Time = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">pprof</span><span class="p">,</span> <span class="n">nprof</span></div>
+
+
+<div class="viewcode-block" id="m_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.m_prof">[docs]</a><span class="k">def</span> <span class="nf">m_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">cumulative</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       m_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the mass profile of the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       cumalitive - determine the cumulative mass profile instead (Default: False)</span>
+
+<span class="sd">       plot - plot the mean mass profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        rprof,mprof,nprof (radius, mass, number of stars)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">rprof</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mprof</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">nprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">cumulative</span><span class="p">:</span>
+            <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">rprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="n">mprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">rindx</span><span class="p">]))</span>
+        <span class="n">nprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rindx</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (pc)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (kpc)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;galpy&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">mprof</span><span class="p">,</span> <span class="n">nprof</span>
+        <span class="n">nlplot</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$R </span><span class="si">%s</span><span class="s2"> $&quot;</span> <span class="o">%</span> <span class="n">xunits</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$M </span><span class="si">%s</span><span class="s2"> $&quot;</span> <span class="o">%</span> <span class="n">yunits</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Time = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">mprof</span><span class="p">,</span> <span class="n">nprof</span></div>
+
+<span class="k">def</span> <span class="nf">new_alpha_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nmass</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">mcorr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">omask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       alpha_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the radial variation in the mass function</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       nmass - number of mass bins to calculate slope of mass function</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       mcorr - correction for masses</span>
+<span class="sd">   </span>
+<span class="sd">       omask - place a mask over the dataset to mimic observed data</span>
+
+<span class="sd">       plot - plot the alpha profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
+
+<span class="sd">        aprof - slope of the mass function</span>
+
+<span class="sd">        dalpha - delta_alpha = d(alpha)/d(ln(r/rm) </span>
+
+<span class="sd">        edalpha - error in dalpha</span>
+
+<span class="sd">        ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)</span>
+
+<span class="sd">        rbinerror - if mcorr is not None, output lowest corrected mass fraction at each radius</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">mcorr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">omask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mcorr</span> <span class="o">=</span> <span class="n">omask</span><span class="o">.</span><span class="n">mcorr</span>
+                <span class="n">return_error</span><span class="o">=</span><span class="kc">True</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">mcorr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span>
+                <span class="n">return_error</span><span class="o">=</span><span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mcorr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span>
+            <span class="n">return_error</span><span class="o">=</span><span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">return_error</span><span class="o">=</span><span class="kc">True</span>
+
+    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">aprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="k">if</span> <span class="n">omask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span> <span class="o">=</span> <span class="n">omask</span><span class="o">.</span><span class="n">r_lower</span><span class="p">,</span> <span class="n">omask</span><span class="o">.</span><span class="n">r_mean</span><span class="p">,</span> <span class="n">omask</span><span class="o">.</span><span class="n">r_upper</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="n">rbinerror</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">return_error</span><span class="p">:</span>
+            <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span><span class="p">,</span> <span class="n">mbinerror</span> <span class="o">=</span> <span class="n">new_mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span><span class="n">indx</span><span class="o">=</span><span class="n">rindx</span><span class="p">,</span><span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span><span class="n">mcorr</span><span class="o">=</span><span class="n">mcorr</span><span class="p">,</span><span class="n">omask</span><span class="o">=</span><span class="n">omask</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">rbinerror</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">mbinerror</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">new_mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span><span class="n">indx</span><span class="o">=</span><span class="n">rindx</span><span class="p">,</span><span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span><span class="n">mcorr</span><span class="o">=</span><span class="n">mcorr</span><span class="p">,</span><span class="n">omask</span><span class="o">=</span><span class="n">omask</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">rbinerror</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="mf">1.</span>
+
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">100</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+
+            <span class="n">aprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">dalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">),</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">edalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">eydalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dalpha</span> <span class="o">=</span> <span class="o">-</span><span class="mf">100.0</span>
+        <span class="n">ydalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">edalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">eydalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">nplot</span><span class="p">(</span>
+            <span class="n">lrprofn</span><span class="p">,</span>
+            <span class="n">aprof</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\ln(r/r_m)$&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\alpha$&quot;</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">rfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">),</span> <span class="n">nrad</span><span class="p">)</span>
+        <span class="n">afit</span> <span class="o">=</span> <span class="n">dalpha</span> <span class="o">*</span> <span class="n">rfit</span> <span class="o">+</span> <span class="n">ydalpha</span>
+        <span class="n">nlplot</span><span class="p">(</span><span class="n">rfit</span><span class="p">,</span> <span class="n">afit</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;d$\alpha$ = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dalpha</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">dalpha</span> <span class="o">=</span> <span class="n">dalpha</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">return_error</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span><span class="p">,</span> <span class="n">rbinerror</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span>
+
+<div class="viewcode-block" id="alpha_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.alpha_prof">[docs]</a><span class="k">def</span> <span class="nf">alpha_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nmass</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       alpha_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the radial variation in the mass function</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       nmass - number of mass bins to calculate slope of mass function</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       plot - plot the alpha profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
+
+<span class="sd">        aprof - slope of the mass function</span>
+
+<span class="sd">        dalpha - delta_alpha = d(alpha)/d(ln(r/rm) </span>
+
+<span class="sd">        edalpha - error in dalpha</span>
+
+<span class="sd">        ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">aprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">dx_function</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">rindx</span><span class="p">],</span> <span class="n">nmass</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">100</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+
+            <span class="n">aprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">dalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">),</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">edalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">eydalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dalpha</span> <span class="o">=</span> <span class="o">-</span><span class="mf">100.0</span>
+        <span class="n">ydalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">edalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">eydalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">nplot</span><span class="p">(</span>
+            <span class="n">lrprofn</span><span class="p">,</span>
+            <span class="n">aprof</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\ln(r/r_m)$&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\alpha$&quot;</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">rfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">),</span> <span class="n">nrad</span><span class="p">)</span>
+        <span class="n">afit</span> <span class="o">=</span> <span class="n">dalpha</span> <span class="o">*</span> <span class="n">rfit</span> <span class="o">+</span> <span class="n">ydalpha</span>
+        <span class="n">nlplot</span><span class="p">(</span><span class="n">rfit</span><span class="p">,</span> <span class="n">afit</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;d$\alpha$ = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dalpha</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">dalpha</span> <span class="o">=</span> <span class="n">dalpha</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span></div>
+
+
+<div class="viewcode-block" id="sigv_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.sigv_prof">[docs]</a><span class="k">def</span> <span class="nf">sigv_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rcustom</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">coord</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       sigv_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the radial variation in the velocity dispersion</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       rcustom - use custom radius to bin data (not well implemented)</span>
+
+<span class="sd">       coord - choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2)</span>
+
+<span class="sd">       normalize - normalize radial bins by cluster&#39;s half-mass radius (default: True)</span>
+
+<span class="sd">       plot - plot the velocity dispersion profile (Default: False)</span>
+
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
+
+<span class="sd">        sigvprof - velocity dispersion</span>
+
+<span class="sd">        betaprof - anisotropy parameter </span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sigvprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">kwmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span><span class="o">*=</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kwmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span><span class="o">*=</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="c1"># Convert to cylindrical or spherical coordinates:</span>
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">vr</span><span class="p">,</span> <span class="n">vtheta</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">vr</span><span class="p">,</span> <span class="n">vp</span><span class="p">,</span> <span class="n">vt</span> <span class="o">=</span> <span class="n">sphere_coords</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rcustom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">r</span><span class="o">=</span><span class="n">rcustom</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rindx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">3.0</span><span class="p">:</span>
+
+            <span class="n">sigr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vr</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+            <span class="n">sigt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vt</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">sigp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vr</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sigp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vp</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">coord</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">sigv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sigr</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">sigt</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">sigp</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">coord</span><span class="o">==</span><span class="s1">&#39;r&#39;</span><span class="p">:</span>
+                <span class="n">sigv</span><span class="o">=</span><span class="n">sigr</span>
+            <span class="k">elif</span> <span class="n">coord</span><span class="o">==</span><span class="s1">&#39;phi&#39;</span><span class="p">:</span>
+                <span class="n">sigv</span><span class="o">=</span><span class="n">sigp</span>
+            <span class="k">elif</span> <span class="n">coord</span><span class="o">==</span><span class="s1">&#39;theta&#39;</span><span class="p">:</span>
+                <span class="n">sigv</span><span class="o">=</span><span class="n">sigt</span> 
+
+            <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                    <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+            <span class="n">sigvprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sigv</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">nplot</span><span class="p">(</span>
+            <span class="n">lrprofn</span><span class="p">,</span>
+            <span class="n">sigvprof</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\ln(r/r_m)$&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\sigma_v$&quot;</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">sigvprof</span></div>
+
+<div class="viewcode-block" id="beta_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.beta_prof">[docs]</a><span class="k">def</span> <span class="nf">beta_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rcustom</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">coord</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       beta_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the anisotropy profile of the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       rcustom - use custom radius to bin data (not well implemented)</span>
+
+<span class="sd">       coord - choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2)</span>
+
+<span class="sd">       normalize - normalize radial bins by cluster&#39;s half-mass radius (default: True)</span>
+
+<span class="sd">       plot - plot the orbital anisotropy profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
+
+<span class="sd">        betaprof - anisotropy parameter </span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2020 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">betaprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">kwmin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span><span class="o">*=</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">kwmax</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span><span class="o">*=</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="c1"># Convert to cylindrical or spherical coordinates:</span>
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">vr</span><span class="p">,</span> <span class="n">vtheta</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">vr</span><span class="p">,</span> <span class="n">vp</span><span class="p">,</span> <span class="n">vt</span> <span class="o">=</span> <span class="n">sphere_coords</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rcustom</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">r</span><span class="o">=</span><span class="n">rcustom</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rindx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">3.0</span><span class="p">:</span>
+
+            <span class="n">sigr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vr</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+            <span class="n">sigt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vt</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">sigp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vr</span><span class="p">))</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="n">sigt</span> <span class="o">/</span> <span class="n">sigr</span> <span class="o">-</span> <span class="mf">1.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sigp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">vp</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+                <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">sigt</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">sigp</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigr</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                    <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+            <span class="n">betaprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">nplot</span><span class="p">(</span>
+            <span class="n">lrprofn</span><span class="p">,</span>
+            <span class="n">sigvprof</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\ln(r/r_m)$&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\beta$&quot;</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">betaprof</span></div>
+
+
+<div class="viewcode-block" id="v_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.v_prof">[docs]</a><span class="k">def</span> <span class="nf">v_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       v_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the radial variation in the mean velocity </span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       plot - plot the mean velocity profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
+
+<span class="sd">        vprof - mean velocity</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sigvprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="c1"># Convert to cylindrical or spherical coordinates:</span>
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">vr</span><span class="p">,</span> <span class="n">vtheta</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">vr</span><span class="p">,</span> <span class="n">vp</span><span class="p">,</span> <span class="n">vt</span> <span class="o">=</span> <span class="n">sphere_coords</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rindx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">3.0</span><span class="p">:</span>
+
+            <span class="n">vrmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vr</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+            <span class="n">vtmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vt</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">vpmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vr</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">vpmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">vp</span><span class="p">[</span><span class="n">rindx</span><span class="p">])</span>
+
+            <span class="n">vmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">vrmean</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">vtmean</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">vpmean</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+
+            <span class="n">vprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vmean</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">nplot</span><span class="p">(</span>
+            <span class="n">lrprofn</span><span class="p">,</span>
+            <span class="n">vprof</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\ln(r/r_m)$&quot;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$&lt;v&gt;$&quot;</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">vprof</span></div>
+
+
+<div class="viewcode-block" id="eta_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.eta_prof">[docs]</a><span class="k">def</span> <span class="nf">eta_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nmass</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       eta_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the radial variation in eta</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       nmass - number of mass bins over which to measure eta</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       plot - plot the eta profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
+
+<span class="sd">        eprof - slope of the sigma_v-mass function</span>
+
+<span class="sd">        deta - deta = d(eta)/d(ln(r/rm) </span>
+
+<span class="sd">        edeta - error in deta</span>
+
+<span class="sd">        ydeta,eydeta - y-intercept and error in fit to eta vs ln(r/rm)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">eprof</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
+        <span class="n">m_mean</span><span class="p">,</span> <span class="n">sigvm</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">eeta</span><span class="p">,</span> <span class="n">yeta</span><span class="p">,</span> <span class="n">eyeta</span> <span class="o">=</span> <span class="n">eta_function</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="p">,</span>
+            <span class="n">mmin</span><span class="o">=</span><span class="n">mmin</span><span class="p">,</span>
+            <span class="n">mmax</span><span class="o">=</span><span class="n">mmax</span><span class="p">,</span>
+            <span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span>
+            <span class="n">rmin</span><span class="o">=</span><span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">rmax</span><span class="o">=</span><span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+            <span class="n">vmin</span><span class="o">=</span><span class="n">vmin</span><span class="p">,</span>
+            <span class="n">vmax</span><span class="o">=</span><span class="n">vmax</span><span class="p">,</span>
+            <span class="n">kwmin</span><span class="o">=</span><span class="n">kwmin</span><span class="p">,</span>
+            <span class="n">kwmax</span><span class="o">=</span><span class="n">kwmax</span><span class="p">,</span>
+            <span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">100</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+
+            <span class="n">eprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eta</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="p">(</span><span class="n">deta</span><span class="p">,</span> <span class="n">ydeta</span><span class="p">),</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">,</span> <span class="n">eprof</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">edeta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">eydeta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">deta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">100.0</span>
+        <span class="n">ydeta</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">edeta</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">eydeta</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">eprof</span><span class="p">,</span> <span class="n">deta</span><span class="p">,</span> <span class="n">edeta</span><span class="p">,</span> <span class="n">ydeta</span><span class="p">,</span> <span class="n">eydeta</span></div>
+
+
+<div class="viewcode-block" id="vcirc_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.vcirc_prof">[docs]</a><span class="k">def</span> <span class="nf">vcirc_prof</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kwmax</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       vcirc_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Measure the circulr velocity profile of the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
+
+<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
+
+<span class="sd">       nrad - number of radial bins</span>
+
+<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
+
+<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
+
+<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
+
+<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
+
+<span class="sd">       projected - use projected values and constraints (Default:False)</span>
+
+<span class="sd">       plot - plot the circular velocity profile (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">        Same as for ..util.plot.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        rprof,vprof,rvmax,vmax (radius, circular velocity, radius of maximum virc, maximum vcirc)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+        <span class="n">grav</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+        <span class="c1"># G has units of pc (km/s)^2 / Msun</span>
+        <span class="n">grav</span> <span class="o">=</span> <span class="mf">4.302e-3</span>
+    <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+        <span class="c1"># G has units of kpc (km/s)^2 / Msun</span>
+        <span class="n">grav</span> <span class="o">=</span> <span class="mf">4.302e-6</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">grav</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="n">rprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">vcprof</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rproorder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">key_params</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">rproorder</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">rproorder</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">rproorder</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rorder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">key_params</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">rorder</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">rorder</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">rorder</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
+    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
+        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
+    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">m</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+
+    <span class="n">msum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="n">vcirc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">grav</span> <span class="o">*</span> <span class="n">msum</span> <span class="o">/</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">vcirc</span><span class="p">)</span>
+    <span class="n">rvmax</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">vcirc</span><span class="p">)]</span>
+
+    <span class="n">rprof</span> <span class="o">=</span> <span class="n">r</span>
+    <span class="n">vcprof</span> <span class="o">=</span> <span class="n">vcirc</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (pc)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; km/s&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (kpc)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; km/s&quot;</span>
+
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;galpy&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">vcprof</span>
+        <span class="n">nlplot</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$R </span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="n">xunits</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$vc </span><span class="si">%s</span><span class="s2"> $&quot;</span> <span class="o">%</span> <span class="n">yunits</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Time = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">nlplot</span><span class="p">([</span><span class="n">rvmax</span><span class="p">,</span> <span class="n">rvmax</span><span class="p">],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">y</span><span class="p">)],</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">nlplot</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">x</span><span class="p">)],</span> <span class="p">[</span><span class="n">vmax</span><span class="p">,</span> <span class="n">vmax</span><span class="p">],</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">vcprof</span><span class="p">,</span> <span class="n">rvmax</span><span class="p">,</span> <span class="n">vmax</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

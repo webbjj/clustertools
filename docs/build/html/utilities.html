@@ -1,0 +1,276 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Utilities &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="nscatter" href="api/clustertools.util.plots.nscatter.html" />
+    <link rel="prev" title="ttensor" href="api/clustertools.analysis.orbit.ttensor.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/clustertools.util.plots.nscatter.html" title="nscatter"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api/clustertools.analysis.orbit.ttensor.html" title="ttensor"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">clustertools 0.1.dev1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Utilities</a><ul>
+<li><a class="reference internal" href="#plotting">Plotting</a><ul>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#output">Output</a><ul>
+<li><a class="reference internal" href="#id1">Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#coordinates">Coordinates</a><ul>
+<li><a class="reference internal" href="#id2">Functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#recipes">Recipes</a><ul>
+<li><a class="reference internal" href="#id3">Functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api/clustertools.analysis.orbit.ttensor.html"
+                        title="previous chapter">ttensor</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="api/clustertools.util.plots.nscatter.html"
+                        title="next chapter">nscatter</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/utilities.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="utilities">
+<h1>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="plotting">
+<h2>Plotting<a class="headerlink" href="#plotting" title="Permalink to this headline">¶</a></h2>
+<p>There exists several built in plotting tools to help visualize a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code>.</p>
+<div class="section" id="functions">
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.nscatter" title="clustertools.util.plots.nscatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nscatter</span></code></a>(x, y[, z, xlabel, ylabel, legend, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.nplot" title="clustertools.util.plots.nplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nplot</span></code></a>(x, y[, ptype, xlabel, ylabel, legend, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.nlplot" title="clustertools.util.plots.nlplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nlplot</span></code></a>(x, y[, ltype, xlabel, ylabel, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.nhist" title="clustertools.util.plots.nhist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nhist</span></code></a>(x[, nbin, xlabel, legend, title, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.nhist2d" title="clustertools.util.plots.nhist2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nhist2d</span></code></a>(x, y[, nbin, xlabel, ylabel, title, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.ndens" title="clustertools.util.plots.ndens"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndens</span></code></a>(x, y[, z, normed, xstep, ystep, sigx, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.starplot" title="clustertools.util.plots.starplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">starplot</span></code></a>(cluster[, coords, xlim, ylim, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.plots.html#clustertools.util.plots.skyplot" title="clustertools.util.plots.skyplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">skyplot</span></code></a>(cluster[, coords, xlim, ylim, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>There exists several built in tools for creating standardized output files.</p>
+<div class="section" id="id1">
+<h3>Functions<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.output.html#clustertools.util.output.extrct_out" title="clustertools.util.output.extrct_out"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extrct_out</span></code></a>(cluster, fileout[, projected])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.output.html#clustertools.util.output.snapout" title="clustertools.util.output.snapout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">snapout</span></code></a>(cluster, filename[, energies, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.output.html#clustertools.util.output.fortout" title="clustertools.util.output.fortout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fortout</span></code></a>(cluster[, filename, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.output.html#clustertools.util.output.gyrout" title="clustertools.util.output.gyrout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gyrout</span></code></a>(cluster[, filename])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="coordinates">
+<h2>Coordinates<a class="headerlink" href="#coordinates" title="Permalink to this headline">¶</a></h2>
+<p>While coordinate transformations to a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code>  are handled via <a class="reference internal" href="analysis.html#operations"><span class="std std-ref">Operations</span></a>, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions are wrappers around <code class="docutils literal notranslate"><span class="pre">galpy</span></code> coordinate transformations.</p>
+<div class="section" id="id2">
+<h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.coordinates.html#clustertools.util.coordinates.sphere_coords" title="clustertools.util.coordinates.sphere_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sphere_coords</span></code></a>(cluster)</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.coordinates.html#clustertools.util.coordinates.cart_to_sphere" title="clustertools.util.coordinates.cart_to_sphere"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cart_to_sphere</span></code></a>(x, y, z, vx, vy, vz)</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.coordinates.html#clustertools.util.coordinates.cyl_coords" title="clustertools.util.coordinates.cyl_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cyl_coords</span></code></a>(cluster)</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.coordinates.html#clustertools.util.coordinates.cart_to_cyl" title="clustertools.util.coordinates.cart_to_cyl"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cart_to_cyl</span></code></a>(x, y, z, vx, vy, vz)</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.coordinates.html#clustertools.util.coordinates.sky_coords" title="clustertools.util.coordinates.sky_coords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sky_coords</span></code></a>(cluster)</p></td>
+<td><p>NAME:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="recipes">
+<h2>Recipes<a class="headerlink" href="#recipes" title="Permalink to this headline">¶</a></h2>
+<p>Finally, several functions that are used throughout <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> that users may find helpful are listed below.</p>
+<div class="section" id="id3">
+<h3>Functions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.nbinmaker" title="clustertools.util.recipes.nbinmaker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nbinmaker</span></code></a>(x[, nbin, nsum])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.binmaker" title="clustertools.util.recipes.binmaker"><code class="xref py py-obj docutils literal notranslate"><span class="pre">binmaker</span></code></a>(x[, nbin, nsum, steptype])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.power_law_distribution_function" title="clustertools.util.recipes.power_law_distribution_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">power_law_distribution_function</span></code></a>(n, alpha, …)</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.dx_function" title="clustertools.util.recipes.dx_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dx_function</span></code></a>(x[, nx, bintype, x_lower, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.x_hist" title="clustertools.util.recipes.x_hist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">x_hist</span></code></a>(x[, nx, bintype, x_lower, x_mean, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.mean_prof" title="clustertools.util.recipes.mean_prof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mean_prof</span></code></a>(x, y[, nbin, bintype, steptype, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.smooth" title="clustertools.util.recipes.smooth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">smooth</span></code></a>(x, y[, nbin, bintype, median])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.interpolate" title="clustertools.util.recipes.interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate</span></code></a>(r1, r2[, x, y])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.rotate" title="clustertools.util.recipes.rotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate</span></code></a>(x, y, z[, thetax, thetay, thetaz])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.area_enclosed" title="clustertools.util.recipes.area_enclosed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">area_enclosed</span></code></a>(x, y[, thresh, nrand, method, …])</p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.minimum_distance" title="clustertools.util.recipes.minimum_distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">minimum_distance</span></code></a></p></td>
+<td><p>NAME:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="reference/clustertools.util.recipes.html#clustertools.util.recipes.distance" title="clustertools.util.recipes.distance"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distance</span></code></a></p></td>
+<td><p>NAME:</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="api/clustertools.util.plots.nscatter.html" title="nscatter"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api/clustertools.analysis.orbit.ttensor.html" title="ttensor"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">clustertools 0.1.dev1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

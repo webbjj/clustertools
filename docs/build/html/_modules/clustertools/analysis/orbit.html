@@ -1,0 +1,1405 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.analysis.orbit &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for clustertools.analysis.orbit</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Functions and Operations that heavily use galpy and focus on the cluster&#39;s orbit</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jeremy J Webb&quot;</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;rtidal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rlimiting&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;initialize_orbit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;initialize_orbits&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;integrate_orbit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;orbit_interpolate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;orbital_path&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;orbital_path_match&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tail_path&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tail_path_match&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;get_cluster_orbit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;calc_actions&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ttensor&quot;</span>
+<span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">galpy.orbit</span> <span class="kn">import</span> <span class="n">Orbit</span>
+<span class="kn">from</span> <span class="nn">galpy.util</span> <span class="kn">import</span> <span class="n">bovy_coords</span><span class="p">,</span> <span class="n">bovy_conversion</span>
+<span class="kn">from</span> <span class="nn">galpy</span> <span class="kn">import</span> <span class="n">potential</span>
+<span class="kn">from</span> <span class="nn">galpy.potential</span> <span class="kn">import</span> <span class="n">LogarithmicHaloPotential</span><span class="p">,</span> <span class="n">MWPotential2014</span><span class="p">,</span> <span class="n">rtide</span>
+<span class="kn">from</span> <span class="nn">galpy.actionAngle</span> <span class="kn">import</span> <span class="n">actionAngleStaeckel</span>
+<span class="kn">from</span> <span class="nn">galpy.actionAngle.actionAngleIsochroneApprox</span> <span class="kn">import</span> <span class="n">actionAngleIsochroneApprox</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">..util.recipes</span> <span class="kn">import</span> <span class="n">rotate</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">binmaker</span>
+<span class="kn">from</span> <span class="nn">.operations</span> <span class="kn">import</span> <span class="n">save_cluster</span><span class="p">,</span> <span class="n">return_cluster</span>
+<span class="kn">from</span> <span class="nn">.profiles</span> <span class="kn">import</span> <span class="n">rho_prof</span>
+<span class="kn">from</span> <span class="nn">..util.plots</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">astropy.coordinates</span> <span class="k">as</span> <span class="nn">coord</span>
+<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
+
+<div class="viewcode-block" id="rtidal"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.rtidal">[docs]</a><span class="k">def</span> <span class="nf">rtidal</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span>
+    <span class="n">rtiterate</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">rtconverge</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">rgc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Calculate rtidal.</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       rtidal</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Calculate tidal radius of the cluster</span>
+<span class="sd">       --&gt; The calculation uses Galpy, which takes the formalism of Bertin &amp; Varri 2008 to calculate the tidal radius</span>
+<span class="sd">       --&gt; riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster&#39;s mass (cluster.mtot)</span>
+<span class="sd">       --&gt; More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal</span>
+<span class="sd">           radius again until the change is less than 90%</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       pot - GALPY potential used to calculate actions</span>
+
+<span class="sd">       rtiterate - how many times to iterate on the calculation of r_t</span>
+
+<span class="sd">       rtconverge - criteria for tidal radius convergence within iterations</span>
+
+<span class="sd">       rgc - Set galactocentric distance at which the tidal radius is to be evaluated</span>
+
+<span class="sd">       ro,vo - GALPY scaling parameters</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        rt</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galpy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">rgc</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">rgc</span> <span class="o">/</span> <span class="n">ro</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
+
+    <span class="c1"># Calculate rtide</span>
+    <span class="n">rt</span> <span class="o">=</span> <span class="n">rtide</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">mtot</span><span class="p">,</span><span class="n">use_physical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">nit</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rtiterate</span><span class="p">):</span>
+        <span class="n">msum</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">rt</span>
+        <span class="n">msum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+
+        <span class="n">rtnew</span> <span class="o">=</span> <span class="n">rtide</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">msum</span><span class="p">,</span><span class="n">use_physical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">rt</span><span class="p">,</span> <span class="n">rtnew</span><span class="p">,</span> <span class="n">rtnew</span> <span class="o">/</span> <span class="n">rt</span><span class="p">,</span> <span class="n">msum</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">mtot</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">rtnew</span> <span class="o">/</span> <span class="n">rt</span> <span class="o">&gt;=</span> <span class="n">rtconverge</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">rt</span> <span class="o">=</span> <span class="n">rtnew</span>
+        <span class="n">nit</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;FINAL RT: &quot;</span><span class="p">,</span>
+            <span class="n">rt</span> <span class="o">*</span> <span class="n">ro</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">,</span>
+            <span class="s2">&quot;pc after&quot;</span><span class="p">,</span>
+            <span class="n">nit</span><span class="p">,</span>
+            <span class="s2">&quot; of &quot;</span><span class="p">,</span>
+            <span class="n">rtiterate</span><span class="p">,</span>
+            <span class="s2">&quot; iterations&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">units0</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+        <span class="n">rt</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">ro</span>
+    <span class="k">elif</span> <span class="n">units0</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+        <span class="n">rt</span> <span class="o">*=</span> <span class="n">ro</span>
+    <span class="k">elif</span> <span class="n">units0</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+        <span class="n">rt</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">ro</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">rt</span> <span class="o">=</span> <span class="n">rt</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rt</span></div>
+
+
+<div class="viewcode-block" id="rlimiting"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.rlimiting">[docs]</a><span class="k">def</span> <span class="nf">rlimiting</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span>
+    <span class="n">rgc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
+    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       rlimiting</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Calculate limiting radius of the cluster</span>
+<span class="sd">       --&gt; The limiting radius is defined to be where the cluster&#39;s density reaches the local background density of the host galaxy</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       pot - GALPY potential used to calculate actions</span>
+
+<span class="sd">       rgc - Set galactocentric distance at which the tidal radius is to be evaluated</span>
+
+<span class="sd">       ro,vo - GALPY scaling parameters</span>
+
+<span class="sd">       nrad - number of radial bins used to calculate density profile (Default: 20)</span>
+
+<span class="sd">       projected - use projected values (Default: False)</span>
+
+<span class="sd">       plot - plot the density profile and mark the limiting radius of the cluster (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       Same as ..util.plots.nplot</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        rl</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galpy</span><span class="p">()</span>
+
+
+    <span class="k">if</span> <span class="n">rgc</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">rgc</span> <span class="o">/</span> <span class="n">ro</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
+
+    <span class="c1"># Calculate local density:</span>
+    <span class="n">rho_local</span> <span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">evaluateDensities</span><span class="p">(</span>
+        <span class="n">pot</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="n">use_physical</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+
+    <span class="n">rprof</span><span class="p">,</span> <span class="n">pprof</span><span class="p">,</span> <span class="n">nprof</span> <span class="o">=</span> <span class="n">rho_prof</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">nrad</span><span class="o">=</span><span class="n">nrad</span><span class="p">,</span> <span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">pprof</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">rho_local</span><span class="p">:</span>
+        <span class="n">rl</span> <span class="o">=</span> <span class="n">rprof</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">pprof</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">rho_local</span><span class="p">:</span>
+        <span class="n">rl</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">pprof</span> <span class="o">&lt;</span> <span class="n">rho_local</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">r1</span> <span class="o">=</span> <span class="p">(</span><span class="n">rprof</span><span class="p">[</span><span class="n">indx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">pprof</span><span class="p">[</span><span class="n">indx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+        <span class="n">r2</span> <span class="o">=</span> <span class="p">(</span><span class="n">rprof</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">pprof</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+
+        <span class="n">rl</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">rho_local</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FINAL RL: &quot;</span><span class="p">,</span> <span class="n">rl</span> <span class="o">*</span> <span class="n">ro</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="s2">&quot;pc&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">units0</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+        <span class="n">rl</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">ro</span>
+    <span class="k">elif</span> <span class="n">units0</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+        <span class="n">rl</span> <span class="o">*=</span> <span class="n">ro</span>
+    <span class="k">elif</span> <span class="n">units0</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+        <span class="n">rl</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">ro</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">rl</span> <span class="o">=</span> <span class="n">rl</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LOCAL DENSITY = &quot;</span><span class="p">,</span> <span class="n">rho_local</span><span class="p">)</span>
+
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+            <span class="n">rprof</span> <span class="o">*=</span> <span class="n">ro</span> <span class="o">*</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span>
+            <span class="n">pprof</span> <span class="o">*=</span> <span class="p">(</span>
+                <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+                <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zmbar</span>
+            <span class="p">)</span>
+            <span class="n">rho_local</span> <span class="o">*=</span> <span class="p">(</span>
+                <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+                <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span>
+                <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zmbar</span>
+            <span class="p">)</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (NBODY)&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+            <span class="n">rprof</span> <span class="o">*=</span> <span class="n">ro</span> <span class="o">*</span> <span class="mf">1000.0</span>
+            <span class="n">pprof</span> <span class="o">*=</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+            <span class="n">rho_local</span> <span class="o">*=</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (pc)&quot;</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/pc^2&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/pc^3&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;kpckms&quot;</span><span class="p">:</span>
+            <span class="n">rprof</span> <span class="o">*=</span> <span class="n">ro</span>
+            <span class="n">pprof</span> <span class="o">*=</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1000.0</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span>
+            <span class="n">rho_local</span> <span class="o">*=</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">dens_in_msolpc3</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1000.0</span> <span class="o">**</span> <span class="mf">3.0</span><span class="p">)</span>
+
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (kpc)&quot;</span>
+            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/kpc^2&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; Msun/kpc^3&quot;</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;galpy&quot;</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot; (GALPY)&quot;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">yunits</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">pprof</span><span class="p">,</span> <span class="n">nprof</span>
+        <span class="n">nlplot</span><span class="p">(</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$R </span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xunits</span><span class="p">),</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\rho </span><span class="si">%s</span><span class="s2">$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">yunits</span><span class="p">),</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Time = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span>
+            <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
+            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">nlplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">*</span> <span class="n">rho_local</span><span class="p">,</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">nlplot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="o">*</span> <span class="n">rl</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;--&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">rl</span></div>
+
+
+<div class="viewcode-block" id="initialize_orbit"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.initialize_orbit">[docs]</a><span class="k">def</span> <span class="nf">initialize_orbit</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">from_centre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       initialize_orbit</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Initialize a galpy orbit instance for the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       from_centre - genrate orbit from cluster&#39;s assigned galactocentric coordinates (default) or from its centre</span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       orbit instance</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;radec&quot;</span><span class="p">:</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="n">Orbit</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">ra_gc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">dec_gc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">dist_gc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">pmra_gc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">pmdec_gc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">vlos_gc</span><span class="p">,</span>
+            <span class="p">],</span>
+            <span class="n">radec</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span>
+            <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span>
+            <span class="n">solarmotion</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">11.1</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">,</span> <span class="mf">7.25</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">to_galpy</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">from_centre</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">yc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zc</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">vxgc</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vxc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">vygc</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vyc</span><span class="p">,</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">vzgc</span> <span class="o">+</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzc</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
+            <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vxgc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vygc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzgc</span>
+
+        <span class="n">R</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">o</span> <span class="o">=</span> <span class="n">Orbit</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">R</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">phi</span><span class="p">],</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="n">solarmotion</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">11.1</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">,</span> <span class="mf">7.25</span><span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span>
+
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">o</span>
+
+
+    <span class="k">return</span> <span class="n">o</span></div>
+
+
+<div class="viewcode-block" id="initialize_orbits"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.initialize_orbits">[docs]</a><span class="k">def</span> <span class="nf">initialize_orbits</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       initialize_orbits</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Initialize a galpy orbit for every stars in the cluster</span>
+<span class="sd">       --&gt; Note currently depends on version of galpy with Orbits, which is soon to be replace by a generic Orbit function</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       orbit instance for each stars</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galpy</span><span class="p">()</span>
+
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span>
+    <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span>
+
+    <span class="n">R</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+    <span class="n">vxvv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">R</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">phi</span><span class="p">])</span>
+    <span class="n">os</span> <span class="o">=</span> <span class="n">Orbit</span><span class="p">(</span><span class="n">vxvv</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="n">solarmotion</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">11.1</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">,</span> <span class="mf">7.25</span><span class="p">])</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">os</span></div>
+
+
+<div class="viewcode-block" id="integrate_orbit"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.integrate_orbit">[docs]</a><span class="k">def</span> <span class="nf">integrate_orbit</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span> <span class="n">tfinal</span><span class="o">=</span><span class="mf">12.0</span><span class="p">,</span> <span class="n">nt</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       integrate_orbit</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Integrate a galpy orbit instance for the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       pot - Potential orbit is to be integrate in (Default: MWPotential2014)</span>
+
+<span class="sd">       tfinal - final time (in Gyr) to integrate orbit to (Default: 12 Gyr)</span>
+
+<span class="sd">       nt - number of timesteps</span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">       plot - show plot of cluster&#39;s orbit</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       timesteps, orbit instance</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">initialize_orbit</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">),</span> <span class="n">nt</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">ts</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span></div>
+
+
+<div class="viewcode-block" id="orbit_interpolate"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.orbit_interpolate">[docs]</a><span class="k">def</span> <span class="nf">orbit_interpolate</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">dt</span><span class="p">,</span>
+    <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span>
+    <span class="n">from_centre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">do_tails</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       orbit_interpolate</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Move the cluster centre and stars backwards or forwards along its orbit assuming stars only feel a force from the galaxy</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       dt - timestep that StarCluster is to be moved to</span>
+
+<span class="sd">       pot - Potential orbit is to be integrate in (Default: MWPotential2014)</span>
+
+<span class="sd">       from_centre - interpolate from cluster&#39;s define position (default) or the measured centre of cluster </span>
+
+<span class="sd">       do_tails - interpolate the orbits of tail stars separately (Default: False)</span>
+
+<span class="sd">       rmin/rmax - radial range corresponding to cluster (needed to identify tail stars)</span>
+
+<span class="sd">       emin/emax - energy range corresponding to cluster (needed to identify tail stars)</span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       None</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span> <span class="o">+=</span> <span class="n">dt</span>
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">do_tails</span><span class="p">:</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">to_cluster</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">from_centre</span><span class="p">:</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">rindx</span> <span class="o">=</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">etot</span><span class="p">)</span> <span class="o">==</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">emin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">emin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">etot</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">emax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">emax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">etot</span><span class="p">)</span>
+            <span class="n">eindx</span> <span class="o">=</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">eindx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">rindx</span> <span class="o">*</span> <span class="n">eindx</span>
+        <span class="n">tindx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">invert</span><span class="p">(</span><span class="n">indx</span><span class="p">)</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">initialize_orbit</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">from_centre</span><span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">from_centre</span><span class="p">:</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">xc</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">yc</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zc</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
+        <span class="n">dvx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vxc</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vxgc</span>
+        <span class="n">dvy</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vyc</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vygc</span>
+        <span class="n">dvz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzc</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzgc</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span>
+        <span class="n">dz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
+        <span class="n">dvx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vxgc</span>
+        <span class="n">dvy</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vygc</span>
+        <span class="n">dvz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzgc</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dx</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dy</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dz</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dvx</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dvy</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dvz</span>
+
+    <span class="k">if</span> <span class="n">from_centre</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">xc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">yc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zc</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vxc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vyc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzc</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">xc</span> <span class="o">+=</span> <span class="n">dx</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">yc</span> <span class="o">+=</span> <span class="n">dy</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">zc</span> <span class="o">+=</span> <span class="n">dz</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vxc</span> <span class="o">+=</span> <span class="n">dvx</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vyc</span> <span class="o">+=</span> <span class="n">dvy</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vzc</span> <span class="o">+=</span> <span class="n">dvz</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">vxgc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vygc</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vzgc</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">do_tails</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">to_galpy</span><span class="p">()</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">tindx</span><span class="p">],</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">tindx</span><span class="p">],</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span>
+        <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">[</span><span class="n">tindx</span><span class="p">],</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">[</span><span class="n">tindx</span><span class="p">],</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span>
+
+        <span class="n">R</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+        <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+        <span class="n">vxvv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">R</span><span class="p">,</span> <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">phi</span><span class="p">])</span>
+        <span class="n">otail</span> <span class="o">=</span> <span class="n">Orbit</span><span class="p">(</span><span class="n">vxvv</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="n">solarmotion</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">11.1</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">,</span> <span class="mf">7.25</span><span class="p">])</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">()</span>
+
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">otail</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">otail</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">otail</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">otail</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">otail</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">otail</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">[</span><span class="n">tindx</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">otail</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="orbital_path"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.orbital_path">[docs]</a><span class="k">def</span> <span class="nf">orbital_path</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">nt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span>
+    <span class="n">from_centre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">skypath</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">initialize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       orbital_path</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Calculate orbital path +/- dt Gyr around the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       dt - timestep that StarCluster is to be moved to</span>
+
+<span class="sd">       nt - number of timesteps</span>
+
+<span class="sd">       pot - Potential orbit is to be integrate in (Default: MWPotential2014)</span>
+
+<span class="sd">       from_centre - interpolate from cluster&#39;s define position (default) or the measured centre of cluster </span>
+
+<span class="sd">       sky_path - return sky coordinates instead of cartesian coordinates (Default: False)</span>
+
+<span class="sd">       initialize - Initialize and return Orbit (Default: False)</span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">       plot - plot a snapshot of the cluster in galactocentric coordinates with the orbital path</span>
+
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       t,x,y,z,vx,vy,vz</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">initialize_orbit</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">from_centre</span><span class="o">=</span><span class="n">from_centre</span><span class="p">)</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">),</span> <span class="n">nt</span><span class="p">)</span>
+    <span class="n">o</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+    <span class="n">R</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">vR</span><span class="p">,</span> <span class="n">vT</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span>
+        <span class="n">o</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">o</span> <span class="o">=</span> <span class="n">Orbit</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">R</span> <span class="o">/</span> <span class="n">ro</span><span class="p">,</span> <span class="n">vR</span> <span class="o">/</span> <span class="n">vo</span><span class="p">,</span> <span class="n">vT</span> <span class="o">/</span> <span class="n">vo</span><span class="p">,</span> <span class="n">z</span> <span class="o">/</span> <span class="n">ro</span><span class="p">,</span> <span class="n">vz</span> <span class="o">/</span> <span class="n">vo</span><span class="p">,</span> <span class="n">phi</span><span class="p">],</span>
+        <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span>
+        <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span>
+        <span class="n">solarmotion</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">11.1</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">,</span> <span class="mf">7.25</span><span class="p">],</span>
+    <span class="p">)</span>
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+        <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">dt</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">),</span>
+        <span class="n">dt</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">),</span>
+        <span class="n">nt</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">o</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span> <span class="n">pot</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">skypath</span><span class="p">:</span>
+        <span class="n">ra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">ra</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">dec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">dec</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">dist</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">pmra</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">pmra</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">pmdec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">pmdec</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">vlos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">vlos</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">tstar</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;galpy&quot;</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">skyplot</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ra</span><span class="p">,</span><span class="n">dec</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+
+        <span class="k">if</span> <span class="n">initialize</span><span class="p">:</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">o</span>
+            <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">pmra</span><span class="p">,</span> <span class="n">pmdec</span><span class="p">,</span> <span class="n">vlos</span><span class="p">,</span> <span class="n">o</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">ra</span><span class="p">,</span> <span class="n">dec</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">pmra</span><span class="p">,</span> <span class="n">pmdec</span><span class="p">,</span> <span class="n">vlos</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">vx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">vy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+        <span class="n">vz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;pckms&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">*=</span> <span class="mf">1000.0</span>
+            <span class="n">y</span> <span class="o">*=</span> <span class="mf">1000.0</span>
+            <span class="n">z</span> <span class="o">*=</span> <span class="mf">1000.0</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;nbody&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span>
+            <span class="n">y</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rbar</span>
+            <span class="n">z</span> <span class="o">*=</span> <span class="mf">1000.0</span> <span class="o">/</span> <span class="n">luster</span><span class="o">.</span><span class="n">rbar</span>
+            <span class="n">vx</span> <span class="o">/=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vstar</span>
+            <span class="n">vy</span> <span class="o">/=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vstar</span>
+            <span class="n">vz</span> <span class="o">/=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vstar</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">tstar</span>
+
+        <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">units</span> <span class="o">==</span> <span class="s2">&quot;galpy&quot;</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">/=</span> <span class="n">ro</span>
+            <span class="n">y</span> <span class="o">/=</span> <span class="n">ro</span>
+            <span class="n">z</span> <span class="o">/=</span> <span class="n">ro</span>
+            <span class="n">vx</span> <span class="o">/=</span> <span class="n">vo</span>
+            <span class="n">vy</span> <span class="o">/=</span> <span class="n">vo</span>
+            <span class="n">vz</span> <span class="o">/=</span> <span class="n">vo</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">ts</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">starplot</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">coord</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">,</span><span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">)</span>
+            <span class="n">nlplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">initialize</span><span class="p">:</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">o</span>
+            <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">o</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span></div>
+
+
+<div class="viewcode-block" id="orbital_path_match"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.orbital_path_match">[docs]</a><span class="k">def</span> <span class="nf">orbital_path_match</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">nt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span>
+    <span class="n">from_centre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">to_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">do_full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
+    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       orbital_path_match</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Match stars to a position along the orbital path of the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       dt - timestep that StarCluster is to be moved to</span>
+
+<span class="sd">       nt - number of timesteps</span>
+
+<span class="sd">       pot - Potential orbit is to be integrate in (Default: MWPotential2014)</span>
+
+<span class="sd">       from_centre - interpolate from cluster&#39;s define position (default) or the measured centre of cluster </span>
+
+<span class="sd">       to_path - measure distance to central point along the path (Default) or to the path itself </span>
+
+<span class="sd">       do_full - calculate dpath all at once in a single numpy array (can be memory intensive) (Default:False)</span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">       plot - plot the distance of each star from the orbital path versus distance along the orbital path to the progenitor</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       tstar - orbital time associated with star</span>
+
+<span class="sd">       dprog - distance along the orbit to the progenitor</span>
+
+<span class="sd">       dpath - distance to centre of the orbital path bin (Default) or the orbit path (to_path = True)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">()</span>
+
+    <span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">o</span> <span class="o">=</span> <span class="n">orbital_path</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span>
+        <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
+        <span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span>
+        <span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span>
+        <span class="n">from_centre</span><span class="o">=</span><span class="n">from_centre</span><span class="p">,</span>
+        <span class="n">initialize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span>
+        <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">ts</span> <span class="o">=</span> <span class="n">t</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">vx</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">vy</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="n">vz</span> <span class="o">=</span> <span class="n">o</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+
+    <span class="n">pindx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">)),</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">)),</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">)),</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+
+    <span class="n">indx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">tstar</span> <span class="o">=</span> <span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">*</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>
+    <span class="n">dpath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">dxo</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dyo</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dzo</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">dprogx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">dxo</span><span class="p">))</span>
+    <span class="n">dprogy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">dyo</span><span class="p">))</span>
+    <span class="n">dprogz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">dzo</span><span class="p">))</span>
+
+    <span class="n">dprogx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dprogx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">dprogy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dprogy</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">dprogz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dprogz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">dprogr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dprogx</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dprogy</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dprogz</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">dprog</span> <span class="o">=</span> <span class="n">dprogr</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">dprogr</span><span class="p">[</span><span class="n">pindx</span><span class="p">]</span>
+
+    <span class="c1"># Find distance to path instead of to central point</span>
+    <span class="k">if</span> <span class="n">to_path</span><span class="p">:</span>
+        <span class="n">dxo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dxo</span><span class="p">,</span> <span class="n">dxo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">dyo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dyo</span><span class="p">,</span> <span class="n">dyo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">dzo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dzo</span><span class="p">,</span> <span class="n">dzo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">do_full</span><span class="p">:</span>
+            <span class="c1"># Typically it is too expensive to calculate dpath all at once, but will allow option via do_full</span>
+
+            <span class="n">ovec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">dxo</span><span class="p">,</span> <span class="n">dyo</span><span class="p">,</span> <span class="n">dzo</span><span class="p">])</span>
+            <span class="n">mag_ovec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dxo</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dyo</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dzo</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">svec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">dx</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">],</span> <span class="n">dy</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">],</span> <span class="n">dz</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">]])</span>
+            <span class="n">mag_svec</span> <span class="o">=</span> <span class="n">dr</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">]</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ovec</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">svec</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mag_ovec</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">*</span> <span class="n">mag_svec</span><span class="p">))</span>
+            <span class="n">dpath</span> <span class="o">=</span> <span class="n">mag_svec</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Need to optimize this via numba</span>
+            <span class="n">dpath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">):</span>
+                <span class="n">ovec</span> <span class="o">=</span> <span class="p">[</span><span class="n">dxo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dyo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dzo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span>
+                <span class="n">mag_ovec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="n">dxo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dyo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dzo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">**</span> <span class="mf">2.0</span>
+                <span class="p">)</span>
+
+                <span class="n">svec</span> <span class="o">=</span> <span class="p">[</span><span class="n">dx</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dy</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dz</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span>
+                <span class="n">mag_svec</span> <span class="o">=</span> <span class="n">dr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+                <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">ovec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">svec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ovec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">svec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ovec</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">svec</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">mag_ovec</span> <span class="o">*</span> <span class="n">mag_svec</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">dpath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dpath</span><span class="p">,</span> <span class="n">mag_svec</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+
+    <span class="c1"># Assign negative to stars with position vectors in opposite direction as local angular momentum vector</span>
+    <span class="n">rgc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">])])</span>
+    <span class="n">vgc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">o</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span> <span class="n">o</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">])])</span>
+    <span class="n">lz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">rgc</span><span class="p">,</span> <span class="n">vgc</span><span class="p">)</span>
+
+    <span class="n">rstar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]),</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">ldot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rstar</span> <span class="o">*</span> <span class="n">lz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">dpath</span><span class="p">[</span><span class="n">ldot</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">nscatter</span><span class="p">(</span><span class="n">dprog</span><span class="p">,</span><span class="n">dpath</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Dprog&quot;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Dpath&quot;</span><span class="p">,</span><span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tstar</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dprog</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dpath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="tail_path"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.tail_path">[docs]</a><span class="k">def</span> <span class="nf">tail_path</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">nt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span> <span class="n">from_centre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       tail_path</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Calculate tail path +/- dt Gyr around the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       dt - timestep that StarCluster is to be moved to</span>
+
+<span class="sd">       nt - number of timesteps</span>
+
+<span class="sd">       pot - Potential orbit is to be integrate in (Default: MWPotential2014)</span>
+
+<span class="sd">       from_centre - interpolate from cluster&#39;s define position (default) or the measured centre of cluster </span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       t,x,y,z,vx,vy,vz</span>
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">       2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">()</span>
+
+    <span class="n">to</span><span class="p">,</span> <span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">zo</span><span class="p">,</span> <span class="n">vxo</span><span class="p">,</span> <span class="n">vyo</span><span class="p">,</span> <span class="n">vzo</span><span class="p">,</span> <span class="n">o</span> <span class="o">=</span> <span class="n">orbital_path</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span>
+        <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span>
+        <span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span>
+        <span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span>
+        <span class="n">from_centre</span><span class="o">=</span><span class="n">from_centre</span><span class="p">,</span>
+        <span class="n">initialize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span>
+        <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">tstar</span><span class="p">,</span> <span class="n">dprog</span><span class="p">,</span> <span class="n">dpath</span> <span class="o">=</span> <span class="n">orbital_path_match</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">=</span><span class="n">cluster</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="n">from_centre</span><span class="o">=</span><span class="n">from_centre</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span>
+    <span class="p">)</span>
+
+    <span class="n">t_lower</span><span class="p">,</span> <span class="n">t_mid</span><span class="p">,</span> <span class="n">t_upper</span><span class="p">,</span> <span class="n">t_hist</span> <span class="o">=</span> <span class="n">binmaker</span><span class="p">(</span><span class="n">to</span><span class="p">,</span> <span class="n">nbin</span><span class="o">=</span><span class="n">nt</span><span class="p">)</span>
+    <span class="n">ttail</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">xtail</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ytail</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ztail</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">vxtail</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">vytail</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">vztail</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_mid</span><span class="p">)):</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">tstar</span> <span class="o">&gt;=</span> <span class="n">t_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">tstar</span> <span class="o">&lt;=</span> <span class="n">t_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ttail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ttail</span><span class="p">,</span> <span class="n">t_mid</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">xtail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">xtail</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="n">ytail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ytail</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="n">ztail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ztail</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="n">vxtail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vxtail</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">vx</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="n">vytail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vytail</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">vy</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="n">vztail</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vztail</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">vz</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">starplot</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">coord</span><span class="o">=</span><span class="s1">&#39;xy&#39;</span><span class="p">,</span><span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">)</span>
+        <span class="n">nlplot</span><span class="p">(</span><span class="n">xtail</span><span class="p">,</span><span class="n">ytail</span><span class="p">,</span><span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ttail</span><span class="p">,</span> <span class="n">xtail</span><span class="p">,</span> <span class="n">ytail</span><span class="p">,</span> <span class="n">ztail</span><span class="p">,</span> <span class="n">vxtail</span><span class="p">,</span> <span class="n">vytail</span><span class="p">,</span> <span class="n">vztail</span></div>
+
+
+<div class="viewcode-block" id="tail_path_match"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.tail_path_match">[docs]</a><span class="k">def</span> <span class="nf">tail_path_match</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">dt</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">nt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span>
+    <span class="n">from_centre</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">to_path</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">do_full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+    <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       tail_path_match</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Match stars to a position along the tail path of the cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster</span>
+
+<span class="sd">       dt - timestep that StarCluster is to be moved to</span>
+
+<span class="sd">       nt - number of timesteps</span>
+
+<span class="sd">       pot - Potential orbit is to be integrate in (Default: MWPotential2014)</span>
+
+<span class="sd">       from_centre - interpolate from cluster&#39;s define position (default) or the measured centre of cluster </span>
+
+<span class="sd">       to_path - measure distance to central point along the path (Default) or to the path itself </span>
+
+<span class="sd">       ro - galpy distance scale (Default: 8.)</span>
+
+<span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       tstar - tail time associated with star</span>
+
+<span class="sd">       dprog - distance along the tail to the progenitor</span>
+
+<span class="sd">       dpath - distance to centre of the tail path bin (Default) or the tail path (to_path = True)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">()</span>
+
+    <span class="n">ts</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span> <span class="o">=</span> <span class="n">tail_path</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">dt</span><span class="p">,</span> <span class="n">nt</span><span class="o">=</span><span class="n">nt</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="n">from_centre</span><span class="o">=</span><span class="n">from_centre</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span>
+    <span class="p">)</span>
+    <span class="n">pindx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">z</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ts</span><span class="p">))</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dx</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+
+    <span class="n">indx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">dpath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">tstar</span> <span class="o">=</span> <span class="n">ts</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>  <span class="c1"># *bovy_conversion.time_in_Gyr(ro=ro,vo=vo)</span>
+
+    <span class="n">dxo</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dyo</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dzo</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">dprogx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">dxo</span><span class="p">))</span>
+    <span class="n">dprogy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">dyo</span><span class="p">))</span>
+    <span class="n">dprogz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">dzo</span><span class="p">))</span>
+
+    <span class="n">dprogx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dprogx</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">dprogy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dprogy</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">dprogz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">dprogz</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">dprogr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dprogx</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dprogy</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dprogz</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="n">dprog</span> <span class="o">=</span> <span class="n">dprogr</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">dprogr</span><span class="p">[</span><span class="n">pindx</span><span class="p">]</span>
+
+    <span class="c1"># Find distance to path instead of to central point</span>
+    <span class="k">if</span> <span class="n">to_path</span><span class="p">:</span>
+        <span class="n">dxo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dxo</span><span class="p">,</span> <span class="n">dxo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">dyo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dyo</span><span class="p">,</span> <span class="n">dyo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">dzo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dzo</span><span class="p">,</span> <span class="n">dzo</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">do_full</span><span class="p">:</span>
+            <span class="c1"># Typically it is too expensive to calculate dpath all at once, but will allow option via do_full</span>
+
+            <span class="n">ovec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">dxo</span><span class="p">,</span> <span class="n">dyo</span><span class="p">,</span> <span class="n">dzo</span><span class="p">])</span>
+            <span class="n">mag_ovec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dxo</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dyo</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dzo</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">svec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">dx</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">],</span> <span class="n">dy</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">],</span> <span class="n">dz</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">]])</span>
+            <span class="n">mag_svec</span> <span class="o">=</span> <span class="n">dr</span><span class="p">[:,</span> <span class="n">indx</span><span class="p">]</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ovec</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">svec</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">mag_ovec</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">*</span> <span class="n">mag_svec</span><span class="p">))</span>
+            <span class="n">dpath</span> <span class="o">=</span> <span class="n">mag_svec</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Need to optimize this via numba</span>
+            <span class="n">dpath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">):</span>
+                <span class="n">ovec</span> <span class="o">=</span> <span class="p">[</span><span class="n">dxo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dyo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dzo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span>
+                <span class="n">mag_ovec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="n">dxo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dyo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">dzo</span><span class="p">[</span><span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">**</span> <span class="mf">2.0</span>
+                <span class="p">)</span>
+
+                <span class="n">svec</span> <span class="o">=</span> <span class="p">[</span><span class="n">dx</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dy</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">dz</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]]</span>
+                <span class="n">mag_svec</span> <span class="o">=</span> <span class="n">dr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">indx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+
+                <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">ovec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">svec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ovec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">svec</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ovec</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">svec</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="n">mag_ovec</span> <span class="o">*</span> <span class="n">mag_svec</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">dpath</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dpath</span><span class="p">,</span> <span class="n">mag_svec</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">))</span>
+
+    <span class="c1"># Assign negative to stars with position vectors in opposite direction as local angular momentum vector</span>
+    <span class="n">rgc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">z</span><span class="p">[</span><span class="n">indx</span><span class="p">]])</span>
+    <span class="n">vgc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">vx</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">vy</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">vz</span><span class="p">[</span><span class="n">indx</span><span class="p">]])</span>
+    <span class="n">lz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">rgc</span><span class="p">,</span> <span class="n">vgc</span><span class="p">)</span>
+
+    <span class="n">rstar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">cluster</span><span class="o">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">z</span><span class="p">[</span><span class="n">indx</span><span class="p">]]</span>
+    <span class="p">)</span>
+
+    <span class="n">ldot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">rstar</span> <span class="o">*</span> <span class="n">lz</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">dpath</span><span class="p">[</span><span class="n">ldot</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">nscatter</span><span class="p">(</span><span class="n">dprog</span><span class="p">,</span><span class="n">dpath</span><span class="p">,</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Dprog&quot;</span><span class="p">,</span><span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Dpath&quot;</span><span class="p">,</span><span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tstar</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dprog</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dpath</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_cluster_orbit"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.get_cluster_orbit">[docs]</a><span class="k">def</span> <span class="nf">get_cluster_orbit</span><span class="p">(</span><span class="n">gcname</span><span class="o">=</span><span class="s2">&quot;mwglobularclusters&quot;</span><span class="p">,</span><span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       get_cluster_orbit</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Get the measured orbital parameters of a Galactic globular cluster has measured by Vasiliev 2019 using Gaia DR2 via Galpy</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       gcname - name or list of GC names whose orbits are to be retrieved</span>
+<span class="sd">        --&gt; Note that list just returns the list to read, while &#39;all&#39; gets the orbits for all the clusters</span>
+
+<span class="sd">       pot - GALPY potential used to calculate actions</span>
+
+<span class="sd">       ro,vo - GALPY scaling parameters</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        orbit</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Orbit</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="n">gcname</span><span class="p">,</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="n">solarmotion</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">11.1</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">,</span> <span class="mf">7.25</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="calc_actions"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.calc_actions">[docs]</a><span class="k">def</span> <span class="nf">calc_actions</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       calc_actions</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Calculate action angle values for each star </span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       pot - GALPY potential used to calculate actions</span>
+
+<span class="sd">       ro,vo - GALPY scaling parameters</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       type - method for calculating actions (default: staeckel)</span>
+
+<span class="sd">       delta - focus for staeckel method (default: 0.45 - optimal for MWPotential2014)</span>
+
+<span class="sd">       c - if True, always use C for calculations</span>
+
+<span class="sd">       Additional KWARGS can be included for other action angle calculation methods in galpy</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">os</span> <span class="o">=</span> <span class="n">initialize_orbits</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="p">)</span>
+    <span class="n">atype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="s2">&quot;staeckel&quot;</span><span class="p">)</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">,</span> <span class="mf">0.45</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">JR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">jr</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">Jphi</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">jp</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">Jz</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">jz</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">OR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">Or</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">Ophi</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">Op</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">Oz</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">Oz</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">TR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">Tr</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">Tphi</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">Tp</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">Tz</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">Tz</span><span class="p">(</span><span class="n">pot</span><span class="o">=</span><span class="n">pot</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">atype</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">JR</span><span class="p">,</span> <span class="n">Jphi</span><span class="p">,</span> <span class="n">Jz</span><span class="p">,</span> <span class="n">OR</span><span class="p">,</span> <span class="n">Ophi</span><span class="p">,</span> <span class="n">Oz</span><span class="p">,</span> <span class="n">TR</span><span class="p">,</span> <span class="n">Tphi</span><span class="p">,</span> <span class="n">Tz</span></div>
+
+<div class="viewcode-block" id="ttensor"><a class="viewcode-back" href="../../../reference/clustertools.analysis.orbit.html#clustertools.analysis.orbit.ttensor">[docs]</a><span class="k">def</span> <span class="nf">ttensor</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">pot</span><span class="o">=</span><span class="n">MWPotential2014</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span> <span class="n">eigenval</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">    NAME:</span>
+
+<span class="sd">        ttensor</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">        Calculate the tidal tensor Tij=-d(Psi)(dxidxj)</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance</span>
+
+<span class="sd">       pot - GALPY potential used to calculate actions</span>
+
+<span class="sd">       ro,vo - GALPY scaling parameters</span>
+
+<span class="sd">       eigenval - return eigenvalues if true (optional; boolean)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        Tidal Tensor</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">        2018-03-21 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">o</span> <span class="o">=</span> <span class="n">initialize_orbit</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">ro</span><span class="p">,</span> <span class="n">vo</span><span class="p">)</span>
+    <span class="n">R</span><span class="o">=</span><span class="n">o</span><span class="o">.</span><span class="n">R</span><span class="p">()</span>
+    <span class="n">z</span><span class="o">=</span><span class="n">o</span><span class="o">.</span><span class="n">z</span><span class="p">()</span>
+
+    <span class="n">tij</span><span class="o">=</span><span class="n">potential</span><span class="o">.</span><span class="n">ttensor</span><span class="p">(</span><span class="n">R</span><span class="o">/</span><span class="n">ro</span><span class="p">,</span><span class="n">z</span><span class="o">/</span><span class="n">ro</span><span class="p">,</span><span class="n">eigenval</span><span class="o">=</span><span class="n">eigenval</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tij</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

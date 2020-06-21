@@ -1,4 +1,19 @@
-# A matplotlib.pyplot wrapper for making key StarCluster plots
+""" A matplotlib.pyplot wrapper for making key StarCluster plots
+
+"""
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "nscatter",
+    "nplot",
+    "nlplot",
+    "nhist",
+    "nhist2d",
+    "ndens",
+    "starplot",
+    "skyplot",
+]
 
 import matplotlib.pyplot as plt
 import numpy as np

@@ -1,0 +1,781 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.util.recipes &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for clustertools.util.recipes</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Generic recipes for making key calculations</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jeremy J Webb&quot;</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;nbinmaker&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;binmaker&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;power_law_distribution_function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;dx_function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;x_hist&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mean_prof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;smooth&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;interpolate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rotate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;area_enclosed&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;minimum_distance&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;distance&quot;</span>
+<span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">numba</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">..util.plots</span> <span class="kn">import</span> <span class="o">*</span>
+
+
+<div class="viewcode-block" id="nbinmaker"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.nbinmaker">[docs]</a><span class="k">def</span> <span class="nf">nbinmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nbin</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nsum</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  NAME:</span>
+
+<span class="sd">     nbinmaker</span>
+
+<span class="sd">  PURPOSE:</span>
+
+<span class="sd">     Split an array into nbin bin&#39;s of equal number elements</span>
+
+<span class="sd">  INPUT:</span>
+
+<span class="sd">     x - input array</span>
+
+<span class="sd">     nbin - number of bins</span>
+
+<span class="sd">     nsum - return number of points in each bin</span>
+
+<span class="sd">  OUTPUT:</span>
+
+<span class="sd">     x_lower,x_mid,x_upper,x_hist (if nsum==False)</span>
+
+<span class="sd">     x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)</span>
+
+<span class="sd">  HISTORY:</span>
+
+<span class="sd">     2018 - Written - Webb (UofT)</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">xorder</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="n">x_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">x_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">x_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">x_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">x_mid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbin</span><span class="p">):</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">nbin</span><span class="p">))</span>
+        <span class="n">x_lower</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_lower</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">xorder</span><span class="p">[</span><span class="n">indx</span><span class="p">]])</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">nbin</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">x_upper</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_upper</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">xorder</span><span class="p">[</span><span class="n">indx</span><span class="p">]])</span>
+
+    <span class="n">indx</span> <span class="o">=</span> <span class="n">x_lower</span> <span class="o">!=</span> <span class="n">x_upper</span>
+    <span class="n">x_lower</span> <span class="o">=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+    <span class="n">x_upper</span> <span class="o">=</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">)):</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">x_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_hist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">))</span>
+        <span class="n">x_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_sum</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+        <span class="n">x_mid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_mid</span><span class="p">,</span> <span class="n">x_sum</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">x_hist</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">nsum</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span><span class="p">,</span> <span class="n">x_sum</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span></div>
+
+
+<div class="viewcode-block" id="binmaker"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.binmaker">[docs]</a><span class="k">def</span> <span class="nf">binmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nbin</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">nsum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">steptype</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  NAME:</span>
+
+<span class="sd">     binmaker</span>
+
+<span class="sd">  PURPOSE:</span>
+
+<span class="sd">     Split an array into nbin bin&#39;s of equal size</span>
+
+<span class="sd">  INPUT:</span>
+
+<span class="sd">     x - input array</span>
+
+<span class="sd">     nbin - number of bins</span>
+
+<span class="sd">     nsum - return number of points in each bin</span>
+
+<span class="sd">     steptype - linear or logarithmic steps</span>
+
+<span class="sd">  OUTPUT:</span>
+
+<span class="sd">     x_lower,x_mid,x_upper,x_hist (if nsum==False)</span>
+
+<span class="sd">     x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)</span>
+
+<span class="sd">  HISTORY:</span>
+
+<span class="sd">     2018 - Written - Webb (UofT)</span>
+
+<span class="sd">  &quot;&quot;&quot;</span>
+
+    <span class="n">x_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+    <span class="n">x_sum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbin</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">steptype</span> <span class="o">==</span> <span class="s2">&quot;linear&quot;</span><span class="p">:</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">nbin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">x</span><span class="p">)),</span> <span class="n">nbin</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">x_lower</span> <span class="o">=</span> <span class="n">steps</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">x_upper</span> <span class="o">=</span> <span class="n">steps</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="n">x_mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">x_upper</span> <span class="o">+</span> <span class="n">x_lower</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbin</span><span class="p">):</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">x_hist</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+        <span class="n">x_sum</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">nsum</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span><span class="p">,</span> <span class="n">x_sum</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span></div>
+
+
+<div class="viewcode-block" id="power_law_distribution_function"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.power_law_distribution_function">[docs]</a><span class="k">def</span> <span class="nf">power_law_distribution_function</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">  NAME:</span>
+
+<span class="sd">     power_law_distribution_function</span>
+
+<span class="sd">  PURPOSE:</span>
+
+<span class="sd">     Generate points from a power-law distribution function</span>
+<span class="sd">  INPUT:</span>
+
+<span class="sd">     n - number of points</span>
+
+<span class="sd">     alpha - power-law slope of distribution function</span>
+
+<span class="sd">     xmin,xmax - minimum and maximum values of distribution</span>
+
+<span class="sd">  OUTPUT:</span>
+
+<span class="sd">     c</span>
+
+<span class="sd">  HISTORY:</span>
+
+<span class="sd">     2019 - Written - Webb (UofT)</span>
+<span class="sd">  &quot;&quot;&quot;</span>
+
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">+</span> <span class="mf">1.0</span>
+
+    <span class="k">if</span> <span class="n">xmin</span> <span class="o">==</span> <span class="n">xmax</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xmin</span>
+    <span class="k">elif</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xmin</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">alpha</span> <span class="o">!=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">xmin</span> <span class="o">**</span> <span class="n">eta</span> <span class="o">+</span> <span class="p">(</span><span class="n">xmax</span> <span class="o">**</span> <span class="n">eta</span> <span class="o">-</span> <span class="n">xmin</span> <span class="o">**</span> <span class="n">eta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">))</span> <span class="o">**</span> <span class="p">(</span>
+            <span class="mf">1.0</span> <span class="o">/</span> <span class="n">eta</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">alpha</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">xmin</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">xmax</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">xmin</span><span class="p">))</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="n">x</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dx_function"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.dx_function">[docs]</a><span class="k">def</span> <span class="nf">dx_function</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bintype</span><span class="o">=</span><span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="n">x_lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">x_upper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">     dx_function</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">     Find distribution function using nx bins containing an equal number of points</span>
+<span class="sd">    INPUT:</span>
+
+<span class="sd">     x - input array</span>
+
+<span class="sd">     nx - number of bins</span>
+
+<span class="sd">     bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</span>
+
+<span class="sd">     x_lower,x_mean,x_upper - preset bins</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">     x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha</span>
+
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">     2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">x_lower</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bintype</span> <span class="o">==</span> <span class="s2">&quot;num&quot;</span><span class="p">:</span>
+            <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mean</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mean</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">binmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x_hist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_lower</span><span class="p">)):</span>
+            <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">x_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_hist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">))</span>
+
+    <span class="n">lx_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">x_mean</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">x_hist</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_upper</span> <span class="o">-</span> <span class="n">x_lower</span><span class="p">)</span>
+    <span class="n">ldx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dx</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">),</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">lx_mean</span><span class="p">,</span> <span class="n">ldx</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ealpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">nplot</span><span class="p">(</span><span class="n">x_mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dx</span><span class="p">),</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;LOG(dN/dx)&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">xfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x_mean</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x_mean</span><span class="p">),</span> <span class="n">nx</span><span class="p">)</span>
+            <span class="n">dxfit</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">xfit</span><span class="p">)</span> <span class="o">+</span> <span class="n">yalpha</span><span class="p">)</span>
+            <span class="n">nlplot</span><span class="p">(</span>
+                <span class="n">xfit</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dxfit</span><span class="p">),</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\alpha$ = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">alpha</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x_mean</span><span class="p">,</span> <span class="n">x_hist</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span></div>
+
+<div class="viewcode-block" id="x_hist"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.x_hist">[docs]</a><span class="k">def</span> <span class="nf">x_hist</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bintype</span><span class="o">=</span><span class="s2">&quot;num&quot;</span><span class="p">,</span> <span class="n">x_lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_mean</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">x_upper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">        x_hist</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">        Find histogram</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">        x input array</span>
+
+<span class="sd">        nx number of bins</span>
+
+<span class="sd">        bintype bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</span>
+
+<span class="sd">        x_lower,x_mean,x_upper</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        x_mean,x_hist</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">        2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">x_lower</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bintype</span> <span class="o">==</span> <span class="s2">&quot;num&quot;</span><span class="p">:</span>
+            <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mean</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mean</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">binmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nx</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x_hist</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_lower</span><span class="p">)):</span>
+            <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">x_hist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_hist</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">x_mean</span><span class="p">,</span><span class="n">x_hist</span></div>
+
+<div class="viewcode-block" id="mean_prof"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.mean_prof">[docs]</a><span class="k">def</span> <span class="nf">mean_prof</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">nbin</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bintype</span><span class="o">=</span><span class="s2">&quot;fix&quot;</span><span class="p">,</span> <span class="n">steptype</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">median</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">     mean_prof</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">     Calculate mean profile of parameter y that depends on x  </span>
+<span class="sd">    INPUT:</span>
+
+<span class="sd">     x,y coordinates from which to measure the mean profile</span>
+
+<span class="sd">     nbin - number of bins</span>
+
+<span class="sd">     bintype - can be bins of fixed size (&#39;fix&#39;) or equal number of stars (&#39;num&#39;)</span>
+
+<span class="sd">     steptype - for fixed size arrays, set step size to &#39;linear&#39; or &#39;log&#39;</span>
+
+<span class="sd">     median - find median instead of mean (Default: False)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">     x_bin,y_bin,y_sig</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">     2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">bintype</span> <span class="o">==</span> <span class="s2">&quot;num&quot;</span><span class="p">:</span>
+        <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nbin</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">binmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nbin</span><span class="p">,</span> <span class="n">steptype</span><span class="o">=</span><span class="n">steptype</span><span class="p">)</span>
+
+    <span class="n">y_bin</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y_sig</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x_bin</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbin</span><span class="p">):</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="kc">True</span> <span class="ow">in</span> <span class="n">indx</span><span class="p">:</span>
+            <span class="n">x_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_bin</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">x_hist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">median</span><span class="p">:</span>
+                    <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+
+                <span class="n">y_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_sig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">x_hist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+                <span class="n">y_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_sig</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">y_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_sig</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x_bin</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_bin</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_sig</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="smooth"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.smooth">[docs]</a><span class="k">def</span> <span class="nf">smooth</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">nbin</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">bintype</span><span class="o">=</span><span class="s2">&quot;fix&quot;</span><span class="p">,</span> <span class="n">median</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">     smooth</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">     Smooth a profile</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">     x,y coordinates from which to measure the mean profile</span>
+
+<span class="sd">     nbin - number of bins to smooth over</span>
+
+<span class="sd">     bintype - can be bins of fixed size (&#39;fix&#39;) or equal number of stars (&#39;num&#39;)</span>
+
+<span class="sd">     median - find median instead of mean (Default: False)</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">     dx - width of smoothening bin</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">     x_bin,y_bin,y_sig</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">     2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Smooth by intervals in dx</span>
+    <span class="k">if</span> <span class="s2">&quot;dx&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">))</span>
+        <span class="n">nbin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="n">dx</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">bintype</span> <span class="o">==</span> <span class="s2">&quot;num&quot;</span><span class="p">:</span>
+        <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nbin</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">x_lower</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">,</span> <span class="n">x_upper</span><span class="p">,</span> <span class="n">x_hist</span> <span class="o">=</span> <span class="n">binmaker</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nbin</span><span class="p">)</span>
+
+    <span class="n">y_bin</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y_sig</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">x_bin</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y_max</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y_min</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nbin</span><span class="p">):</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">x_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">x_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="kc">True</span> <span class="ow">in</span> <span class="n">indx</span><span class="p">:</span>
+            <span class="n">x_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_bin</span><span class="p">,</span> <span class="n">x_mid</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">x_hist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">median</span><span class="p">:</span>
+                    <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+                <span class="n">y_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_sig</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+                <span class="n">y_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+                <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">x_hist</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+                <span class="n">y_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_sig</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">y_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+                <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_max</span><span class="p">,</span> <span class="n">y</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">y_bin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_bin</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">y_sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_sig</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">y_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+                <span class="n">y_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y_max</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x_bin</span><span class="p">,</span> <span class="n">y_bin</span><span class="p">,</span> <span class="n">y_sig</span><span class="p">,</span> <span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span></div>
+
+
+<div class="viewcode-block" id="interpolate"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.interpolate">[docs]</a><span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">     interpolate</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">     Perform simple linear interpolate between two points in 2D</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">     r1,r2 - x,y coordinates from which to interpolate</span>
+
+<span class="sd">     x - x-value from which to interpolate y</span>
+
+<span class="sd">     y - y-value from which to interpolate x</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">     interpolated value</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">     2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">r1</span>
+    <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="n">r2</span>
+
+    <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x2</span> <span class="o">-</span> <span class="n">x1</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="n">x1</span>
+
+    <span class="k">if</span> <span class="n">x</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">m</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="n">b</span>
+    <span class="k">elif</span> <span class="n">y</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="n">m</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NO INTERMEDIATE COORDINATE GIVEN&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="rotate"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.rotate">[docs]</a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">thetax</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">thetay</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">thetaz</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">     rotate</span>
+<span class="sd">     --&gt; This function is a work in progress. It is meant to eventually be a function for rotating streams to phi1/phi2 coordinates</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">     Rotate StarCluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">     x,y,z - coordinates of stars</span>
+
+<span class="sd">     thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">     rotated values of x,y,z</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">     2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># rotate about x axis:</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetax</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetax</span><span class="p">)</span>
+    <span class="n">z2</span> <span class="o">=</span> <span class="o">-</span><span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetax</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetax</span><span class="p">)</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y2</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">z2</span>
+
+    <span class="c1"># rotate about y axis:</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetay</span><span class="p">)</span> <span class="o">-</span> <span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetay</span><span class="p">)</span>
+    <span class="n">z2</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetay</span><span class="p">)</span> <span class="o">+</span> <span class="n">z</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetay</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x2</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">z2</span>
+
+    <span class="c1"># rotate about z axis:</span>
+    <span class="n">x2</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetaz</span><span class="p">)</span> <span class="o">-</span> <span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetaz</span><span class="p">)</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="o">-</span><span class="n">x</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">thetaz</span><span class="p">)</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">thetaz</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x2</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y2</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">z</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="area_enclosed"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.area_enclosed">[docs]</a><span class="k">def</span> <span class="nf">area_enclosed</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nrand</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;sphere&quot;</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">     area_enclosed</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">     calculate area enclosed by a collection of points by finding what fraction of a random distribution overlaps with points</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">     x,y - x and y coorindates</span>
+<span class="sd">     </span>
+<span class="sd">     thresh - threshold for overlap between random distribution and points (Default: None - use maximum nearest neighbour)</span>
+
+<span class="sd">     nrand - number of random points to be generated in uniform distribution (Default: 1000)</span>
+
+<span class="sd">     method - generate spherical or rectangular distribution of random points (Default: sphere)</span>
+<span class="sd">     </span>
+<span class="sd">     plot - plot overlap (Default: False)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">     area</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">     2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">thresh</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">rmin</span> <span class="o">=</span> <span class="n">minimum_distance</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">thresh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">rmin</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;rectangle&quot;</span><span class="p">:</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">)</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">)</span>
+
+        <span class="n">atot</span> <span class="o">=</span> <span class="n">dx</span> <span class="o">*</span> <span class="n">dy</span>
+
+        <span class="c1"># Generate random particles in area</span>
+        <span class="n">xrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nrand</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">xmin</span>
+        <span class="n">yrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nrand</span><span class="p">)</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">+</span> <span class="n">ymin</span>
+
+    <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s2">&quot;sphere&quot;</span><span class="p">:</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">y</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">rmin</span><span class="p">,</span> <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">r</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+        <span class="n">phi</span><span class="p">[</span><span class="n">phi</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="n">phimin</span><span class="p">,</span> <span class="n">phimax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">phimin</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">phimin</span> <span class="o">+=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+        <span class="n">atot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="n">rmax</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">rmin</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">rrand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nrand</span><span class="p">)</span> <span class="o">*</span> <span class="n">dr</span> <span class="o">+</span> <span class="n">rmin</span>
+        <span class="n">phirand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">nrand</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">fabs</span><span class="p">(</span><span class="n">phimax</span> <span class="o">-</span> <span class="n">phimin</span><span class="p">)</span> <span class="o">+</span> <span class="n">phimin</span>
+        <span class="n">xrand</span> <span class="o">=</span> <span class="n">rrand</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phirand</span><span class="p">)</span>
+        <span class="n">yrand</span> <span class="o">=</span> <span class="n">rrand</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phirand</span><span class="p">)</span>
+
+    <span class="n">drmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="k">if</span> <span class="n">full</span><span class="p">:</span>
+        <span class="n">xrfull</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">xrand</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+        <span class="n">yrfull</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">yrand</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+        <span class="n">xfull</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nrand</span><span class="p">)</span>
+        <span class="n">yfull</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">nrand</span><span class="p">)</span>
+
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">xrfull</span> <span class="o">-</span> <span class="n">xfull</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">yrfull</span> <span class="o">-</span> <span class="n">yfull</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+        <span class="n">dr</span> <span class="o">=</span> <span class="n">dr</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">nrand</span><span class="p">)</span>
+        <span class="n">drmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nrand</span><span class="p">):</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">xrand</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">yrand</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.0</span><span class="p">)</span>
+            <span class="n">drmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">drmin</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">dr</span><span class="p">))</span>
+
+    <span class="n">indx</span> <span class="o">=</span> <span class="n">drmin</span> <span class="o">&lt;</span> <span class="n">thresh</span>
+
+    <span class="n">area</span> <span class="o">=</span> <span class="n">atot</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">nrand</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xrand</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">yrand</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;X&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Y&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">area</span></div>
+
+
+<div class="viewcode-block" id="minimum_distance"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.minimum_distance">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
+<span class="k">def</span> <span class="nf">minimum_distance</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       minimum_distance</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Find distance to each point&#39;s nearest neighbour</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       x=[x,y,z].T</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       distance to nearest neighbour</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">min_distance</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)):</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">distance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">min_distance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">min_distance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">min_distance</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">min_distance</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">r</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">min_distance</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">min_distance</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">min_distance</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">min_distance</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">r</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">min_distance</span></div>
+
+
+<div class="viewcode-block" id="distance"><a class="viewcode-back" href="../../../reference/clustertools.util.recipes.html#clustertools.util.recipes.distance">[docs]</a><span class="nd">@numba</span><span class="o">.</span><span class="n">njit</span>
+<span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">    distance</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">    Find distance between two points (made for use with numba)</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">    x1=[x,y,z]</span>
+<span class="sd">    x2=[x,y,z]</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">    distance</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">    2019 - Written - Webb (UofT)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">x2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dy</span> <span class="o">=</span> <span class="n">x2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">x2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">x1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">dx</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">dy</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">*</span> <span class="n">dz</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">r</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.util.output module &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="clustertools.util.plots module" href="clustertools.util.plots.html" />
+    <link rel="prev" title="clustertools.util.coordinates module" href="clustertools.util.coordinates.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.html" title="clustertools.util.plots module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.coordinates.html" title="clustertools.util.coordinates module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.util.html" accesskey="U">clustertools.util package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.util.coordinates.html"
+                        title="previous chapter">clustertools.util.coordinates module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clustertools.util.plots.html"
+                        title="next chapter">clustertools.util.plots module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/clustertools.util.output.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-clustertools.util.output">
+<span id="clustertools-util-output-module"></span><h1>clustertools.util.output module<a class="headerlink" href="#module-clustertools.util.output" title="Permalink to this headline">¶</a></h1>
+<p>Output files containing key cluster properties</p>
+<dl class="function">
+<dt id="clustertools.util.output.extrct_out">
+<code class="sig-prename descclassname">clustertools.util.output.</code><code class="sig-name descname">extrct_out</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">fileout</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/output.html#extrct_out"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.output.extrct_out" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>extrct_out</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Extrct key cluster properties and write to file
+–&gt; N, Nbinary, trh, mtot, rlagrange_1-10, rmpro, rhpro, rv, rl, rt, rvmax, vmax</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - a StarCluster-class object</p>
+<p>fileout - opened file to write data to</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.output.snapout">
+<code class="sig-prename descclassname">clustertools.util.output.</code><code class="sig-name descname">snapout</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">filename</em>, <em class="sig-param">energies=False</em>, <em class="sig-param">observations=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/output.html#snapout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.output.snapout" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>snapout</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Output a snapshot in clustertools format</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - a StarCluster-class object</p>
+<p>filename - name of file to be written to</p>
+<p>energies - include energies in output (Default: False)</p>
+<p>observations - include sky values of stars (Default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.output.fortout">
+<code class="sig-prename descclassname">clustertools.util.output.</code><code class="sig-name descname">fortout</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">filename='fort.10'</em>, <em class="sig-param">reset_nbody_scale=False</em>, <em class="sig-param">reset_nbody_mass=True</em>, <em class="sig-param">reset_nbody_radii=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/output.html#fortout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.output.fortout" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>fortout</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Output a snapshot in NBODY6 fort.10 format</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - a StarCluster-class object</p>
+<p>filename - name of file to be written to (Default: ‘fort.10’)</p>
+<p>reset_nbody_scale - reset nbody scaling parameters (Default: False)</p>
+<p>reset_nbody_mass - reset nbody mass scaling parameter (Default: False)</p>
+<p>reset_nbody_radii - reset nbody radii scaling parameter (Default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.util.output.gyrout">
+<code class="sig-prename descclassname">clustertools.util.output.</code><code class="sig-name descname">gyrout</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">filename='init.nemo.dat'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/output.html#gyrout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.output.gyrout" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>gyrout</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Output a snapshot in gyrfalcon/NEMO format</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - a StarCluster-class object</p>
+<p>filename - name of file to be written to (Default: ‘init.nemo.dat’)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.html" title="clustertools.util.plots module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.coordinates.html" title="clustertools.util.coordinates module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.util.html" >clustertools.util package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

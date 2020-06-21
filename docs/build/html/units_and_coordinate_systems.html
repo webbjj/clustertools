@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Units and Coordinate Systems &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Initialize" href="initialize.html" />
+    <link rel="prev" title="StarCluster" href="api/clustertools.analysis.cluster.StarCluster.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="initialize.html" title="Initialize"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="api/clustertools.analysis.cluster.StarCluster.html" title="StarCluster"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">clustertools 0.1.dev1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Units and Coordinate Systems</a><ul>
+<li><a class="reference internal" href="#units">Units</a></li>
+<li><a class="reference internal" href="#coordinate-systems">Coordinate Systems</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api/clustertools.analysis.cluster.StarCluster.html"
+                        title="previous chapter">StarCluster</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="initialize.html"
+                        title="next chapter">Initialize</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/units_and_coordinate_systems.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="units-and-coordinate-systems">
+<span id="id1"></span><h1>Units and Coordinate Systems<a class="headerlink" href="#units-and-coordinate-systems" title="Permalink to this headline">¶</a></h1>
+<p>As discussed in <a class="reference internal" href="cluster.html#cluster"><span class="std std-ref">Cluster</span></a>, when initializing a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> the variables <code class="docutils literal notranslate"><span class="pre">units</span></code> and <code class="docutils literal notranslate"><span class="pre">origin</span></code> are by default set equal to <code class="docutils literal notranslate"><span class="pre">None</span></code>. This approach means that any calculated values are done so in whatever units and coordinate system the data is provided in. However, if the units and coordinate system are known, specificying these parameters allows for unit and coordinate transformations to be done on the data.</p>
+<div class="section" id="units">
+<h2>Units<a class="headerlink" href="#units" title="Permalink to this headline">¶</a></h2>
+<p>When a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> is initialized, the default value of <code class="docutils literal notranslate"><span class="pre">StarCluster.units</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>. However it is possible for users to specify the units system used by stars in the <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code>. At present, <code class="docutils literal notranslate"><span class="pre">clustertools</span></code> supports 6 different string inputs for <code class="docutils literal notranslate"><span class="pre">StarCluster.units</span></code>. The inputs and their meanings are summarized in Table 1 below.</p>
+<table class="colwidths-given docutils align-default" id="id2">
+<caption><span class="caption-text">Table 1 - Units available in <code class="docutils literal notranslate"><span class="pre">clustertools</span></code></span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Definition</p></th>
+<th class="head"><p>Distance Units</p></th>
+<th class="head"><p>Velocity Units</p></th>
+<th class="head"><p>Mass Units</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>nbody</p></td>
+<td><p>nbody or Henon units, where G=M=rv=1</p></td>
+<td><p>nbody</p></td>
+<td><p>nbody</p></td>
+<td><p>nbody</p></td>
+</tr>
+<tr class="row-odd"><td><p>pckms</p></td>
+<td><p>units for when working in clustercentric coordinates</p></td>
+<td><p>pc</p></td>
+<td><p>km/s</p></td>
+<td><p>Msun</p></td>
+</tr>
+<tr class="row-even"><td><p>kpckms</p></td>
+<td><p>units for working in galactocentric coordinates</p></td>
+<td><p>kpc</p></td>
+<td><p>km/s</p></td>
+<td><p>Msun</p></td>
+</tr>
+<tr class="row-odd"><td><p>degrees</p></td>
+<td><p>units for comparison to observations</p></td>
+<td><p>degrees (Ra, Dec), and kpc (distance)</p></td>
+<td><p>mas (proper motions) and kms (radial velocity)</p></td>
+<td><p>Msun</p></td>
+</tr>
+<tr class="row-even"><td><p>galpy</p></td>
+<td><p>galpy or natural units, set so the Sun orbits at a distance of 1 with a velocity of 1</p></td>
+<td><p>kpc/ro</p></td>
+<td><p>kms/vo</p></td>
+<td><p>Msun/90027307126.905106</p></td>
+</tr>
+<tr class="row-odd"><td><p>wdunits</p></td>
+<td><p>Walter Dehnen units, for use with <code class="docutils literal notranslate"><span class="pre">GYRFALCON</span></code></p></td>
+<td><p>kpc</p></td>
+<td><p>kpc/Gyr</p></td>
+<td><p>Msun/222288.47</p></td>
+</tr>
+</tbody>
+</table>
+<p>See <a class="reference internal" href="analysis.html#id2"><span class="std std-ref">Operations</span></a> for information on operations that convert a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> from one set of units to another.</p>
+</div>
+<div class="section" id="coordinate-systems">
+<h2>Coordinate Systems<a class="headerlink" href="#coordinate-systems" title="Permalink to this headline">¶</a></h2>
+<p>Similar to <code class="docutils literal notranslate"><span class="pre">StarCluster.units</span></code>, when a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> is initialized the default value of <code class="docutils literal notranslate"><span class="pre">StarCluster.origin</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>. However it is possible for users to specify the origin of the coordinate system used by stars in the <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code>. At present, <code class="docutils literal notranslate"><span class="pre">clustertools</span></code> supports 4 different string inputs for <code class="docutils literal notranslate"><span class="pre">StarCluster.origin</span></code>. The inputs and their meanings are summarized in Table 2 below.</p>
+<table class="colwidths-given docutils align-default" id="id3">
+<caption><span class="caption-text">Table 2 - Coordinate systems available in <code class="docutils literal notranslate"><span class="pre">clustertools</span></code></span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Definition</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>cluster</p></td>
+<td><p>clustercentric reference frame with origin equal to cluster’s orbital position</p></td>
+</tr>
+<tr class="row-odd"><td><p>centre</p></td>
+<td><p>clustercentric reference frame with origin equal to cluster’s centre of density or centre of mass</p></td>
+</tr>
+<tr class="row-even"><td><p>galaxy</p></td>
+<td><p>galactocentric reference frame with origin at the centre of the galaxy</p></td>
+</tr>
+<tr class="row-odd"><td><p>sky</p></td>
+<td><p>sky coordinate system, used when units are set to degrees</p></td>
+</tr>
+</tbody>
+</table>
+<p>For clarity, it is worth expanding on the difference between <code class="docutils literal notranslate"><span class="pre">StarCluster.origin='cluster'</span></code> and <code class="docutils literal notranslate"><span class="pre">StarCluster.origin='centre'</span></code>. The motivation for the two separate reference frames stems from codes like NBODY6 where the orbital evolution of the cluster in the external tidal field is handled separately from the internal cluster evolution. Hence the cluster’s orbital position is integrated forwards in time from its initial conditions while the cluster’s centre of density (or mass) will wander slightly due to internal cluster evolution. The true centre may in fact wander a lot of tidal tail stars are kept in the simulation or the cluster reaches dissolution. Codes like NBODY6 provide snapshots where the origin is at the cluster’s orbital position (<code class="docutils literal notranslate"><span class="pre">StarCluster.origin='cluster'</span></code>) and then provide the location of the cluster’s true centre separately to change to <code class="docutils literal notranslate"><span class="pre">StarCluster.origin='centre'</span></code>.</p>
+<p>See <a class="reference internal" href="analysis.html#id2"><span class="std std-ref">Operations</span></a> for information on operations that convert a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> from one coordinate system to another.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="initialize.html" title="Initialize"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="api/clustertools.analysis.cluster.StarCluster.html" title="StarCluster"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">clustertools 0.1.dev1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

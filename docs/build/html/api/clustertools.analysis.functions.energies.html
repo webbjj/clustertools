@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>energies &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="closest_star" href="clustertools.analysis.functions.closest_star.html" />
+    <link rel="prev" title="core_relaxation_time" href="clustertools.analysis.functions.core_relaxation_time.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.functions.closest_star.html" title="closest_star"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.functions.core_relaxation_time.html" title="core_relaxation_time"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../analysis.html" accesskey="U">Analysis</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.analysis.functions.core_relaxation_time.html"
+                        title="previous chapter">core_relaxation_time</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clustertools.analysis.functions.closest_star.html"
+                        title="next chapter">closest_star</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/clustertools.analysis.functions.energies.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="energies">
+<h1>energies<a class="headerlink" href="#energies" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="clustertools.analysis.functions.energies">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>energies</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate kinetic and potential energy of every star</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>specific - find specific energies (default: True)</p>
+<p>i_d - find energies for a specific star</p>
+<p>full - calculate distance of full array of stars at once with numbra (default: True)</p>
+<p>parallel - calculate distances in parallel if True (default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>ek,pot,etot</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.functions.closest_star.html" title="closest_star"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.functions.core_relaxation_time.html" title="core_relaxation_time"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../analysis.html" >Analysis</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

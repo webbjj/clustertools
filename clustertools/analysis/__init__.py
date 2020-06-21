@@ -63,6 +63,19 @@ v_prof=profiles.v_prof
 eta_prof=profiles.eta_prof
 vcirc_prof=profiles.vcirc_prof
 
+initialize_orbit=orbit.initialize_orbit
+initialize_orbits=orbit.initialize_orbits
+integrate_orbit=orbit.integrate_orbit
+orbit_interpolate=orbit.orbit_interpolate
+orbital_path=orbit.orbital_path
+orbital_path_match=orbit.orbital_path_match
+tail_path=orbit.tail_path
+tail_path_match=orbit.tail_path_match
+rtidal=orbit.rtidal
+rlimiting=orbit.rlimiting
+get_cluster_orbit=orbit.get_cluster_orbit
+calc_actions=orbit.calc_actions
+
 #
 # Classes
 StarCluster=cluster.StarCluster

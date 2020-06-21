@@ -1,0 +1,149 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>nplot &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="nlplot" href="clustertools.util.plots.nlplot.html" />
+    <link rel="prev" title="nscatter" href="clustertools.util.plots.nscatter.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.nlplot.html" title="nlplot"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.nscatter.html" title="nscatter"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../utilities.html" accesskey="U">Utilities</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.util.plots.nscatter.html"
+                        title="previous chapter">nscatter</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clustertools.util.plots.nlplot.html"
+                        title="next chapter">nlplot</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/clustertools.util.plots.nplot.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nplot">
+<h1>nplot<a class="headerlink" href="#nplot" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="clustertools.util.plots.nplot">
+<code class="sig-prename descclassname">clustertools.util.plots.</code><code class="sig-name descname">nplot</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">ptype='.'</em>, <em class="sig-param">xlabel=''</em>, <em class="sig-param">ylabel=''</em>, <em class="sig-param">legend=False</em>, <em class="sig-param">title=''</em>, <em class="sig-param">xlim=None</em>, <em class="sig-param">ylim=None</em>, <em class="sig-param">scale=True</em>, <em class="sig-param">log=False</em>, <em class="sig-param">logx=False</em>, <em class="sig-param">logy=False</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">overplot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/plots.html#nplot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.plots.nplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>nplot</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Wrapper for plotting points with matplotlib.pyplot.plot that allows for most pyplot commands to be assigned when calling the function</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x,y - points to be plotted</p>
+<p>xlabel - X-axis label</p>
+<p>ylabel - Y-axis label</p>
+<p>legend - Plot legend (Default: False)</p>
+<p>title - Title of plot</p>
+<p>xlim - X-axis limits</p>
+<p>ylim - Y-axis limits</p>
+<p>scale - if only xlim or ylim is given, set limits of axis to match points in given range</p>
+<p>log - use log axis (Default: False)</p>
+<p>logx - use log x-axis (Default: False)</p>
+<p>logy - use log y-axis (Default: False)</p>
+<p>filename - filename for savefig</p>
+<p>overplot - overplot onto existing figure (Default: False)</p>
+</div></blockquote>
+<p>KWARGS:</p>
+<blockquote>
+<div><p>same as matplotlib.pyplot</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>pyplot.figure()</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.nlplot.html" title="nlplot"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.plots.nscatter.html" title="nscatter"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../utilities.html" >Utilities</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

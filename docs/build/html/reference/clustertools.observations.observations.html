@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.observations.observations module &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="clustertools.util package" href="clustertools.util.html" />
+    <link rel="prev" title="clustertools.observations.mask module" href="clustertools.observations.mask.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.html" title="clustertools.util package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.observations.mask.html" title="clustertools.observations.mask module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.observations.html" accesskey="U">clustertools.observations package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.observations.mask.html"
+                        title="previous chapter">clustertools.observations.mask module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clustertools.util.html"
+                        title="next chapter">clustertools.util package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/clustertools.observations.observations.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-clustertools.observations.observations">
+<span id="clustertools-observations-observations-module"></span><h1>clustertools.observations.observations module<a class="headerlink" href="#module-clustertools.observations.observations" title="Permalink to this headline">¶</a></h1>
+<p>Routines for analysing Nbody models as if they were Observations</p>
+<dl class="function">
+<dt id="clustertools.observations.observations.obs_mass_function">
+<code class="sig-prename descclassname">clustertools.observations.observations.</code><code class="sig-name descname">obs_mass_function</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">projected=True</em>, <em class="sig-param">omask=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/observations.html#obs_mass_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.observations.obs_mass_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>obs_mass_function</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find mass function over a given mass range using nmass bins containing an equal number of stars.
+obs_mass_function differs from mass_function as it incorporates a mass completeness correction term and returns the completeness correction per bin</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance
+mmin/mmax - specific mass range
+nmass - number of mass bins used to calculate alpha
+rmin/rmax - specific radial range
+vmin/vmax - specific velocity range
+emin/emax - specific energy range
+kwmin/kwmax - specific stellar evolution type range
+indx - specific subset of stars
+mcorr - correction for masses
+projected - use projected values
+omask - place a mask over the dataset and (WIP)
+plot - plot the mass function
+<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs - key words for plotting</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.observations.observations.obs_alpha_prof">
+<code class="sig-prename descclassname">clustertools.observations.observations.</code><code class="sig-name descname">obs_alpha_prof</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">projected=True</em>, <em class="sig-param">omask=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/observations.html#obs_alpha_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.observations.obs_alpha_prof" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>alpha_prof</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Measure the radial variation in the mass function</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>mmin/mmax - minimum and maximum stellar mass</p>
+<p>nmass - number of mass bins to calculate slope of mass function</p>
+<p>rmin/rmax - minimum and maximum stellar radii</p>
+<p>nrad - number of radial bins</p>
+<p>vmin/vmax - minimum and maximum stellar velocity</p>
+<p>emin/emax - minimum and maximum stellar energy</p>
+<p>kwmin/kwmax - minimum and maximum stellar type (kw)</p>
+<p>indx - user defined boolean array from which to extract the subset</p>
+<p>mcorr - correction function for masses</p>
+<p>projected - use projected values and constraints (Default:False)</p>
+<p>omask - place a mask over the dataset and (WIP)</p>
+<p>plot - plot the density profile (Default: False)</p>
+</div></blockquote>
+<p>KWARGS:</p>
+<blockquote>
+<div><p>Same as for ..util.plot.nplot</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>lrprofn - natural log of radius (normalized by half-mass radius)</p>
+<p>aprof - slope of the mass function</p>
+<p>dalpha - delta_alpha = d(alpha)/d(ln(r/rm)</p>
+<p>edalpha - error in dalpha</p>
+<p>ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.observations.observations.dx_corr_function">
+<code class="sig-prename descclassname">clustertools.observations.observations.</code><code class="sig-name descname">dx_corr_function</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">xcorr=None</em>, <em class="sig-param">bintype='num'</em>, <em class="sig-param">x_lower=None</em>, <em class="sig-param">x_mean=None</em>, <em class="sig-param">x_upper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/observations.html#dx_corr_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.observations.dx_corr_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>dx_function</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find distribution function using nx bins containing an equal number of points</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x - input array</p>
+<p>nx - number of bins</p>
+<p>xcorr - correction function for x (default:None)</p>
+<p>bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</p>
+<p>omask - place a mask over the dataset and (WIP)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.html" title="clustertools.util package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.observations.mask.html" title="clustertools.observations.mask module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.observations.html" >clustertools.observations package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

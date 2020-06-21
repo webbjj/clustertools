@@ -5,6 +5,8 @@ __author__ = "Jeremy J Webb"
 
 
 __all__ = [
+    "rtidal",
+    "rlimiting",
     "initialize_orbit",
     "initialize_orbits",
     "integrate_orbit",
@@ -13,10 +15,9 @@ __all__ = [
     "orbital_path_match",
     "tail_path",
     "tail_path_match",
-    "rtidal",
-    "rlimiting",
     "get_cluster_orbit",
-    "calc_actions"
+    "calc_actions",
+    "ttensor"
 ]
 
 from galpy.orbit import Orbit
@@ -35,6 +36,271 @@ from ..util.plots import *
 
 import astropy.coordinates as coord
 import astropy.units as u
+
+def rtidal(
+    cluster,
+    pot=MWPotential2014,
+    rtiterate=0,
+    rtconverge=0.9,
+    rgc=None,
+    ro=8.0,
+    vo=220.0,
+    verbose=False,
+):
+    """Calculate rtidal.
+    NAME:
+
+       rtidal
+
+    PURPOSE:
+
+       Calculate tidal radius of the cluster
+       --> The calculation uses Galpy, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
+       --> riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
+       --> More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal
+           radius again until the change is less than 90%
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       pot - GALPY potential used to calculate actions
+
+       rtiterate - how many times to iterate on the calculation of r_t
+
+       rtconverge - criteria for tidal radius convergence within iterations
+
+       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
+
+       ro,vo - GALPY scaling parameters
+
+    OUTPUT:
+
+        rt
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """
+    units0, origin0 = save_cluster(cluster)
+
+    cluster.to_centre()
+    cluster.to_galpy()
+
+    if rgc != None:
+        R = rgc / ro
+        z = 0.0
+    else:
+        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
+        z = cluster.zgc
+
+    # Calculate rtide
+    rt = rtide(pot, R, z, M=cluster.mtot,use_physical=False)
+    nit = 0
+    for i in range(0, rtiterate):
+        msum = 0.0
+
+        indx = cluster.r < rt
+        msum = np.sum(cluster.m[indx])
+
+        rtnew = rtide(pot, R, z, M=msum,use_physical=False)
+
+        if verbose:
+            print(rt, rtnew, rtnew / rt, msum / cluster.mtot)
+
+        if rtnew / rt >= rtconverge:
+            break
+        rt = rtnew
+        nit += 1
+
+    if verbose:
+        print(
+            "FINAL RT: ",
+            rt * ro * 1000.0,
+            "pc after",
+            nit,
+            " of ",
+            rtiterate,
+            " iterations",
+        )
+
+    if units0 == "pckms":
+        rt *= 1000.0 * ro
+    elif units0 == "kpckms":
+        rt *= ro
+    elif units0 == "nbody":
+        rt *= 1000.0 * ro / cluster.rbar
+
+    cluster.rt = rt
+
+    return_cluster(cluster, units0, origin0)
+
+    return rt
+
+
+def rlimiting(
+    cluster,
+    pot=MWPotential2014,
+    rgc=None,
+    ro=8.0,
+    vo=220.0,
+    nrad=20,
+    projected=False,
+    plot=False,
+    verbose=False,
+    **kwargs
+):
+    """
+    NAME:
+
+       rlimiting
+
+    PURPOSE:
+
+       Calculate limiting radius of the cluster
+       --> The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       pot - GALPY potential used to calculate actions
+
+       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
+
+       ro,vo - GALPY scaling parameters
+
+       nrad - number of radial bins used to calculate density profile (Default: 20)
+
+       projected - use projected values (Default: False)
+
+       plot - plot the density profile and mark the limiting radius of the cluster (Default: False)
+
+    KWARGS:
+
+       Same as ..util.plots.nplot
+
+    OUTPUT:
+
+        rl
+
+    HISTORY:
+
+       2019 - Written - Webb (UofT)
+
+    """
+    units0, origin0 = save_cluster(cluster)
+
+    cluster.to_centre()
+    cluster.to_galpy()
+
+
+    if rgc != None:
+        R = rgc / ro
+        z = 0.0
+    else:
+        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
+        z = cluster.zgc
+
+    # Calculate local density:
+    rho_local = potential.evaluateDensities(
+        pot, R, z, ro=ro, vo=vo, use_physical=False
+    ) / bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+
+    rprof, pprof, nprof = rho_prof(cluster, nrad=nrad, projected=projected)
+
+    if pprof[-1] > rho_local:
+        rl = rprof[-1]
+    elif pprof[0] < rho_local:
+        rl = 0.0
+    else:
+        indx = np.argwhere(pprof < rho_local)[0][0]
+        r1 = (rprof[indx - 1], pprof[indx - 1])
+        r2 = (rprof[indx], pprof[indx])
+
+        rl = interpolate(r1, r2, y=rho_local)
+
+    if verbose:
+        print("FINAL RL: ", rl * ro * 1000.0, "pc")
+
+    if units0 == "pckms":
+        rl *= 1000.0 * ro
+    elif units0 == "kpckms":
+        rl *= ro
+    elif units0 == "nbody":
+        rl *= 1000.0 * ro / cluster.rbar
+
+    cluster.rl = rl
+
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+
+    if plot:
+        if verbose:
+            print("LOCAL DENSITY = ", rho_local)
+
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if cluster.units == "nbody":
+            rprof *= ro * 1000.0 / cluster.rbar
+            pprof *= (
+                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                * (cluster.rbar ** 3.0)
+                / cluster.zmbar
+            )
+            rho_local *= (
+                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                * (cluster.rbar ** 3.0)
+                / cluster.zmbar
+            )
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+        elif cluster.units == "pckms":
+            rprof *= ro * 1000.0
+            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+            xunits = " (pc)"
+            if projected:
+                yunits = " Msun/pc^2"
+            else:
+                yunits = " Msun/pc^3"
+        elif cluster.units == "kpckms":
+            rprof *= ro
+            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+
+            xunits = " (kpc)"
+            if projected:
+                yunits = " Msun/kpc^2"
+            else:
+                yunits = " Msun/kpc^3"
+        elif cluster.units == "galpy":
+            xunits = " (GALPY)"
+            yunits = " (GALPY)"
+
+        else:
+            xunits = ""
+            yunits = ""
+
+        x, y, n = rprof, pprof, nprof
+        nlplot(
+            x,
+            y,
+            xlabel=r"$R %s$" % (xunits),
+            ylabel=r"$\rho %s$" % (yunits),
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
+        nlplot(x, np.ones(len(x)) * rho_local, "--", overplot=True)
+        nlplot(np.ones(len(y)) * rl, y, "--", overplot=True)
+
+        if filename != None:
+            plt.savefig(filename)
+
+    return rl
 
 
 def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
@@ -381,6 +647,7 @@ def orbital_path(
     initialize=False,
     ro=8.0,
     vo=220.0,
+    plot=False
 ):
     """
     NAME:
@@ -410,6 +677,9 @@ def orbital_path(
        ro - galpy distance scale (Default: 8.)
 
        vo - galpy velocity scale (Default: 220.)
+
+       plot - plot a snapshot of the cluster in galactocentric coordinates with the orbital path
+
 
     OUTPUT:
 
@@ -458,6 +728,15 @@ def orbital_path(
         else:
             t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
 
+        if plot:
+            filename = kwargs.pop("filename", None)
+            overplot = kwargs.pop("overplot", False)
+            skyplot(cluster)
+            plt.plot(ra,dec)
+            if filename != None:
+                plt.savefig(filename)
+
+
         if initialize:
             cluster.orbit = o
             return t, ra, dec, dist, pmra, pmdec, vlos, o
@@ -496,6 +775,15 @@ def orbital_path(
         else:
             t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
 
+        if plot:
+            filename = kwargs.pop("filename", None)
+            overplot = kwargs.pop("overplot", False)
+            starplot(cluster,coord='xy',overplot=overplot)
+            nlplot(x,y,overplot=True)
+
+            if filename != None:
+                plt.savefig(filename)
+
         if initialize:
             cluster.orbit = o
             return t, x, y, z, vx, vy, vz, o
@@ -513,6 +801,7 @@ def orbital_path_match(
     do_full=False,
     ro=8.0,
     vo=220.0,
+    plot=False,
 ):
     """
     NAME:
@@ -542,6 +831,8 @@ def orbital_path_match(
        ro - galpy distance scale (Default: 8.)
 
        vo - galpy velocity scale (Default: 220.)
+
+       plot - plot the distance of each star from the orbital path versus distance along the orbital path to the progenitor
 
     OUTPUT:
 
@@ -661,22 +952,30 @@ def orbital_path_match(
 
     dpath[ldot < 0] *= -1.0
 
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+        nscatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
+
+        if filename != None:
+            plt.savefig(filename)
+
     return_cluster(cluster, units0, origin0)
 
     return np.array(tstar), np.array(dprog), np.array(dpath)
 
 
-def stream_path(
+def tail_path(
     cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, ro=8.0, vo=220.0
 ):
     """
     NAME:
 
-       stream_path
+       tail_path
 
     PURPOSE:
 
-       Calculate stream path +/- dt Gyr around the cluster
+       Calculate tail path +/- dt Gyr around the cluster
 
     INPUT:
 
@@ -722,31 +1021,40 @@ def stream_path(
     )
 
     t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=nt)
-    tstream = []
-    xstream = []
-    ystream = []
-    zstream = []
-    vxstream = []
-    vystream = []
-    vzstream = []
+    ttail = []
+    xtail = []
+    ytail = []
+    ztail = []
+    vxtail = []
+    vytail = []
+    vztail = []
 
     for i in range(0, len(t_mid)):
         indx = (tstar >= t_lower[i]) * (tstar <= t_upper[i])
         if np.sum(indx) > 0:
-            tstream = np.append(tstream, t_mid[i])
-            xstream = np.append(xstream, np.mean(cluster.x[indx]))
-            ystream = np.append(ystream, np.mean(cluster.y[indx]))
-            zstream = np.append(zstream, np.mean(cluster.z[indx]))
-            vxstream = np.append(vxstream, np.mean(cluster.vx[indx]))
-            vystream = np.append(vystream, np.mean(cluster.vy[indx]))
-            vzstream = np.append(vzstream, np.mean(cluster.vz[indx]))
+            ttail = np.append(ttail, t_mid[i])
+            xtail = np.append(xtail, np.mean(cluster.x[indx]))
+            ytail = np.append(ytail, np.mean(cluster.y[indx]))
+            ztail = np.append(ztail, np.mean(cluster.z[indx]))
+            vxtail = np.append(vxtail, np.mean(cluster.vx[indx]))
+            vytail = np.append(vytail, np.mean(cluster.vy[indx]))
+            vztail = np.append(vztail, np.mean(cluster.vz[indx]))
+
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+        starplot(cluster,coord='xy',overplot=overplot)
+        nlplot(xtail,ytail,overplot=True)
+
+        if filename != None:
+            plt.savefig(filename)
 
     return_cluster(cluster, units0, origin0)
 
-    return tstream, xstream, ystream, zstream, vxstream, vystream, vzstream
+    return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
 
 
-def stream_path_match(
+def tail_path_match(
     cluster,
     dt=0.1,
     nt=100,
@@ -760,11 +1068,11 @@ def stream_path_match(
     """
     NAME:
 
-       stream_path_match
+       tail_path_match
 
     PURPOSE:
 
-       Match stars to a position along the stream path of the cluster
+       Match stars to a position along the tail path of the cluster
 
     INPUT:
 
@@ -786,11 +1094,11 @@ def stream_path_match(
 
     OUTPUT:
 
-       tstar - stream time associated with star
+       tstar - tail time associated with star
 
-       dprog - distance along the stream to the progenitor
+       dprog - distance along the tail to the progenitor
 
-       dpath - distance to centre of the stream path bin (Default) or the stream path (to_path = True)
+       dpath - distance to centre of the tail path bin (Default) or the tail path (to_path = True)
 
     HISTORY:
 
@@ -800,7 +1108,7 @@ def stream_path_match(
     cluster.to_galaxy()
     cluster.to_kpckms()
 
-    ts, x, y, z, vx, vy, vz = stream_path(
+    ts, x, y, z, vx, vy, vz = tail_path(
         cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, ro=ro, vo=vo
     )
     pindx = np.argmin(np.fabs(ts))
@@ -880,275 +1188,17 @@ def stream_path_match(
     ldot = np.sum(rstar * lz, axis=1)
     dpath[ldot < 0] *= -1
 
-    return_cluster(cluster, units0, origin0)
-
-    return np.array(tstar), np.array(dprog), np.array(dpath)
-
-
-def rtidal(
-    cluster,
-    pot=MWPotential2014,
-    rtiterate=0,
-    rtconverge=0.9,
-    rgc=None,
-    ro=8.0,
-    vo=220.0,
-    verbose=False,
-):
-    """Calculate rtidal.
-    NAME:
-
-       rtidal
-
-    PURPOSE:
-
-       Calculate tidal radius of the cluster
-       --> The calculation uses Galpy, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
-       --> riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
-       --> More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal
-           radius again until the change is less than 90%
-
-    INPUT:
-
-       cluster - StarCluster instance
-
-       pot - GALPY potential used to calculate actions
-
-       rtiterate - how many times to iterate on the calculation of r_t
-
-       rtconverge - criteria for tidal radius convergence within iterations
-
-       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
-
-       ro,vo - GALPY scaling parameters
-
-    OUTPUT:
-
-        rt
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
-    """
-    units0, origin0 = save_cluster(cluster)
-
-    cluster.to_centre()
-    cluster.to_galpy()
-
-    if rgc != None:
-        R = rgc / ro
-        z = 0.0
-    else:
-        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
-        z = cluster.zgc
-
-    # Calculate rtide
-    rt = rtide(pot, R, z, M=cluster.mtot,use_physical=False)
-    nit = 0
-    for i in range(0, rtiterate):
-        msum = 0.0
-
-        indx = cluster.r < rt
-        msum = np.sum(cluster.m[indx])
-
-        rtnew = rtide(pot, R, z, M=msum,use_physical=False)
-
-        if verbose:
-            print(rt, rtnew, rtnew / rt, msum / cluster.mtot)
-
-        if rtnew / rt >= rtconverge:
-            break
-        rt = rtnew
-        nit += 1
-
-    if verbose:
-        print(
-            "FINAL RT: ",
-            rt * ro * 1000.0,
-            "pc after",
-            nit,
-            " of ",
-            rtiterate,
-            " iterations",
-        )
-
-    if units0 == "pckms":
-        rt *= 1000.0 * ro
-    elif units0 == "kpckms":
-        rt *= ro
-    elif units0 == "nbody":
-        rt *= 1000.0 * ro / cluster.rbar
-
-    cluster.rt = rt
-
-    return_cluster(cluster, units0, origin0)
-
-    return rt
-
-
-def rlimiting(
-    cluster,
-    pot=MWPotential2014,
-    rgc=None,
-    ro=8.0,
-    vo=220.0,
-    nrad=20,
-    projected=False,
-    plot=False,
-    verbose=False,
-    **kwargs
-):
-    """
-    NAME:
-
-       rlimiting
-
-    PURPOSE:
-
-       Calculate limiting radius of the cluster
-       --> The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
-
-    INPUT:
-
-       cluster - StarCluster instance
-
-       pot - GALPY potential used to calculate actions
-
-       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
-
-       ro,vo - GALPY scaling parameters
-
-       nrad - number of radial bins used to calculate density profile (Default: 20)
-
-       projected - use projected values (Default: False)
-
-       plot - plot the density profile and mark the limiting radius of the cluster (Default: False)
-
-    KWARGS:
-
-       Same as ..util.plots.nplot
-
-    OUTPUT:
-
-        rl
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
-    """
-    units0, origin0 = save_cluster(cluster)
-
-    cluster.to_centre()
-    cluster.to_galpy()
-
-
-    if rgc != None:
-        R = rgc / ro
-        z = 0.0
-    else:
-        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
-        z = cluster.zgc
-
-    # Calculate local density:
-    rho_local = potential.evaluateDensities(
-        pot, R, z, ro=ro, vo=vo, use_physical=False
-    ) / bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-
-    rprof, pprof, nprof = rho_prof(cluster, nrad=nrad, projected=projected)
-
-    if pprof[-1] > rho_local:
-        rl = rprof[-1]
-    elif pprof[0] < rho_local:
-        rl = 0.0
-    else:
-        indx = np.argwhere(pprof < rho_local)[0][0]
-        r1 = (rprof[indx - 1], pprof[indx - 1])
-        r2 = (rprof[indx], pprof[indx])
-
-        rl = interpolate(r1, r2, y=rho_local)
-
-    if verbose:
-        print("FINAL RL: ", rl * ro * 1000.0, "pc")
-
-    if units0 == "pckms":
-        rl *= 1000.0 * ro
-    elif units0 == "kpckms":
-        rl *= ro
-    elif units0 == "nbody":
-        rl *= 1000.0 * ro / cluster.rbar
-
-    cluster.rl = rl
-
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
-
     if plot:
-        if verbose:
-            print("LOCAL DENSITY = ", rho_local)
-
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-
-        if cluster.units == "nbody":
-            rprof *= ro * 1000.0 / cluster.rbar
-            pprof *= (
-                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
-            rho_local *= (
-                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
-            xunits = " (NBODY)"
-            yunits = " (NBODY)"
-        elif cluster.units == "pckms":
-            rprof *= ro * 1000.0
-            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            xunits = " (pc)"
-            if projected:
-                yunits = " Msun/pc^2"
-            else:
-                yunits = " Msun/pc^3"
-        elif cluster.units == "kpckms":
-            rprof *= ro
-            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-
-            xunits = " (kpc)"
-            if projected:
-                yunits = " Msun/kpc^2"
-            else:
-                yunits = " Msun/kpc^3"
-        elif cluster.units == "galpy":
-            xunits = " (GALPY)"
-            yunits = " (GALPY)"
-
-        else:
-            xunits = ""
-            yunits = ""
-
-        x, y, n = rprof, pprof, nprof
-        nlplot(
-            x,
-            y,
-            xlabel=r"$R %s$" % (xunits),
-            ylabel=r"$\rho %s$" % (yunits),
-            title="Time = %f" % cluster.tphys,
-            log=True,
-            overplot=overplot,
-            filename=filename,
-        )
-        nlplot(x, np.ones(len(x)) * rho_local, "--", overplot=True)
-        nlplot(np.ones(len(y)) * rl, y, "--", overplot=True)
+        nscatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
 
         if filename != None:
             plt.savefig(filename)
 
-    return rl
+    return_cluster(cluster, units0, origin0)
+
+    return np.array(tstar), np.array(dprog), np.array(dpath)
 
 
 def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
@@ -1235,3 +1285,42 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
     Tz = os.Tz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
 
     return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+
+def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
+    """
+
+    NAME:
+
+        ttensor
+
+    PURPOSE:
+
+        Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
+
+    INPUT:
+
+       cluster - StarCluster instance
+
+       pot - GALPY potential used to calculate actions
+
+       ro,vo - GALPY scaling parameters
+
+       eigenval - return eigenvalues if true (optional; boolean)
+
+    OUTPUT:
+
+        Tidal Tensor
+
+    HISTORY:
+
+        2018-03-21 - Written - Webb (UofT)
+
+    """
+
+    o = initialize_orbit(cluster, ro, vo)
+    R=o.R()
+    z=o.z()
+
+    tij=potential.ttensor(R/ro,z/ro,eigenval=eigenval)
+
+    return tij

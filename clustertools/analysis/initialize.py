@@ -26,7 +26,6 @@ from .cluster import StarCluster
 from .profiles import m_prof
 from .orbit import get_cluster_orbit
 
-
 def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None,pot=None, **kwargs):
     """
     NAME:
@@ -191,7 +190,7 @@ def get_limepy(g=1, **kwargs):
 
     ldata = sample(lmodel, N=N)
 
-    cluster = StarCluster(N, units=units, origin="cluster")
+    cluster = StarCluster(units=units, origin="cluster")
     cluster.ctype = "limepy"
     cluster.add_stars(
         ldata.x,
@@ -282,7 +281,7 @@ def get_spes(**kwargs):
 
     sdata = sample(smodel, N=N)
 
-    cluster = StarCluster(N, units=units, origin="cluster")
+    cluster = StarCluster(units=units, origin="cluster")
     cluster.ctype = "spes"
     cluster.add_stars(
         sdata.x,
@@ -786,7 +785,7 @@ def w0_to_c(w0):
     return c_to_w0(w0, invert=True)
 
 
-def get_cluster(gcname="list", source="default", mbar=0.4, names=False, params=False):
+def get_cluster(gcname, source="default", mbar=0.4, names=False, params=False):
     """
     NAME:
 
@@ -798,8 +797,7 @@ def get_cluster(gcname="list", source="default", mbar=0.4, names=False, params=F
 
     INPUT:
 
-       gcname - name of cluster (or clusters) to be modelled. Also accepts 'list' to simply print out
-                the list of clusters available and 'all' to generate each Galactic Globular Cluster
+       gcname - name of cluster to be modelled.
 
        source - source of model parameters to generate cluster. Default looks to LIMEPY models from
                 de Boer et al. 2019 first before checking Harris 1996 (2010) edition second.
@@ -826,14 +824,13 @@ def get_cluster(gcname="list", source="default", mbar=0.4, names=False, params=F
     """
 
     ddata = np.loadtxt(
-        "/Users/webbjj/Codes/clustertools/tables/deBoer2019.dat", str, skiprows=1
+        "/Users/webbjere/Codes/clustertools/clustertools/data/deBoer2019.dat", str, skiprows=1
     )
     dname = ddata[:, 0]
     dmass = ddata[:, 7].astype(float)
     drad = ddata[:, 5].astype(float)
 
-    hdata = np.loadtxt(
-        "/Users/webbjj/Codes/clustertools/tables/harris2010.dat", str, skiprows=2
+    hdata = np.loadtxt("/Users/webbjere/Codes/clustertools/clustertools/data/harris2010.dat", str, skiprows=2
     )
     hname = hdata[:, 0]
     hname2 = hdata[:, 1]
@@ -844,109 +841,17 @@ def get_cluster(gcname="list", source="default", mbar=0.4, names=False, params=F
     mass_list = []
     rm_list = []
 
-    if isinstance(gcname, str):
+    gcname = gcname.upper()
+    if (
+        source == "default" or "deboer" in source or "deBoer" in source
+    ) and gcname in dname:
+        cluster = get_deBoer_cluster(ddata, gcname, mbar, names)
+    elif (source == "default" or "harris" in source or "Harris" in source) and (
+        gcname in hname or gcname in hname2
+    ):
+        cluster = get_harris_cluster(hdata, gcname, mbar, names)
 
-        if (gcname == "list" or gcname == "all") and (
-            "deboer" in source or "deBoer" in source
-        ):
-            for i in range(0, len(dname)):
-                print(dname[i])
-                name_list.append(dname[i])
-                mass_list.append(dmass[i])
-                rm_list.append(drad[i])
-        elif (gcname == "list" or gcname == "all") and (
-            "harris" in source or "Harris" in source
-        ):
-            for i in range(0, len(hname)):
-                print(hname[i], hname2[i])
-                name_list.append(hname[i])
-                mass_list.append(hmass[i])
-                rm_list.append(hrad[i])
-
-        elif (gcname == "list" or gcname == "all") and source == "default":
-            for i in range(0, len(dname)):
-                print("DEBOER: ", dname[i])
-                name_list.append(dname[i])
-                mass_list.append(dmass[i])
-                rm_list.append(drad[i])
-
-            indx = np.in1d(hname, dname, invert=True) * np.in1d(
-                hname2, dname, invert=True
-            )
-            for i in range(0, np.sum(indx)):
-                print("HARRIS: ", hname[indx][i])
-                name_list.append(hname[indx][i])
-                mass_list.append(hmass[indx][i])
-                rm_list.append(hrad[indx][i])
-
-        else:
-            gcname = gcname.upper()
-            if (
-                source == "default" or "deboer" in source or "deBoer" in source
-            ) and gcname in dname:
-                cluster = get_deBoer_cluster(ddata, gcname, mbar, names)
-            elif (source == "default" or "harris" in source or "Harris" in source) and (
-                gcname in hname or gcname in hname2
-            ):
-                cluster = get_harris_cluster(hdata, gcname, mbar, names)
-
-            if names and params:
-                return cluster, gcname, cluster.mtot, cluster.rm
-            elif params:
-                return cluster, cluster.mtot, cluster.rm
-            elif names:
-                return cluster, gcname
-            else:
-                return cluster
-    else:
-        name_list = gcname
-
-    if len(name_list) > 0 and "list" not in gcname:
-        cluster = []
-        cluster_name = []
-        cluster_mass = []
-        cluster_rm = []
-        for i in range(0, len(name_list)):
-            name_list[i] = name_list[i].upper()
-            if (
-                source == "default" or "deboer" in source or "deBoer" in source
-            ) and name_list[i] in dname:
-                cluster.append(get_deBoer_cluster(ddata, name_list[i], mbar, names))
-                cluster[-1].ctype = name_list[i]
-                cluster_name.append(name_list[i])
-                cluster_mass.append(cluster[-1].mtot)
-                cluster_rm.append(cluster[-1].rm)
-            elif (source == "default" or "harris" in source or "Harris" in source) and (
-                name_list[i] in hname or name_list[i] in hname2
-            ):
-                cluster.append(get_harris_cluster(hdata, name_list[i], mbar, names))
-
-                cluster[-1].ctype = name_list[i]
-                cluster_name.append(name_list[i])
-                cluster_mass.append(cluster[-1].mtot)
-                cluster_rm.append(cluster[-1].rm)
-
-            else:
-                print("COULD NOT FIND CLUSTER %s" % name_list[i])
-
-        if names and params:
-            return cluster, cluster_name, cluster_mass, cluster_rm
-        elif params:
-            return cluster, cluster_mass, cluster_rm
-        elif names:
-            return cluster, cluster_name
-        else:
-            return cluster
-    elif "list" in gcname:
-        if names and params:
-            return name_list, mass_list, rm_list
-        elif params:
-            return mass_list, rm_list
-        elif names:
-            return name_list
-    else:
-        return
-
+    return cluster
 
 def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
     """
@@ -961,7 +866,7 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
 
     INPUT:
 
-       data - table of parameters from de Boer et al. 2019 (see ..tables)
+       data - table of parameters from de Boer et al. 2019 (see ./data)
 
        gcname - name of cluster (or clusters) to be modelled. Also accepts 'list' to simply print out
                 the list of clusters available and 'all' to generate each Galactic Globular Cluster
@@ -985,7 +890,6 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
 
     name = data[:, 0]
 
-    gcname = gcname.upper()
     indx = name == gcname
     i_d = np.argwhere(indx == True)[0]
 
@@ -1011,7 +915,7 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
 
         cluster = get_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
 
-    cluster.orbit = get_cluster_orbit(name[i_d])
+    cluster.orbit = get_cluster_orbit(gcname)
 
     if cluster.orbit != -1:
         cluster.add_orbit(
@@ -1042,9 +946,9 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
 
     INPUT:
 
-       data - table of parameters from Harris 1996 (2010 Edition) (see ..tables)
+       data - table of parameters from Harris 1996 (2010 Edition) (see ./data)
 
-       gcname - name of cluster (or clusters) to be modelled. Also accepts 'list' to simply print out
+       gcname - name of cluster to be modelled. Also accepts 'list' to simply print out
                 the list of clusters available and 'all' to generate each Galactic Globular Cluster
 
        mbar - mean mass of stars in model
@@ -1074,7 +978,7 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
     w0 = c_to_w0(c)
     N = mgc / mbar
     cluster = get_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
-    cluster.orbit = get_cluster_orbit(name[i_d])
+    cluster.orbit = get_cluster_orbit(gcname)
 
     if cluster.orbit != -1:
         cluster.add_orbit(
@@ -1104,7 +1008,7 @@ def get_galpy(pot,**kwargs):
     mbar = kwargs.get("mbar", 1.)
     m=np.ones(N)*mbar
 
-    cluster = StarCluster(N, units='kpckms', origin="cluster")
+    cluster = StarCluster(units='kpckms', origin="cluster")
     cluster.ctype = "galpy"
     cluster.add_stars(
         x,

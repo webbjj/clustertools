@@ -1,0 +1,1152 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.analysis.initialize &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for clustertools.analysis.initialize</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot; Initialize a StarCluster with limepy</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;Jeremy J Webb&quot;</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;setup_cluster&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;w0_to_c&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;c_to_w0&quot;</span>
+<span class="p">]</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">galpy.util</span> <span class="kn">import</span> <span class="n">bovy_conversion</span><span class="p">,</span><span class="n">bovy_coords</span>
+<span class="kn">from</span> <span class="nn">galpy</span> <span class="kn">import</span> <span class="n">potential</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">limepy</span>
+    <span class="kn">from</span> <span class="nn">limepy</span> <span class="kn">import</span> <span class="n">limepy</span><span class="p">,</span><span class="n">spes</span><span class="p">,</span><span class="n">sample</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="kn">from</span> <span class="nn">.cluster</span> <span class="kn">import</span> <span class="n">StarCluster</span>
+<span class="kn">from</span> <span class="nn">.profiles</span> <span class="kn">import</span> <span class="n">m_prof</span>
+<span class="kn">from</span> <span class="nn">.orbit</span> <span class="kn">import</span> <span class="n">get_cluster_orbit</span>
+
+<div class="viewcode-block" id="setup_cluster"><a class="viewcode-back" href="../../../reference/clustertools.analysis.initialize.html#clustertools.analysis.initialize.setup_cluster">[docs]</a><span class="k">def</span> <span class="nf">setup_cluster</span><span class="p">(</span><span class="n">ctype</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pckms&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">,</span> <span class="n">orbit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">pot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       setup_cluster</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Setup an N-body realization of a StarCluster with specific parameters</span>
+<span class="sd">       --&gt; Relies heavily on LIMEPY/SPES models (REFERENCE)</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       ctype - Type of model used to generate cluster (&#39;SPES&#39;,LIMEPY&#39;,&#39;WOOLEY&#39;,&#39;KING&#39;,&#39;WILSON&#39;,Name/List of Galactic Clusters)</span>
+<span class="sd">             --&gt; To add: PLUMMER</span>
+
+<span class="sd">       units - units of generated model (Default: &#39;pckms&#39;)</span>
+
+<span class="sd">       origin - origin of generated model (Default: &#39;cluster&#39;)</span>
+
+<span class="sd">       orbit - Galpy orbit of cluster to be generate</span>
+
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       g - model type for LIMEPY</span>
+
+<span class="sd">       M/rh - Mass and half-mass radius of cluster (for Plummer)</span>
+
+<span class="sd">       source - Source for extracting Galactic GC parameters (Harris 1996 (2010 Edition), de Boer et al. 2019). The default checks </span>
+<span class="sd">                de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found</span>
+
+<span class="sd">       mbar - mean mass of stars in the cluster (only single mass models available at the moment)</span>
+
+<span class="sd">       names - return names of Galactic clusters generate (Default: False)</span>
+
+<span class="sd">       -- Additional KWARGS passed to get_limepy, and get_spes</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        StarCluster instance</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ctype</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;plummer&quot;</span><span class="p">:</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">))</span>
+            <span class="n">rh</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rh&quot;</span><span class="p">))</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_plummer</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">rh</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;spes&quot;</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_spes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;limepy&quot;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;woolley&quot;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;king&quot;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;wilson&quot;</span><span class="p">:</span>
+            <span class="n">g</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="n">g</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ctype</span><span class="o">==</span><span class="s1">&#39;galpy&#39;</span><span class="p">:</span>
+            <span class="n">cluster</span><span class="o">=</span><span class="n">get_galpy</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span>
+            <span class="n">mbar</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mbar&quot;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span>
+            <span class="n">names</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;names&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_cluster</span><span class="p">(</span><span class="n">ctype</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">mbar</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;default&quot;</span><span class="p">)</span>
+        <span class="n">mbar</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;mbar&quot;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;names&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_cluster</span><span class="p">(</span><span class="n">ctype</span><span class="p">,</span> <span class="n">source</span><span class="p">,</span> <span class="n">mbar</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+
+    <span class="c1"># Add galpy orbit if given</span>
+    <span class="k">if</span> <span class="n">orbit</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">orbit</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">bovy_conversion</span><span class="o">.</span><span class="n">time_in_Gyr</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">vo</span><span class="o">=</span><span class="mf">220.0</span><span class="p">)</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">add_orbit</span><span class="p">(</span>
+            <span class="n">orbit</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">orbit</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">orbit</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">orbit</span><span class="o">.</span><span class="n">vx</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">orbit</span><span class="o">.</span><span class="n">vy</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="n">orbit</span><span class="o">.</span><span class="n">vz</span><span class="p">(</span><span class="n">t</span><span class="p">),</span>
+            <span class="s2">&quot;kpckms&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">key_params</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cluster</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       get_limepy</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Get an Nbody realization of a LIMEPY model cluster (REFERENCE)</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       g - model type for LIMEPY</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       phi0 - Central potential</span>
+
+<span class="sd">       project - return projected values</span>
+
+<span class="sd">       M - cluster mass</span>
+
+<span class="sd">       ro/rh/rv/rt - radius used for scaling population from model units (scale,half-mass,virial,limitig radius)</span>
+
+<span class="sd">       N - number of stars to generate in model cluster</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        StarCluster instance</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">phi0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;phi0&quot;</span><span class="p">))</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="s2">&quot;M&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;pckms&quot;</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;rt&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rt&quot;</span><span class="p">))</span>
+            <span class="n">lmodel</span> <span class="o">=</span> <span class="n">limepy</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="n">rt</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;rv&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rv&quot;</span><span class="p">))</span>
+            <span class="n">lmodel</span> <span class="o">=</span> <span class="n">limepy</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">rv</span><span class="o">=</span><span class="n">rv</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;rh&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rh</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rh&quot;</span><span class="p">))</span>
+            <span class="n">lmodel</span> <span class="o">=</span> <span class="n">limepy</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;ro&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">ro</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ro&quot;</span><span class="p">))</span>
+            <span class="n">lmodel</span> <span class="o">=</span> <span class="n">limepy</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lmodel</span> <span class="o">=</span> <span class="n">limepy</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;nbody&quot;</span>
+        <span class="n">lmodel</span> <span class="o">=</span> <span class="n">limepy</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+
+    <span class="n">ldata</span> <span class="o">=</span> <span class="n">sample</span><span class="p">(</span><span class="n">lmodel</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">=</span> <span class="s2">&quot;limepy&quot;</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">add_stars</span><span class="p">(</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">vx</span><span class="p">,</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">vy</span><span class="p">,</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">vz</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">ldata</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">find_centre</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">key_params</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+
+<span class="k">def</span> <span class="nf">get_spes</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       get_spes</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Get an Nbody realization of a SPES model cluster (REFERENCE)</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       None</span>
+
+<span class="sd">    KWARGS:</span>
+
+<span class="sd">       phi0 - Central potential</span>
+
+<span class="sd">       project - return projected values</span>
+
+<span class="sd">       B - B parameter</span>
+
+<span class="sd">       eta - eta parameter</span>
+
+<span class="sd">       fpe - fpe parameter</span>
+
+<span class="sd">       M - cluster mass</span>
+
+<span class="sd">       ro/rh/rv/rt - radius used for scaling population from model units (scale,half-mass,virial,limitig radius)</span>
+
+<span class="sd">       N - number of stars to generate in model cluster</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        StarCluster instance</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">phi0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;phi0&quot;</span><span class="p">))</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">))</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;eta&quot;</span><span class="p">))</span>
+    <span class="n">fpe</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fpe&quot;</span><span class="p">))</span>
+
+    <span class="n">project</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;project&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="s2">&quot;M&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;pckms&quot;</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s2">&quot;rt&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rt</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rt&quot;</span><span class="p">))</span>
+            <span class="n">smodel</span> <span class="o">=</span> <span class="n">spes</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="n">rt</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;rv&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rv</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rv&quot;</span><span class="p">))</span>
+            <span class="n">smodel</span> <span class="o">=</span> <span class="n">spes</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">rv</span><span class="o">=</span><span class="n">rv</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;rh&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rh</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;rh&quot;</span><span class="p">))</span>
+            <span class="n">smodel</span> <span class="o">=</span> <span class="n">spes</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">rh</span><span class="o">=</span><span class="n">rh</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="s2">&quot;ro&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">ro</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ro&quot;</span><span class="p">))</span>
+            <span class="n">smodel</span> <span class="o">=</span> <span class="n">spes</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">smodel</span> <span class="o">=</span> <span class="n">spes</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M</span><span class="p">,</span> <span class="n">ro</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s2">&quot;nbody&quot;</span>
+        <span class="n">smodel</span> <span class="o">=</span> <span class="n">spes</span><span class="p">(</span><span class="n">phi0</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">G</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">rv</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">project</span><span class="o">=</span><span class="n">project</span><span class="p">)</span>
+
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+
+    <span class="n">sdata</span> <span class="o">=</span> <span class="n">sample</span><span class="p">(</span><span class="n">smodel</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">=</span> <span class="s2">&quot;spes&quot;</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">add_stars</span><span class="p">(</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">z</span><span class="p">,</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">vx</span><span class="p">,</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">vy</span><span class="p">,</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">vz</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">sdata</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">find_centre</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">key_params</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+
+<span class="k">def</span> <span class="nf">get_plummer</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">rm</span><span class="p">):</span>
+    <span class="c1"># WIP</span>
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+
+<div class="viewcode-block" id="c_to_w0"><a class="viewcode-back" href="../../../reference/clustertools.analysis.initialize.html#clustertools.analysis.initialize.c_to_w0">[docs]</a><span class="k">def</span> <span class="nf">c_to_w0</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       c_to_w0</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Convert King central concentration (c) values to central potential (W0) values </span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       c - central concentration</span>
+
+<span class="sd">       invert - convert from W0 to c instead, in which case the input c is the central potential (Default: False)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">        W0 (or c if invert==True)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># From gridfit (Dean McLaughlin)</span>
+    <span class="n">w0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="mf">0.300000</span><span class="p">,</span>
+            <span class="mf">0.400000</span><span class="p">,</span>
+            <span class="mf">0.500000</span><span class="p">,</span>
+            <span class="mf">0.600000</span><span class="p">,</span>
+            <span class="mf">0.700000</span><span class="p">,</span>
+            <span class="mf">0.800000</span><span class="p">,</span>
+            <span class="mf">0.900000</span><span class="p">,</span>
+            <span class="mf">1.000000</span><span class="p">,</span>
+            <span class="mf">1.100000</span><span class="p">,</span>
+            <span class="mf">1.200000</span><span class="p">,</span>
+            <span class="mf">1.300000</span><span class="p">,</span>
+            <span class="mf">1.400000</span><span class="p">,</span>
+            <span class="mf">1.500000</span><span class="p">,</span>
+            <span class="mf">1.600000</span><span class="p">,</span>
+            <span class="mf">1.700000</span><span class="p">,</span>
+            <span class="mf">1.800000</span><span class="p">,</span>
+            <span class="mf">1.900000</span><span class="p">,</span>
+            <span class="mf">2.000000</span><span class="p">,</span>
+            <span class="mf">2.100000</span><span class="p">,</span>
+            <span class="mf">2.200000</span><span class="p">,</span>
+            <span class="mf">2.300000</span><span class="p">,</span>
+            <span class="mf">2.400000</span><span class="p">,</span>
+            <span class="mf">2.500000</span><span class="p">,</span>
+            <span class="mf">2.600000</span><span class="p">,</span>
+            <span class="mf">2.700000</span><span class="p">,</span>
+            <span class="mf">2.800000</span><span class="p">,</span>
+            <span class="mf">2.900000</span><span class="p">,</span>
+            <span class="mf">3.000000</span><span class="p">,</span>
+            <span class="mf">3.100000</span><span class="p">,</span>
+            <span class="mf">3.200000</span><span class="p">,</span>
+            <span class="mf">3.300000</span><span class="p">,</span>
+            <span class="mf">3.400000</span><span class="p">,</span>
+            <span class="mf">3.500000</span><span class="p">,</span>
+            <span class="mf">3.600000</span><span class="p">,</span>
+            <span class="mf">3.700000</span><span class="p">,</span>
+            <span class="mf">3.800000</span><span class="p">,</span>
+            <span class="mf">3.900000</span><span class="p">,</span>
+            <span class="mf">4.000000</span><span class="p">,</span>
+            <span class="mf">4.100000</span><span class="p">,</span>
+            <span class="mf">4.200000</span><span class="p">,</span>
+            <span class="mf">4.300000</span><span class="p">,</span>
+            <span class="mf">4.400000</span><span class="p">,</span>
+            <span class="mf">4.500000</span><span class="p">,</span>
+            <span class="mf">4.600000</span><span class="p">,</span>
+            <span class="mf">4.700000</span><span class="p">,</span>
+            <span class="mf">4.800000</span><span class="p">,</span>
+            <span class="mf">4.900000</span><span class="p">,</span>
+            <span class="mf">5.000000</span><span class="p">,</span>
+            <span class="mf">5.100000</span><span class="p">,</span>
+            <span class="mf">5.200000</span><span class="p">,</span>
+            <span class="mf">5.300000</span><span class="p">,</span>
+            <span class="mf">5.400000</span><span class="p">,</span>
+            <span class="mf">5.500000</span><span class="p">,</span>
+            <span class="mf">5.600000</span><span class="p">,</span>
+            <span class="mf">5.700000</span><span class="p">,</span>
+            <span class="mf">5.800000</span><span class="p">,</span>
+            <span class="mf">5.900000</span><span class="p">,</span>
+            <span class="mf">6.000000</span><span class="p">,</span>
+            <span class="mf">6.100000</span><span class="p">,</span>
+            <span class="mf">6.200000</span><span class="p">,</span>
+            <span class="mf">6.300000</span><span class="p">,</span>
+            <span class="mf">6.400000</span><span class="p">,</span>
+            <span class="mf">6.500000</span><span class="p">,</span>
+            <span class="mf">6.600000</span><span class="p">,</span>
+            <span class="mf">6.700000</span><span class="p">,</span>
+            <span class="mf">6.800000</span><span class="p">,</span>
+            <span class="mf">6.900000</span><span class="p">,</span>
+            <span class="mf">7.000000</span><span class="p">,</span>
+            <span class="mf">7.100000</span><span class="p">,</span>
+            <span class="mf">7.200000</span><span class="p">,</span>
+            <span class="mf">7.300000</span><span class="p">,</span>
+            <span class="mf">7.400000</span><span class="p">,</span>
+            <span class="mf">7.500000</span><span class="p">,</span>
+            <span class="mf">7.600000</span><span class="p">,</span>
+            <span class="mf">7.700000</span><span class="p">,</span>
+            <span class="mf">7.800000</span><span class="p">,</span>
+            <span class="mf">7.900000</span><span class="p">,</span>
+            <span class="mf">8.000000</span><span class="p">,</span>
+            <span class="mf">8.100000</span><span class="p">,</span>
+            <span class="mf">8.200000</span><span class="p">,</span>
+            <span class="mf">8.300000</span><span class="p">,</span>
+            <span class="mf">8.400000</span><span class="p">,</span>
+            <span class="mf">8.500000</span><span class="p">,</span>
+            <span class="mf">8.600000</span><span class="p">,</span>
+            <span class="mf">8.700000</span><span class="p">,</span>
+            <span class="mf">8.800000</span><span class="p">,</span>
+            <span class="mf">8.900000</span><span class="p">,</span>
+            <span class="mf">9.000000</span><span class="p">,</span>
+            <span class="mf">9.100000</span><span class="p">,</span>
+            <span class="mf">9.200000</span><span class="p">,</span>
+            <span class="mf">9.300000</span><span class="p">,</span>
+            <span class="mf">9.400000</span><span class="p">,</span>
+            <span class="mf">9.500000</span><span class="p">,</span>
+            <span class="mf">9.600000</span><span class="p">,</span>
+            <span class="mf">9.700000</span><span class="p">,</span>
+            <span class="mf">9.800000</span><span class="p">,</span>
+            <span class="mf">9.900000</span><span class="p">,</span>
+            <span class="mf">10.000000</span><span class="p">,</span>
+            <span class="mf">10.100000</span><span class="p">,</span>
+            <span class="mf">10.200000</span><span class="p">,</span>
+            <span class="mf">10.300000</span><span class="p">,</span>
+            <span class="mf">10.400000</span><span class="p">,</span>
+            <span class="mf">10.500000</span><span class="p">,</span>
+            <span class="mf">10.600000</span><span class="p">,</span>
+            <span class="mf">10.700000</span><span class="p">,</span>
+            <span class="mf">10.800000</span><span class="p">,</span>
+            <span class="mf">10.900000</span><span class="p">,</span>
+            <span class="mf">11.000000</span><span class="p">,</span>
+            <span class="mf">11.100000</span><span class="p">,</span>
+            <span class="mf">11.200000</span><span class="p">,</span>
+            <span class="mf">11.300000</span><span class="p">,</span>
+            <span class="mf">11.400000</span><span class="p">,</span>
+            <span class="mf">11.500000</span><span class="p">,</span>
+            <span class="mf">11.600000</span><span class="p">,</span>
+            <span class="mf">11.700000</span><span class="p">,</span>
+            <span class="mf">11.800000</span><span class="p">,</span>
+            <span class="mf">11.900000</span><span class="p">,</span>
+            <span class="mf">12.000000</span><span class="p">,</span>
+            <span class="mf">12.100000</span><span class="p">,</span>
+            <span class="mf">12.200000</span><span class="p">,</span>
+            <span class="mf">12.300000</span><span class="p">,</span>
+            <span class="mf">12.400000</span><span class="p">,</span>
+            <span class="mf">12.500000</span><span class="p">,</span>
+            <span class="mf">12.600000</span><span class="p">,</span>
+            <span class="mf">12.700000</span><span class="p">,</span>
+            <span class="mf">12.800000</span><span class="p">,</span>
+            <span class="mf">12.900000</span><span class="p">,</span>
+            <span class="mf">13.000000</span><span class="p">,</span>
+            <span class="mf">13.100000</span><span class="p">,</span>
+            <span class="mf">13.200000</span><span class="p">,</span>
+            <span class="mf">13.300000</span><span class="p">,</span>
+            <span class="mf">13.400000</span><span class="p">,</span>
+            <span class="mf">13.500000</span><span class="p">,</span>
+            <span class="mf">13.600000</span><span class="p">,</span>
+            <span class="mf">13.700000</span><span class="p">,</span>
+            <span class="mf">13.800000</span><span class="p">,</span>
+            <span class="mf">13.900000</span><span class="p">,</span>
+            <span class="mf">14.000000</span><span class="p">,</span>
+            <span class="mf">14.100000</span><span class="p">,</span>
+            <span class="mf">14.200000</span><span class="p">,</span>
+            <span class="mf">14.300000</span><span class="p">,</span>
+            <span class="mf">14.400000</span><span class="p">,</span>
+            <span class="mf">14.500000</span><span class="p">,</span>
+            <span class="mf">14.600000</span><span class="p">,</span>
+            <span class="mf">14.700000</span><span class="p">,</span>
+            <span class="mf">14.800000</span><span class="p">,</span>
+            <span class="mf">14.900000</span><span class="p">,</span>
+            <span class="mf">15.000000</span><span class="p">,</span>
+            <span class="mf">15.100000</span><span class="p">,</span>
+            <span class="mf">15.200000</span><span class="p">,</span>
+            <span class="mf">15.300000</span><span class="p">,</span>
+            <span class="mf">15.400000</span><span class="p">,</span>
+            <span class="mf">15.500000</span><span class="p">,</span>
+            <span class="mf">15.600000</span><span class="p">,</span>
+            <span class="mf">15.700000</span><span class="p">,</span>
+            <span class="mf">15.800000</span><span class="p">,</span>
+            <span class="mf">15.900000</span><span class="p">,</span>
+            <span class="mf">16.000000</span><span class="p">,</span>
+            <span class="mf">16.100000</span><span class="p">,</span>
+            <span class="mf">16.200000</span><span class="p">,</span>
+            <span class="mf">16.300000</span><span class="p">,</span>
+            <span class="mf">16.400000</span><span class="p">,</span>
+            <span class="mf">16.500000</span><span class="p">,</span>
+            <span class="mf">16.600000</span><span class="p">,</span>
+            <span class="mf">16.700000</span><span class="p">,</span>
+            <span class="mf">16.800000</span><span class="p">,</span>
+            <span class="mf">16.900000</span><span class="p">,</span>
+            <span class="mf">17.000000</span><span class="p">,</span>
+            <span class="mf">17.100000</span><span class="p">,</span>
+            <span class="mf">17.200000</span><span class="p">,</span>
+            <span class="mf">17.300000</span><span class="p">,</span>
+            <span class="mf">17.400000</span><span class="p">,</span>
+            <span class="mf">17.500000</span><span class="p">,</span>
+            <span class="mf">17.600000</span><span class="p">,</span>
+            <span class="mf">17.700000</span><span class="p">,</span>
+            <span class="mf">17.800000</span><span class="p">,</span>
+            <span class="mf">17.900000</span><span class="p">,</span>
+            <span class="mf">18.000000</span><span class="p">,</span>
+            <span class="mf">18.100000</span><span class="p">,</span>
+            <span class="mf">18.200000</span><span class="p">,</span>
+            <span class="mf">18.300000</span><span class="p">,</span>
+            <span class="mf">18.400000</span><span class="p">,</span>
+            <span class="mf">18.500000</span><span class="p">,</span>
+            <span class="mf">18.600000</span><span class="p">,</span>
+            <span class="mf">18.700000</span><span class="p">,</span>
+            <span class="mf">18.800000</span><span class="p">,</span>
+            <span class="mf">18.900000</span><span class="p">,</span>
+            <span class="mf">19.000000</span><span class="p">,</span>
+            <span class="mf">19.100000</span><span class="p">,</span>
+            <span class="mf">19.200000</span><span class="p">,</span>
+            <span class="mf">19.300000</span><span class="p">,</span>
+            <span class="mf">19.400000</span><span class="p">,</span>
+            <span class="mf">19.500000</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="n">conc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="mf">1.004710</span><span class="p">,</span>
+            <span class="mf">1.171350</span><span class="p">,</span>
+            <span class="mf">1.322660</span><span class="p">,</span>
+            <span class="mf">1.463770</span><span class="p">,</span>
+            <span class="mf">1.597760</span><span class="p">,</span>
+            <span class="mf">1.726690</span><span class="p">,</span>
+            <span class="mf">1.851980</span><span class="p">,</span>
+            <span class="mf">1.974730</span><span class="p">,</span>
+            <span class="mf">2.095780</span><span class="p">,</span>
+            <span class="mf">2.215830</span><span class="p">,</span>
+            <span class="mf">2.335470</span><span class="p">,</span>
+            <span class="mf">2.455190</span><span class="p">,</span>
+            <span class="mf">2.575460</span><span class="p">,</span>
+            <span class="mf">2.696690</span><span class="p">,</span>
+            <span class="mf">2.819260</span><span class="p">,</span>
+            <span class="mf">2.943540</span><span class="p">,</span>
+            <span class="mf">3.069880</span><span class="p">,</span>
+            <span class="mf">3.198640</span><span class="p">,</span>
+            <span class="mf">3.330170</span><span class="p">,</span>
+            <span class="mf">3.464800</span><span class="p">,</span>
+            <span class="mf">3.602910</span><span class="p">,</span>
+            <span class="mf">3.744850</span><span class="p">,</span>
+            <span class="mf">3.891000</span><span class="p">,</span>
+            <span class="mf">4.041760</span><span class="p">,</span>
+            <span class="mf">4.197530</span><span class="p">,</span>
+            <span class="mf">4.358750</span><span class="p">,</span>
+            <span class="mf">4.525890</span><span class="p">,</span>
+            <span class="mf">4.699410</span><span class="p">,</span>
+            <span class="mf">4.879840</span><span class="p">,</span>
+            <span class="mf">5.067720</span><span class="p">,</span>
+            <span class="mf">5.263660</span><span class="p">,</span>
+            <span class="mf">5.468270</span><span class="p">,</span>
+            <span class="mf">5.682240</span><span class="p">,</span>
+            <span class="mf">5.906290</span><span class="p">,</span>
+            <span class="mf">6.141230</span><span class="p">,</span>
+            <span class="mf">6.387900</span><span class="p">,</span>
+            <span class="mf">6.647220</span><span class="p">,</span>
+            <span class="mf">6.920200</span><span class="p">,</span>
+            <span class="mf">7.207920</span><span class="p">,</span>
+            <span class="mf">7.511580</span><span class="p">,</span>
+            <span class="mf">7.832460</span><span class="p">,</span>
+            <span class="mf">8.171960</span><span class="p">,</span>
+            <span class="mf">8.531630</span><span class="p">,</span>
+            <span class="mf">8.913140</span><span class="p">,</span>
+            <span class="mf">9.318330</span><span class="p">,</span>
+            <span class="mf">9.749200</span><span class="p">,</span>
+            <span class="mf">10.208000</span><span class="p">,</span>
+            <span class="mf">10.697100</span><span class="p">,</span>
+            <span class="mf">11.219100</span><span class="p">,</span>
+            <span class="mf">11.777000</span><span class="p">,</span>
+            <span class="mf">12.374000</span><span class="p">,</span>
+            <span class="mf">13.013600</span><span class="p">,</span>
+            <span class="mf">13.699700</span><span class="p">,</span>
+            <span class="mf">14.436500</span><span class="p">,</span>
+            <span class="mf">15.228700</span><span class="p">,</span>
+            <span class="mf">16.081400</span><span class="p">,</span>
+            <span class="mf">17.000300</span><span class="p">,</span>
+            <span class="mf">17.991600</span><span class="p">,</span>
+            <span class="mf">19.062000</span><span class="p">,</span>
+            <span class="mf">20.218900</span><span class="p">,</span>
+            <span class="mf">21.470400</span><span class="p">,</span>
+            <span class="mf">22.825300</span><span class="p">,</span>
+            <span class="mf">24.293000</span><span class="p">,</span>
+            <span class="mf">25.883700</span><span class="p">,</span>
+            <span class="mf">27.608600</span><span class="p">,</span>
+            <span class="mf">29.479300</span><span class="p">,</span>
+            <span class="mf">31.508300</span><span class="p">,</span>
+            <span class="mf">33.708600</span><span class="p">,</span>
+            <span class="mf">36.093800</span><span class="p">,</span>
+            <span class="mf">38.678000</span><span class="p">,</span>
+            <span class="mf">41.475300</span><span class="p">,</span>
+            <span class="mf">44.499900</span><span class="p">,</span>
+            <span class="mf">47.765800</span><span class="p">,</span>
+            <span class="mf">51.286400</span><span class="p">,</span>
+            <span class="mf">55.074300</span><span class="p">,</span>
+            <span class="mf">59.140700</span><span class="p">,</span>
+            <span class="mf">63.495500</span><span class="p">,</span>
+            <span class="mf">68.146800</span><span class="p">,</span>
+            <span class="mf">73.100800</span><span class="p">,</span>
+            <span class="mf">78.361400</span><span class="p">,</span>
+            <span class="mf">83.930800</span><span class="p">,</span>
+            <span class="mf">89.808800</span><span class="p">,</span>
+            <span class="mf">95.993700</span><span class="p">,</span>
+            <span class="mf">102.482000</span><span class="p">,</span>
+            <span class="mf">109.270000</span><span class="p">,</span>
+            <span class="mf">116.352000</span><span class="p">,</span>
+            <span class="mf">123.724000</span><span class="p">,</span>
+            <span class="mf">131.381000</span><span class="p">,</span>
+            <span class="mf">139.319000</span><span class="p">,</span>
+            <span class="mf">147.537000</span><span class="p">,</span>
+            <span class="mf">156.034000</span><span class="p">,</span>
+            <span class="mf">164.810000</span><span class="p">,</span>
+            <span class="mf">173.871000</span><span class="p">,</span>
+            <span class="mf">183.222000</span><span class="p">,</span>
+            <span class="mf">192.871000</span><span class="p">,</span>
+            <span class="mf">202.828000</span><span class="p">,</span>
+            <span class="mf">213.106000</span><span class="p">,</span>
+            <span class="mf">223.721000</span><span class="p">,</span>
+            <span class="mf">234.690000</span><span class="p">,</span>
+            <span class="mf">246.032000</span><span class="p">,</span>
+            <span class="mf">257.769000</span><span class="p">,</span>
+            <span class="mf">269.924000</span><span class="p">,</span>
+            <span class="mf">282.522000</span><span class="p">,</span>
+            <span class="mf">295.592000</span><span class="p">,</span>
+            <span class="mf">309.162000</span><span class="p">,</span>
+            <span class="mf">323.263000</span><span class="p">,</span>
+            <span class="mf">337.930000</span><span class="p">,</span>
+            <span class="mf">353.196000</span><span class="p">,</span>
+            <span class="mf">369.099000</span><span class="p">,</span>
+            <span class="mf">385.679000</span><span class="p">,</span>
+            <span class="mf">402.977000</span><span class="p">,</span>
+            <span class="mf">421.038000</span><span class="p">,</span>
+            <span class="mf">439.907000</span><span class="p">,</span>
+            <span class="mf">459.634000</span><span class="p">,</span>
+            <span class="mf">480.270000</span><span class="p">,</span>
+            <span class="mf">501.871000</span><span class="p">,</span>
+            <span class="mf">524.493000</span><span class="p">,</span>
+            <span class="mf">548.199000</span><span class="p">,</span>
+            <span class="mf">573.053000</span><span class="p">,</span>
+            <span class="mf">599.122000</span><span class="p">,</span>
+            <span class="mf">626.479000</span><span class="p">,</span>
+            <span class="mf">655.201000</span><span class="p">,</span>
+            <span class="mf">685.368000</span><span class="p">,</span>
+            <span class="mf">717.064000</span><span class="p">,</span>
+            <span class="mf">750.382000</span><span class="p">,</span>
+            <span class="mf">785.415000</span><span class="p">,</span>
+            <span class="mf">822.265000</span><span class="p">,</span>
+            <span class="mf">861.038000</span><span class="p">,</span>
+            <span class="mf">901.847000</span><span class="p">,</span>
+            <span class="mf">944.812000</span><span class="p">,</span>
+            <span class="mf">990.059000</span><span class="p">,</span>
+            <span class="mf">1037.720000</span><span class="p">,</span>
+            <span class="mf">1087.940000</span><span class="p">,</span>
+            <span class="mf">1140.860000</span><span class="p">,</span>
+            <span class="mf">1196.650000</span><span class="p">,</span>
+            <span class="mf">1255.460000</span><span class="p">,</span>
+            <span class="mf">1317.470000</span><span class="p">,</span>
+            <span class="mf">1382.870000</span><span class="p">,</span>
+            <span class="mf">1451.860000</span><span class="p">,</span>
+            <span class="mf">1524.620000</span><span class="p">,</span>
+            <span class="mf">1601.400000</span><span class="p">,</span>
+            <span class="mf">1682.400000</span><span class="p">,</span>
+            <span class="mf">1767.870000</span><span class="p">,</span>
+            <span class="mf">1858.070000</span><span class="p">,</span>
+            <span class="mf">1953.250000</span><span class="p">,</span>
+            <span class="mf">2053.690000</span><span class="p">,</span>
+            <span class="mf">2159.690000</span><span class="p">,</span>
+            <span class="mf">2271.550000</span><span class="p">,</span>
+            <span class="mf">2389.600000</span><span class="p">,</span>
+            <span class="mf">2514.160000</span><span class="p">,</span>
+            <span class="mf">2645.600000</span><span class="p">,</span>
+            <span class="mf">2784.280000</span><span class="p">,</span>
+            <span class="mf">2930.590000</span><span class="p">,</span>
+            <span class="mf">3084.940000</span><span class="p">,</span>
+            <span class="mf">3247.740000</span><span class="p">,</span>
+            <span class="mf">3419.440000</span><span class="p">,</span>
+            <span class="mf">3600.510000</span><span class="p">,</span>
+            <span class="mf">3791.430000</span><span class="p">,</span>
+            <span class="mf">3992.700000</span><span class="p">,</span>
+            <span class="mf">4204.840000</span><span class="p">,</span>
+            <span class="mf">4428.420000</span><span class="p">,</span>
+            <span class="mf">4664.010000</span><span class="p">,</span>
+            <span class="mf">4912.200000</span><span class="p">,</span>
+            <span class="mf">5173.620000</span><span class="p">,</span>
+            <span class="mf">5448.940000</span><span class="p">,</span>
+            <span class="mf">5738.830000</span><span class="p">,</span>
+            <span class="mf">6044.000000</span><span class="p">,</span>
+            <span class="mf">6365.210000</span><span class="p">,</span>
+            <span class="mf">6703.230000</span><span class="p">,</span>
+            <span class="mf">7058.880000</span><span class="p">,</span>
+            <span class="mf">7433.020000</span><span class="p">,</span>
+            <span class="mf">7826.530000</span><span class="p">,</span>
+            <span class="mf">8240.350000</span><span class="p">,</span>
+            <span class="mf">8675.460000</span><span class="p">,</span>
+            <span class="mf">9132.880000</span><span class="p">,</span>
+            <span class="mf">9613.680000</span><span class="p">,</span>
+            <span class="mf">10119.000000</span><span class="p">,</span>
+            <span class="mf">10650.000000</span><span class="p">,</span>
+            <span class="mf">11207.900000</span><span class="p">,</span>
+            <span class="mf">11794.100000</span><span class="p">,</span>
+            <span class="mf">12409.800000</span><span class="p">,</span>
+            <span class="mf">13056.600000</span><span class="p">,</span>
+            <span class="mf">13735.900000</span><span class="p">,</span>
+            <span class="mf">14449.300000</span><span class="p">,</span>
+            <span class="mf">15198.400000</span><span class="p">,</span>
+            <span class="mf">15985.100000</span><span class="p">,</span>
+            <span class="mf">16811.200000</span><span class="p">,</span>
+            <span class="mf">17678.500000</span><span class="p">,</span>
+            <span class="mf">18589.200000</span><span class="p">,</span>
+            <span class="mf">19545.300000</span><span class="p">,</span>
+            <span class="mf">20549.200000</span><span class="p">,</span>
+            <span class="mf">21603.100000</span><span class="p">,</span>
+            <span class="mf">22709.700000</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">invert</span><span class="p">:</span>
+
+        <span class="n">w</span> <span class="o">=</span> <span class="n">c</span>
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">w0</span> <span class="o">-</span> <span class="n">w</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">w</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">conc</span><span class="p">[</span><span class="n">indx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">w0</span><span class="p">[</span><span class="n">indx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">b</span> <span class="o">=</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m</span> <span class="o">*</span> <span class="n">w</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="n">c</span>
+
+        <span class="n">indx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">conc</span> <span class="o">-</span> <span class="n">c</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">c</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">w0</span><span class="p">[</span><span class="n">indx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">conc</span><span class="p">[</span><span class="n">indx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="p">(</span><span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">b</span> <span class="o">=</span> <span class="n">w0</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span> <span class="o">-</span> <span class="n">m</span> <span class="o">*</span> <span class="n">conc</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">m</span> <span class="o">*</span> <span class="n">c</span> <span class="o">+</span> <span class="n">b</span></div>
+
+
+<div class="viewcode-block" id="w0_to_c"><a class="viewcode-back" href="../../../reference/clustertools.analysis.initialize.html#clustertools.analysis.initialize.w0_to_c">[docs]</a><span class="k">def</span> <span class="nf">w0_to_c</span><span class="p">(</span><span class="n">w0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       w0_to_c</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Convert central potential (W0) values to King central concentration (c)</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       W0 - central potential</span>
+
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       c</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">c_to_w0</span><span class="p">(</span><span class="n">w0</span><span class="p">,</span> <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_cluster</span><span class="p">(</span><span class="n">gcname</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">mbar</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       get_cluster</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Generate a StarCluster instance based on a Galactic Globular Cluster</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       gcname - name of cluster to be modelled.</span>
+
+<span class="sd">       source - source of model parameters to generate cluster. Default looks to LIMEPY models from</span>
+<span class="sd">                de Boer et al. 2019 first before checking Harris 1996 (2010) edition second.</span>
+<span class="sd">              - Can also specifiy de Boer et al. 2019 or Harris 1996 (2010) only</span>
+
+<span class="sd">        mbar - mean mass of stars in model</span>
+
+<span class="sd">        names - return names of clusters genereated (Default: False)</span>
+
+<span class="sd">        params -  return mass and size of clusters generate (Default: False)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       StarCluster (if gcname != &#39;list&#39;)</span>
+
+<span class="sd">       Name (if names==True)</span>
+
+<span class="sd">       Mtot and rm (if params ==True)</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ddata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span>
+        <span class="s2">&quot;/Users/webbjere/Codes/clustertools/clustertools/data/deBoer2019.dat&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">)</span>
+    <span class="n">dname</span> <span class="o">=</span> <span class="n">ddata</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">dmass</span> <span class="o">=</span> <span class="n">ddata</span><span class="p">[:,</span> <span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">drad</span> <span class="o">=</span> <span class="n">ddata</span><span class="p">[:,</span> <span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">hdata</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="s2">&quot;/Users/webbjere/Codes/clustertools/clustertools/data/harris2010.dat&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">2</span>
+    <span class="p">)</span>
+    <span class="n">hname</span> <span class="o">=</span> <span class="n">hdata</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">hname2</span> <span class="o">=</span> <span class="n">hdata</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">hmass</span> <span class="o">=</span> <span class="n">hdata</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">hrad</span> <span class="o">=</span> <span class="n">hdata</span><span class="p">[:,</span> <span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">name_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">mass_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rm_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">gcname</span> <span class="o">=</span> <span class="n">gcname</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span> <span class="ow">or</span> <span class="s2">&quot;deboer&quot;</span> <span class="ow">in</span> <span class="n">source</span> <span class="ow">or</span> <span class="s2">&quot;deBoer&quot;</span> <span class="ow">in</span> <span class="n">source</span>
+    <span class="p">)</span> <span class="ow">and</span> <span class="n">gcname</span> <span class="ow">in</span> <span class="n">dname</span><span class="p">:</span>
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_deBoer_cluster</span><span class="p">(</span><span class="n">ddata</span><span class="p">,</span> <span class="n">gcname</span><span class="p">,</span> <span class="n">mbar</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">source</span> <span class="o">==</span> <span class="s2">&quot;default&quot;</span> <span class="ow">or</span> <span class="s2">&quot;harris&quot;</span> <span class="ow">in</span> <span class="n">source</span> <span class="ow">or</span> <span class="s2">&quot;Harris&quot;</span> <span class="ow">in</span> <span class="n">source</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">gcname</span> <span class="ow">in</span> <span class="n">hname</span> <span class="ow">or</span> <span class="n">gcname</span> <span class="ow">in</span> <span class="n">hname2</span>
+    <span class="p">):</span>
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_harris_cluster</span><span class="p">(</span><span class="n">hdata</span><span class="p">,</span> <span class="n">gcname</span><span class="p">,</span> <span class="n">mbar</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+<span class="k">def</span> <span class="nf">get_deBoer_cluster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">gcname</span><span class="p">,</span> <span class="n">mbar</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       get_deBoer_cluster</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Generate a StarCluster instance based on a measurements of Galactic Globular Clusters by de Boer et al. 2019</span>
+<span class="sd">       --&gt; Cluster is also assigned an orbit based on Vasiliev 2019</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       data - table of parameters from de Boer et al. 2019 (see ./data)</span>
+
+<span class="sd">       gcname - name of cluster (or clusters) to be modelled. Also accepts &#39;list&#39; to simply print out</span>
+<span class="sd">                the list of clusters available and &#39;all&#39; to generate each Galactic Globular Cluster</span>
+
+<span class="sd">       mbar - mean mass of stars in model</span>
+
+<span class="sd">       names - return names of clusters genereated (Default: False)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       StarCluster</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">spes</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Not yet implemented into LIMEPY</span>
+    <span class="n">limepy</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">indx</span> <span class="o">=</span> <span class="n">name</span> <span class="o">==</span> <span class="n">gcname</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">indx</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">spes</span><span class="p">:</span>
+        <span class="c1"># W_pe e_W_pe eta_pe e_eta_pe log1minB_pe e_log1minB_pe rt_pe e_rt_pe M_pe e_M_pe log_fpe e_log_fpe</span>
+        <span class="n">W_pe</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">eta_pe</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">11</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">B_pe</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">13</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">rt_pe</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">M_pe</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">17</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">fpe</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">19</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">M_pe</span> <span class="o">/</span> <span class="n">mbar</span>
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_spes</span><span class="p">(</span>
+            <span class="n">phi0</span><span class="o">=</span><span class="n">W_pe</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="n">B_pe</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="n">eta_pe</span><span class="p">,</span> <span class="n">fpe</span><span class="o">=</span><span class="n">fpe</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M_pe</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="n">rt_pe</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span>
+        <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">W_lime</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">g_lime</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">rt_lime</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">M_lime</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="n">M_lime</span> <span class="o">/</span> <span class="n">mbar</span>
+
+        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="n">g_lime</span><span class="p">,</span> <span class="n">phi0</span><span class="o">=</span><span class="n">W_lime</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">M_lime</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="n">rt_lime</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">get_cluster_orbit</span><span class="p">(</span><span class="n">gcname</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">add_orbit</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">x</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">y</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">z</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vx</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vy</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vz</span><span class="p">(),</span>
+            <span class="n">ounits</span><span class="o">=</span><span class="s2">&quot;kpckms&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+
+<span class="k">def</span> <span class="nf">get_harris_cluster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">gcname</span><span class="p">,</span> <span class="n">mbar</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       get_harris_cluster</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Generate a StarCluster instance based on the Harris 1996 (2010 Edition) catalogue of Galactic Globular Clusters </span>
+<span class="sd">       --&gt; Cluster is also assigned an orbit based on Vasiliev 2019</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       data - table of parameters from Harris 1996 (2010 Edition) (see ./data)</span>
+
+<span class="sd">       gcname - name of cluster to be modelled. Also accepts &#39;list&#39; to simply print out</span>
+<span class="sd">                the list of clusters available and &#39;all&#39; to generate each Galactic Globular Cluster</span>
+
+<span class="sd">       mbar - mean mass of stars in model</span>
+
+<span class="sd">       names - return names of clusters genereated (Default: False)</span>
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       StarCluster</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2019 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">name2</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">indx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">gcname</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">name2</span><span class="p">,</span> <span class="n">gcname</span><span class="p">))</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">indx</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">mgc</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">rc</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">rh</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">rl</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i_d</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">rl</span> <span class="o">/</span> <span class="n">rc</span><span class="p">)</span>
+    <span class="n">w0</span> <span class="o">=</span> <span class="n">c_to_w0</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="n">mgc</span> <span class="o">/</span> <span class="n">mbar</span>
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_limepy</span><span class="p">(</span><span class="n">g</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">phi0</span><span class="o">=</span><span class="n">w0</span><span class="p">,</span> <span class="n">M</span><span class="o">=</span><span class="n">mgc</span><span class="p">,</span> <span class="n">rt</span><span class="o">=</span><span class="n">rl</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="n">get_cluster_orbit</span><span class="p">(</span><span class="n">gcname</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">add_orbit</span><span class="p">(</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">x</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">y</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">z</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vx</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vy</span><span class="p">(),</span>
+            <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span><span class="o">.</span><span class="n">vz</span><span class="p">(),</span>
+            <span class="n">ounits</span><span class="o">=</span><span class="s2">&quot;kpckms&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">.</span><span class="n">orbit</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+<span class="k">def</span> <span class="nf">get_galpy</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;N&quot;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+    <span class="n">rmin</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmin&#39;</span><span class="p">,</span><span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">rmax</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;rmax&#39;</span><span class="p">,</span><span class="mf">100.</span><span class="p">)</span>
+    <span class="n">coordinates</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;coordinates&#39;</span><span class="p">,</span><span class="s1">&#39;cartesian&#39;</span><span class="p">)</span>
+    <span class="n">ro</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ro&#39;</span><span class="p">,</span><span class="mf">8.</span><span class="p">)</span>
+    <span class="n">vo</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;vo&#39;</span><span class="p">,</span><span class="mf">220.</span><span class="p">)</span>
+
+    <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span><span class="o">=</span><span class="n">sample_galpy_potential</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">rmin</span><span class="p">,</span><span class="n">rmax</span><span class="p">,</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span><span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span><span class="n">coordinates</span><span class="o">=</span><span class="n">coordinates</span><span class="p">)</span>
+
+    <span class="n">mbar</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mbar&quot;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">*</span><span class="n">mbar</span>
+
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s1">&#39;kpckms&#39;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">=</span> <span class="s2">&quot;galpy&quot;</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">add_stars</span><span class="p">(</span>
+        <span class="n">x</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">,</span>
+        <span class="n">z</span><span class="p">,</span>
+        <span class="n">vx</span><span class="p">,</span>
+        <span class="n">vy</span><span class="p">,</span>
+        <span class="n">vz</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">m</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">find_centre</span><span class="p">()</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">key_params</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">cluster</span>
+
+<span class="k">def</span> <span class="nf">sample_galpy_potential</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">rmin</span><span class="p">,</span><span class="n">rmax</span><span class="p">,</span><span class="n">ro</span><span class="o">=</span><span class="mf">8.</span><span class="p">,</span><span class="n">vo</span><span class="o">=</span><span class="mf">220.</span><span class="p">,</span><span class="n">coordinates</span><span class="o">=</span><span class="s1">&#39;cartesian&#39;</span><span class="p">):</span>
+    <span class="n">ran</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">rad</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">rmin</span><span class="p">,</span><span class="n">rmax</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
+    
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">menc</span><span class="o">=</span><span class="n">pot</span><span class="o">.</span><span class="n">mass</span><span class="p">(</span><span class="n">rad</span><span class="o">/</span><span class="n">ro</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">forceint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">vc</span><span class="o">=</span> <span class="n">potential</span><span class="o">.</span><span class="n">vcirc</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span><span class="n">rad</span><span class="o">/</span><span class="n">ro</span><span class="p">,</span><span class="n">phi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span><span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span><span class="n">use_physical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">menc</span><span class="o">=</span><span class="n">vc</span><span class="o">**</span><span class="mf">2.</span><span class="o">*</span><span class="p">(</span><span class="n">rad</span><span class="o">/</span><span class="n">ro</span><span class="p">)</span>
+
+    <span class="n">menc</span><span class="o">*=</span><span class="n">bovy_conversion</span><span class="o">.</span><span class="n">mass_in_msol</span><span class="p">(</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span><span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">)</span>       
+    
+    <span class="n">r</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">ran</span><span class="p">,</span> <span class="n">menc</span><span class="o">/</span><span class="n">menc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">rad</span><span class="p">)</span>
+    <span class="n">phi</span><span class="o">=</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="n">theta</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">))</span>
+    
+    <span class="n">x</span><span class="o">=</span><span class="n">r</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">r</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+    <span class="n">z</span><span class="o">=</span><span class="n">r</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+    
+    <span class="n">sigma_v_1d</span><span class="o">=</span><span class="n">vo</span><span class="o">*</span><span class="n">potential</span><span class="o">.</span><span class="n">vcirc</span><span class="p">(</span><span class="n">pot</span><span class="p">,</span><span class="n">rad</span><span class="o">/</span><span class="n">ro</span><span class="p">,</span><span class="n">phi</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">t</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span><span class="n">ro</span><span class="o">=</span><span class="n">ro</span><span class="p">,</span><span class="n">vo</span><span class="o">=</span><span class="n">vo</span><span class="p">,</span><span class="n">use_physical</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.</span><span class="p">)</span>
+
+    <span class="n">vx</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span><span class="n">sigma_v_1d</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>        
+    <span class="n">vy</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span><span class="n">sigma_v_1d</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>        
+    <span class="n">vz</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span><span class="n">sigma_v_1d</span><span class="p">,</span><span class="n">n</span><span class="p">)</span> 
+    
+    <span class="k">if</span> <span class="n">coordinates</span><span class="o">==</span><span class="s1">&#39;spherical&#39;</span><span class="p">:</span>
+        <span class="n">vr</span> <span class="o">=</span> <span class="p">(</span><span class="n">vx</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">vy</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">vz</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">vtheta</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">vx</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">vy</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">vz</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">vphi</span> <span class="o">=</span> <span class="n">vx</span> <span class="o">*</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span> <span class="o">+</span> <span class="n">vy</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+        
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="n">r</span><span class="p">,</span><span class="n">phi</span><span class="p">,</span><span class="n">theta</span>
+        <span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span><span class="o">=</span><span class="n">vr</span><span class="p">,</span><span class="n">vphi</span><span class="p">,</span><span class="n">vtheta</span>
+        
+    <span class="k">elif</span> <span class="n">coordinates</span><span class="o">==</span><span class="s1">&#39;cylindrical&#39;</span><span class="p">:</span>
+        <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+        <span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span><span class="o">=</span><span class="n">bovy_coords</span><span class="o">.</span><span class="n">rect_to_cyl_vec</span><span class="p">(</span><span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">vx</span><span class="p">,</span><span class="n">vy</span><span class="p">,</span><span class="n">vz</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

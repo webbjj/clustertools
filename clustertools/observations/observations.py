@@ -1,4 +1,15 @@
-# Routines for analysing Nbody models as if they were Observations
+""" Routines for analysing Nbody models as if they were Observations
+
+"""
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "obs_mass_function",
+    "obs_alpha_prof",
+    "dx_corr_function",
+]
+
 import numpy as np
 from ..analysis.operations import save_cluster, return_cluster
 from ..util.recipes import *

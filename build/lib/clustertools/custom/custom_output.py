@@ -1,4 +1,19 @@
-# Custum output files
+""" Custum output files
+
+"""
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "p_prof_out",
+    "alpha_prof_out",
+    "obs_alpha_prof_out",
+    "dalpha_out",
+    "sigv_out",
+    "eta_prof_out",
+    "eta_out",
+    "v_out",
+]
 
 import numpy as np
 

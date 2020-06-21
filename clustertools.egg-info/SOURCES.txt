@@ -20,7 +20,6 @@ clustertools/custom/custom_output.py
 clustertools/observations/__init__.py
 clustertools/observations/mask.py
 clustertools/observations/observations.py
-clustertools/tables/__init__.py
 clustertools/util/__init__.py
 clustertools/util/constants.py
 clustertools/util/coordinates.py

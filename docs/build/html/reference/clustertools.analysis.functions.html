@@ -1,0 +1,435 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>clustertools.analysis.functions module &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="clustertools.analysis.initialize module" href="clustertools.analysis.initialize.html" />
+    <link rel="prev" title="clustertools.analysis.cluster module" href="clustertools.analysis.cluster.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.initialize.html" title="clustertools.analysis.initialize module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.cluster.html" title="clustertools.analysis.cluster module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.analysis.html" accesskey="U">clustertools.analysis package</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.analysis.cluster.html"
+                        title="previous chapter">clustertools.analysis.cluster module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clustertools.analysis.initialize.html"
+                        title="next chapter">clustertools.analysis.initialize module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/clustertools.analysis.functions.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-clustertools.analysis.functions">
+<span id="clustertools-analysis-functions-module"></span><h1>clustertools.analysis.functions module<a class="headerlink" href="#module-clustertools.analysis.functions" title="Permalink to this headline">¶</a></h1>
+<p>Functions to calculate StarCluster properties</p>
+<p>Designed to accept StarCluster instance as in put to
+calculate key parameters</p>
+<dl class="function">
+<dt id="clustertools.analysis.functions.relaxation_time">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">rad=None</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">method='spitzer'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#relaxation_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>relaxation_time</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate the relaxation time (Spitzer &amp; Hart 1971) within a given radius of the cluster</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>rad - radius within which to calculate the relaxation time</p>
+<p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
+<p>projected - use projected values (default: False)</p>
+<p>method - choose between Spitzer &amp; Hart 1971 and other methods to be added later</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>trelax</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2020 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.half_mass_relaxation_time">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">half_mass_relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#half_mass_relaxation_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.half_mass_relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>relaxation_time</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate the half-mass relaxation time (Spitzer 1987) of the cluster</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
+<p>projected - use projected values (default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>trelax</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.core_relaxation_time">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">core_relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#core_relaxation_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.core_relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>core_relaxation_time</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate the core relaxation time (Stone &amp; Ostriker 2015) of the cluster</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
+<p>projected - use projected values (default: False)</p>
+<p>method - choose between Spitzer 1987 and other methods to be added later</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>trelax</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.energies">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>energies</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Calculate kinetic and potential energy of every star</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>specific - find specific energies (default: True)</p>
+<p>i_d - find energies for a specific star</p>
+<p>full - calculate distance of full array of stars at once with numbra (default: True)</p>
+<p>parallel - calculate distances in parallel if True (default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>ek,pot,etot</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.closest_star">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">closest_star</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#closest_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.closest_star" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.virialize">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">virialize</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">full=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#virialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.virialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>virialize</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Adjust stellar velocities so cluster is in virial equilibrium</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance
+specific - find specific energies (default: True)
+full - do full array of stars at once with numbra (default: True)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>qv</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.virial_radius">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">virial_radius</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">method='inverse_distance'</em>, <em class="sig-param">full=True</em>, <em class="sig-param">H=70.0</em>, <em class="sig-param">Om=0.3</em>, <em class="sig-param">overdens=200.0</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#virial_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.virial_radius" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.virial_radius_inverse_distance">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">virial_radius_inverse_distance</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">full=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#virial_radius_inverse_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.virial_radius_inverse_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>virial_radius</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Calculate virial radius of the cluster as the inverse of the </dt><dd><p>average inverse distance between particles, weighted by their masses</p>
+</dd>
+</dl>
+<p>–&gt; Definition taken from AMUSE (www.amusecode.org)</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>projected - calculate projected virial radius (default: False)</p>
+<p>full - Use Numba (default:True)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>rv</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.virial_radius_critical_density">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">virial_radius_critical_density</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">H=70.0</em>, <em class="sig-param">Om=0.3</em>, <em class="sig-param">overdens=200.0</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#virial_radius_critical_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.virial_radius_critical_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>rvirial</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>Calculate virial radius of the cluster as the radius at which the density is equal to the critical </dt><dd><p>density of the Universe at the redshift of the system, multiplied by an overdensity constant</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>H - Hubble constant</p>
+<p>Om - density of matter</p>
+<p>overdens - overdensity constant</p>
+<p>nrad - number of radial bins used to calculate cluster density profile</p>
+<p>projected - calculate projected virial radius (default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>rv</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.mass_function">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">mass_function</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#mass_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.mass_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>mass_function</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find mass function over a given mass range using nmass bins containing an equal number of stars</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance
+mmin/mmax - specific mass range
+nmass - number of mass bins used to calculate alpha
+rmin/rmax - specific radial range
+vmin/vmax - specific velocity range
+emin/emax - specific energy range
+kwmin/kwmax - specific stellar evolution type range
+indx - specific subset of stars
+projected - use projected values
+plot - plot the mass function
+<a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs - key words for plotting</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
+if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, binerror</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.eta_function">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">eta_function</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#eta_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.eta_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>eta_function</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find eta over a given mass range using nmass bins containing an equal number of stars</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>mmin/mmax - specific mass range</p>
+<p>nmass - number of mass bins used to calculate eta</p>
+<p>rmin/rmax - specific radial range</p>
+<p>vmin/vmax - specific velocity range</p>
+<p>emin/emax - specific energy range</p>
+<p>kwmin/kwmax - specific stellar evolution type range</p>
+<p>indx - specific subset of stars</p>
+<p>projected - use projected values</p>
+<p>plot - plot the mass function</p>
+<p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs - key words for plotting</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>m_mean,sigvm,eta,eeta,yeta,eyeta</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2018 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="clustertools.analysis.functions.surface_area">
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">surface_area</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">coords='xy'</em>, <em class="sig-param">thresh=None</em>, <em class="sig-param">nrand=1000</em>, <em class="sig-param">method='sphere'</em>, <em class="sig-param">full=False</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#surface_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.surface_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>surface_area</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>calculate surface area enclosed by cluster by finding what fraction of a random distribution overlaps with points</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>cluster - StarCluster instance</p>
+<p>mmin/mmax - specific mass range
+rmin/rmax - specific radial range
+vmin/vmax - specific velocity range
+emin/emax - specific energy range
+kwmin/kwmax - specific stellar evolution type range
+indx - specific subset of stars
+projected - use projected values</p>
+<p>coords - choose axis to project cluster (Default: xy)</p>
+<p>thresh - threshold for overlap between random distribution and points (Default: None - use maximum nearest neighbour)</p>
+<p>nrand - number of random points to be generated in uniform distribution (Default: 1000)</p>
+<p>method - generate spherical or rectangular distribution of random points (Default: sphere)</p>
+<p>plot - plot overlap (Default: False)</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>area</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.initialize.html" title="clustertools.analysis.initialize module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.analysis.cluster.html" title="clustertools.analysis.cluster module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="clustertools.html" >clustertools package</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="clustertools.analysis.html" >clustertools.analysis package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

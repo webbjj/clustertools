@@ -1,10 +1,17 @@
+"""Place a mask over the simulated data in order to replicate an observational dataset
+
+"""
+__author__ = "Jeremy J Webb"
+
+
+__all__ = [
+    "ObservationalMask",
+]
+
 from ..analysis.cluster import sub_cluster
 from ..util.recipes import *
 import numpy as np
 from scipy.spatial import ConvexHull
-
-# Place a mask over the simulated data in order to replicate an observational dataset
-
 
 class ObservationalMask(object):
     def __init__(self, name):

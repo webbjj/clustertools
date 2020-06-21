@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>x_hist &#8212; clustertools 0.1.dev1 documentation</title>
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="mean_prof" href="clustertools.util.recipes.mean_prof.html" />
+    <link rel="prev" title="dx_function" href="clustertools.util.recipes.dx_function.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.recipes.mean_prof.html" title="mean_prof"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.recipes.dx_function.html" title="dx_function"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../utilities.html" accesskey="U">Utilities</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.util.recipes.dx_function.html"
+                        title="previous chapter">dx_function</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="clustertools.util.recipes.mean_prof.html"
+                        title="next chapter">mean_prof</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/clustertools.util.recipes.x_hist.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="x-hist">
+<h1>x_hist<a class="headerlink" href="#x-hist" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="clustertools.util.recipes.x_hist">
+<code class="sig-prename descclassname">clustertools.util.recipes.</code><code class="sig-name descname">x_hist</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">nx=10</em>, <em class="sig-param">bintype='num'</em>, <em class="sig-param">x_lower=None</em>, <em class="sig-param">x_mean=None</em>, <em class="sig-param">x_upper=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/util/recipes.html#x_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.util.recipes.x_hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>NAME:</p>
+<blockquote>
+<div><p>x_hist</p>
+</div></blockquote>
+<p>PURPOSE:</p>
+<blockquote>
+<div><p>Find histogram</p>
+</div></blockquote>
+<p>INPUT:</p>
+<blockquote>
+<div><p>x input array</p>
+<p>nx number of bins</p>
+<p>bintype bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)</p>
+<p>x_lower,x_mean,x_upper</p>
+</div></blockquote>
+<p>OUTPUT:</p>
+<blockquote>
+<div><p>x_mean,x_hist</p>
+</div></blockquote>
+<p>HISTORY:</p>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.recipes.mean_prof.html" title="mean_prof"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="clustertools.util.recipes.dx_function.html" title="dx_function"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../utilities.html" >Utilities</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Jeremy J. Webb.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
+    </div>
+  </body>
+</html>

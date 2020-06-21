@@ -26,8 +26,6 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
 
 .. automodapi:: clustertools.analysis.cluster
         :no-inheritance-diagram:
-        :no-main-docstr:
-        :no-heading:
 
 The ``add_stars`` function is the intended way to actually add stars to ``cluster``. Assuming stellar positions (x,y,z) and velocities (vx,vy,vz) have already been read in via a snapshot, one can call:
 
@@ -62,6 +60,47 @@ It is beneficial to use ``add_orbit`` as opposed to setting variables like ``clu
 >>> cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,logr1,logr2,ep1,ep2,ospin1,ospin2)
 
 For those not familiar with ``NBODY6``, please consult the documention for ``add_nbody6``, ``add_sse``, and ``add_bse`` for the defintion of each variable. It is important to note that each of the above variables are intialized with upon the initialization of ``StarCluster``, hence they can be set manually as well if you are using a code other than ``NBODY6`` and would like to define some of these parameters. Note, no units or origin are associated with any of the values provided via ``add_nbody6``, ``add_sse``, and ``add_bse`` such that they are not adjusted when unit and coordinate transformations are performed. 
+
+One variable that is worth expanding on is the ``kw`` parameter. Motivated by NBODY6, each star's stellar evolution type is described by ``kw``. The below table illustrates what each ``kw`` integer represents. If you need to quickly lookup this table, it can be printed to screen using the function ``kwtypes()`` (See :ref:`Utilities <utilities>`).
+
+.. list-table:: Table 1 - Relationship between ``kw`` and stellar evolution type, as per NBODY6
+   :widths: 25 25
+   :header-rows: 1
+
+   * - KW
+     - Stellar Evolution Types
+   * - 0 
+     - Low main sequence (M < 0.7).
+   * - 1
+     - Main sequence.
+   * - 2
+     - Hertzsprung gap (HG).
+   * - 3
+     - Red giant.
+   * - 4
+     - Core Helium burning.
+   * - 5
+     - First AGB.
+   * - 6
+     - Second AGB.
+   * - 7
+     - Helium main sequence.
+   * - 8
+     - Helium HG.
+   * - 9
+     - Helium GB.
+   * - 10
+     - Helium white dwarf.
+   * - 11
+     - Carbon-Oxygen white dwarf.
+   * - 12
+     - Oxygen-Neon white dwarf.
+   * - 13
+     - Neutron star.
+   * - 14
+     - Black hole.
+   * - 15
+     - Massless supernova remnant.
 
 It is important to note that if stellar luminosities (``logl``) have been provided, calling ``cluster.key_params`` will also calculate the half-light radius of the cluster ``cluster.rh`` and the radius containing 10% of the light ``cluster.rh10``. Similar to ``cluster.rv3d``, by default the projected half-light radius ``cluster.rhpro`` and the projected radius containing 10% of the light ``cluster.rh10pro`` are calculated as well.
 

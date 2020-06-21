@@ -26,6 +26,8 @@ except:
 
 def load_cluster(
     ctype="snapshot",
+    particles=None,
+    custom_override=True,
     units="pckms",
     origin="cluster",
     ofile=None,
@@ -46,6 +48,10 @@ def load_cluster(
     INPUT:
 
        ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)
+
+       particles - AMUSE particle dataset (default: None)
+
+       custom_override - use a custom function to load data instead of default (default: True)
 
        units - units of input data (default: kpckms)
 
@@ -72,8 +78,6 @@ def load_cluster(
         wdir - working directory of snapshots if not current directory
 
         intialize - initialize a galpy orbit after reading in orbital information (default: False)
-
-        kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
 
         projected - calculate projected values as well as 3D values (Default: True)
 
@@ -102,9 +106,16 @@ def load_cluster(
         # When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
         fort82 = open("%sfort.82" % wdir, "r")
         fort83 = open("%sfort.83" % wdir, "r")
-        cluster = get_nbody6_jarrod(
-            fort82, fort83, ofile=ofile, advance=False, **kwargs
-        )
+
+        if custom_override:
+            cluster = get_nbody6se_custom(
+                fort82, fort83, ofile=ofile, advance=False, **kwargs
+            )
+        else:
+            cluster = get_nbody6se(
+                fort82, fort83, ofile=ofile, advance=False, **kwargs
+            )
+
     elif ctype == "nbody6":
         # With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
         if os.path.isfile("%sOUT9" % wdir):
@@ -112,36 +123,20 @@ def load_cluster(
         else:
             out9 = None
         out34 = open("%sOUT34" % wdir, "r")
-        cluster = get_nbody6_out(out9, out34, advance=False, **kwargs)
-    elif ctype == "snapauto":
-        # Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++
-        cluster = get_nbody6_snapauto(
-            filename=filename,
-            units=units,
-            origin=origin,
-            ofile=ofile,
-            advance=False,
-            **kwargs
-        )
+
+        if custom_override:
+            cluster = get_nbody6_custom(out9, out34, advance=False, **kwargs)
+        else:
+            cluster = get_nbody6(out9, out34, advance=False, **kwargs)
+
     elif ctype == "gyrfalcon":
         # Read in snapshot from gyrfalcon.
         filein = open(wdir + filename, "r")
         cluster = get_gyrfalcon(filein, "WDunits", "galaxy", advance=False, **kwargs)
-    elif ctype == "snaptrim":
-        # Read in snaptrim snapshot from gyrfalcon.
-        cluster = get_snaptrim(
-            filename=filename, units="WDunits", origin="galaxy", advance=False, **kwargs
-        )
-    elif ctype == "clustertools":
-        # Read in standard clustertools snapshot
-        cluster = get_clustertools_snapshot(
-            filename=filename,
-            units=units,
-            origin=origin,
-            ofile=ofile,
-            advance=False,
-            **kwargs
-        )
+
+    elif ctype=='amuse':
+        cluster=get_amuse_particles(particles, units=units, origin=origin, ofile=ofile, **kwargs)
+
     elif ctype == "snapshot":
         # Read in standard generic snapshot
         col_names = kwargs.pop("col_names", ["m", "x", "y", "z", "vx", "vy", "vz"])
@@ -156,16 +151,9 @@ def load_cluster(
             advance=False,
             **kwargs
         )
-    elif ctype == "mycode":
-        # Read in new cluster type
-        cluster = get_mycode()
     else:
         print("NO CTYPE GIVEN")
         return 0
-
-    kwfile = kwargs.get("kwfile", None)
-    if kwfile != None:
-        cluster.kw[cluster.id - 1] = get_kwtype(cluster, kwfile)
 
     # Add galpy orbit if given
     if orbit != None:
@@ -226,7 +214,7 @@ def load_cluster(
     return cluster
 
 
-def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
+def advance_cluster(cluster,custom_override=True,ofile=None, orbit=None, filename=None, **kwargs):
     """
     NAME:
 
@@ -239,6 +227,14 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
        --> Be sure that advance is set to True so next line of orbit file is read in
 
     INPUT:
+
+       cluster - StarCluster instance to be advanced
+
+       custom_override - use a custom function to load data instead of default
+
+       ofile - an already opened file containing orbit information (default: None)
+
+       orbit - a galpy orbit to be used for the StarCluster's orbital information (default: None)
 
        filename - name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)
 
@@ -257,27 +253,26 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
     """
     advance_kwargs = get_advanced_kwargs(cluster, **kwargs)
 
-    if "kwfile" in kwargs:
-        kw0 = cluster.kw
-
     # Continue reading in cluster opened in get_cluster()
     if cluster.ctype == "nbody6se":
-        cluster = get_nbody6_jarrod(
-            cluster.bfile, cluster.sfile, ofile=ofile, advance=True, **advance_kwargs
-        )
+        if custom_override:
+            cluster = get_nbody6se_custom(
+                cluster.bfile, cluster.sfile, ofile=ofile, advance=True, **advance_kwargs
+            )
+        else:
+            cluster = get_nbody6se(
+                cluster.bfile, cluster.sfile, ofile=ofile, advance=True, **advance_kwargs
+            )
     elif cluster.ctype == "nbody6":
-        cluster = get_nbody6_out(
-            cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
-        )
-    elif cluster.ctype == "snapauto":
-        cluster = get_nbody6_snapauto(
-            filename=filename,
-            units=cluster.units,
-            origin=cluster.origin,
-            ofile=ofile,
-            advance=True,
-            **advance_kwargs
-        )
+        if custom_override:
+            cluster = get_nbody6(
+                cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
+            )
+        else:
+            cluster = get_nbody6(
+                cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
+            )
+
     elif cluster.ctype == "gyrfalcon":
 
         cluster = get_gyrfalcon(
@@ -288,24 +283,8 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             advance=True,
             **advance_kwargs
         )
-    elif cluster.ctype == "snaptrim":
-        cluster = get_snaptrim(
-            filename=filename,
-            units="WDunits",
-            origin="galaxy",
-            ofile=ofile,
-            advance=True,
-            **advance_kwargs
-        )
-    elif cluster.ctype == "clustertools":
-        cluster = get_clustertools_snapshot(
-            filename=filename,
-            units=cluster.units,
-            origin=cluster.origin,
-            ofile=ofile,
-            advance=True,
-            **advance_kwargs
-        )
+
+
     elif cluster.ctype == "snapshot":
         col_names = kwargs.pop("col_names", ["m", "x", "y", "z", "vx", "vy", "vz"])
         col_nums = kwargs.pop("col_nums", [0, 1, 2, 3, 4, 5, 6])
@@ -320,8 +299,6 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             advance=True,
             **advance_kwargs
         )
-    elif cluster.ctype == "mycode":
-        cluster = get_mycode()
     else:
         cluster = StarCuster(ctype=cluster.ctype)
 
@@ -347,8 +324,6 @@ def advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
             )
 
     if cluster.ntot != 0.0:
-        if "kwfile" in kwargs:
-            cluster.kw[cluster.id - 1] = kw0
 
         # Add galpy orbit if given
         if orbit != None:
@@ -406,8 +381,6 @@ def get_advanced_kwargs(cluster, **kwargs):
 
     """
 
-    kwfile = kwargs.get("kwfile", None)
-
     nsnap = np.maximum(int(kwargs.get("nsnap", 0)), cluster.nsnap) + 1
     delimiter = kwargs.get("delimiter", cluster.delimiter)
     wdir = kwargs.get("wdir", cluster.wdir)
@@ -420,7 +393,6 @@ def get_advanced_kwargs(cluster, **kwargs):
     projected = kwargs.get("projected", cluster.projected)
 
     return {
-        "kwfile": kwfile,
         "nsnap": nsnap,
         "delimiter": delimiter,
         "wdir": wdir,
@@ -515,47 +487,6 @@ def get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
     cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc, ounits)
 
     return
-
-
-def get_kwtype(cluster, kwfile):
-    """
-    NAME:
-
-       get_kwtype
-
-    PURPOSE:
-
-       Get stellar evolution type of the star (kw in Nbody6 syntax) if information is in a separate file
-       --> Columns assumed to be ID, KW
-       --> see def kwtypes() in cluster.py for what different kw types mean
-
-    INPUT:
-
-       cluster - StarCluster instance
-
-       kwfile - opened file containing kw type
-
-    KWARGS:
-
-        advance - Is this a continuation from a previous timestep, in which case read next line (default: False)
-        nsnap - if nsnap is provided, read line # nsnap from the orbit file
-        ounits - if you units are not the same as StarCluster units, provide them and they will be converted
-
-    OUTPUT:
-
-       None
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-
-    """
-
-    kw = np.loadtxt(kwfile)[:, 1]
-    indx = cluster.id - 1
-    kw0 = kw[indx]
-    return kw0
-
 
 # Get StarCluster from Gyrfalcon output
 def get_gyrfalcon(
@@ -681,141 +612,11 @@ def get_gyrfalcon(
 
     return cluster
 
+def get_nbody6se(fort82, fort83, ofile=None, advance=False, **kwargs):
+    print('WORK IN PROGRESS')
+    return StarCluster()
 
-def get_snaptrim(
-    filename=None, units="WDunits", origin="galaxy", ofile=None, advance=False, **kwargs
-):
-    """
-    NAME:
-
-       get_snaptrim
-
-    PURPOSE:
-
-       Load a gyrfalcon snapshot as produced by snaptrim
-
-    INPUT:
-
-       filename = name of file
-
-       units - units of input data (default: WDunits)
-
-       origin - origin of input data (default: galaxy)
-
-       advance - is this a snapshot that has been advanced to from initial load_cluster?
-
-       
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-
-    # Default **kwargs
-
-    nzfill = int(kwargs.pop("nzfill", 1))
-    skiprows = kwargs.pop("skiprows", 13)
-    delimiter = kwargs.pop("delimiter", None)
-    nsnap = int(kwargs.get("nsnap", "0"))
-    wdir = kwargs.get("wdir", "./")
-    snapdir = kwargs.get("snapdir", "snaps/")
-    snapbase = kwargs.get("snapbase", "")
-    snapend = kwargs.get("snapend", ".dat")
-
-    if filename != None:
-        if os.path.isfile("%s%s%s" % (wdir, snapdir, filename)):
-            data = np.loadtxt(
-                "%s%s%s" % (wdir, snapdir, filename),
-                delimiter=delimiter,
-                skiprows=skiprows,
-            )
-        elif os.path.isfile("%s%s" % (wdir, filename)):
-            data = np.loadtxt(
-                "%s%s" % (wdir, filename), delimiter=delimiter, skiprows=skiprows
-            )
-        else:
-            print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
-            cluster = StarCluster( 0.0, ctype='snaptrim', **kwargs)
-            print(cluster.ntot)
-            return cluster
-    elif os.path.isfile(
-        "%s%s%s%s%s" % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
-    ):
-        filename = "%s%s%s%s%s" % (
-            wdir,
-            snapdir,
-            snapbase,
-            str(nsnap).zfill(nzfill),
-            snapend,
-        )
-    elif os.path.isfile(
-        "%s%s%s%s" % (wdir, snapbase, str(nsnap).zfill(nzfill), snapend)
-    ):
-        filename = "%s%s%s%s" % (wdir, snapbase, str(nsnap).zfill(nzfill), snapend)
-    else:
-        print(
-            "NO FILE FOUND - %s%s%s%s%s"
-            % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
-        )
-        filename = "%s%s%s%s%s" % (
-            wdir,
-            snapdir,
-            snapbase,
-            str(nsnap).zfill(nzfill),
-            snapend,
-        )
-        cluster = StarCluster( 0.,ctype='snaptrim', sfile=filename, **kwargs)
-        print(cluster.ntot)
-        return cluster
-
-    ntot = 0
-    tphys = 0.0
-
-    filein = open(filename, "r")
-
-    for j in range(0, skiprows):
-        data = filein.readline().split()
-        if "#" not in data:
-            print("OVER HEAD")
-            break
-        if len(data) == 0:
-            print("END OF FILE")
-            return StarCluster( 0.0, ctype="snaptrim",**kwargs)
-        if any("Ntot" in dat for dat in data):
-            sntot = data[2]
-            ntot = int(sntot[:-1])
-        if any("time" in dat for dat in data):
-            tphys = float(data[2]) * 1000.0
-
-    filein.close()
-
-    cluster = get_snapshot(
-        filename=filename,
-        tphys=tphys,
-        col_names=["m", "x", "y", "z", "vx", "vy", "vz"],
-        col_nums=[0, 1, 2, 3, 4, 5, 6],
-        units=units,
-        origin=origin,
-        ofile=ofile,
-        advance=advance,
-        ctype="snaptrim",
-        nzfill=nzfill,
-        skiprows=skiprows,
-        delimiter=delimiter,
-        **kwargs
-    )
-
-    return cluster
-
-
-def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
+def get_nbody6se_custom(fort82, fort83, ofile=None, advance=False, **kwargs):
     """
     NAME:
 
@@ -1047,8 +848,11 @@ def get_nbody6_jarrod(fort82, fort83, ofile=None, advance=False, **kwargs):
 
     return cluster
 
+def get_nbody6(out9, out34, advance=False, **kwargs):
+    print('WORK IN PROGRESS')
+    return StarCluster()
 
-def get_nbody6_out(out9, out34, advance=False, **kwargs):
+def get_nbody6_custom(out9, out34, advance=False, **kwargs):
     """
     NAME:
 
@@ -1293,154 +1097,6 @@ def get_nbody6_out(out9, out34, advance=False, **kwargs):
 
     return cluster
 
-
-def get_nbody6_out34(out34, advance=False, **kwargs):
-    """
-    NAME:
-
-       get_nbody6_out34
-
-    PURPOSE:
-
-       Extract a single snapshot from the OUT34 output of Jeremy Webb's version of Nbody6
-       --> Difference between Jeremy's output and the public version is found in /Node/output.f of Nbody6
-       --> Called for Nbody6 simulations without stellar evolution
-
-    INPUT:
-
-       out34 - opened OUT34 file containing single star information
-
-       advance - is this a snapshot that has been advanced to from initial load_cluster?
-
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-    """
-
-    line1 = out34.readline().split()
-    if len(line1) == 0:
-        print("END OF FILE")
-        return StarCluster( 0.0, ctype='nbody6',**kwargs)
-
-    line2 = out34.readline().split()
-    line3 = out34.readline().split()
-
-    ns = int(line1[0])
-    tphys = float(line1[1])
-    n_p = int(line1[4])
-
-    nc = int(line2[0])
-    rc = max(float(line2[1]), 0.01)
-    rbar = float(line2[2])
-    rtide = float(line2[3])
-    xc = float(line2[4])
-    yc = float(line2[5])
-    zc = float(line2[6])
-    zmbar = float(line3[0])
-    vstar = 0.06557 * np.sqrt(zmbar / rbar)
-    rscale = float(line3[2])
-    nb = 0
-    ntot = ns + nb
-
-    # Orbit Properties
-    xgc = float(line1[5])
-    ygc = float(line1[6])
-    zgc = float(line1[7])
-    vxgc = float(line1[8])
-    vygc = float(line1[9])
-    vzgc = float(line1[10])
-
-    nsbnd = 0
-    nbbnd = 0
-    nbnd = 0
-
-    i_d = []
-    kw = []
-    m = []
-    logl = []
-    logr = []
-    x = []
-    y = []
-    z = []
-    vx = []
-    vy = []
-    vz = []
-    kin = []
-    pot = []
-    etot = []
-
-    data = out34.readline().split()
-    while int(float(data[0])) >= -999 and len(data) > 0:
-        # IGNORE GHOST PARTICLES
-        if float(data[2]) == 0.0:
-            ns -= 1
-            ntot -= 1
-        else:
-            i_d.append(int(float(data[0])))
-            kw.append(int(data[1]))
-            m.append(float(data[2]))
-            logl.append(float(data[3]))
-            logr.append(float(data[4]))
-            x.append(float(data[5]))
-            y.append(float(data[6]))
-            z.append(float(data[7]))
-            vx.append(float(data[8]))
-            vy.append(float(data[9]))
-            vz.append(float(data[10]))
-
-            if len(data) > 14:
-                kin.append(float(data[13]))
-                pot.append(float(data[14]))
-                etot.append(float(data[15]))
-            else:
-                kin.append(0.0)
-                pot.append(0.0)
-                etot.append(0.0)
-
-            nsbnd += 1
-        data = out34.readline().split()
-
-    nbnd = nsbnd + nbbnd
-
-    cluster = StarCluster(
-        nbnd,
-        tphys,
-        units="nbody",
-        origin="cluster",
-        ctype="nbody6",
-        sfile=out34,
-        bfile=None,
-        **kwargs
-    )
-    cluster.add_nbody6(
-        nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd, n_p
-    )
-    # Add back on the centre of mass which has been substracted off by NBODY6
-    cluster.add_stars(x + xc, y + yc, z + zc, vx, vy, vz, m, i_d)
-    cluster.add_sse(kw, logl, logr, np.zeros(nbnd), np.zeros(nbnd))
-    cluster.add_energies(kin, pot, etot)
-
-    if kwargs.get("do_key_params", True):
-        do_order=kwargs.get("do_key_params", True)
-
-        # Estimate centre of distribution using median function
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=do_order)
-        cluster.to_cluster()
-
-    cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc)
-
-    return cluster
-
-
 def get_snapshot(
     filename=None,
     tphys=0.0,
@@ -1636,112 +1292,6 @@ def get_snapshot(
 
     return cluster
 
-
-def get_nbody6_snapauto(
-    filename=None, units="pckms", origin="cluster", ofile=None, advance=False, **kwargs
-):
-    """
-    NAME:
-
-       get_nbody6_snapauto
-
-    PURPOSE:
-
-       Load a single snapshot as produced by Jongsuk Hong's snpauto.f routine for extracting snapshots from
-       Nbody6 and Nbody6++ binary files 
-
-    INPUT:
-
-       filename = name of file
-
-       units - units of input data (default: kpckms)
-
-       origin - origin of input data (default: cluster)
-
-       ofile - opened file containing orbital information
-
-       advance - is this a snapshot that has been advanced to from initial load_cluster?
-
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-    """
-
-    cluster = get_snapshot(
-        ctype="snapauto",
-        filename=filename,
-        col_names=["m", "x", "y", "z", "vx", "vy", "vz", "id"],
-        col_nums=[0, 1, 2, 3, 4, 5, 6, 7],
-        units=units,
-        origin=origin,
-        ofile=ofile,
-        advance=advance,
-        **kwargs
-    )
-
-    return cluster
-
-
-def get_clustertools_snapshot(
-    filename=None, units="pckms", origin="cluster", ofile=None, advance=False, **kwargs
-):
-    """
-    NAME:
-
-       get_clustertools_snapshot
-
-    PURPOSE:
-
-       Load a single snapshot as produced by clustertools snapout routine
-
-    INPUT:
-
-       filename = name of file
-
-       units - units of input data (default: kpckms)
-
-       origin - origin of input data (default: cluster)
-
-       ofile - opened file containing orbital information
-
-       advance - is this a snapshot that has been advanced to from initial load_cluster?
-       
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-    """
-
-    cluster = get_snapshot(
-        ctype="clustertools",
-        filename=filename,
-        col_names=["m", "x", "y", "z", "vx", "vy", "vz", "id", "kw"],
-        col_nums=[0, 1, 2, 3, 4, 5, 6, 7, 8],
-        units=units,
-        origin=origin,
-        ofile=ofile,
-        advance=advance,
-        **kwargs
-    )
-
-    return cluster
-
-
 def get_amuse_particles(
     particles, units="kpckms", origin="galaxy", ofile=None, **kwargs
 ):
@@ -1833,35 +1383,4 @@ def get_amuse_particles(
         if ofile != None:
             get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-    return cluster
-
-
-def get_mycode():
-    """
-    NAME:
-
-       get_mycode
-
-    PURPOSE:
-
-       Empty shell for a new user to write their own routine for reading in data and generating a StarCluster instance
-       --> Easiest to build around get_snapshot if files are separated
-    INPUT:
-
-       TBD
-       
-    KWARGS:
-
-        same as load_cluster
-
-    OUTPUT:
-
-       StarCluster instance
-
-    HISTORY:
-
-       XXXX - Written - XXXX
-    """
-
-    cluster = StarCluster(0.0)
     return cluster

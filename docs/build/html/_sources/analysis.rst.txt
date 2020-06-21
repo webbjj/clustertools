@@ -18,6 +18,16 @@ Alternatively, when called externally via:
 
 no variables within ``cluster`` are actually set. 
 
+A change of units or coordinate system can be implemented using:
+
+>>> cluster.to_galaxy()
+>>> cluster.to_kpckms()
+
+It is important to note that only ``rv3d`` is called after a change in either units or coordinate system. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If sorting and re-calculations are preferred, then be sure to set ``do_order=True`` and ``do_key_params=True`` via:
+
+>>> cluster.to_galaxy(do_order=True)
+>>> cluster.to_kpckms(do_key_params=True)
+
 All available operations are listed below.
 
 .. automodapi:: clustertools.analysis.operations
@@ -38,7 +48,16 @@ where the variable cluster.trh now represents the cluster's half-mass relaxation
 
 When called externally, no variables within `cluster` are set.
 
-All available functions are listed below in their external form.
+Some functions, including ``mass_function`` and ``eta_function`` can be applied to only a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster's half-mass radius one can call:
+
+>>> m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(cluster,
+        mmin=0.1,mmax=0.8,rmin=0.,rmax=cluster.rm)
+
+Other constraints include velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
+
+All functions can be called using projected valeus using ``projeted=True``.
+
+The complete list of available functions are tabulated below in their external form.
 
 .. automodapi:: clustertools.analysis.functions
         :no-inheritance-diagram:
@@ -63,6 +82,8 @@ returns the below figure
 .. image:: /images/rho_prof.png
 
 Some editing can be done to the plot via key word arguments (see PLOTTING for information regarding making figures with ``clustertools``)
+
+All profiles can also just be measured for a select subpopulation of stars based on mass (``mmin``,``mmax``), radius (``rmin``,``rmax``), velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
 All available profiles are listed below.
 

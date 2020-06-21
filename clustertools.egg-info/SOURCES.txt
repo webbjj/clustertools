@@ -14,12 +14,6 @@ clustertools/analysis/load.py
 clustertools/analysis/operations.py
 clustertools/analysis/orbit.py
 clustertools/analysis/profiles.py
-clustertools/custom/__init__.py
-clustertools/custom/custom_functions.py
-clustertools/custom/custom_output.py
-clustertools/observations/__init__.py
-clustertools/observations/mask.py
-clustertools/observations/observations.py
 clustertools/util/__init__.py
 clustertools/util/constants.py
 clustertools/util/coordinates.py

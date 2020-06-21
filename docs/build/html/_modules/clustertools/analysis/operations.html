@@ -961,7 +961,19 @@
 
 <span class="sd">       do_key_params - call key_params after shift (default: False)</span>
 
-<span class="sd">       centre_method - method for shifting to clustercentric coordinates</span>
+<span class="sd">       centre_method - method for shifting to clustercentric coordinates when units=&#39;radec&#39; and origin=&#39;sky&#39;.</span>
+
+<span class="sd">    NOTES:</span>
+
+<span class="sd">       When units=&#39;radec&#39; and origin=&#39;sky&#39;, the cluster will be shifted to clustercentric coordinates using:</span>
+<span class="sd">            centre_method=None: angular distance between each star&#39;s RA/DEC and the RA/DEC of the </span>
+<span class="sd">            cluster&#39;s centre with proper motions directly subtracted off</span>
+<span class="sd">            centre_method=&#39;orthographic&#39; , positions and velocities changed to orthnormal coordinates (Helmi et al. 2018)</span>
+<span class="sd">            centre_method=&#39;VandeVen&#39; , positions and velocities changed to clustercentric coordinates using method</span>
+<span class="sd">            outlined by Van de Ven et al. 2005</span>
+
+<span class="sd">        Note the the line of site positions and velocities will just have the galactocentric coordinates of the cluster</span>
+<span class="sd">        subtracted off. Be sure to set projected=True when making any calculations to use only x and y coordinates</span>
 
 <span class="sd">    OUTPUT:</span>
 
@@ -1000,7 +1012,8 @@
                     <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">dec_gc</span><span class="p">)</span>
                     <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dec</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">dec_gc</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">ra</span> <span class="o">-</span> <span class="n">ra_gc</span><span class="p">)</span>
                 <span class="p">)</span>
-                <span class="n">cluster</span><span class="o">.</span><span class="n">vz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+
+                <span class="n">cluster</span><span class="o">.</span><span class="n">z</span> <span class="o">-=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
 
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">centre_method</span> <span class="o">==</span> <span class="s2">&quot;VandeVen&quot;</span><span class="p">:</span>
@@ -1019,7 +1032,7 @@
                     <span class="n">cluster</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">xgc</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span><span class="p">))</span>
                     <span class="n">cluster</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ygc</span>
 
-                <span class="n">cluster</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">z</span> <span class="o">-=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">zgc</span>
 
                 <span class="n">cluster</span><span class="o">.</span><span class="n">vx</span> <span class="o">-=</span> <span class="o">-</span><span class="n">cluster</span><span class="o">.</span><span class="n">vxgc</span>
                 <span class="n">cluster</span><span class="o">.</span><span class="n">vy</span> <span class="o">-=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vygc</span>

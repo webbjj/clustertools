@@ -16,7 +16,7 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="clustertools.custom package" href="clustertools.custom.html" />
+    <link rel="next" title="clustertools.util package" href="clustertools.util.html" />
     <link rel="prev" title="clustertools.analysis.orbit module" href="clustertools.analysis.orbit.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -29,7 +29,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="clustertools.custom.html" title="clustertools.custom package"
+          <a href="clustertools.util.html" title="clustertools.util package"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="clustertools.analysis.orbit.html" title="clustertools.analysis.orbit module"
@@ -45,8 +45,8 @@
   <p class="topless"><a href="clustertools.analysis.orbit.html"
                         title="previous chapter">clustertools.analysis.orbit module</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="clustertools.custom.html"
-                        title="next chapter">clustertools.custom package</a></p>
+  <p class="topless"><a href="clustertools.util.html"
+                        title="next chapter">clustertools.util package</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -154,7 +154,7 @@
 
 <dl class="function">
 <dt id="clustertools.analysis.profiles.alpha_prof">
-<code class="sig-prename descclassname">clustertools.analysis.profiles.</code><code class="sig-name descname">alpha_prof</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/profiles.html#alpha_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.profiles.alpha_prof" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.profiles.</code><code class="sig-name descname">alpha_prof</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">omask=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/profiles.html#alpha_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.profiles.alpha_prof" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>alpha_prof</p>
@@ -175,6 +175,8 @@
 <p>kwmin/kwmax - minimum and maximum stellar type (kw)</p>
 <p>indx - user defined boolean array from which to extract the subset</p>
 <p>projected - use projected values and constraints (Default:False)</p>
+<p>mcorr - correction for masses</p>
+<p>omask - place a mask over the dataset to mimic observed data</p>
 <p>plot - plot the alpha profile (Default: False)</p>
 </div></blockquote>
 <p>KWARGS:</p>
@@ -188,6 +190,7 @@
 <p>dalpha - delta_alpha = d(alpha)/d(ln(r/rm)</p>
 <p>edalpha - error in dalpha</p>
 <p>ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)</p>
+<p>rbinerror - if mcorr is not None, output lowest corrected mass fraction at each radius</p>
 </div></blockquote>
 <p>HISTORY:</p>
 <blockquote>
@@ -418,7 +421,7 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="clustertools.custom.html" title="clustertools.custom package"
+          <a href="clustertools.util.html" title="clustertools.util package"
              >next</a> |</li>
         <li class="right" >
           <a href="clustertools.analysis.orbit.html" title="clustertools.analysis.orbit module"

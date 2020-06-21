@@ -133,15 +133,9 @@
 <td><p>kms/vo</p></td>
 <td><p>Msun/90027307126.905106</p></td>
 </tr>
-<tr class="row-odd"><td><p>wdunits</p></td>
-<td><p>Walter Dehnen units, for use with <code class="docutils literal notranslate"><span class="pre">GYRFALCON</span></code></p></td>
-<td><p>kpc</p></td>
-<td><p>kpc/Gyr</p></td>
-<td><p>Msun/222288.47</p></td>
-</tr>
 </tbody>
 </table>
-<p>See <a class="reference internal" href="analysis.html#id2"><span class="std std-ref">Operations</span></a> for information on operations that convert a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> from one set of units to another.</p>
+<p>See <a class="reference internal" href="analysis.html#operations"><span class="std std-ref">Operations</span></a> for information on operations that convert a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> from one set of units to another.</p>
 </div>
 <div class="section" id="coordinate-systems">
 <h2>Coordinate Systems<a class="headerlink" href="#coordinate-systems" title="Permalink to this headline">¶</a></h2>
@@ -173,7 +167,7 @@
 </tbody>
 </table>
 <p>For clarity, it is worth expanding on the difference between <code class="docutils literal notranslate"><span class="pre">StarCluster.origin='cluster'</span></code> and <code class="docutils literal notranslate"><span class="pre">StarCluster.origin='centre'</span></code>. The motivation for the two separate reference frames stems from codes like NBODY6 where the orbital evolution of the cluster in the external tidal field is handled separately from the internal cluster evolution. Hence the cluster’s orbital position is integrated forwards in time from its initial conditions while the cluster’s centre of density (or mass) will wander slightly due to internal cluster evolution. The true centre may in fact wander a lot of tidal tail stars are kept in the simulation or the cluster reaches dissolution. Codes like NBODY6 provide snapshots where the origin is at the cluster’s orbital position (<code class="docutils literal notranslate"><span class="pre">StarCluster.origin='cluster'</span></code>) and then provide the location of the cluster’s true centre separately to change to <code class="docutils literal notranslate"><span class="pre">StarCluster.origin='centre'</span></code>.</p>
-<p>See <a class="reference internal" href="analysis.html#id2"><span class="std std-ref">Operations</span></a> for information on operations that convert a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> from one coordinate system to another.</p>
+<p>See <a class="reference internal" href="analysis.html#operations"><span class="std std-ref">Operations</span></a> for information on operations that convert a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> from one coordinate system to another.</p>
 </div>
 </div>
 

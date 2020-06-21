@@ -157,6 +157,201 @@
 
     <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">)</span></div>
 
+<span class="k">def</span> <span class="nf">rho_prof_out</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">fileout</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       rho_prof_out</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Write density profile to file</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - a StarCluster-class object</span>
+
+<span class="sd">       fileout - opened file to write data to</span>
+
+<span class="sd">       **kwargs - key words for rho_prof</span>
+
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       None</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">))</span>
+    
+    <span class="n">rprof</span><span class="p">,</span> <span class="n">pprof</span><span class="p">,</span> <span class="n">nprof</span><span class="o">=</span><span class="n">rho_prof</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rprof</span><span class="p">:</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">r</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pprof</span><span class="p">:</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">))</span>
+
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">nprof</span><span class="p">:</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="p">))</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">alpha_prof_out</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">fileout</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       alpha_prof_out</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Write alpha profile and delta_alpha to file</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - a StarCluster-class object</span>
+
+<span class="sd">       fileout - opened file to write data to</span>
+
+<span class="sd">       **kwargs - key words for alpha_prof</span>
+
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       None</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">mass_function</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span> <span class="o">=</span> <span class="n">alpha_prof</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_mean</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">m_mean</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dm</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">dm</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">lrprofn</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">aprof</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">aprof</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">sigv_prof_out</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">fileout</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       sigv_prof_out</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Write velopcity dispersion profile to file</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - a StarCluster-class object</span>
+
+<span class="sd">       fileout - opened file to write data to</span>
+
+<span class="sd">       **kwargs - key words for sigv_prof</span>
+
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       None</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">mtot</span><span class="p">))</span>
+
+    <span class="n">lrprofn</span><span class="p">,</span> <span class="n">sigvprof</span><span class="o">=</span><span class="n">sigv_prof</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="n">lrprofn</span><span class="p">:</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">lr</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">sig</span> <span class="ow">in</span> <span class="n">sigvprof</span><span class="p">:</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">sig</span><span class="p">)</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">eta_prof_out</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="p">,</span>
+    <span class="n">fileout</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    NAME:</span>
+
+<span class="sd">       sigv_prof_out</span>
+
+<span class="sd">    PURPOSE:</span>
+
+<span class="sd">       Write eta profile to file</span>
+
+<span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - a StarCluster-class object</span>
+
+<span class="sd">       fileout - opened file to write data to</span>
+
+<span class="sd">       **kwargs - key words for sigv_prof</span>
+
+
+<span class="sd">    OUTPUT:</span>
+
+<span class="sd">       None</span>
+
+<span class="sd">    HISTORY:</span>
+
+<span class="sd">       2018 - Written - Webb (UofT)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">m_mean</span><span class="p">,</span> <span class="n">sigvm</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">eeta</span><span class="p">,</span> <span class="n">yeta</span><span class="p">,</span> <span class="n">eyeta</span> <span class="o">=</span> <span class="n">eta_function</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">lrprofn</span><span class="p">,</span> <span class="n">eprof</span><span class="p">,</span> <span class="n">deta</span><span class="p">,</span> <span class="n">edeta</span><span class="p">,</span> <span class="n">ydeta</span><span class="p">,</span> <span class="n">eydeta</span> <span class="o">=</span> <span class="n">eta_prof</span><span class="p">(</span>
+        <span class="n">cluster</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">tphys</span><span class="p">,</span> <span class="n">eta</span><span class="p">,</span> <span class="n">eeta</span><span class="p">,</span> <span class="n">yeta</span><span class="p">,</span> <span class="n">eyeta</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">m_mean</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">m_mean</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sigvm</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">sigvm</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">lrprofn</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">eprof</span><span class="p">)):</span>
+        <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">eprof</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+    <span class="n">fileout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="s2"> </span><span class="si">%f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">deta</span><span class="p">,</span> <span class="n">edeta</span><span class="p">,</span> <span class="n">ydeta</span><span class="p">,</span> <span class="n">eydeta</span><span class="p">))</span>
 
 <div class="viewcode-block" id="snapout"><a class="viewcode-back" href="../../../reference/clustertools.util.output.html#clustertools.util.output.snapout">[docs]</a><span class="k">def</span> <span class="nf">snapout</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">energies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">observations</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -176,7 +371,7 @@
 
 <span class="sd">       energies - include energies in output (Default: False)</span>
 
-<span class="sd">       observations - include sky values of stars (Default: False) </span>
+<span class="sd">       observations - include sky coordinates of stars (Default: False) </span>
 
 <span class="sd">    OUTPUT:</span>
 
@@ -245,7 +440,7 @@
         <span class="k">if</span> <span class="n">energies</span><span class="p">:</span>
             <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span>
                 <span class="n">filename</span><span class="p">,</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">olumn_stack</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">(</span>
                     <span class="p">[</span>
                         <span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">,</span>
                         <span class="n">cluster</span><span class="o">.</span><span class="n">x</span><span class="p">,</span>

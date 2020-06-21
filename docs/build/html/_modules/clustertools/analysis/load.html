@@ -79,6 +79,8 @@
 
 <div class="viewcode-block" id="load_cluster"><a class="viewcode-back" href="../../../reference/clustertools.analysis.load.html#clustertools.analysis.load.load_cluster">[docs]</a><span class="k">def</span> <span class="nf">load_cluster</span><span class="p">(</span>
     <span class="n">ctype</span><span class="o">=</span><span class="s2">&quot;snapshot&quot;</span><span class="p">,</span>
+    <span class="n">particles</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">custom_override</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pckms&quot;</span><span class="p">,</span>
     <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">,</span>
     <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -99,6 +101,10 @@
 <span class="sd">    INPUT:</span>
 
 <span class="sd">       ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)</span>
+
+<span class="sd">       particles - AMUSE particle dataset (default: None)</span>
+
+<span class="sd">       custom_override - use a custom function to load data instead of default (default: True)</span>
 
 <span class="sd">       units - units of input data (default: kpckms)</span>
 
@@ -125,8 +131,6 @@
 <span class="sd">        wdir - working directory of snapshots if not current directory</span>
 
 <span class="sd">        intialize - initialize a galpy orbit after reading in orbital information (default: False)</span>
-
-<span class="sd">        kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)</span>
 
 <span class="sd">        projected - calculate projected values as well as 3D values (Default: True)</span>
 
@@ -155,9 +159,16 @@
         <span class="c1"># When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat</span>
         <span class="n">fort82</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">fort.82&quot;</span> <span class="o">%</span> <span class="n">wdir</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
         <span class="n">fort83</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">fort.83&quot;</span> <span class="o">%</span> <span class="n">wdir</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_jarrod</span><span class="p">(</span>
-            <span class="n">fort82</span><span class="p">,</span> <span class="n">fort83</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">custom_override</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6se_custom</span><span class="p">(</span>
+                <span class="n">fort82</span><span class="p">,</span> <span class="n">fort83</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6se</span><span class="p">(</span>
+                <span class="n">fort82</span><span class="p">,</span> <span class="n">fort83</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+            <span class="p">)</span>
+
     <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;nbody6&quot;</span><span class="p">:</span>
         <span class="c1"># With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">OUT9&quot;</span> <span class="o">%</span> <span class="n">wdir</span><span class="p">):</span>
@@ -165,36 +176,20 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out9</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">out34</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">OUT34&quot;</span> <span class="o">%</span> <span class="n">wdir</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_out</span><span class="p">(</span><span class="n">out9</span><span class="p">,</span> <span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;snapauto&quot;</span><span class="p">:</span>
-        <span class="c1"># Read in snapshot produced from snapauto.f which reads binary files from either NBODY6 or NBODY6++</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_snapauto</span><span class="p">(</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-            <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
-            <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-            <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">custom_override</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_custom</span><span class="p">(</span><span class="n">out9</span><span class="p">,</span> <span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6</span><span class="p">(</span><span class="n">out9</span><span class="p">,</span> <span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
     <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;gyrfalcon&quot;</span><span class="p">:</span>
         <span class="c1"># Read in snapshot from gyrfalcon.</span>
         <span class="n">filein</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">wdir</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
         <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_gyrfalcon</span><span class="p">(</span><span class="n">filein</span><span class="p">,</span> <span class="s2">&quot;WDunits&quot;</span><span class="p">,</span> <span class="s2">&quot;galaxy&quot;</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;snaptrim&quot;</span><span class="p">:</span>
-        <span class="c1"># Read in snaptrim snapshot from gyrfalcon.</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_snaptrim</span><span class="p">(</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;WDunits&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;galaxy&quot;</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;clustertools&quot;</span><span class="p">:</span>
-        <span class="c1"># Read in standard clustertools snapshot</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_clustertools_snapshot</span><span class="p">(</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-            <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
-            <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-            <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">ctype</span><span class="o">==</span><span class="s1">&#39;amuse&#39;</span><span class="p">:</span>
+        <span class="n">cluster</span><span class="o">=</span><span class="n">get_amuse_particles</span><span class="p">(</span><span class="n">particles</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
     <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;snapshot&quot;</span><span class="p">:</span>
         <span class="c1"># Read in standard generic snapshot</span>
         <span class="n">col_names</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;col_names&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">])</span>
@@ -209,16 +204,9 @@
             <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;mycode&quot;</span><span class="p">:</span>
-        <span class="c1"># Read in new cluster type</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_mycode</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NO CTYPE GIVEN&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="mi">0</span>
-
-    <span class="n">kwfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kwfile&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">kwfile</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">cluster</span><span class="o">.</span><span class="n">kw</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_kwtype</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">kwfile</span><span class="p">)</span>
 
     <span class="c1"># Add galpy orbit if given</span>
     <span class="k">if</span> <span class="n">orbit</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
@@ -279,7 +267,7 @@
     <span class="k">return</span> <span class="n">cluster</span></div>
 
 
-<div class="viewcode-block" id="advance_cluster"><a class="viewcode-back" href="../../../reference/clustertools.analysis.load.html#clustertools.analysis.load.advance_cluster">[docs]</a><span class="k">def</span> <span class="nf">advance_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">orbit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="advance_cluster"><a class="viewcode-back" href="../../../reference/clustertools.analysis.load.html#clustertools.analysis.load.advance_cluster">[docs]</a><span class="k">def</span> <span class="nf">advance_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">custom_override</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">orbit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NAME:</span>
 
@@ -292,6 +280,14 @@
 <span class="sd">       --&gt; Be sure that advance is set to True so next line of orbit file is read in</span>
 
 <span class="sd">    INPUT:</span>
+
+<span class="sd">       cluster - StarCluster instance to be advanced</span>
+
+<span class="sd">       custom_override - use a custom function to load data instead of default</span>
+
+<span class="sd">       ofile - an already opened file containing orbit information (default: None)</span>
+
+<span class="sd">       orbit - a galpy orbit to be used for the StarCluster&#39;s orbital information (default: None)</span>
 
 <span class="sd">       filename - name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)</span>
 
@@ -310,27 +306,26 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">advance_kwargs</span> <span class="o">=</span> <span class="n">get_advanced_kwargs</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="s2">&quot;kwfile&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">kw0</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">kw</span>
-
     <span class="c1"># Continue reading in cluster opened in get_cluster()</span>
     <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;nbody6se&quot;</span><span class="p">:</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_jarrod</span><span class="p">(</span>
-            <span class="n">cluster</span><span class="o">.</span><span class="n">bfile</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sfile</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">advance_kwargs</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_override</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6se_custom</span><span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">bfile</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sfile</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">advance_kwargs</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6se</span><span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">bfile</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sfile</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">advance_kwargs</span>
+            <span class="p">)</span>
     <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;nbody6&quot;</span><span class="p">:</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_out</span><span class="p">(</span>
-            <span class="n">cluster</span><span class="o">.</span><span class="n">bfile</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sfile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">advance_kwargs</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;snapauto&quot;</span><span class="p">:</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6_snapauto</span><span class="p">(</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-            <span class="n">origin</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
-            <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-            <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">advance_kwargs</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">custom_override</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6</span><span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">bfile</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sfile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">advance_kwargs</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_nbody6</span><span class="p">(</span>
+                <span class="n">cluster</span><span class="o">.</span><span class="n">bfile</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">sfile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">advance_kwargs</span>
+            <span class="p">)</span>
+
     <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;gyrfalcon&quot;</span><span class="p">:</span>
 
         <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_gyrfalcon</span><span class="p">(</span>
@@ -341,24 +336,8 @@
             <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="o">**</span><span class="n">advance_kwargs</span>
         <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;snaptrim&quot;</span><span class="p">:</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_snaptrim</span><span class="p">(</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;WDunits&quot;</span><span class="p">,</span>
-            <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;galaxy&quot;</span><span class="p">,</span>
-            <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-            <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">advance_kwargs</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;clustertools&quot;</span><span class="p">:</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_clustertools_snapshot</span><span class="p">(</span>
-            <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">units</span><span class="p">,</span>
-            <span class="n">origin</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
-            <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-            <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">advance_kwargs</span>
-        <span class="p">)</span>
+
+
     <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;snapshot&quot;</span><span class="p">:</span>
         <span class="n">col_names</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;col_names&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">])</span>
         <span class="n">col_nums</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;col_nums&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
@@ -373,8 +352,6 @@
             <span class="n">advance</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="o">**</span><span class="n">advance_kwargs</span>
         <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span> <span class="o">==</span> <span class="s2">&quot;mycode&quot;</span><span class="p">:</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_mycode</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCuster</span><span class="p">(</span><span class="n">ctype</span><span class="o">=</span><span class="n">cluster</span><span class="o">.</span><span class="n">ctype</span><span class="p">)</span>
 
@@ -400,8 +377,6 @@
             <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">&quot;kwfile&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-            <span class="n">cluster</span><span class="o">.</span><span class="n">kw</span><span class="p">[</span><span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">kw0</span>
 
         <span class="c1"># Add galpy orbit if given</span>
         <span class="k">if</span> <span class="n">orbit</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
@@ -459,8 +434,6 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">kwfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;kwfile&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
     <span class="n">nsnap</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nsnap&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">cluster</span><span class="o">.</span><span class="n">nsnap</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
     <span class="n">delimiter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;delimiter&quot;</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">delimiter</span><span class="p">)</span>
     <span class="n">wdir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wdir&quot;</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">wdir</span><span class="p">)</span>
@@ -473,7 +446,6 @@
     <span class="n">projected</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;projected&quot;</span><span class="p">,</span> <span class="n">cluster</span><span class="o">.</span><span class="n">projected</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;kwfile&quot;</span><span class="p">:</span> <span class="n">kwfile</span><span class="p">,</span>
         <span class="s2">&quot;nsnap&quot;</span><span class="p">:</span> <span class="n">nsnap</span><span class="p">,</span>
         <span class="s2">&quot;delimiter&quot;</span><span class="p">:</span> <span class="n">delimiter</span><span class="p">,</span>
         <span class="s2">&quot;wdir&quot;</span><span class="p">:</span> <span class="n">wdir</span><span class="p">,</span>
@@ -568,47 +540,6 @@
     <span class="n">cluster</span><span class="o">.</span><span class="n">add_orbit</span><span class="p">(</span><span class="n">xgc</span><span class="p">,</span> <span class="n">ygc</span><span class="p">,</span> <span class="n">zgc</span><span class="p">,</span> <span class="n">vxgc</span><span class="p">,</span> <span class="n">vygc</span><span class="p">,</span> <span class="n">vzgc</span><span class="p">,</span> <span class="n">ounits</span><span class="p">)</span>
 
     <span class="k">return</span>
-
-
-<span class="k">def</span> <span class="nf">get_kwtype</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">kwfile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       get_kwtype</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Get stellar evolution type of the star (kw in Nbody6 syntax) if information is in a separate file</span>
-<span class="sd">       --&gt; Columns assumed to be ID, KW</span>
-<span class="sd">       --&gt; see def kwtypes() in cluster.py for what different kw types mean</span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       cluster - StarCluster instance</span>
-
-<span class="sd">       kwfile - opened file containing kw type</span>
-
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">        advance - Is this a continuation from a previous timestep, in which case read next line (default: False)</span>
-<span class="sd">        nsnap - if nsnap is provided, read line # nsnap from the orbit file</span>
-<span class="sd">        ounits - if you units are not the same as StarCluster units, provide them and they will be converted</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       None</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2018 - Written - Webb (UofT)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">kw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">kwfile</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">-</span> <span class="mi">1</span>
-    <span class="n">kw0</span> <span class="o">=</span> <span class="n">kw</span><span class="p">[</span><span class="n">indx</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">kw0</span>
-
 
 <span class="c1"># Get StarCluster from Gyrfalcon output</span>
 <span class="k">def</span> <span class="nf">get_gyrfalcon</span><span class="p">(</span>
@@ -734,141 +665,11 @@
 
     <span class="k">return</span> <span class="n">cluster</span>
 
+<span class="k">def</span> <span class="nf">get_nbody6se</span><span class="p">(</span><span class="n">fort82</span><span class="p">,</span> <span class="n">fort83</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WORK IN PROGRESS&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">StarCluster</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">get_snaptrim</span><span class="p">(</span>
-    <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;WDunits&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;galaxy&quot;</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       get_snaptrim</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Load a gyrfalcon snapshot as produced by snaptrim</span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       filename = name of file</span>
-
-<span class="sd">       units - units of input data (default: WDunits)</span>
-
-<span class="sd">       origin - origin of input data (default: galaxy)</span>
-
-<span class="sd">       advance - is this a snapshot that has been advanced to from initial load_cluster?</span>
-
-<span class="sd">       </span>
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">        same as load_cluster</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       StarCluster instance</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2019 - Written - Webb (UofT)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Default **kwargs</span>
-
-    <span class="n">nzfill</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;nzfill&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-    <span class="n">skiprows</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;skiprows&quot;</span><span class="p">,</span> <span class="mi">13</span><span class="p">)</span>
-    <span class="n">delimiter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;delimiter&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">nsnap</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nsnap&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">))</span>
-    <span class="n">wdir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;wdir&quot;</span><span class="p">,</span> <span class="s2">&quot;./&quot;</span><span class="p">)</span>
-    <span class="n">snapdir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapdir&quot;</span><span class="p">,</span> <span class="s2">&quot;snaps/&quot;</span><span class="p">)</span>
-    <span class="n">snapbase</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapbase&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-    <span class="n">snapend</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;snapend&quot;</span><span class="p">,</span> <span class="s2">&quot;.dat&quot;</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span>
-                <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">,</span>
-                <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">)):</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span>
-                <span class="s2">&quot;</span><span class="si">%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NO FILE FOUND: </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapdir</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span>
-            <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ctype</span><span class="o">=</span><span class="s1">&#39;snaptrim&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">cluster</span>
-    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span>
-        <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapdir</span><span class="p">,</span> <span class="n">snapbase</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nsnap</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">nzfill</span><span class="p">),</span> <span class="n">snapend</span><span class="p">)</span>
-    <span class="p">):</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">wdir</span><span class="p">,</span>
-            <span class="n">snapdir</span><span class="p">,</span>
-            <span class="n">snapbase</span><span class="p">,</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">nsnap</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">nzfill</span><span class="p">),</span>
-            <span class="n">snapend</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span>
-        <span class="s2">&quot;</span><span class="si">%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapbase</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nsnap</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">nzfill</span><span class="p">),</span> <span class="n">snapend</span><span class="p">)</span>
-    <span class="p">):</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapbase</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nsnap</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">nzfill</span><span class="p">),</span> <span class="n">snapend</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;NO FILE FOUND - </span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span>
-            <span class="o">%</span> <span class="p">(</span><span class="n">wdir</span><span class="p">,</span> <span class="n">snapdir</span><span class="p">,</span> <span class="n">snapbase</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">nsnap</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">nzfill</span><span class="p">),</span> <span class="n">snapend</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s%s%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
-            <span class="n">wdir</span><span class="p">,</span>
-            <span class="n">snapdir</span><span class="p">,</span>
-            <span class="n">snapbase</span><span class="p">,</span>
-            <span class="nb">str</span><span class="p">(</span><span class="n">nsnap</span><span class="p">)</span><span class="o">.</span><span class="n">zfill</span><span class="p">(</span><span class="n">nzfill</span><span class="p">),</span>
-            <span class="n">snapend</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span> <span class="mf">0.</span><span class="p">,</span><span class="n">ctype</span><span class="o">=</span><span class="s1">&#39;snaptrim&#39;</span><span class="p">,</span> <span class="n">sfile</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">ntot</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">cluster</span>
-
-    <span class="n">ntot</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">tphys</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-    <span class="n">filein</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">skiprows</span><span class="p">):</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">filein</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-        <span class="k">if</span> <span class="s2">&quot;#&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;OVER HEAD&quot;</span><span class="p">)</span>
-            <span class="k">break</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;END OF FILE&quot;</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">StarCluster</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ctype</span><span class="o">=</span><span class="s2">&quot;snaptrim&quot;</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;Ntot&quot;</span> <span class="ow">in</span> <span class="n">dat</span> <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
-            <span class="n">sntot</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-            <span class="n">ntot</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sntot</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="s2">&quot;time&quot;</span> <span class="ow">in</span> <span class="n">dat</span> <span class="k">for</span> <span class="n">dat</span> <span class="ow">in</span> <span class="n">data</span><span class="p">):</span>
-            <span class="n">tphys</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1000.0</span>
-
-    <span class="n">filein</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-    <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_snapshot</span><span class="p">(</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-        <span class="n">tphys</span><span class="o">=</span><span class="n">tphys</span><span class="p">,</span>
-        <span class="n">col_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">],</span>
-        <span class="n">col_nums</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
-        <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-        <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
-        <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-        <span class="n">advance</span><span class="o">=</span><span class="n">advance</span><span class="p">,</span>
-        <span class="n">ctype</span><span class="o">=</span><span class="s2">&quot;snaptrim&quot;</span><span class="p">,</span>
-        <span class="n">nzfill</span><span class="o">=</span><span class="n">nzfill</span><span class="p">,</span>
-        <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span><span class="p">,</span>
-        <span class="n">delimiter</span><span class="o">=</span><span class="n">delimiter</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">cluster</span>
-
-
-<span class="k">def</span> <span class="nf">get_nbody6_jarrod</span><span class="p">(</span><span class="n">fort82</span><span class="p">,</span> <span class="n">fort83</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_nbody6se_custom</span><span class="p">(</span><span class="n">fort82</span><span class="p">,</span> <span class="n">fort83</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NAME:</span>
 
@@ -1100,8 +901,11 @@
 
     <span class="k">return</span> <span class="n">cluster</span>
 
+<span class="k">def</span> <span class="nf">get_nbody6</span><span class="p">(</span><span class="n">out9</span><span class="p">,</span> <span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WORK IN PROGRESS&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">StarCluster</span><span class="p">()</span>
 
-<span class="k">def</span> <span class="nf">get_nbody6_out</span><span class="p">(</span><span class="n">out9</span><span class="p">,</span> <span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_nbody6_custom</span><span class="p">(</span><span class="n">out9</span><span class="p">,</span> <span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NAME:</span>
 
@@ -1346,154 +1150,6 @@
 
     <span class="k">return</span> <span class="n">cluster</span>
 
-
-<span class="k">def</span> <span class="nf">get_nbody6_out34</span><span class="p">(</span><span class="n">out34</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       get_nbody6_out34</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Extract a single snapshot from the OUT34 output of Jeremy Webb&#39;s version of Nbody6</span>
-<span class="sd">       --&gt; Difference between Jeremy&#39;s output and the public version is found in /Node/output.f of Nbody6</span>
-<span class="sd">       --&gt; Called for Nbody6 simulations without stellar evolution</span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       out34 - opened OUT34 file containing single star information</span>
-
-<span class="sd">       advance - is this a snapshot that has been advanced to from initial load_cluster?</span>
-
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">        same as load_cluster</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       StarCluster instance</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2018 - Written - Webb (UofT)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">line1</span> <span class="o">=</span> <span class="n">out34</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;END OF FILE&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">StarCluster</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ctype</span><span class="o">=</span><span class="s1">&#39;nbody6&#39;</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-
-    <span class="n">line2</span> <span class="o">=</span> <span class="n">out34</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-    <span class="n">line3</span> <span class="o">=</span> <span class="n">out34</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-
-    <span class="n">ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">tphys</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">n_p</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
-
-    <span class="n">nc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">rc</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="mf">0.01</span><span class="p">)</span>
-    <span class="n">rbar</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">rtide</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-    <span class="n">xc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
-    <span class="n">yc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
-    <span class="n">zc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line2</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
-    <span class="n">zmbar</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line3</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">vstar</span> <span class="o">=</span> <span class="mf">0.06557</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">zmbar</span> <span class="o">/</span> <span class="n">rbar</span><span class="p">)</span>
-    <span class="n">rscale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line3</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-    <span class="n">nb</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">ntot</span> <span class="o">=</span> <span class="n">ns</span> <span class="o">+</span> <span class="n">nb</span>
-
-    <span class="c1"># Orbit Properties</span>
-    <span class="n">xgc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
-    <span class="n">ygc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
-    <span class="n">zgc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
-    <span class="n">vxgc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span>
-    <span class="n">vygc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span>
-    <span class="n">vzgc</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">line1</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
-
-    <span class="n">nsbnd</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">nbbnd</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">nbnd</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="n">i_d</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">kw</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">logl</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">logr</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">z</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">vx</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">vy</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">vz</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">kin</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">pot</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">etot</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="n">data</span> <span class="o">=</span> <span class="n">out34</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-    <span class="k">while</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="mi">999</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c1"># IGNORE GHOST PARTICLES</span>
-        <span class="k">if</span> <span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">ns</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="n">ntot</span> <span class="o">-=</span> <span class="mi">1</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">i_d</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
-            <span class="n">kw</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="n">m</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
-            <span class="n">logl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
-            <span class="n">logr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">4</span><span class="p">]))</span>
-            <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">5</span><span class="p">]))</span>
-            <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">6</span><span class="p">]))</span>
-            <span class="n">z</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">7</span><span class="p">]))</span>
-            <span class="n">vx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">8</span><span class="p">]))</span>
-            <span class="n">vy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">9</span><span class="p">]))</span>
-            <span class="n">vz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">10</span><span class="p">]))</span>
-
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">14</span><span class="p">:</span>
-                <span class="n">kin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">13</span><span class="p">]))</span>
-                <span class="n">pot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">14</span><span class="p">]))</span>
-                <span class="n">etot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">15</span><span class="p">]))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">kin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-                <span class="n">pot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-                <span class="n">etot</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
-
-            <span class="n">nsbnd</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">out34</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
-
-    <span class="n">nbnd</span> <span class="o">=</span> <span class="n">nsbnd</span> <span class="o">+</span> <span class="n">nbbnd</span>
-
-    <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span>
-        <span class="n">nbnd</span><span class="p">,</span>
-        <span class="n">tphys</span><span class="p">,</span>
-        <span class="n">units</span><span class="o">=</span><span class="s2">&quot;nbody&quot;</span><span class="p">,</span>
-        <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">,</span>
-        <span class="n">ctype</span><span class="o">=</span><span class="s2">&quot;nbody6&quot;</span><span class="p">,</span>
-        <span class="n">sfile</span><span class="o">=</span><span class="n">out34</span><span class="p">,</span>
-        <span class="n">bfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span>
-    <span class="n">cluster</span><span class="o">.</span><span class="n">add_nbody6</span><span class="p">(</span>
-        <span class="n">nc</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">rbar</span><span class="p">,</span> <span class="n">rtide</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">yc</span><span class="p">,</span> <span class="n">zc</span><span class="p">,</span> <span class="n">zmbar</span><span class="p">,</span> <span class="n">vstar</span><span class="p">,</span> <span class="n">rscale</span><span class="p">,</span> <span class="n">nsbnd</span><span class="p">,</span> <span class="n">nbbnd</span><span class="p">,</span> <span class="n">n_p</span>
-    <span class="p">)</span>
-    <span class="c1"># Add back on the centre of mass which has been substracted off by NBODY6</span>
-    <span class="n">cluster</span><span class="o">.</span><span class="n">add_stars</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">xc</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">yc</span><span class="p">,</span> <span class="n">z</span> <span class="o">+</span> <span class="n">zc</span><span class="p">,</span> <span class="n">vx</span><span class="p">,</span> <span class="n">vy</span><span class="p">,</span> <span class="n">vz</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">i_d</span><span class="p">)</span>
-    <span class="n">cluster</span><span class="o">.</span><span class="n">add_sse</span><span class="p">(</span><span class="n">kw</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">logr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbnd</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nbnd</span><span class="p">))</span>
-    <span class="n">cluster</span><span class="o">.</span><span class="n">add_energies</span><span class="p">(</span><span class="n">kin</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">etot</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;do_key_params&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">):</span>
-        <span class="n">do_order</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;do_key_params&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-
-        <span class="c1"># Estimate centre of distribution using median function</span>
-        <span class="n">cluster</span><span class="o">.</span><span class="n">find_centre</span><span class="p">()</span>
-        <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="n">do_order</span><span class="p">)</span>
-        <span class="n">cluster</span><span class="o">.</span><span class="n">to_cluster</span><span class="p">()</span>
-
-    <span class="n">cluster</span><span class="o">.</span><span class="n">add_orbit</span><span class="p">(</span><span class="n">xgc</span><span class="p">,</span> <span class="n">ygc</span><span class="p">,</span> <span class="n">zgc</span><span class="p">,</span> <span class="n">vxgc</span><span class="p">,</span> <span class="n">vygc</span><span class="p">,</span> <span class="n">vzgc</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">cluster</span>
-
-
 <span class="k">def</span> <span class="nf">get_snapshot</span><span class="p">(</span>
     <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">tphys</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
@@ -1689,112 +1345,6 @@
 
     <span class="k">return</span> <span class="n">cluster</span>
 
-
-<span class="k">def</span> <span class="nf">get_nbody6_snapauto</span><span class="p">(</span>
-    <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pckms&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       get_nbody6_snapauto</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Load a single snapshot as produced by Jongsuk Hong&#39;s snpauto.f routine for extracting snapshots from</span>
-<span class="sd">       Nbody6 and Nbody6++ binary files </span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       filename = name of file</span>
-
-<span class="sd">       units - units of input data (default: kpckms)</span>
-
-<span class="sd">       origin - origin of input data (default: cluster)</span>
-
-<span class="sd">       ofile - opened file containing orbital information</span>
-
-<span class="sd">       advance - is this a snapshot that has been advanced to from initial load_cluster?</span>
-
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">        same as load_cluster</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       StarCluster instance</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2018 - Written - Webb (UofT)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_snapshot</span><span class="p">(</span>
-        <span class="n">ctype</span><span class="o">=</span><span class="s2">&quot;snapauto&quot;</span><span class="p">,</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-        <span class="n">col_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">],</span>
-        <span class="n">col_nums</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span>
-        <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-        <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
-        <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-        <span class="n">advance</span><span class="o">=</span><span class="n">advance</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">cluster</span>
-
-
-<span class="k">def</span> <span class="nf">get_clustertools_snapshot</span><span class="p">(</span>
-    <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;pckms&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;cluster&quot;</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       get_clustertools_snapshot</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Load a single snapshot as produced by clustertools snapout routine</span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       filename = name of file</span>
-
-<span class="sd">       units - units of input data (default: kpckms)</span>
-
-<span class="sd">       origin - origin of input data (default: cluster)</span>
-
-<span class="sd">       ofile - opened file containing orbital information</span>
-
-<span class="sd">       advance - is this a snapshot that has been advanced to from initial load_cluster?</span>
-<span class="sd">       </span>
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">        same as load_cluster</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       StarCluster instance</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2018 - Written - Webb (UofT)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">cluster</span> <span class="o">=</span> <span class="n">get_snapshot</span><span class="p">(</span>
-        <span class="n">ctype</span><span class="o">=</span><span class="s2">&quot;clustertools&quot;</span><span class="p">,</span>
-        <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span>
-        <span class="n">col_names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">,</span> <span class="s2">&quot;vx&quot;</span><span class="p">,</span> <span class="s2">&quot;vy&quot;</span><span class="p">,</span> <span class="s2">&quot;vz&quot;</span><span class="p">,</span> <span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="s2">&quot;kw&quot;</span><span class="p">],</span>
-        <span class="n">col_nums</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span>
-        <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
-        <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
-        <span class="n">ofile</span><span class="o">=</span><span class="n">ofile</span><span class="p">,</span>
-        <span class="n">advance</span><span class="o">=</span><span class="n">advance</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">cluster</span>
-
-
 <span class="k">def</span> <span class="nf">get_amuse_particles</span><span class="p">(</span>
     <span class="n">particles</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;kpckms&quot;</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;galaxy&quot;</span><span class="p">,</span> <span class="n">ofile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
@@ -1886,37 +1436,6 @@
         <span class="k">if</span> <span class="n">ofile</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">get_cluster_orbit</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">ofile</span><span class="p">,</span> <span class="n">advance</span><span class="o">=</span><span class="n">advance</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">cluster</span>
-
-
-<span class="k">def</span> <span class="nf">get_mycode</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       get_mycode</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Empty shell for a new user to write their own routine for reading in data and generating a StarCluster instance</span>
-<span class="sd">       --&gt; Easiest to build around get_snapshot if files are separated</span>
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       TBD</span>
-<span class="sd">       </span>
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">        same as load_cluster</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       StarCluster instance</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       XXXX - Written - XXXX</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">cluster</span> <span class="o">=</span> <span class="n">StarCluster</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">cluster</span>
 </pre></div>
 

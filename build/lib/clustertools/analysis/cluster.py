@@ -228,8 +228,8 @@ class StarCluster(object):
             do_key_params - order stars by radius when calling key_params() (default: False)
 
         NOTES:
-         if self.units==radec, input is m,ra,dec,dist,pmra,pmdec,vlos with units of (degrees, kpc, mas, km/s)
-
+         if self.units==radec, input is assumed to be ra,dec,dist,pmra,pmdec,vlos with units 
+         of (degrees, degrees, kpc, mas/yr, mas/yr km/s)
 
         OUTPUT:
 

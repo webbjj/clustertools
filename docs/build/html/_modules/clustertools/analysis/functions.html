@@ -767,7 +767,7 @@
     <span class="k">return</span> <span class="n">r_v</span></div>
 
 
-<span class="k">def</span> <span class="nf">new_mass_function</span><span class="p">(</span>
+<div class="viewcode-block" id="mass_function"><a class="viewcode-back" href="../../../reference/clustertools.analysis.functions.html#clustertools.analysis.functions.mass_function">[docs]</a><span class="k">def</span> <span class="nf">mass_function</span><span class="p">(</span>
     <span class="n">cluster</span><span class="p">,</span>
     <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -933,138 +933,7 @@
             <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
             <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
             <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
-        <span class="p">)</span>
-
-<div class="viewcode-block" id="mass_function"><a class="viewcode-back" href="../../../reference/clustertools.analysis.functions.html#clustertools.analysis.functions.mass_function">[docs]</a><span class="k">def</span> <span class="nf">mass_function</span><span class="p">(</span>
-    <span class="n">cluster</span><span class="p">,</span>
-    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">nmass</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">kwmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       mass_function</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Find mass function over a given mass range using nmass bins containing an equal number of stars</span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       cluster - StarCluster instance</span>
-<span class="sd">       mmin/mmax - specific mass range</span>
-<span class="sd">       nmass - number of mass bins used to calculate alpha</span>
-<span class="sd">       rmin/rmax - specific radial range</span>
-<span class="sd">       vmin/vmax - specific velocity range</span>
-<span class="sd">       emin/emax - specific energy range</span>
-<span class="sd">       kwmin/kwmax - specific stellar evolution type range</span>
-<span class="sd">       indx - specific subset of stars</span>
-<span class="sd">       projected - use projected values</span>
-<span class="sd">       plot - plot the mass function</span>
-<span class="sd">       **kwargs - key words for plotting</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">       if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha</span>
-<span class="sd">       if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, binerror</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2018 - Written - Webb (UofT)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
-
-    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
-
-    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
-    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
-    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
-
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">indx</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">nmass</span><span class="p">:</span>
-
-        <span class="n">m_lower</span><span class="p">,</span> <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_upper</span><span class="p">,</span> <span class="n">m_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nmass</span><span class="p">)</span>
-
-        <span class="n">lm_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m_mean</span><span class="p">)</span>
-        <span class="n">dm</span> <span class="o">=</span> <span class="n">m_hist</span> <span class="o">/</span> <span class="p">(</span><span class="n">m_upper</span> <span class="o">-</span> <span class="n">m_lower</span><span class="p">)</span>
-        <span class="n">ldm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
-
-        <span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">),</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">lm_mean</span><span class="p">,</span> <span class="n">ldm</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">ealpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-
-        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
-            <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-            <span class="n">nplot</span><span class="p">(</span><span class="n">m_mean</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dm</span><span class="p">),</span> <span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;M&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;LOG(dN/dM)&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="n">mfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">m_mean</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">m_mean</span><span class="p">),</span> <span class="n">nmass</span><span class="p">)</span>
-            <span class="n">dmfit</span> <span class="o">=</span> <span class="mf">10.0</span> <span class="o">**</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">mfit</span><span class="p">)</span> <span class="o">+</span> <span class="n">yalpha</span><span class="p">)</span>
-            <span class="n">nlplot</span><span class="p">(</span>
-                <span class="n">mfit</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">dmfit</span><span class="p">),</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\alpha$ = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">alpha</span><span class="p">)</span>
-            <span class="p">)</span>
-
-            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-
-            <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nmass</span><span class="p">),</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nmass</span><span class="p">),</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nmass</span><span class="p">),</span>
-            <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
-            <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
-            <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
-            <span class="o">-</span><span class="mf">1000.0</span><span class="p">,</span>
         <span class="p">)</span></div>
-
 
 <div class="viewcode-block" id="eta_function"><a class="viewcode-back" href="../../../reference/clustertools.analysis.functions.html#clustertools.analysis.functions.eta_function">[docs]</a><span class="k">def</span> <span class="nf">eta_function</span><span class="p">(</span>
     <span class="n">cluster</span><span class="p">,</span>

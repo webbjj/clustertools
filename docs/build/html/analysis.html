@@ -108,6 +108,16 @@
 </pre></div>
 </div>
 <p>no variables within <code class="docutils literal notranslate"><span class="pre">cluster</span></code> are actually set.</p>
+<p>A change of units or coordinate system can be implemented using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>It is important to note that only <code class="docutils literal notranslate"><span class="pre">rv3d</span></code> is called after a change in either units or coordinate system. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If sorting and re-calculations are preferred, then be sure to set <code class="docutils literal notranslate"><span class="pre">do_order=True</span></code> and <code class="docutils literal notranslate"><span class="pre">do_key_params=True</span></code> via:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">to_galaxy</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">to_kpckms</span><span class="p">(</span><span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>All available operations are listed below.</p>
 <div class="section" id="functions">
 <h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
@@ -195,7 +205,14 @@
 </pre></div>
 </div>
 <p>When called externally, no variables within <cite>cluster</cite> are set.</p>
-<p>All available functions are listed below in their external form.</p>
+<p>Some functions, including <code class="docutils literal notranslate"><span class="pre">mass_function</span></code> and <code class="docutils literal notranslate"><span class="pre">eta_function</span></code> can be applied to only a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster’s half-mass radius one can call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span>
+<span class="go">        mmin=0.1,mmax=0.8,rmin=0.,rmax=cluster.rm)</span>
+</pre></div>
+</div>
+<p>Other constraints include velocity (<code class="docutils literal notranslate"><span class="pre">vmin</span></code>,``vmax``), energy (<code class="docutils literal notranslate"><span class="pre">emin</span></code>,``emax``) and stellar evolution type (<code class="docutils literal notranslate"><span class="pre">kwmin</span></code>,``kwmax``). Alternatively a boolean array can be passed to <code class="docutils literal notranslate"><span class="pre">index</span></code> to ensure only a predefined subset of stars is used.</p>
+<p>All functions can be called using projected valeus using <code class="docutils literal notranslate"><span class="pre">projeted=True</span></code>.</p>
+<p>The complete list of available functions are tabulated below in their external form.</p>
 <div class="section" id="id2">
 <h3>Functions<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
@@ -258,6 +275,7 @@
 <p>returns the below figure</p>
 <img alt="_images/rho_prof.png" src="_images/rho_prof.png" />
 <p>Some editing can be done to the plot via key word arguments (see PLOTTING for information regarding making figures with <code class="docutils literal notranslate"><span class="pre">clustertools</span></code>)</p>
+<p>All profiles can also just be measured for a select subpopulation of stars based on mass (<code class="docutils literal notranslate"><span class="pre">mmin</span></code>,``mmax``), radius (<code class="docutils literal notranslate"><span class="pre">rmin</span></code>,``rmax``), velocity (<code class="docutils literal notranslate"><span class="pre">vmin</span></code>,``vmax``), energy (<code class="docutils literal notranslate"><span class="pre">emin</span></code>,``emax``) and stellar evolution type (<code class="docutils literal notranslate"><span class="pre">kwmin</span></code>,``kwmax``). Alternatively a boolean array can be passed to <code class="docutils literal notranslate"><span class="pre">index</span></code> to ensure only a predefined subset of stars is used.</p>
 <p>All available profiles are listed below.</p>
 <div class="section" id="id3">
 <h3>Functions<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>

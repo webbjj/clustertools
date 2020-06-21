@@ -908,7 +908,19 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
 
        do_key_params - call key_params after shift (default: False)
 
-       centre_method - method for shifting to clustercentric coordinates
+       centre_method - method for shifting to clustercentric coordinates when units='radec' and origin='sky'.
+
+    NOTES:
+
+       When units='radec' and origin='sky', the cluster will be shifted to clustercentric coordinates using:
+            centre_method=None: angular distance between each star's RA/DEC and the RA/DEC of the 
+            cluster's centre with proper motions directly subtracted off
+            centre_method='orthographic' , positions and velocities changed to orthnormal coordinates (Helmi et al. 2018)
+            centre_method='VandeVen' , positions and velocities changed to clustercentric coordinates using method
+            outlined by Van de Ven et al. 2005
+
+        Note the the line of site positions and velocities will just have the galactocentric coordinates of the cluster
+        subtracted off. Be sure to set projected=True when making any calculations to use only x and y coordinates
 
     OUTPUT:
 
@@ -947,7 +959,8 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
                     np.cos(dec) * np.cos(dec_gc)
                     + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
                 )
-                cluster.vz = np.zeros(len(cluster.x))
+
+                cluster.z -= cluster.zgc
 
             else:
                 if cluster.centre_method == "VandeVen":
@@ -966,7 +979,7 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
                     cluster.x = (cluster.x - cluster.xgc) * np.cos(np.radians(cluster.ygc))
                     cluster.y = cluster.y - cluster.ygc
 
-                cluster.z = np.zeros(len(cluster.x))
+                cluster.z -= cluster.zgc
 
                 cluster.vx -= -cluster.vxgc
                 cluster.vy -= cluster.vygc

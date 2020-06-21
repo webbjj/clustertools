@@ -104,6 +104,201 @@ def extrct_out(cluster, fileout, projected=False):
 
     return_cluster(cluster, units0, origin0)
 
+def rho_prof_out(cluster, fileout, **kwargs):
+    """
+    NAME:
+
+       rho_prof_out
+
+    PURPOSE:
+
+       Write density profile to file
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       fileout - opened file to write data to
+
+       **kwargs - key words for rho_prof
+
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+
+    fileout.write("%f " % (cluster.tphys))
+    
+    rprof, pprof, nprof=rho_prof(cluster,**kwargs)
+
+    for r in rprof:
+        fileout.write("%f " % (r))
+
+    for p in pprof:
+        fileout.write("%f " % (p))
+
+    for n in nprof:
+        fileout.write("%f " % (n))
+
+    fileout.write("\n")
+
+
+def alpha_prof_out(
+    cluster,
+    fileout,
+    **kwargs,
+):
+    """
+    NAME:
+
+       alpha_prof_out
+
+    PURPOSE:
+
+       Write alpha profile and delta_alpha to file
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       fileout - opened file to write data to
+
+       **kwargs - key words for alpha_prof
+
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+
+    m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(
+        cluster,
+        **kwargs,
+    )
+    lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = alpha_prof(
+        cluster,
+        **kwargs,
+    )
+
+    fileout.write("%f %f %f %f %f " % (cluster.tphys, alpha, ealpha, yalpha, eyalpha))
+    for i in range(0, len(m_mean)):
+        fileout.write("%f " % m_mean[i])
+    for i in range(0, len(dm)):
+        fileout.write("%f " % dm[i])
+    for i in range(0, len(lrprofn)):
+        fileout.write("%f " % lrprofn[i])
+    for i in range(0, len(aprof)):
+        fileout.write("%f " % aprof[i])
+
+    fileout.write("%f %f %f %f\n" % (dalpha, edalpha, ydalpha, eydalpha))
+
+
+def sigv_prof_out(cluster, fileout,**kwargs,
+):
+    """
+    NAME:
+
+       sigv_prof_out
+
+    PURPOSE:
+
+       Write velopcity dispersion profile to file
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       fileout - opened file to write data to
+
+       **kwargs - key words for sigv_prof
+
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+
+    fileout.write("%f %f " % (cluster.tphys, cluster.mtot))
+
+    lrprofn, sigvprof=sigv_prof(cluster, **kwargs)
+
+    for lr in lrprofn:
+        fileout.write("%f " % lr)
+    for sig in sigvprof:
+        fileout.write("%f " % sig)
+
+    fileout.write("%f\n" % (cluster.rm))
+
+
+def eta_prof_out(
+    cluster,
+    fileout,
+    **kwargs,
+):
+    """
+    NAME:
+
+       sigv_prof_out
+
+    PURPOSE:
+
+       Write eta profile to file
+
+    INPUT:
+
+       cluster - a StarCluster-class object
+
+       fileout - opened file to write data to
+
+       **kwargs - key words for sigv_prof
+
+
+    OUTPUT:
+
+       None
+
+    HISTORY:
+
+       2018 - Written - Webb (UofT)
+
+    """
+
+    m_mean, sigvm, eta, eeta, yeta, eyeta = eta_function(
+        cluster,
+        **kwargs,
+    )
+    lrprofn, eprof, deta, edeta, ydeta, eydeta = eta_prof(
+        cluster,
+        **kwargs,
+    )
+
+    fileout.write("%f %f %f %f %f " % (cluster.tphys, eta, eeta, yeta, eyeta))
+    for i in range(0, len(m_mean)):
+        fileout.write("%f " % m_mean[i])
+    for i in range(0, len(sigvm)):
+        fileout.write("%f " % sigvm[i])
+    for i in range(0, len(lrprofn)):
+        fileout.write("%f " % lrprofn[i])
+    for i in range(0, len(eprof)):
+        fileout.write("%f " % eprof[i])
+
+    fileout.write("%f %f %f %f\n" % (deta, edeta, ydeta, eydeta))
 
 def snapout(cluster, filename, energies=False, observations=False):
     """
@@ -123,7 +318,7 @@ def snapout(cluster, filename, energies=False, observations=False):
 
        energies - include energies in output (Default: False)
 
-       observations - include sky values of stars (Default: False) 
+       observations - include sky coordinates of stars (Default: False) 
 
     OUTPUT:
 
@@ -192,7 +387,7 @@ def snapout(cluster, filename, energies=False, observations=False):
         if energies:
             np.savetxt(
                 filename,
-                np.olumn_stack(
+                np.column_stack(
                     [
                         cluster.m,
                         cluster.x,

@@ -42,8 +42,11 @@
   <h3><a href="index.html">Table of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">StarCluster</a><ul>
+<li><a class="reference internal" href="#module-clustertools.analysis.cluster">clustertools.analysis.cluster Module</a><ul>
 <li><a class="reference internal" href="#functions">Functions</a></li>
 <li><a class="reference internal" href="#classes">Classes</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -102,8 +105,11 @@
 <li><p>rv3d</p></li>
 <li><p>key_params</p></li>
 </ul>
+<div class="section" id="module-clustertools.analysis.cluster">
+<span id="clustertools-analysis-cluster-module"></span><h2>clustertools.analysis.cluster Module<a class="headerlink" href="#module-clustertools.analysis.cluster" title="Permalink to this headline">¶</a></h2>
+<p>The StarCluster class and key internal functions</p>
 <div class="section" id="functions">
-<h2>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h2>
+<h3>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -117,7 +123,7 @@
 </table>
 </div>
 <div class="section" id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h2>
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this headline">¶</a></h3>
 <table class="longtable docutils align-default">
 <colgroup>
 <col style="width: 10%" />
@@ -157,6 +163,69 @@
 </pre></div>
 </div>
 <p>For those not familiar with <code class="docutils literal notranslate"><span class="pre">NBODY6</span></code>, please consult the documention for <code class="docutils literal notranslate"><span class="pre">add_nbody6</span></code>, <code class="docutils literal notranslate"><span class="pre">add_sse</span></code>, and <code class="docutils literal notranslate"><span class="pre">add_bse</span></code> for the defintion of each variable. It is important to note that each of the above variables are intialized with upon the initialization of <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code>, hence they can be set manually as well if you are using a code other than <code class="docutils literal notranslate"><span class="pre">NBODY6</span></code> and would like to define some of these parameters. Note, no units or origin are associated with any of the values provided via <code class="docutils literal notranslate"><span class="pre">add_nbody6</span></code>, <code class="docutils literal notranslate"><span class="pre">add_sse</span></code>, and <code class="docutils literal notranslate"><span class="pre">add_bse</span></code> such that they are not adjusted when unit and coordinate transformations are performed.</p>
+<p>One variable that is worth expanding on is the <code class="docutils literal notranslate"><span class="pre">kw</span></code> parameter. Motivated by NBODY6, each star’s stellar evolution type is described by <code class="docutils literal notranslate"><span class="pre">kw</span></code>. The below table illustrates what each <code class="docutils literal notranslate"><span class="pre">kw</span></code> integer represents. If you need to quickly lookup this table, it can be printed to screen using the function <code class="docutils literal notranslate"><span class="pre">kwtypes()</span></code> (See <a class="reference internal" href="utilities.html#utilities"><span class="std std-ref">Utilities</span></a>).</p>
+<table class="colwidths-given docutils align-default" id="id1">
+<caption><span class="caption-text">Table 1 - Relationship between <code class="docutils literal notranslate"><span class="pre">kw</span></code> and stellar evolution type, as per NBODY6</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>KW</p></th>
+<th class="head"><p>Stellar Evolution Types</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>0</p></td>
+<td><p>Low main sequence (M &lt; 0.7).</p></td>
+</tr>
+<tr class="row-odd"><td><p>1</p></td>
+<td><p>Main sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>Hertzsprung gap (HG).</p></td>
+</tr>
+<tr class="row-odd"><td><p>3</p></td>
+<td><p>Red giant.</p></td>
+</tr>
+<tr class="row-even"><td><p>4</p></td>
+<td><p>Core Helium burning.</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>First AGB.</p></td>
+</tr>
+<tr class="row-even"><td><p>6</p></td>
+<td><p>Second AGB.</p></td>
+</tr>
+<tr class="row-odd"><td><p>7</p></td>
+<td><p>Helium main sequence.</p></td>
+</tr>
+<tr class="row-even"><td><p>8</p></td>
+<td><p>Helium HG.</p></td>
+</tr>
+<tr class="row-odd"><td><p>9</p></td>
+<td><p>Helium GB.</p></td>
+</tr>
+<tr class="row-even"><td><p>10</p></td>
+<td><p>Helium white dwarf.</p></td>
+</tr>
+<tr class="row-odd"><td><p>11</p></td>
+<td><p>Carbon-Oxygen white dwarf.</p></td>
+</tr>
+<tr class="row-even"><td><p>12</p></td>
+<td><p>Oxygen-Neon white dwarf.</p></td>
+</tr>
+<tr class="row-odd"><td><p>13</p></td>
+<td><p>Neutron star.</p></td>
+</tr>
+<tr class="row-even"><td><p>14</p></td>
+<td><p>Black hole.</p></td>
+</tr>
+<tr class="row-odd"><td><p>15</p></td>
+<td><p>Massless supernova remnant.</p></td>
+</tr>
+</tbody>
+</table>
 <p>It is important to note that if stellar luminosities (<code class="docutils literal notranslate"><span class="pre">logl</span></code>) have been provided, calling <code class="docutils literal notranslate"><span class="pre">cluster.key_params</span></code> will also calculate the half-light radius of the cluster <code class="docutils literal notranslate"><span class="pre">cluster.rh</span></code> and the radius containing 10% of the light <code class="docutils literal notranslate"><span class="pre">cluster.rh10</span></code>. Similar to <code class="docutils literal notranslate"><span class="pre">cluster.rv3d</span></code>, by default the projected half-light radius <code class="docutils literal notranslate"><span class="pre">cluster.rhpro</span></code> and the projected radius containing 10% of the light <code class="docutils literal notranslate"><span class="pre">cluster.rh10pro</span></code> are calculated as well.</p>
 <p><code class="docutils literal notranslate"><span class="pre">add_energies</span></code> is slightly more than a convenience function, because if the kinetic energy (kin), potential energy (pot), and total energy (etot) of each star added to <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> via:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">cluster</span><span class="o">.</span><span class="n">add_energies</span><span class="p">(</span><span class="n">kin</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">etot</span><span class="p">)</span>
@@ -176,6 +245,7 @@
 </pre></div>
 </div>
 <p>In this example, <code class="docutils literal notranslate"><span class="pre">new_cluster</span></code> will contain all the same information as <code class="docutils literal notranslate"><span class="pre">cluster</span></code> but only for stars within <code class="docutils literal notranslate"><span class="pre">cluster.rm</span></code>. Please consult the <code class="docutils literal notranslate"><span class="pre">sub_cluster</span></code> documentation for the complete list of criteria that can be given to <code class="docutils literal notranslate"><span class="pre">sub_cluster</span></code>.</p>
+</div>
 </div>
 </div>
 

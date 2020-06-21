@@ -40,3 +40,13 @@ Finally, several functions that are used throughout ``StarCluster`` that users m
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
+
+Constants
+----------------------------------
+
+For convenience purposes, a few constants are saved to be used globally throughout ``clustertools``. A function that prints the conversion table between ``kw`` and stellar evolution type, as discussed in :ref:`Cluster <cluster>` is also included here.
+
+.. automodapi:: clustertools.util.constants
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:

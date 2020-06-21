@@ -15,9 +15,7 @@
     <script type="text/javascript" src="../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="obs_mass_function" href="clustertools.observations.observations.obs_mass_function.html" />
-    <link rel="prev" title="Observations" href="../observations.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
@@ -28,24 +26,11 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="clustertools.observations.observations.obs_mass_function.html" title="obs_mass_function"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="../observations.html" title="Observations"
-             accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../observations.html" accesskey="U">Observations</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="../observations.html"
-                        title="previous chapter">Observations</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="clustertools.observations.observations.obs_mass_function.html"
-                        title="next chapter">obs_mass_function</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -73,118 +58,6 @@
             
   <div class="section" id="observationalmask">
 <h1>ObservationalMask<a class="headerlink" href="#observationalmask" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
-<dt id="clustertools.observations.mask.ObservationalMask">
-<em class="property">class </em><code class="sig-prename descclassname">clustertools.observations.mask.</code><code class="sig-name descname">ObservationalMask</code><span class="sig-paren">(</span><em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p class="rubric">Methods Summary</p>
-<table class="longtable docutils align-default">
-<colgroup>
-<col style="width: 10%" />
-<col style="width: 90%" />
-</colgroup>
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.apply_key_params" title="clustertools.observations.mask.ObservationalMask.apply_key_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_key_params</span></code></a>(cluster)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.apply_orbit" title="clustertools.observations.mask.ObservationalMask.apply_orbit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_orbit</span></code></a>(cluster)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.apply_rnorm" title="clustertools.observations.mask.ObservationalMask.apply_rnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_rnorm</span></code></a>()</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.calc_mbins" title="clustertools.observations.mask.ObservationalMask.calc_mbins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_mbins</span></code></a>(cluster[, mmin, mmax])</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.calc_rbins" title="clustertools.observations.mask.ObservationalMask.calc_rbins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_rbins</span></code></a>(cluster, nsplit, nrbin, rmin, rmax)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.set_key_params" title="clustertools.observations.mask.ObservationalMask.set_key_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_key_params</span></code></a>(**kwargs)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.set_mbins" title="clustertools.observations.mask.ObservationalMask.set_mbins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mbins</span></code></a>(m_lower, m_mean, m_upper)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.set_mcorr" title="clustertools.observations.mask.ObservationalMask.set_mcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_mcorr</span></code></a>(mcorr)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.set_orbit" title="clustertools.observations.mask.ObservationalMask.set_orbit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_orbit</span></code></a>(ra, dec, dist, pmra, pmdec, vlos)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.set_rbins" title="clustertools.observations.mask.ObservationalMask.set_rbins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_rbins</span></code></a>(r_lower, r_mean, r_upper)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.set_rlims" title="clustertools.observations.mask.ObservationalMask.set_rlims"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_rlims</span></code></a>(rmin, rmax)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.observations.mask.html#clustertools.observations.mask.ObservationalMask.undo_rnorm" title="clustertools.observations.mask.ObservationalMask.undo_rnorm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">undo_rnorm</span></code></a>()</p></td>
-<td><p></p></td>
-</tr>
-</tbody>
-</table>
-<p class="rubric">Methods Documentation</p>
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.apply_key_params">
-<code class="sig-name descname">apply_key_params</code><span class="sig-paren">(</span><em class="sig-param">cluster</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.apply_key_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.apply_key_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.apply_orbit">
-<code class="sig-name descname">apply_orbit</code><span class="sig-paren">(</span><em class="sig-param">cluster</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.apply_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.apply_orbit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.apply_rnorm">
-<code class="sig-name descname">apply_rnorm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.apply_rnorm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.apply_rnorm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.calc_mbins">
-<code class="sig-name descname">calc_mbins</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">mmin=0.1</em>, <em class="sig-param">mmax=0.8</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.calc_mbins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.calc_mbins" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.calc_rbins">
-<code class="sig-name descname">calc_rbins</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">nsplit</em>, <em class="sig-param">nrbin</em>, <em class="sig-param">rmin</em>, <em class="sig-param">rmax</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.calc_rbins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.calc_rbins" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.set_key_params">
-<code class="sig-name descname">set_key_params</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.set_key_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.set_key_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.set_mbins">
-<code class="sig-name descname">set_mbins</code><span class="sig-paren">(</span><em class="sig-param">m_lower</em>, <em class="sig-param">m_mean</em>, <em class="sig-param">m_upper</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.set_mbins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.set_mbins" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.set_mcorr">
-<code class="sig-name descname">set_mcorr</code><span class="sig-paren">(</span><em class="sig-param">mcorr</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.set_mcorr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.set_mcorr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.set_orbit">
-<code class="sig-name descname">set_orbit</code><span class="sig-paren">(</span><em class="sig-param">ra</em>, <em class="sig-param">dec</em>, <em class="sig-param">dist</em>, <em class="sig-param">pmra</em>, <em class="sig-param">pmdec</em>, <em class="sig-param">vlos</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.set_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.set_orbit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.set_rbins">
-<code class="sig-name descname">set_rbins</code><span class="sig-paren">(</span><em class="sig-param">r_lower</em>, <em class="sig-param">r_mean</em>, <em class="sig-param">r_upper</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.set_rbins"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.set_rbins" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.set_rlims">
-<code class="sig-name descname">set_rlims</code><span class="sig-paren">(</span><em class="sig-param">rmin</em>, <em class="sig-param">rmax</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.set_rlims"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.set_rlims" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="clustertools.observations.mask.ObservationalMask.undo_rnorm">
-<code class="sig-name descname">undo_rnorm</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/observations/mask.html#ObservationalMask.undo_rnorm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.observations.mask.ObservationalMask.undo_rnorm" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
 </div>
 
 
@@ -202,14 +75,7 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="clustertools.observations.observations.obs_mass_function.html" title="obs_mass_function"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="../observations.html" title="Observations"
-             >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../observations.html" >Observations</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">clustertools 0.1.dev1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">

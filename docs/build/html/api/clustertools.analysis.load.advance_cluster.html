@@ -75,7 +75,7 @@
 <h1>advance_cluster<a class="headerlink" href="#advance-cluster" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="clustertools.analysis.load.advance_cluster">
-<code class="sig-prename descclassname">clustertools.analysis.load.</code><code class="sig-name descname">advance_cluster</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/load.html#advance_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.load.advance_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.load.</code><code class="sig-name descname">advance_cluster</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">custom_override=True</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/load.html#advance_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.load.advance_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>advance_cluster</p>
@@ -88,7 +88,11 @@
 </div></blockquote>
 <p>INPUT:</p>
 <blockquote>
-<div><p>filename - name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)</p>
+<div><p>cluster - StarCluster instance to be advanced</p>
+<p>custom_override - use a custom function to load data instead of default</p>
+<p>ofile - an already opened file containing orbit information (default: None)</p>
+<p>orbit - a galpy orbit to be used for the StarCluster’s orbital information (default: None)</p>
+<p>filename - name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)</p>
 </div></blockquote>
 <p>KWARGS:</p>
 <blockquote>

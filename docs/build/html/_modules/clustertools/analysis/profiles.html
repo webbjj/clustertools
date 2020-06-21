@@ -76,7 +76,7 @@
 <span class="kn">from</span> <span class="nn">.operations</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">..util.plots</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">..util.coordinates</span> <span class="kn">import</span> <span class="n">sphere_coords</span>
-<span class="kn">from</span> <span class="nn">.functions</span> <span class="kn">import</span> <span class="n">new_mass_function</span>
+<span class="kn">from</span> <span class="nn">.functions</span> <span class="kn">import</span> <span class="n">mass_function</span>
 
 
 <div class="viewcode-block" id="rho_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.rho_prof">[docs]</a><span class="k">def</span> <span class="nf">rho_prof</span><span class="p">(</span>
@@ -412,7 +412,7 @@
 
     <span class="k">return</span> <span class="n">rprof</span><span class="p">,</span> <span class="n">mprof</span><span class="p">,</span> <span class="n">nprof</span></div>
 
-<span class="k">def</span> <span class="nf">new_alpha_prof</span><span class="p">(</span>
+<div class="viewcode-block" id="alpha_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.alpha_prof">[docs]</a><span class="k">def</span> <span class="nf">alpha_prof</span><span class="p">(</span>
     <span class="n">cluster</span><span class="p">,</span>
     <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -568,10 +568,10 @@
         <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">return_error</span><span class="p">:</span>
-            <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span><span class="p">,</span> <span class="n">mbinerror</span> <span class="o">=</span> <span class="n">new_mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span><span class="n">indx</span><span class="o">=</span><span class="n">rindx</span><span class="p">,</span><span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span><span class="n">mcorr</span><span class="o">=</span><span class="n">mcorr</span><span class="p">,</span><span class="n">omask</span><span class="o">=</span><span class="n">omask</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span><span class="p">,</span> <span class="n">mbinerror</span> <span class="o">=</span> <span class="n">mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span><span class="n">indx</span><span class="o">=</span><span class="n">rindx</span><span class="p">,</span><span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span><span class="n">mcorr</span><span class="o">=</span><span class="n">mcorr</span><span class="p">,</span><span class="n">omask</span><span class="o">=</span><span class="n">omask</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">rbinerror</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">mbinerror</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">new_mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span><span class="n">indx</span><span class="o">=</span><span class="n">rindx</span><span class="p">,</span><span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span><span class="n">mcorr</span><span class="o">=</span><span class="n">mcorr</span><span class="p">,</span><span class="n">omask</span><span class="o">=</span><span class="n">omask</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="n">nmass</span><span class="o">=</span><span class="n">nmass</span><span class="p">,</span><span class="n">indx</span><span class="o">=</span><span class="n">rindx</span><span class="p">,</span><span class="n">projected</span><span class="o">=</span><span class="n">projected</span><span class="p">,</span><span class="n">mcorr</span><span class="o">=</span><span class="n">mcorr</span><span class="p">,</span><span class="n">omask</span><span class="o">=</span><span class="n">omask</span><span class="p">,</span><span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">rbinerror</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="mf">1.</span>
 
         <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">100</span><span class="p">:</span>
@@ -619,180 +619,7 @@
     <span class="k">if</span> <span class="n">return_error</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span><span class="p">,</span> <span class="n">rbinerror</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span>
-
-<div class="viewcode-block" id="alpha_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.alpha_prof">[docs]</a><span class="k">def</span> <span class="nf">alpha_prof</span><span class="p">(</span>
-    <span class="n">cluster</span><span class="p">,</span>
-    <span class="n">mmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">mmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">nmass</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-    <span class="n">rmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">rmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">nrad</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
-    <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">emin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">emax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">kwmin</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-    <span class="n">kwmax</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-    <span class="n">indx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">projected</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    NAME:</span>
-
-<span class="sd">       alpha_prof</span>
-
-<span class="sd">    PURPOSE:</span>
-
-<span class="sd">       Measure the radial variation in the mass function</span>
-
-<span class="sd">    INPUT:</span>
-
-<span class="sd">       cluster - StarCluster instance</span>
-
-<span class="sd">       mmin/mmax - minimum and maximum stellar mass</span>
-
-<span class="sd">       nmass - number of mass bins to calculate slope of mass function</span>
-
-<span class="sd">       rmin/rmax - minimum and maximum stellar radii</span>
-
-<span class="sd">       nrad - number of radial bins</span>
-
-<span class="sd">       vmin/vmax - minimum and maximum stellar velocity</span>
-
-<span class="sd">       emin/emax - minimum and maximum stellar energy</span>
-
-<span class="sd">       kwmin/kwmax - minimum and maximum stellar type (kw)</span>
-
-<span class="sd">       indx - user defined boolean array from which to extract the subset</span>
-
-<span class="sd">       projected - use projected values and constraints (Default:False)</span>
-
-<span class="sd">       plot - plot the alpha profile (Default: False)</span>
-
-<span class="sd">    KWARGS:</span>
-
-<span class="sd">       Same as for ..util.plot.nplot</span>
-
-<span class="sd">    OUTPUT:</span>
-
-<span class="sd">        lrprofn - natural log of radius (normalized by half-mass radius)</span>
-
-<span class="sd">        aprof - slope of the mass function</span>
-
-<span class="sd">        dalpha - delta_alpha = d(alpha)/d(ln(r/rm) </span>
-
-<span class="sd">        edalpha - error in dalpha</span>
-
-<span class="sd">        ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)</span>
-
-<span class="sd">    HISTORY:</span>
-
-<span class="sd">       2018 - Written - Webb (UofT)</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span> <span class="o">=</span> <span class="n">save_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
-    <span class="n">cluster</span><span class="o">.</span><span class="n">to_centre</span><span class="p">(</span><span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="n">lrprofn</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">aprof</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rpro</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">vpro</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">r</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">v</span>
-
-    <span class="k">if</span> <span class="n">rmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">rmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">rmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">vmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">vmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mmin</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">mmax</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">mmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">indx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">indx</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">id</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span>
-
-    <span class="c1"># Build subcluster containing only stars in the full radial and mass range:</span>
-    <span class="n">indx</span> <span class="o">*=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">rmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;=</span> <span class="n">rmax</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&gt;=</span> <span class="n">mmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">m</span> <span class="o">&lt;=</span> <span class="n">mmax</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&gt;=</span> <span class="n">vmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">v</span> <span class="o">&lt;=</span> <span class="n">vmax</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&gt;=</span> <span class="n">kwmin</span><span class="p">)</span>
-        <span class="o">*</span> <span class="p">(</span><span class="n">cluster</span><span class="o">.</span><span class="n">kw</span> <span class="o">&lt;=</span> <span class="n">kwmax</span><span class="p">)</span>
-    <span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&gt;=</span> <span class="n">emin</span>
-    <span class="k">if</span> <span class="n">emin</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">indx</span> <span class="o">*=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">etot</span> <span class="o">&lt;=</span> <span class="n">emax</span>
-
-    <span class="n">r_lower</span><span class="p">,</span> <span class="n">r_mean</span><span class="p">,</span> <span class="n">r_upper</span><span class="p">,</span> <span class="n">r_hist</span> <span class="o">=</span> <span class="n">nbinmaker</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">indx</span><span class="p">],</span> <span class="n">nrad</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r_mean</span><span class="p">)):</span>
-        <span class="n">rindx</span> <span class="o">=</span> <span class="n">indx</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&gt;=</span> <span class="n">r_lower</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">r_upper</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-
-        <span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">dx_function</span><span class="p">(</span>
-            <span class="n">cluster</span><span class="o">.</span><span class="n">m</span><span class="p">[</span><span class="n">rindx</span><span class="p">],</span> <span class="n">nmass</span>
-        <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">alpha</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">100</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">projected</span><span class="p">:</span>
-                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rmpro</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">lrprofn</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r_mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">cluster</span><span class="o">.</span><span class="n">rm</span><span class="p">))</span>
-
-            <span class="n">aprof</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">alpha</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="p">(</span><span class="n">dalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">),</span> <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-        <span class="n">edalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
-        <span class="n">eydalpha</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">V</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">dalpha</span> <span class="o">=</span> <span class="o">-</span><span class="mf">100.0</span>
-        <span class="n">ydalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">edalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
-        <span class="n">eydalpha</span> <span class="o">=</span> <span class="mf">0.0</span>
-
-    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;filename&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-        <span class="n">overplot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;overplot&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-
-        <span class="n">nplot</span><span class="p">(</span>
-            <span class="n">lrprofn</span><span class="p">,</span>
-            <span class="n">aprof</span><span class="p">,</span>
-            <span class="n">xlabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\ln(r/r_m)$&quot;</span><span class="p">,</span>
-            <span class="n">ylabel</span><span class="o">=</span><span class="sa">r</span><span class="s2">&quot;$\alpha$&quot;</span><span class="p">,</span>
-            <span class="n">overplot</span><span class="o">=</span><span class="n">overplot</span><span class="p">,</span>
-            <span class="o">**</span><span class="n">kwargs</span>
-        <span class="p">)</span>
-        <span class="n">rfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">lrprofn</span><span class="p">),</span> <span class="n">nrad</span><span class="p">)</span>
-        <span class="n">afit</span> <span class="o">=</span> <span class="n">dalpha</span> <span class="o">*</span> <span class="n">rfit</span> <span class="o">+</span> <span class="n">ydalpha</span>
-        <span class="n">nlplot</span><span class="p">(</span><span class="n">rfit</span><span class="p">,</span> <span class="n">afit</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;d$\alpha$ = </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dalpha</span><span class="p">))</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-
-        <span class="k">if</span> <span class="n">filename</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
-
-    <span class="n">cluster</span><span class="o">.</span><span class="n">dalpha</span> <span class="o">=</span> <span class="n">dalpha</span>
-
-    <span class="n">return_cluster</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">units0</span><span class="p">,</span> <span class="n">origin0</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_key_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span></div>
+        <span class="k">return</span> <span class="n">lrprofn</span><span class="p">,</span> <span class="n">aprof</span><span class="p">,</span> <span class="n">dalpha</span><span class="p">,</span> <span class="n">edalpha</span><span class="p">,</span> <span class="n">ydalpha</span><span class="p">,</span> <span class="n">eydalpha</span></div>
 
 
 <div class="viewcode-block" id="sigv_prof"><a class="viewcode-back" href="../../../reference/clustertools.analysis.profiles.html#clustertools.analysis.profiles.sigv_prof">[docs]</a><span class="k">def</span> <span class="nf">sigv_prof</span><span class="p">(</span>

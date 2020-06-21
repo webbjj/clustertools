@@ -29,10 +29,6 @@ Guide
 
    observations.rst
 
-   custom.rst
-
-
-
 Example List
 -----------------
 

@@ -44,11 +44,6 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - kpc/ro
      - kms/vo
      - Msun/90027307126.905106
-   * - wdunits
-     - Walter Dehnen units, for use with ``GYRFALCON``
-     - kpc
-     - kpc/Gyr
-     - Msun/222288.47
 
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one set of units to another.
 

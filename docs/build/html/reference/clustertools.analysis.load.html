@@ -77,7 +77,7 @@
 <p>Read in cluster from Nbody simulations or generate an Nbody cluster</p>
 <dl class="function">
 <dt id="clustertools.analysis.load.load_cluster">
-<code class="sig-prename descclassname">clustertools.analysis.load.</code><code class="sig-name descname">load_cluster</code><span class="sig-paren">(</span><em class="sig-param">ctype='snapshot'</em>, <em class="sig-param">units='pckms'</em>, <em class="sig-param">origin='cluster'</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/load.html#load_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.load.load_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.load.</code><code class="sig-name descname">load_cluster</code><span class="sig-paren">(</span><em class="sig-param">ctype='snapshot'</em>, <em class="sig-param">particles=None</em>, <em class="sig-param">custom_override=True</em>, <em class="sig-param">units='pckms'</em>, <em class="sig-param">origin='cluster'</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/load.html#load_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.load.load_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>load_cluster</p>
@@ -90,6 +90,8 @@
 <p>INPUT:</p>
 <blockquote>
 <div><p>ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)</p>
+<p>particles - AMUSE particle dataset (default: None)</p>
+<p>custom_override - use a custom function to load data instead of default (default: True)</p>
 <p>units - units of input data (default: kpckms)</p>
 <p>origin - origin of input data (default: cluster)</p>
 <p>ofile - an already opened file containing orbit information (default: None)</p>
@@ -105,7 +107,6 @@
 <p>delimiter - choice of delimiter when reading ascii/csv files (Default: ‘,’)</p>
 <p>wdir - working directory of snapshots if not current directory</p>
 <p>intialize - initialize a galpy orbit after reading in orbital information (default: False)</p>
-<p>kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)</p>
 <p>projected - calculate projected values as well as 3D values (Default: True)</p>
 <p>do_key_params - calculate key parameters</p>
 <p>do_rorder - sort stars in order from closes to the origin to the farthest</p>
@@ -122,7 +123,7 @@
 
 <dl class="function">
 <dt id="clustertools.analysis.load.advance_cluster">
-<code class="sig-prename descclassname">clustertools.analysis.load.</code><code class="sig-name descname">advance_cluster</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/load.html#advance_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.load.advance_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.load.</code><code class="sig-name descname">advance_cluster</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">custom_override=True</em>, <em class="sig-param">ofile=None</em>, <em class="sig-param">orbit=None</em>, <em class="sig-param">filename=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/load.html#advance_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.load.advance_cluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>advance_cluster</p>
@@ -135,7 +136,11 @@
 </div></blockquote>
 <p>INPUT:</p>
 <blockquote>
-<div><p>filename - name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)</p>
+<div><p>cluster - StarCluster instance to be advanced</p>
+<p>custom_override - use a custom function to load data instead of default</p>
+<p>ofile - an already opened file containing orbit information (default: None)</p>
+<p>orbit - a galpy orbit to be used for the StarCluster’s orbital information (default: None)</p>
+<p>filename - name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)</p>
 </div></blockquote>
 <p>KWARGS:</p>
 <blockquote>

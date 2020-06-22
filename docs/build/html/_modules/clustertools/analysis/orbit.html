@@ -115,7 +115,7 @@
 <span class="sd">       --&gt; More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal</span>
 <span class="sd">           radius again until the change is less than 90%</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance</span>
 
@@ -129,7 +129,7 @@
 
 <span class="sd">       ro,vo - GALPY scaling parameters</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">        rt</span>
 
@@ -216,7 +216,7 @@
 <span class="sd">       Calculate limiting radius of the cluster</span>
 <span class="sd">       --&gt; The limiting radius is defined to be where the cluster&#39;s density reaches the local background density of the host galaxy</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance</span>
 
@@ -236,7 +236,7 @@
 
 <span class="sd">       Same as ..util.plots.nplot</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">        rl</span>
 
@@ -368,7 +368,7 @@
 
 <span class="sd">       Initialize a galpy orbit instance for the cluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -378,7 +378,7 @@
 
 <span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       orbit instance</span>
 
@@ -446,7 +446,7 @@
 <span class="sd">       Initialize a galpy orbit for every stars in the cluster</span>
 <span class="sd">       --&gt; Note currently depends on version of galpy with Orbits, which is soon to be replace by a generic Orbit function</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -454,7 +454,7 @@
 
 <span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       orbit instance for each stars</span>
 
@@ -493,7 +493,7 @@
 
 <span class="sd">       Integrate a galpy orbit instance for the cluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -509,7 +509,7 @@
 
 <span class="sd">       plot - show plot of cluster&#39;s orbit</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       timesteps, orbit instance</span>
 
@@ -549,7 +549,7 @@
 
 <span class="sd">       Move the cluster centre and stars backwards or forwards along its orbit assuming stars only feel a force from the galaxy</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -569,7 +569,7 @@
 
 <span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       None</span>
 
@@ -713,7 +713,7 @@
 
 <span class="sd">       Calculate orbital path +/- dt Gyr around the cluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -736,7 +736,7 @@
 <span class="sd">       plot - plot a snapshot of the cluster in galactocentric coordinates with the orbital path</span>
 
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       t,x,y,z,vx,vy,vz</span>
 
@@ -867,7 +867,7 @@
 
 <span class="sd">       Match stars to a position along the orbital path of the cluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -889,7 +889,7 @@
 
 <span class="sd">       plot - plot the distance of each star from the orbital path versus distance along the orbital path to the progenitor</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       tstar - orbital time associated with star</span>
 
@@ -1032,7 +1032,7 @@
 
 <span class="sd">       Calculate tail path +/- dt Gyr around the cluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -1048,7 +1048,7 @@
 
 <span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       t,x,y,z,vx,vy,vz</span>
 <span class="sd">    HISTORY:</span>
@@ -1129,7 +1129,7 @@
 
 <span class="sd">       Match stars to a position along the tail path of the cluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster</span>
 
@@ -1147,7 +1147,7 @@
 
 <span class="sd">       vo - galpy velocity scale (Default: 220.)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       tstar - tail time associated with star</span>
 
@@ -1266,7 +1266,7 @@
 
 <span class="sd">       Get the measured orbital parameters of a Galactic globular cluster has measured by Vasiliev 2019 using Gaia DR2 via Galpy</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       gcname - name or list of GC names whose orbits are to be retrieved</span>
 <span class="sd">        --&gt; Note that list just returns the list to read, while &#39;all&#39; gets the orbits for all the clusters</span>
@@ -1275,7 +1275,7 @@
 
 <span class="sd">       ro,vo - GALPY scaling parameters</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">        orbit</span>
 
@@ -1296,7 +1296,7 @@
 
 <span class="sd">       Calculate action angle values for each star </span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance</span>
 
@@ -1314,7 +1314,7 @@
 
 <span class="sd">       Additional KWARGS can be included for other action angle calculation methods in galpy</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">        JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz</span>
 
@@ -1352,7 +1352,7 @@
 
 <span class="sd">        Calculate the tidal tensor Tij=-d(Psi)(dxidxj)</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance</span>
 
@@ -1362,7 +1362,7 @@
 
 <span class="sd">       eigenval - return eigenvalues if true (optional; boolean)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">        Tidal Tensor</span>
 

@@ -79,67 +79,79 @@
 <p>The StarCluster class and key internal functions</p>
 <dl class="class">
 <dt id="clustertools.analysis.cluster.StarCluster">
-<em class="property">class </em><code class="sig-prename descclassname">clustertools.analysis.cluster.</code><code class="sig-name descname">StarCluster</code><span class="sig-paren">(</span><em class="sig-param">ntot=0</em>, <em class="sig-param">tphys=0.0</em>, <em class="sig-param">units=None</em>, <em class="sig-param">origin=None</em>, <em class="sig-param">ctype='snapshot'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">clustertools.analysis.cluster.</code><code class="sig-name descname">StarCluster</code><span class="sig-paren">(</span><em class="sig-param">ntot=0</em>, <em class="sig-param">tphys=0.0</em>, <em class="sig-param">units=None</em>, <em class="sig-param">origin=None</em>, <em class="sig-param">ctype='snapshot'</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>NAME:</p>
-<p>__init__</p>
-<p>PURPOSE:</p>
 <p>A class that represents a star cluster population that functions can be performed on</p>
-<p>INPUT:
-tphys -Time (units not necessary) associated with the population (default: 0)
-units - Units of stellar positions and velocties. Options include ‘pckms’,
-‘kpckms’,’radec’,’nbody’,and ‘galpy’. For ‘pckms’ and ‘kpckms’, 
-stellar velocities are assumed to be km/s. (default: None)
-origin - Origin of coordinate system within which stellar positions and velocities are defined. 
+<dl class="simple">
+<dt>tphys: float</dt><dd><p>Time (units not necessary) associated with the population (default: 0)</p>
+</dd>
+<dt>units: str</dt><dd><p>Units of stellar positions and velocties. Options include ‘pckms’,
+‘kpckms’,’degrees’,’nbody’,and ‘galpy’. For ‘pckms’ and ‘kpckms’, 
+stellar velocities are assumed to be km/s. (default: None)</p>
+</dd>
+<dt>origin: str</dt><dd><p>Origin of coordinate system within which stellar positions and velocities are defined. 
 Options include ‘centre’, ‘cluster’, ‘galaxy’ and ‘sky’. Note that ‘centre’ corresponds
 to the systems centre of density or mass (as calculated by clustertools) while ‘cluster’ corresponds
 to the orbital position of the cluster’s initial centre of mass given ‘tphys’. In some cases
-these two coordinate systems may be the same. (default: None)
-ctype - Code type used to generate the cluster population. Current options include ‘snapshot’,
+these two coordinate systems may be the same. (default: None)</p>
+</dd>
+<dt>ctype: str</dt><dd><p>Code type used to generate the cluster population. Current options include ‘snapshot’,
 ‘nbody6’,’nbody6se’,’gyrfalcon’,’snaptrim’, amuse’,’clustertools’,’snapauto’. The parameter
 informs clustertools how to load the stellar popuation and advance to the next snapshot.
 (default: ‘snapshot’)</p>
-<p><a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs</p>
-<p>sfile - name of file containing single star data
-bfile - name of file contain binary star data
-ofilename - orbit filename if ofile is not given
-ounits - {‘pckms’,’kpckms’,’radec’,’nbody’,’galpy’} units of orbital information (else assumed equal to StarCluster.units)
-nsnap - if a specific snapshot is to be read in instead of starting from zero
-nzfill - value for zfill when reading and writing snapshots (Default: 5)
-snapbase - string of characters in filename before nsnap (Default: ‘’)
-snapend - string of character in filename after nsnap (Default: ‘.dat’)
-snapdir - directory of snapshots if different than wdir (Default: ‘’)
-delimiter - choice of delimiter when reading ascii/csv files (Default: ‘,’)
-wdir - working directory of snapshots if not current directory
-intialize - initialize a galpy orbit after reading in orbital information (default: False)
-kwfile - open file containing stellar evolution type (kw) of individual stars (used if snapshot file does not contain kw and kw is needed)
-advance - set to True if this a snapshot that has been advanced to from an initial one?
-projected - calculate projected values as well as 3D values (Default: True)
-centre_method - {None,’orthographic’,’VandeVen’} method to convert to clustercentric coordinates when units are in degrees (Default: None)</p>
-<p>OUTPUT:</p>
+</dd>
+<dt>projected: bool</dt><dd><p>return projected values instead of 3D value. (default: False)</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>sfile: str</dt><dd><p>name of file containing single star data</p>
+</dd>
+<dt>bfile: str</dt><dd><p>name of file contain binary star data</p>
+</dd>
+<dt>ofilename: str</dt><dd><p>orbit filename if ofile is not given</p>
+</dd>
+<dt>ounits: str</dt><dd><p>{‘pckms’,’kpckms’,’radec’,’nbody’,’galpy’} units of orbital information (else assumed equal to StarCluster.units)</p>
+</dd>
+<dt>nsnap: int</dt><dd><p>if a specific snapshot is to be read in instead of starting from zero</p>
+</dd>
+<dt>nzfill: int</dt><dd><p>value for zfill when reading and writing snapshots (default: 5)</p>
+</dd>
+<dt>snapbase: str</dt><dd><p>string of characters in filename before nsnap (default: ‘’)</p>
+</dd>
+<dt>snapend: str</dt><dd><p>string of character in filename after nsnap (default: ‘.dat’)</p>
+</dd>
+<dt>snapdir: str</dt><dd><p>string name of directory of snapshots if different than wdir (Default: ‘’)</p>
+</dd>
+<dt>delimiter: str </dt><dd><p>choice of delimiter when reading ascii/csv files (default: ‘,’)</p>
+</dd>
+<dt>wdir: str</dt><dd><p>working directory of snapshots if not current directory</p>
+</dd>
+<dt>intialize: bool</dt><dd><p>initialize a galpy orbit after reading in orbital information (default: False)</p>
+</dd>
+<dt>advance: bool</dt><dd><p>set to True if this a snapshot that has been advanced to from an initial one? (default: False)</p>
+</dd>
+<dt>centre_method: str</dt><dd><p>{None,’orthographic’,’VandeVen’} method to convert to clustercentric coordinates when units are in degrees (Default: None)</p>
+</dd>
+</dl>
 <p>StarCluster</p>
-<p>HISTORY:</p>
-<p>History - 2018 - Written - Webb (UofT)</p>
+<p>2018 - Written - Webb (UofT)</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_actions">
 <code class="sig-name descname">add_actions</code><span class="sig-paren">(</span><em class="sig-param">JR</em>, <em class="sig-param">Jphi</em>, <em class="sig-param">Jz</em>, <em class="sig-param">OR</em>, <em class="sig-param">Ophi</em>, <em class="sig-param">Oz</em>, <em class="sig-param">TR</em>, <em class="sig-param">Tphi</em>, <em class="sig-param">Tz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_actions" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
+<dd><p>Add action values to the cluster instance</p>
 <blockquote>
-<div><p>add_actions</p>
+<div><dl class="simple">
+<dt>JR,Jphi,Jz: float</dt><dd><p>orbit actions</p>
+</dd>
+<dt>OR,Ophi,Oz: float</dt><dd><p>orbit frequencies</p>
+</dd>
+<dt>TR,Tphi,Tz: float</dt><dd><p>orbit periods</p>
+</dd>
+</dl>
 </div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Add action angle values to the cluster instance</p>
-</div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz</p>
-</div></blockquote>
-<p>OUTPUT:</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
 <blockquote>
 <div><p>2019 - Written - Webb (UofT)</p>
 </div></blockquote>
@@ -148,59 +160,68 @@ centre_method - {None,’orthographic’,’VandeVen’} method to convert to cl
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_bse">
 <code class="sig-name descname">add_bse</code><span class="sig-paren">(</span><em class="sig-param">id1</em>, <em class="sig-param">id2</em>, <em class="sig-param">kw1</em>, <em class="sig-param">kw2</em>, <em class="sig-param">kcm</em>, <em class="sig-param">ecc</em>, <em class="sig-param">pb</em>, <em class="sig-param">semi</em>, <em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">logl1</em>, <em class="sig-param">logl2</em>, <em class="sig-param">logr1</em>, <em class="sig-param">logr2</em>, <em class="sig-param">ep1=None</em>, <em class="sig-param">ep2=None</em>, <em class="sig-param">ospin1=None</em>, <em class="sig-param">ospin2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_bse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_bse" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
-<p>add_bse</p>
-<p>PURPOSE:</p>
-<p>Add binary star evolution information to stars
-Notes:
-- parameters are common output variables in NBODY6
-- values are never adjusted during unit or coordinate changes</p>
-<p>INPUT:</p>
-<p>id1/id2 - id of star1 and star2</p>
-<p>kw1/kw2 - stellar evolution tags (for using with NBODY6)</p>
-<p>kcm - stellar evolution tag for binary star</p>
-<p>ecc - eccentricity of binary orbit</p>
-<p>pb - period of binary orbit</p>
-<p>semi - semi major axis of binary orbit</p>
-<p>m1/m2 - masses of binary stars</p>
-<p>logl1/logl2 - luminosities of binary stars</p>
-<p>logr1/logr2 - radii of binary stars</p>
-<p>ep1/ep2 - epochs of binary stars</p>
-<p>ospin1/ospin2 - opsin of binary stars</p>
-<p>OUTPUT:</p>
+<dd><p>NAME: Add binary star evolution information to stars</p>
+<dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>parameters are common output variables in NBODY6</p></li>
+<li><p>values are never adjusted during unit or coordinate changes</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>id1/id2: int</dt><dd><p>id of star1 and star2</p>
+</dd>
+<dt>kw1/kw2: int</dt><dd><p>stellar evolution tags (for using with NBODY6)</p>
+</dd>
+<dt>kcm: int</dt><dd><p>stellar evolution tag for binary star</p>
+</dd>
+<dt>ecc: float </dt><dd><p>eccentricity of binary orbit</p>
+</dd>
+<dt>pb: float</dt><dd><p>period of binary orbit</p>
+</dd>
+<dt>semi: float </dt><dd><p>semi major axis of binary orbit</p>
+</dd>
+<dt>m1/m2: float</dt><dd><p>masses of binary stars</p>
+</dd>
+<dt>logl1/logl2: float</dt><dd><p>luminosities of binary stars</p>
+</dd>
+<dt>logr1/logr2: float</dt><dd><p>radii of binary stars</p>
+</dd>
+<dt>ep1/ep2: float</dt><dd><p>epochs of binary stars</p>
+</dd>
+<dt>ospin1/ospin2: float</dt><dd><p>opsin of binary stars</p>
+</dd>
+</dl>
 <p>None</p>
-<p>HISTORY:</p>
 <p>2018 - Written - Webb (UofT)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_energies">
-<code class="sig-name descname">add_energies</code><span class="sig-paren">(</span><em class="sig-param">kin</em>, <em class="sig-param">pot</em>, <em class="sig-param">etot</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_energies" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
+<code class="sig-name descname">add_energies</code><span class="sig-paren">(</span><em class="sig-param">kin</em>, <em class="sig-param">pot</em>, <em class="sig-param">etot=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>add energy information for stars</p>
 <blockquote>
-<div><p>add_energies</p>
-</div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Add energy information to stars and calculate total energy and Q for the cluster
-Notes:</p>
-<blockquote>
-<div><ul class="simple">
+<div><dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>total energy and Q for the cluster are also calculated</p></li>
 <li><p>values are never adjusted during unit or coordinate changes</p></li>
 </ul>
+</dd>
+</dl>
 </div></blockquote>
-</div></blockquote>
-<p>INPUT:</p>
 <blockquote>
-<div><p>kin - kinetic energy</p>
-<p>pot - potentail energy</p>
-<p>etot - total energy</p>
+<div><dl class="simple">
+<dt>kin: float</dt><dd><p>kinetic energy</p>
+</dd>
+<dt>pot: float</dt><dd><p>potentail energy</p>
+</dd>
+<dt>etot: float</dt><dd><p>total energy - calculated as kin+pot if not given</p>
+</dd>
+</dl>
 </div></blockquote>
-<p>OUTPUT:</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
 </div></blockquote>
@@ -209,33 +230,46 @@ Notes:</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_nbody6">
 <code class="sig-name descname">add_nbody6</code><span class="sig-paren">(</span><em class="sig-param">nc=0</em>, <em class="sig-param">rc=0.0</em>, <em class="sig-param">rbar=1.0</em>, <em class="sig-param">rtide=0.0</em>, <em class="sig-param">xc=0.0</em>, <em class="sig-param">yc=0.0</em>, <em class="sig-param">zc=0.0</em>, <em class="sig-param">zmbar=1.0</em>, <em class="sig-param">vstar=1.0</em>, <em class="sig-param">rscale=1.0</em>, <em class="sig-param">ns=0.0</em>, <em class="sig-param">nb=0.0</em>, <em class="sig-param">np=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_nbody6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_nbody6" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
+<dd><p>Add additional information to StarCluster</p>
 <blockquote>
-<div><p>add_nbody6</p>
+<div><dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>parameters are common output variables in NBODY6</p></li>
+<li><p>values are never adjusted during unit or coordinate changes</p></li>
+</ul>
+</dd>
+</dl>
 </div></blockquote>
-<p>PURPOSE:</p>
 <blockquote>
-<div><p>For data generated using NBDOY6 (or one of its variants), add additional information from output files</p>
+<div><dl class="simple">
+<dt>nc: int</dt><dd><p>number of stars in core (default:0)</p>
+</dd>
+<dt>rc: int</dt><dd><p>core radius (default:0)</p>
+</dd>
+<dt>rbar: float</dt><dd><p>scaling factor between NBODY units and pc (default:1.)</p>
+</dd>
+<dt>rtide:</dt><dd><p>rtide set in the simulation (default:0)</p>
+</dd>
+<dt>xc,yc,zc: float</dt><dd><p>position of cluster centre (default:0)</p>
+</dd>
+<dt>zmbar: float</dt><dd><p>scaling factor between NBODY units and Msun (default:1.)</p>
+</dd>
+<dt>vstar:</dt><dd><p>scaling factor between NBODY units and km/s (default:1.)</p>
+</dd>
+<dt>rscale: float</dt><dd><p>the scale radius of data (default:1.)</p>
+</dd>
+<dt>ns: int</dt><dd><p>number of single stars (default:0)</p>
+</dd>
+<dt>nb: int</dt><dd><p>number of binary stars (default:0)</p>
+</dd>
+<dt>np: int</dt><dd><p>number of particles (default:0)</p>
+</dd>
+</dl>
 </div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>nc - number of stars in core (default:0)</p>
-<p>rc - core radius (default:0)</p>
-<p>rbar - scaling factor between NBODY units and pc (default:1.)</p>
-<p>rtide - rtide set in the simulation (default:0)</p>
-<p>xc,yc,zc - position of cluster centre (default:0)</p>
-<p>zmbar - scaling factor between NBODY units and Msun (default:1.)</p>
-<p>vstar - scaling factor between NBODY units and km/s (default:1.)</p>
-<p>rscale - the scale radius of data (default:1.)</p>
-<p>ns - number of single stars (default:0)</p>
-<p>nb - number of binary stars (default:0)</p>
-<p>np - number of particles (default:0)</p>
-</div></blockquote>
-<p>OUTPUT:</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
+<p>History:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
 </div></blockquote>
@@ -244,66 +278,66 @@ Notes:</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_orbit">
 <code class="sig-name descname">add_orbit</code><span class="sig-paren">(</span><em class="sig-param">xgc</em>, <em class="sig-param">ygc</em>, <em class="sig-param">zgc</em>, <em class="sig-param">vxgc</em>, <em class="sig-param">vygc</em>, <em class="sig-param">vzgc</em>, <em class="sig-param">ounits=None</em>, <em class="sig-param">initialize=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_orbit" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
+<dd><p>add orbit properties to StarCluster</p>
 <blockquote>
-<div><p>add_orbit</p>
+<div><dl class="simple">
+<dt>xgc,ygc,zgc: float</dt><dd><p>cluster’s galactocentric position</p>
+</dd>
+<dt>vxgc,vygc,vzgc: float</dt><dd><p>cluster’s galactocentric velocity</p>
+</dd>
+<dt>ounits: str</dt><dd><p>units of position and velocity. Options include ‘pckms’,
+‘kpckms’,’degrees’,’nbody’,and ‘galpy’. Values will be converted 
+to match self.units</p>
+</dd>
+<dt>initialize: bool</dt><dd><p>Initialize a galpy orbit for self.orbit (default: False)</p>
+</dd>
+<dt>ro: float</dt><dd><p>galpy position scaling parameter (default: 8.)</p>
+</dd>
+<dt>vo: float</dt><dd><p>galpy velocity scaling parameter (default: 220.)</p>
+</dd>
+</dl>
 </div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Add orbital information of the star cluster
-Notes:</p>
-<blockquote>
-<div><ul class="simple">
-<li><p>the input units are assumed to be equal that of self.units</p></li>
-</ul>
-</div></blockquote>
-</div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>xgc,ygc,zgc - cluster’s galactocentric position</p>
-<p>vxgc,vygc,vzgc - cluster’s galactocentric velocity</p>
-</div></blockquote>
-<p>OUTPUT:</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
 </div></blockquote>
 </dd></dl>
 
 <dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.add_rotation">
+<code class="sig-name descname">add_rotation</code><span class="sig-paren">(</span><em class="sig-param">qrot</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_rotation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_rotation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_sse">
 <code class="sig-name descname">add_sse</code><span class="sig-paren">(</span><em class="sig-param">kw</em>, <em class="sig-param">logl</em>, <em class="sig-param">logr</em>, <em class="sig-param">ep</em>, <em class="sig-param">ospin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_sse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_sse" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
-<blockquote>
-<div><p>add_sse</p>
-</div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Add stellar evolution information to stars
-Notes:</p>
-<blockquote>
-<div><ul class="simple">
+<dd><p>Add stellar evolution information to stars</p>
+<dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
 <li><p>parameters are common output variables in NBODY6</p></li>
 <li><p>values are never adjusted during unit or coordinate changes</p></li>
 </ul>
-</div></blockquote>
-</div></blockquote>
-<p>INPUT:</p>
+</dd>
+</dl>
 <blockquote>
-<div><p>kw - stellar evolution tag (for using with NBODY6)</p>
-<p>logl - log of luminosity</p>
-<p>logr - log of stellar radius</p>
-<p>ep - epoch</p>
-<p>ospin - ospin</p>
+<div><dl class="simple">
+<dt>kw: int</dt><dd><p>stellar evolution type (based on NBODY6)</p>
+</dd>
+<dt>logl: float</dt><dd><p>log of luminosity</p>
+</dd>
+<dt>logr: float</dt><dd><p>log of stellar radius</p>
+</dd>
+<dt>ep: float</dt><dd><p>epoch</p>
+</dd>
+<dt>ospin: float</dt><dd><p>ospin</p>
+</dd>
+</dl>
 </div></blockquote>
-<p>OUTPUT:</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
 </div></blockquote>
@@ -312,36 +346,28 @@ Notes:</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_stars">
 <code class="sig-name descname">add_stars</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">vx</em>, <em class="sig-param">vy</em>, <em class="sig-param">vz</em>, <em class="sig-param">m=None</em>, <em class="sig-param">id=None</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_stars" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
+<dd><p>add stars to StarCluster</p>
 <blockquote>
-<div><p>add_stars</p>
-</div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Add stars to the StarCluster instance</p>
-</div></blockquote>
-<p>INPUT:</p>
-<blockquote>
-<div><p>id - star id</p>
-<p>m - mass</p>
-<p>x,y,z - positions</p>
-<p>vx,vy,vz - velocities</p>
-<p>kw - stellar evolution tag (optional,for using with NBODY6) (default:0)</p>
-<p>do_key_params - call key_params() after adding stars (default: False)</p>
-<blockquote>
-<div><p>do_key_params - order stars by radius when calling key_params() (default: False)</p>
-</div></blockquote>
-</div></blockquote>
-<dl class="simple">
-<dt>NOTES:</dt><dd><p>if self.units==radec, input is assumed to be ra,dec,dist,pmra,pmdec,vlos with units 
-of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
+<div><dl class="simple">
+<dt>x,y,z: float</dt><dd><p>stellar positions. Input is assumed to be in cartesian coordinates unless self.units==’degrees’ 
+and self.origin==’sky’, then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)</p>
+</dd>
+<dt>vx,vy,vz: float</dt><dd><p>atellar velocities. Input is assumed to be in cartesian coordinates unless self.units==’degrees’ 
+and self.origin==’sky’, then positions are assumed to be pmra,pmdec,vlos (mas/yr, mas/yr, km/s)</p>
+</dd>
+<dt>m: float int</dt><dd><p>stellar mass</p>
+</dd>
+<dt>id: int </dt><dd><p>star id</p>
+</dd>
+<dt>do_key_params: bool</dt><dd><p>call key_params() after adding stars (default: False)</p>
+</dd>
+<dt>do_order: bool</dt><dd><p>order stars by radius when calling key_params() (default: False)</p>
 </dd>
 </dl>
-<p>OUTPUT:</p>
+</div></blockquote>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
 </div></blockquote>
@@ -358,13 +384,23 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.closest_star">
+<code class="sig-name descname">closest_star</code><span class="sig-paren">(</span><em class="sig-param">projected=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.closest_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.closest_star" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.convert_binary_units">
 <code class="sig-name descname">convert_binary_units</code><span class="sig-paren">(</span><em class="sig-param">param</em>, <em class="sig-param">from_units</em>, <em class="sig-param">to_units</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.convert_binary_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.convert_binary_units" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.core_relaxation_time">
+<code class="sig-name descname">core_relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">multimass=True</em>, <em class="sig-param">projected=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.core_relaxation_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.core_relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.energies">
-<code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.energies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">projected=None</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.energies" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -388,8 +424,8 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="clustertools.analysis.cluster.StarCluster.from_radec">
-<code class="sig-name descname">from_radec</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.from_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.from_radec" title="Permalink to this definition">¶</a></dt>
+<dt id="clustertools.analysis.cluster.StarCluster.from_degrees">
+<code class="sig-name descname">from_degrees</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.from_degrees"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.from_degrees" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -398,25 +434,31 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.half_mass_relaxation_time">
+<code class="sig-name descname">half_mass_relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">multimass=True</em>, <em class="sig-param">projected=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.half_mass_relaxation_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.half_mass_relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.key_params">
 <code class="sig-name descname">key_params</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.key_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.key_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>NAME:</p>
+<dd><p>Find key parameters of the cluster</p>
 <blockquote>
-<div><p>key_params</p>
+<div><dl>
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),</p></li>
+</ul>
+<p>10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50)
+are all calculated if necessary information is given
+- r10, r50, rh10, and rh50 also calculated in projection</p>
+</dd>
+</dl>
 </div></blockquote>
-<p>PURPOSE:</p>
-<blockquote>
-<div><p>Find key parameters of the cluster (mass,luminosity,r10,r50,rh10,rh50)</p>
-</div></blockquote>
-<p>INPUT:</p>
 <blockquote>
 <div><p>do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>HISTORY:</p>
 <blockquote>
 <div><p>2018 - Written - Webb (UofT)</p>
 </div></blockquote>
@@ -428,8 +470,23 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dd></dd></dl>
 
 <dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.relaxation_time">
+<code class="sig-name descname">relaxation_time</code><span class="sig-paren">(</span><em class="sig-param">rad=None</em>, <em class="sig-param">multimass=True</em>, <em class="sig-param">projected=None</em>, <em class="sig-param">method='spitzer'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.relaxation_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.relaxation_time" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.reset_nbody_scale">
+<code class="sig-name descname">reset_nbody_scale</code><span class="sig-paren">(</span><em class="sig-param">mass=True</em>, <em class="sig-param">radii=True</em>, <em class="sig-param">rvirial=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.reset_nbody_scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.reset_nbody_scale" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.return_cluster">
+<code class="sig-name descname">return_cluster</code><span class="sig-paren">(</span><em class="sig-param">units0</em>, <em class="sig-param">origin0</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.return_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.return_cluster" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rlagrange">
-<code class="sig-name descname">rlagrange</code><span class="sig-paren">(</span><em class="sig-param">nlagrange=10</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rlagrange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rlagrange" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rlagrange</code><span class="sig-paren">(</span><em class="sig-param">nlagrange=10</em>, <em class="sig-param">projected=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rlagrange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rlagrange" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -445,11 +502,21 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rv3d">
 <code class="sig-name descname">rv3d</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rv3d" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Calculate 3D and projected positions and velocities</p>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+<blockquote>
+<div><p>None</p>
+</div></blockquote>
+<blockquote>
+<div><p>2019 - Written - Webb (UofT)</p>
+</div></blockquote>
+</dd></dl>
 
 <dl class="method">
-<dt id="clustertools.analysis.cluster.StarCluster.rvirial">
-<code class="sig-name descname">rvirial</code><span class="sig-paren">(</span><em class="sig-param">H=70.0</em>, <em class="sig-param">Om=0.3</em>, <em class="sig-param">overdens=200.0</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rvirial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rvirial" title="Permalink to this definition">¶</a></dt>
+<dt id="clustertools.analysis.cluster.StarCluster.save_cluster">
+<code class="sig-name descname">save_cluster</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.save_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.save_cluster" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -460,6 +527,11 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_cluster">
 <code class="sig-name descname">to_cluster</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">centre_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_cluster" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.to_degrees">
+<code class="sig-name descname">to_degrees</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_degrees"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_degrees" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -493,11 +565,6 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="clustertools.analysis.cluster.StarCluster.to_radec">
-<code class="sig-name descname">to_radec</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_radec" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_sky">
 <code class="sig-name descname">to_sky</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_sky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_sky" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -519,7 +586,12 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.virial_radius">
-<code class="sig-name descname">virial_radius</code><span class="sig-paren">(</span><em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.virial_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.virial_radius" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">virial_radius</code><span class="sig-paren">(</span><em class="sig-param">method='inverse_distance'</em>, <em class="sig-param">full=True</em>, <em class="sig-param">H=70.0</em>, <em class="sig-param">Om=0.3</em>, <em class="sig-param">overdens=200.0</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">projected=None</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.virial_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.virial_radius" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="clustertools.analysis.cluster.StarCluster.virialize">
+<code class="sig-name descname">virialize</code><span class="sig-paren">(</span><em class="sig-param">specific=True</em>, <em class="sig-param">full=True</em>, <em class="sig-param">projected=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.virialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.virialize" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -539,7 +611,7 @@ Notes:</p>
 <div><p>– automatically moves cluster to centre of mass, so all constraints are in clustercentric coordinates and current cluster.units</p>
 </div></blockquote>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>rmin/rmax - minimum and maximum stellar radii</p>
 <p>mmin/mmax - minimum and maximum stellar mass</p>
@@ -550,7 +622,7 @@ Notes:</p>
 <p>projected - use projected values and constraints (default:False)</p>
 <p>reset_centre - re-calculate cluster centre after extraction (default:False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>instance</p>
 </div></blockquote>

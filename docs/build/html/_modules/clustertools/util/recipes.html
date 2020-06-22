@@ -90,7 +90,7 @@
 
 <span class="sd">     Split an array into nbin bin&#39;s of equal number elements</span>
 
-<span class="sd">  INPUT:</span>
+<span class="sd">  Parameters</span>
 
 <span class="sd">     x - input array</span>
 
@@ -98,7 +98,7 @@
 
 <span class="sd">     nsum - return number of points in each bin</span>
 
-<span class="sd">  OUTPUT:</span>
+<span class="sd">  Returns</span>
 
 <span class="sd">     x_lower,x_mid,x_upper,x_hist (if nsum==False)</span>
 
@@ -151,7 +151,7 @@
 
 <span class="sd">     Split an array into nbin bin&#39;s of equal size</span>
 
-<span class="sd">  INPUT:</span>
+<span class="sd">  Parameters</span>
 
 <span class="sd">     x - input array</span>
 
@@ -161,7 +161,7 @@
 
 <span class="sd">     steptype - linear or logarithmic steps</span>
 
-<span class="sd">  OUTPUT:</span>
+<span class="sd">  Returns</span>
 
 <span class="sd">     x_lower,x_mid,x_upper,x_hist (if nsum==False)</span>
 
@@ -207,7 +207,7 @@
 <span class="sd">  PURPOSE:</span>
 
 <span class="sd">     Generate points from a power-law distribution function</span>
-<span class="sd">  INPUT:</span>
+<span class="sd">  Parameters</span>
 
 <span class="sd">     n - number of points</span>
 
@@ -215,7 +215,7 @@
 
 <span class="sd">     xmin,xmax - minimum and maximum values of distribution</span>
 
-<span class="sd">  OUTPUT:</span>
+<span class="sd">  Returns</span>
 
 <span class="sd">     c</span>
 
@@ -252,7 +252,7 @@
 <span class="sd">    PURPOSE:</span>
 
 <span class="sd">     Find distribution function using nx bins containing an equal number of points</span>
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">     x - input array</span>
 
@@ -262,7 +262,7 @@
 
 <span class="sd">     x_lower,x_mean,x_upper - preset bins</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">     x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha</span>
 
@@ -318,7 +318,7 @@
 
 <span class="sd">        Find histogram</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">        x input array</span>
 
@@ -328,7 +328,7 @@
 
 <span class="sd">        x_lower,x_mean,x_upper</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">        x_mean,x_hist</span>
 
@@ -360,7 +360,7 @@
 <span class="sd">    PURPOSE:</span>
 
 <span class="sd">     Calculate mean profile of parameter y that depends on x  </span>
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">     x,y coordinates from which to measure the mean profile</span>
 
@@ -372,7 +372,7 @@
 
 <span class="sd">     median - find median instead of mean (Default: False)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">     x_bin,y_bin,y_sig</span>
 
@@ -422,7 +422,7 @@
 
 <span class="sd">     Smooth a profile</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">     x,y coordinates from which to measure the mean profile</span>
 
@@ -436,7 +436,7 @@
 
 <span class="sd">     dx - width of smoothening bin</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">     x_bin,y_bin,y_sig</span>
 
@@ -501,7 +501,7 @@
 
 <span class="sd">     Perform simple linear interpolate between two points in 2D</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">     r1,r2 - x,y coordinates from which to interpolate</span>
 
@@ -509,7 +509,7 @@
 
 <span class="sd">     y - y-value from which to interpolate x</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">     interpolated value</span>
 
@@ -543,13 +543,13 @@
 
 <span class="sd">     Rotate StarCluster</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">     x,y,z - coordinates of stars</span>
 
 <span class="sd">     thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">     rotated values of x,y,z</span>
 
@@ -594,7 +594,7 @@
 
 <span class="sd">     calculate area enclosed by a collection of points by finding what fraction of a random distribution overlaps with points</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">     x,y - x and y coorindates</span>
 <span class="sd">     </span>
@@ -606,7 +606,7 @@
 <span class="sd">     </span>
 <span class="sd">     plot - plot overlap (Default: False)</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">     area</span>
 
@@ -694,11 +694,11 @@
 
 <span class="sd">       Find distance to each point&#39;s nearest neighbour</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       x=[x,y,z].T</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       distance to nearest neighbour</span>
 
@@ -734,12 +734,12 @@
 
 <span class="sd">    Find distance between two points (made for use with numba)</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">    x1=[x,y,z]</span>
 <span class="sd">    x2=[x,y,z]</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">    distance</span>
 

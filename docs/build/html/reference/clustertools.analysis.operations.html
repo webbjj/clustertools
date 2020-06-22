@@ -97,7 +97,7 @@ calculation</p>
 </div></blockquote>
 </div></blockquote>
 <dl>
-<dt>INPUT:</dt><dd><p>xstart,ystart,zstart - starting position for centre
+<dt>Parameters</dt><dd><p>xstart,ystart,zstart - starting position for centre
 vxstart,vystart,vzstart - starting velocity for centre
 indx - subset of stars to use when finding center
 nsigma - number of standard deviations to within which to keep stars
@@ -113,7 +113,7 @@ if density:</p>
 <p>ro,vo - For converting to and from galpy units (Default: 8., 220.)</p>
 </dd>
 </dl>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass</p>
 </div></blockquote>
@@ -137,13 +137,13 @@ Notes - the general framework for this code was taken from Yohai Meiron,
 who made a python adaptation of the centre of density finder in PhiGrape</p>
 </div></blockquote>
 <dl class="simple">
-<dt>INPUT:</dt><dd><p>xstart,ystart,zstart - starting position for centre
+<dt>Parameters</dt><dd><p>xstart,ystart,zstart - starting position for centre
 vxstart,vystart,vzstart - starting velocity for centre
 rmin - minimum radius of sphere around which to estimate density centre (default: 0.1 pc)
 nmax - maximum number of iterations (default:100)</p>
 </dd>
 </dl>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass</p>
 </div></blockquote>
@@ -166,10 +166,10 @@ nmax - maximum number of iterations (default:100)</p>
 <div><p>Find the centre of mass of the cluster</p>
 </div></blockquote>
 <dl class="simple">
-<dt>INPUT:</dt><dd><p>None</p>
+<dt>Parameters</dt><dd><p>None</p>
 </dd>
 </dl>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass</p>
 </div></blockquote>
@@ -190,11 +190,11 @@ nmax - maximum number of iterations (default:100)</p>
 <blockquote>
 <div><p>Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -215,11 +215,11 @@ nmax - maximum number of iterations (default:100)</p>
 <blockquote>
 <div><p>Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -246,11 +246,11 @@ Notes:</p>
 </ul>
 </div></blockquote>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -271,11 +271,11 @@ Notes:</p>
 <blockquote>
 <div><p>Convert to on-sky position, proper motion, and radial velocity of cluster</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>ra,dec,dist,pmra,pmdec,vlos</p>
 </div></blockquote>
@@ -296,11 +296,11 @@ Notes:</p>
 <blockquote>
 <div><p>Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -321,11 +321,11 @@ Notes:</p>
 <blockquote>
 <div><p>Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>units - ‘nbody’,’pckms’,’kpckms’,’galpy’</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -346,11 +346,11 @@ Notes:</p>
 <blockquote>
 <div><p>Shift coordinates such that origin is the centre of mass</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -371,7 +371,7 @@ Notes:</p>
 <blockquote>
 <div><p>Shift coordinates to clustercentric reference frame</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>do_order - re-sort cluster radii (default: False)</p>
 <p>do_key_params - call key_params after shift (default: False)</p>
@@ -392,7 +392,7 @@ subtracted off. Be sure to set projected=True when making any calculations to us
 </dd>
 </dl>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -413,11 +413,11 @@ subtracted off. Be sure to set projected=True when making any calculations to us
 <blockquote>
 <div><p>Shift coordinates to galactocentric reference frame</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -441,11 +441,11 @@ subtracted off. Be sure to set projected=True when making any calculations to us
 </dd>
 </dl>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -467,11 +467,11 @@ subtracted off. Be sure to set projected=True when making any calculations to us
 <div><p>Calculate positions and velocities of stars when rotated such that clusters velocity vector
 points along x-axis</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>x_rot,y_rot,z_rot,vx_rot,vy_rot,vz_rot</p>
 </div></blockquote>
@@ -492,11 +492,11 @@ points along x-axis</p>
 <blockquote>
 <div><p>Shift cluster to origin as defined by keyword</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>origin - accepts ‘cluster’,’centre’,’galaxy’</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -517,11 +517,11 @@ points along x-axis</p>
 <blockquote>
 <div><p>Save cluster’s units and origin</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>units, origin</p>
 </div></blockquote>
@@ -542,13 +542,13 @@ points along x-axis</p>
 <blockquote>
 <div><p>return cluster to a specific combination of units and origin</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>units0 - units that StarCluster will be changed to</p>
 <p>origin0 - origin that StarCluster will be changed to</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -569,11 +569,11 @@ points along x-axis</p>
 <blockquote>
 <div><p>Rotate the coordinate system to be aligned with cluster’s orbit (Work in progress)</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -594,7 +594,7 @@ points along x-axis</p>
 <blockquote>
 <div><p>Assign new conversions for real mass, size, and velocity to Nbody units</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>mass - find new mass conversion (Default: True)</p>
@@ -605,7 +605,7 @@ points along x-axis</p>
 <blockquote>
 <div><p>same as rvirial</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>
@@ -631,12 +631,12 @@ points along x-axis</p>
 <blockquote>
 <div><p>Add a degree of rotation to an already generated StarCluster</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>qrot - the fraction of stars with v_phi &lt; 0 that are switched to vphi &gt; 0</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>None</p>
 </div></blockquote>

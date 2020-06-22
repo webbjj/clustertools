@@ -89,7 +89,7 @@
 <div><p>Load a StarCluster snapshot from a generic code output
 –&gt; Note user can easily create their own def my_code() for new code output types</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)</p>
 <p>particles - AMUSE particle dataset (default: None)</p>
@@ -113,7 +113,7 @@
 <p>do_key_params - calculate key parameters</p>
 <p>do_rorder - sort stars in order from closes to the origin to the farthest</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>StarCluster instance</p>
 </div></blockquote>
@@ -136,7 +136,7 @@
 –&gt; ofile or orbit need to be provded again, same as load_cluster.
 –&gt; Be sure that advance is set to True so next line of orbit file is read in</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance to be advanced</p>
 <p>custom_override - use a custom function to load data instead of default</p>
@@ -148,7 +148,7 @@
 <blockquote>
 <div><p>same as load_cluster</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>StarCluster instance</p>
 </div></blockquote>

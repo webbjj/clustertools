@@ -21,74 +21,73 @@ from .operations import *
 from copy import copy
 
 class StarCluster(object):
-    """ A class that represents a star cluster population that functions can be performed on
+    r""" A class that represents a star cluster population that functions can be performed on
     
     Parameters
     ----------
-        tphys: float
-                Time (units not necessary) associated with the population (default: 0)
-        units: str
-                Units of stellar positions and velocties. Options include 'pckms',
-                'kpckms','degrees','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
-                stellar velocities are assumed to be km/s. (default: None)
-        origin: str
-                Origin of coordinate system within which stellar positions and velocities are defined. 
-                Options include 'centre', 'cluster', 'galaxy' and 'sky'. Note that 'centre' corresponds
-                to the systems centre of density or mass (as calculated by clustertools) while 'cluster' corresponds
-                to the orbital position of the cluster's initial centre of mass given 'tphys'. In some cases
-                these two coordinate systems may be the same. (default: None)
-        ctype: str
-                Code type used to generate the cluster population. Current options include 'snapshot',
-                'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
-                informs clustertools how to load the stellar popuation and advance to the next snapshot.
-                (default: 'snapshot')
+    tphys: float
+            Time (units not necessary) associated with the population (default: 0)
+    units: str
+            Units of stellar positions and velocties. Options include 'pckms',
+            'kpckms','degrees','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
+            stellar velocities are assumed to be km/s. (default: None)
+    origin: str
+            Origin of coordinate system within which stellar positions and velocities are defined. 
+            Options include 'centre', 'cluster', 'galaxy' and 'sky'. Note that 'centre' corresponds
+            to the systems centre of density or mass (as calculated by clustertools) while 'cluster' corresponds
+            to the orbital position of the cluster's initial centre of mass given 'tphys'. In some cases
+            these two coordinate systems may be the same. (default: None)
+    ctype: str
+            Code type used to generate the cluster population. Current options include 'snapshot',
+            'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
+            informs clustertools how to load the stellar popuation and advance to the next snapshot.
+            (default: 'snapshot')
 
-        projected: bool
-            return projected values instead of 3D value. (default: False)
+    projected: bool
+        return projected values instead of 3D value. (default: False)
 
     Key Word Arguments (**kwargs)
     ----------
 
-        sfile: str
-                name of file containing single star data
-        bfile: str
-                name of file contain binary star data
-        ofilename: str
-                orbit filename if ofile is not given
-        ounits: str
-                {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
-        nsnap: int
-                if a specific snapshot is to be read in instead of starting from zero
-        nzfill: int
-                value for zfill when reading and writing snapshots (default: 5)
-        snapbase: str
-                string of characters in filename before nsnap (default: '')
-        snapend: str
-                string of character in filename after nsnap (default: '.dat')
-        snapdir: str
-                string name of directory of snapshots if different than wdir (Default: '')
-        delimiter: str 
-                choice of delimiter when reading ascii/csv files (default: ',')
-        wdir: str
-                working directory of snapshots if not current directory
-        intialize: bool
-                initialize a galpy orbit after reading in orbital information (default: False)
-        advance: bool
-                set to True if this a snapshot that has been advanced to from an initial one? (default: False)
-        centre_method: str
-                {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
+    sfile: str
+            name of file containing single star data
+    bfile: str
+            name of file contain binary star data
+    ofilename: str
+            orbit filename if ofile is not given
+    ounits: str
+            {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
+    nsnap: int
+            if a specific snapshot is to be read in instead of starting from zero
+    nzfill: int
+            value for zfill when reading and writing snapshots (default: 5)
+    snapbase: str
+            string of characters in filename before nsnap (default: '')
+    snapend: str
+            string of character in filename after nsnap (default: '.dat')
+    snapdir: str
+            string name of directory of snapshots if different than wdir (Default: '')
+    delimiter: str 
+            choice of delimiter when reading ascii/csv files (default: ',')
+    wdir: str
+            working directory of snapshots if not current directory
+    intialize: bool
+            initialize a galpy orbit after reading in orbital information (default: False)
+    advance: bool
+            set to True if this a snapshot that has been advanced to from an initial one? (default: False)
+    centre_method: str
+            {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
 
     Returns
     ----------
 
-        StarCluster
+    StarCluster
 
     HISTORY:
     ----------
-        2018 - Written - Webb (UofT)
+    2018 - Written - Webb (UofT)
 
     """
-    
     def __init__(
         self, ntot=0, tphys=0.0, units=None, origin=None, ctype="snapshot", projected=False, **kwargs
     ):
@@ -999,30 +998,50 @@ class StarCluster(object):
 
     # Directly call from functions.py (see functions.py files for documenation):
 
-    def relaxation_time(self, rad=None, multimass=True, projected=self.projected,method='spitzer'):
+    def relaxation_time(self, rad=None, multimass=True, projected=None,method='spitzer'):
+
+        if projected==None:
+            projected=self.projected
+
         relaxation_time(self, rad=rad, multimass=multimass, projected=projected,method='spitzer')
 
-    def half_mass_relaxation_time(self, multimass=True, projected=self.projected):
+    def half_mass_relaxation_time(self, multimass=True, projected=None):
+        if projected==None:
+            projected=self.projected
         half_mass_relaxation_time(self, multimass=multimass, projected=projected)
 
-    def core_relaxation_time(self, multimass=True, projected=self.projected):
-        core_relaxation_time(self, multimass=True, projected=self.projected)
+    def core_relaxation_time(self, multimass=True, projected=None):
+        if projected==None:
+            projected=self.projected
+        core_relaxation_time(self, multimass=True, projected=projected)
 
-    def energies(self, specific=True, i_d=None, full=True, projected=self.projected, parallel=False):
+    def energies(self, specific=True, i_d=None, full=True, projected=None, parallel=False):
+        if projected==None:
+            projected=self.projected
         ek, pot, etot=energies(self, specific=specific, i_d=i_d, full=full, projected=projected, parallel=parallel)
         self.add_energies(ek, pot, etot)
 
-    def closest_star(self, projected=self.projected):
+    def closest_star(self, projected=None):
+        if projected==None:
+            projected=self.projected
+
         self.dclosest=closest_star(self, projected=projected)
 
-    def virialize(self, specific=True, full=True, projected=self.projected):
+    def virialize(self, specific=True, full=True, projected=None):
+        if projected==None:
+            projected=self.projected
+            ß
         virialize(self, specific=True, full=True, projected=projected)
 
-    def rlagrange(self, nlagrange=10, projected=self.projected):
+    def rlagrange(self, nlagrange=10, projected=None):
+        if projected==None:
+            projected=self.projected
         self.rn = rlagrange(self, nlagrange=nlagrange, projected=projected)
 
     def virial_radius(self,method='inverse_distance', full=True, H=70.0, Om=0.3, overdens=200.0,
-        nrad=20, projected=self.projected, plot=False, **kwargs):
+        nrad=20, projected=None, plot=False, **kwargs):
+        if projected==None:
+            projected=self.projected
 
         self.rv = virial_radius(self,method=method, full=full, H=H, Om=Om, overdens=overdens,
         nrad=nrad, projected=projected, plot=plot, **kwargs)
@@ -1046,6 +1065,10 @@ class StarCluster(object):
         plot=False,
         **kwargs
     ):
+
+        if projected==None:
+            projected=self.projected
+
         m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(
             self,
             mmin=mmin,

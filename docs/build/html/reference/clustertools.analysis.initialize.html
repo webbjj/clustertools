@@ -89,7 +89,7 @@
 <div><p>Setup an N-body realization of a StarCluster with specific parameters
 –&gt; Relies heavily on LIMEPY/SPES models (REFERENCE)</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><dl class="simple">
 <dt>ctype - Type of model used to generate cluster (‘SPES’,LIMEPY’,’WOOLEY’,’KING’,’WILSON’,Name/List of Galactic Clusters)</dt><dd><p>–&gt; To add: PLUMMER</p>
@@ -111,7 +111,7 @@
 <p>names - return names of Galactic clusters generate (Default: False)</p>
 <p class="attribution">—Additional KWARGS passed to get_limepy, and get_spes</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>StarCluster instance</p>
 </div></blockquote>
@@ -132,11 +132,11 @@
 <blockquote>
 <div><p>Convert central potential (W0) values to King central concentration (c)</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>W0 - central potential</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>c</p>
 </div></blockquote>
@@ -157,12 +157,12 @@
 <blockquote>
 <div><p>Convert King central concentration (c) values to central potential (W0) values</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>c - central concentration</p>
 <p>invert - convert from W0 to c instead, in which case the input c is the central potential (Default: False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>W0 (or c if invert==True)</p>
 </div></blockquote>

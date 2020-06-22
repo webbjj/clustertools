@@ -90,7 +90,7 @@ calculate key parameters</p>
 <blockquote>
 <div><p>Calculate the relaxation time (Spitzer &amp; Hart 1971) within a given radius of the cluster</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>rad - radius within which to calculate the relaxation time</p>
@@ -98,7 +98,7 @@ calculate key parameters</p>
 <p>projected - use projected values (default: False)</p>
 <p>method - choose between Spitzer &amp; Hart 1971 and other methods to be added later</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>trelax</p>
 </div></blockquote>
@@ -119,13 +119,13 @@ calculate key parameters</p>
 <blockquote>
 <div><p>Calculate the half-mass relaxation time (Spitzer 1987) of the cluster</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
 <p>projected - use projected values (default: False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>trelax</p>
 </div></blockquote>
@@ -146,14 +146,14 @@ calculate key parameters</p>
 <blockquote>
 <div><p>Calculate the core relaxation time (Stone &amp; Ostriker 2015) of the cluster</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)</p>
 <p>projected - use projected values (default: False)</p>
 <p>method - choose between Spitzer 1987 and other methods to be added later</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>trelax</p>
 </div></blockquote>
@@ -165,7 +165,7 @@ calculate key parameters</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.functions.energies">
-<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.energies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>energies</p>
@@ -174,7 +174,7 @@ calculate key parameters</p>
 <blockquote>
 <div><p>Calculate kinetic and potential energy of every star</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>specific - find specific energies (default: True)</p>
@@ -182,7 +182,7 @@ calculate key parameters</p>
 <p>full - calculate distance of full array of stars at once with numbra (default: True)</p>
 <p>parallel - calculate distances in parallel if True (default: False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>ek,pot,etot</p>
 </div></blockquote>
@@ -199,7 +199,7 @@ calculate key parameters</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.functions.virialize">
-<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">virialize</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">full=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#virialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.virialize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.functions.</code><code class="sig-name descname">virialize</code><span class="sig-paren">(</span><em class="sig-param">cluster</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">full=True</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/functions.html#virialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.functions.virialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>virialize</p>
@@ -208,13 +208,13 @@ calculate key parameters</p>
 <blockquote>
 <div><p>Adjust stellar velocities so cluster is in virial equilibrium</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance
 specific - find specific energies (default: True)
 full - do full array of stars at once with numbra (default: True)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>qv</p>
 </div></blockquote>
@@ -244,13 +244,13 @@ full - do full array of stars at once with numbra (default: True)</p>
 </dl>
 <p>–&gt; Definition taken from AMUSE (www.amusecode.org)</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>projected - calculate projected virial radius (default: False)</p>
 <p>full - Use Numba (default:True)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>rv</p>
 </div></blockquote>
@@ -274,7 +274,7 @@ full - do full array of stars at once with numbra (default: True)</p>
 </dd>
 </dl>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>H - Hubble constant</p>
@@ -283,7 +283,7 @@ full - do full array of stars at once with numbra (default: True)</p>
 <p>nrad - number of radial bins used to calculate cluster density profile</p>
 <p>projected - calculate projected virial radius (default: False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>rv</p>
 </div></blockquote>
@@ -304,7 +304,7 @@ full - do full array of stars at once with numbra (default: True)</p>
 <blockquote>
 <div><p>Find mass function over a given mass range using nmass bins containing an equal number of stars</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance
 mmin/mmax - specific mass range
@@ -320,7 +320,7 @@ omask - place a mask over the dataset to mimic observed data
 plot - plot the mass function
 <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs - key words for plotting</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
 if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror</p>
@@ -342,7 +342,7 @@ if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror</p
 <blockquote>
 <div><p>Find eta over a given mass range using nmass bins containing an equal number of stars</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>mmin/mmax - specific mass range</p>
@@ -356,7 +356,7 @@ if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror</p
 <p>plot - plot the mass function</p>
 <p><a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs - key words for plotting</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>m_mean,sigvm,eta,eeta,yeta,eyeta</p>
 </div></blockquote>
@@ -377,7 +377,7 @@ if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror</p
 <blockquote>
 <div><p>calculate surface area enclosed by cluster by finding what fraction of a random distribution overlaps with points</p>
 </div></blockquote>
-<p>INPUT:</p>
+<p>Parameters</p>
 <blockquote>
 <div><p>cluster - StarCluster instance</p>
 <p>mmin/mmax - specific mass range
@@ -393,7 +393,7 @@ projected - use projected values</p>
 <p>method - generate spherical or rectangular distribution of random points (Default: sphere)</p>
 <p>plot - plot overlap (Default: False)</p>
 </div></blockquote>
-<p>OUTPUT:</p>
+<p>Returns</p>
 <blockquote>
 <div><p>area</p>
 </div></blockquote>

@@ -100,7 +100,7 @@
 <span class="sd">       Load a StarCluster snapshot from a generic code output</span>
 <span class="sd">       --&gt; Note user can easily create their own def my_code() for new code output types</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)</span>
 
@@ -141,7 +141,7 @@
 <span class="sd">        do_rorder - sort stars in order from closes to the origin to the farthest</span>
 
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 
@@ -281,7 +281,7 @@
 <span class="sd">       --&gt; ofile or orbit need to be provded again, same as load_cluster.</span>
 <span class="sd">       --&gt; Be sure that advance is set to True so next line of orbit file is read in</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance to be advanced</span>
 
@@ -297,7 +297,7 @@
 
 <span class="sd">        same as load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 
@@ -418,7 +418,7 @@
 
 <span class="sd">       get **kwargs from current cluster before advancing</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance</span>
 
@@ -426,7 +426,7 @@
 
 <span class="sd">        same a load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       None</span>
 
@@ -475,7 +475,7 @@
 <span class="sd">            --&gt; Note that gc_orbit.dat comes from running &#39;grep &#39;CLUSTER ORBIT&#39; logfile &gt; gc_orbit.dat&#39; on </span>
 <span class="sd">            the standard Nbody6 logfile</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       cluster - StarCluster instance</span>
 
@@ -487,7 +487,7 @@
 <span class="sd">        nsnap - if nsnap is provided, read line # nsnap from the orbit file</span>
 <span class="sd">        ounits - if you units are not the same as StarCluster units, provide them and they will be converted</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       None</span>
 
@@ -556,7 +556,7 @@
 
 <span class="sd">       Extract a single snapshot from an ascii file output from a gyrfalcon simulation</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       filein - opened gyrfalcon file</span>
 
@@ -571,7 +571,7 @@
 
 <span class="sd">        same as load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 
@@ -683,7 +683,7 @@
 <span class="sd">       --&gt; Difference between Jarrod&#39;s output and the public version is found in /Node/hrplot.f of Nbody6</span>
 <span class="sd">       --&gt; Called for Nbody6 simulations with stellar evolution</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       fort82 - opened fort.82 file containing binary star information</span>
 
@@ -697,7 +697,7 @@
 
 <span class="sd">        same as load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 
@@ -919,7 +919,7 @@
 <span class="sd">       --&gt; Difference between Jeremy&#39;s output and the public version is found in /Node/output.f of Nbody6</span>
 <span class="sd">       --&gt; Called for Nbody6 simulations without stellar evolution</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       out9 - opened OUT34 file containing binary star information</span>
 
@@ -933,7 +933,7 @@
 
 <span class="sd">        same as load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 
@@ -1173,7 +1173,7 @@
 
 <span class="sd">       Load a generic snapshot where column names and numbers can be manually assigned</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)</span>
 
@@ -1196,7 +1196,7 @@
 
 <span class="sd">        same as load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 
@@ -1359,7 +1359,7 @@
 
 <span class="sd">       Convert AMUSE particle dataset to a StarCluster instance</span>
 
-<span class="sd">    INPUT:</span>
+<span class="sd">    Parameters</span>
 
 <span class="sd">       particles - AMUSE particle dataset</span>
 
@@ -1371,7 +1371,7 @@
 
 <span class="sd">        same as load_cluster</span>
 
-<span class="sd">    OUTPUT:</span>
+<span class="sd">    Returns</span>
 
 <span class="sd">       StarCluster instance</span>
 

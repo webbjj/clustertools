@@ -1,3 +1,2 @@
 nbsphinx
-IPython
-
+sphinx_automodapi

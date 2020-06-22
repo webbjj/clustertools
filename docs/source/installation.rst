@@ -19,6 +19,7 @@ Requirements
 * numpy
 * numba
 * scipy
+* astropy
 
 Optional:
 

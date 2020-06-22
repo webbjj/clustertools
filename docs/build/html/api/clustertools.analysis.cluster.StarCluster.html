@@ -16,7 +16,6 @@
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script async="async" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Units and Coordinate Systems" href="../units_and_coordinate_systems.html" />
@@ -43,6 +42,29 @@
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="clustertools.analysis.cluster.sub_cluster.html"
+                        title="previous chapter">sub_cluster</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../units_and_coordinate_systems.html"
+                        title="next chapter">Units and Coordinate Systems</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/clustertools.analysis.cluster.StarCluster.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -56,7 +78,7 @@
 <dl class="class">
 <dt id="clustertools.analysis.cluster.StarCluster">
 <em class="property">class </em><code class="sig-prename descclassname">clustertools.analysis.cluster.</code><code class="sig-name descname">StarCluster</code><span class="sig-paren">(</span><em class="sig-param">ntot=0</em>, <em class="sig-param">tphys=0.0</em>, <em class="sig-param">units=None</em>, <em class="sig-param">origin=None</em>, <em class="sig-param">ctype='snapshot'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>NAME:</p>
 <p>__init__</p>
 <p>PURPOSE:</p>
@@ -103,118 +125,118 @@ centre_method - {None,’orthographic’,’VandeVen’} method to convert to cl
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_actions" title="clustertools.analysis.cluster.StarCluster.add_actions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_actions</span></code></a>(self, JR, Jphi, Jz, OR, Ophi, …)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_actions" title="clustertools.analysis.cluster.StarCluster.add_actions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_actions</span></code></a>(JR, Jphi, Jz, OR, Ophi, Oz, TR, …)</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_bse" title="clustertools.analysis.cluster.StarCluster.add_bse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_bse</span></code></a>(self, id1, id2, kw1, kw2, kcm, ecc, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_bse" title="clustertools.analysis.cluster.StarCluster.add_bse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_bse</span></code></a>(id1, id2, kw1, kw2, kcm, ecc, pb, …)</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_energies" title="clustertools.analysis.cluster.StarCluster.add_energies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_energies</span></code></a>(self, kin, pot, etot)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_energies" title="clustertools.analysis.cluster.StarCluster.add_energies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_energies</span></code></a>(kin, pot, etot)</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_nbody6" title="clustertools.analysis.cluster.StarCluster.add_nbody6"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nbody6</span></code></a>(self[, nc, rc, rbar, rtide, xc, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_nbody6" title="clustertools.analysis.cluster.StarCluster.add_nbody6"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_nbody6</span></code></a>([nc, rc, rbar, rtide, xc, yc, …])</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_orbit" title="clustertools.analysis.cluster.StarCluster.add_orbit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_orbit</span></code></a>(self, xgc, ygc, zgc, vxgc, vygc, vzgc)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_orbit" title="clustertools.analysis.cluster.StarCluster.add_orbit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_orbit</span></code></a>(xgc, ygc, zgc, vxgc, vygc, vzgc[, …])</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_sse" title="clustertools.analysis.cluster.StarCluster.add_sse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_sse</span></code></a>(self, kw, logl, logr, ep, ospin)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_sse" title="clustertools.analysis.cluster.StarCluster.add_sse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_sse</span></code></a>(kw, logl, logr, ep, ospin)</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_stars" title="clustertools.analysis.cluster.StarCluster.add_stars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_stars</span></code></a>(self, x, y, z, vx, vy, vz[, m, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_stars" title="clustertools.analysis.cluster.StarCluster.add_stars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_stars</span></code></a>(x, y, z, vx, vy, vz[, m, id, …])</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.alpha_prof" title="clustertools.analysis.cluster.StarCluster.alpha_prof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_prof</span></code></a>(self[, mmin, mmax, nmass, rmin, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.alpha_prof" title="clustertools.analysis.cluster.StarCluster.alpha_prof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_prof</span></code></a>([mmin, mmax, nmass, rmin, rmax, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.calc_actions" title="clustertools.analysis.cluster.StarCluster.calc_actions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_actions</span></code></a>(self[, pot, ro, vo])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.calc_actions" title="clustertools.analysis.cluster.StarCluster.calc_actions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">calc_actions</span></code></a>([pot, ro, vo])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.convert_binary_units" title="clustertools.analysis.cluster.StarCluster.convert_binary_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_binary_units</span></code></a>(self, param, …)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.convert_binary_units" title="clustertools.analysis.cluster.StarCluster.convert_binary_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_binary_units</span></code></a>(param, from_units, to_units)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.energies" title="clustertools.analysis.cluster.StarCluster.energies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">energies</span></code></a>(self[, specific, i_d, full, parallel])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.energies" title="clustertools.analysis.cluster.StarCluster.energies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">energies</span></code></a>([specific, i_d, full, parallel])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.eta_function" title="clustertools.analysis.cluster.StarCluster.eta_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eta_function</span></code></a>(self[, mmin, mmax, nmass, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.eta_function" title="clustertools.analysis.cluster.StarCluster.eta_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">eta_function</span></code></a>([mmin, mmax, nmass, rmin, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.find_centre" title="clustertools.analysis.cluster.StarCluster.find_centre"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_centre</span></code></a>(self[, xstart, ystart, zstart, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.find_centre" title="clustertools.analysis.cluster.StarCluster.find_centre"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_centre</span></code></a>([xstart, ystart, zstart, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.find_centre_of_density" title="clustertools.analysis.cluster.StarCluster.find_centre_of_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_centre_of_density</span></code></a>(self[, xstart, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.find_centre_of_density" title="clustertools.analysis.cluster.StarCluster.find_centre_of_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_centre_of_density</span></code></a>([xstart, ystart, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.find_centre_of_mass" title="clustertools.analysis.cluster.StarCluster.find_centre_of_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_centre_of_mass</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.find_centre_of_mass" title="clustertools.analysis.cluster.StarCluster.find_centre_of_mass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_centre_of_mass</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.from_radec" title="clustertools.analysis.cluster.StarCluster.from_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_radec</span></code></a>(self[, do_order, do_key_params])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.from_radec" title="clustertools.analysis.cluster.StarCluster.from_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_radec</span></code></a>([do_order, do_key_params])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.from_sky" title="clustertools.analysis.cluster.StarCluster.from_sky"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_sky</span></code></a>(self[, do_order, do_key_params])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.from_sky" title="clustertools.analysis.cluster.StarCluster.from_sky"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_sky</span></code></a>([do_order, do_key_params])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.key_params" title="clustertools.analysis.cluster.StarCluster.key_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key_params</span></code></a>(self[, do_order])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.key_params" title="clustertools.analysis.cluster.StarCluster.key_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">key_params</span></code></a>([do_order])</p></td>
 <td><p>NAME:</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.mass_function" title="clustertools.analysis.cluster.StarCluster.mass_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mass_function</span></code></a>(self[, mmin, mmax, nmass, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.mass_function" title="clustertools.analysis.cluster.StarCluster.mass_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">mass_function</span></code></a>([mmin, mmax, nmass, rmin, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rlagrange" title="clustertools.analysis.cluster.StarCluster.rlagrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rlagrange</span></code></a>(self[, nlagrange, projected])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rlagrange" title="clustertools.analysis.cluster.StarCluster.rlagrange"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rlagrange</span></code></a>([nlagrange, projected])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rlimiting" title="clustertools.analysis.cluster.StarCluster.rlimiting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rlimiting</span></code></a>(self[, pot, rgc, ro, vo, nrad, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rlimiting" title="clustertools.analysis.cluster.StarCluster.rlimiting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rlimiting</span></code></a>([pot, rgc, ro, vo, nrad, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rtidal" title="clustertools.analysis.cluster.StarCluster.rtidal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rtidal</span></code></a>(self[, pot, rtiterate, rgc, ro, vo])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rtidal" title="clustertools.analysis.cluster.StarCluster.rtidal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rtidal</span></code></a>([pot, rtiterate, rgc, ro, vo])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rv3d" title="clustertools.analysis.cluster.StarCluster.rv3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rv3d</span></code></a>(self)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rv3d" title="clustertools.analysis.cluster.StarCluster.rv3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rv3d</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rvirial" title="clustertools.analysis.cluster.StarCluster.rvirial"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rvirial</span></code></a>(self[, H, Om, overdens, nrad, projected])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.rvirial" title="clustertools.analysis.cluster.StarCluster.rvirial"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rvirial</span></code></a>([H, Om, overdens, nrad, projected])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_centre" title="clustertools.analysis.cluster.StarCluster.to_centre"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_centre</span></code></a>(self[, do_order, do_key_params, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_centre" title="clustertools.analysis.cluster.StarCluster.to_centre"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_centre</span></code></a>([do_order, do_key_params, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_cluster" title="clustertools.analysis.cluster.StarCluster.to_cluster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_cluster</span></code></a>(self[, do_order, do_key_params, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_cluster" title="clustertools.analysis.cluster.StarCluster.to_cluster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_cluster</span></code></a>([do_order, do_key_params, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_galaxy" title="clustertools.analysis.cluster.StarCluster.to_galaxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_galaxy</span></code></a>(self[, do_order, do_key_params])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_galaxy" title="clustertools.analysis.cluster.StarCluster.to_galaxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_galaxy</span></code></a>([do_order, do_key_params])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_galpy" title="clustertools.analysis.cluster.StarCluster.to_galpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_galpy</span></code></a>(self[, do_key_params, ro, vo])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_galpy" title="clustertools.analysis.cluster.StarCluster.to_galpy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_galpy</span></code></a>([do_key_params, ro, vo])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_kpckms" title="clustertools.analysis.cluster.StarCluster.to_kpckms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_kpckms</span></code></a>(self[, do_key_params, ro, vo])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_kpckms" title="clustertools.analysis.cluster.StarCluster.to_kpckms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_kpckms</span></code></a>([do_key_params, ro, vo])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_nbody" title="clustertools.analysis.cluster.StarCluster.to_nbody"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_nbody</span></code></a>(self[, do_key_params, ro, vo])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_nbody" title="clustertools.analysis.cluster.StarCluster.to_nbody"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_nbody</span></code></a>([do_key_params, ro, vo])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_origin" title="clustertools.analysis.cluster.StarCluster.to_origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_origin</span></code></a>(self, origin[, do_order, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_origin" title="clustertools.analysis.cluster.StarCluster.to_origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_origin</span></code></a>(origin[, do_order, do_key_params])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_pckms" title="clustertools.analysis.cluster.StarCluster.to_pckms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pckms</span></code></a>(self[, do_key_params])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_pckms" title="clustertools.analysis.cluster.StarCluster.to_pckms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pckms</span></code></a>([do_key_params])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_radec" title="clustertools.analysis.cluster.StarCluster.to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_radec</span></code></a>(self[, do_key_params, ro, vo])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_radec" title="clustertools.analysis.cluster.StarCluster.to_radec"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_radec</span></code></a>([do_key_params, ro, vo])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_sky" title="clustertools.analysis.cluster.StarCluster.to_sky"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_sky</span></code></a>(self[, do_order, do_key_params])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_sky" title="clustertools.analysis.cluster.StarCluster.to_sky"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_sky</span></code></a>([do_order, do_key_params])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_tail" title="clustertools.analysis.cluster.StarCluster.to_tail"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_tail</span></code></a>(self[, plot])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_tail" title="clustertools.analysis.cluster.StarCluster.to_tail"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_tail</span></code></a>([plot])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_units" title="clustertools.analysis.cluster.StarCluster.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a>(self, units[, do_order, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.to_units" title="clustertools.analysis.cluster.StarCluster.to_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_units</span></code></a>(units[, do_order, do_key_params, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.vcirc_prof" title="clustertools.analysis.cluster.StarCluster.vcirc_prof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vcirc_prof</span></code></a>(self[, mmin, mmax, rmin, rmax, …])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.vcirc_prof" title="clustertools.analysis.cluster.StarCluster.vcirc_prof"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vcirc_prof</span></code></a>([mmin, mmax, rmin, rmax, nrad, …])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.virial_radius" title="clustertools.analysis.cluster.StarCluster.virial_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">virial_radius</span></code></a>(self[, projected])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.virial_radius" title="clustertools.analysis.cluster.StarCluster.virial_radius"><code class="xref py py-obj docutils literal notranslate"><span class="pre">virial_radius</span></code></a>([projected])</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -222,7 +244,7 @@ centre_method - {None,’orthographic’,’VandeVen’} method to convert to cl
 <p class="rubric">Methods Documentation</p>
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_actions">
-<code class="sig-name descname">add_actions</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">JR</em>, <em class="sig-param">Jphi</em>, <em class="sig-param">Jz</em>, <em class="sig-param">OR</em>, <em class="sig-param">Ophi</em>, <em class="sig-param">Oz</em>, <em class="sig-param">TR</em>, <em class="sig-param">Tphi</em>, <em class="sig-param">Tz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_actions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_actions</code><span class="sig-paren">(</span><em class="sig-param">JR</em>, <em class="sig-param">Jphi</em>, <em class="sig-param">Jz</em>, <em class="sig-param">OR</em>, <em class="sig-param">Ophi</em>, <em class="sig-param">Oz</em>, <em class="sig-param">TR</em>, <em class="sig-param">Tphi</em>, <em class="sig-param">Tz</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_actions</p>
@@ -247,7 +269,7 @@ centre_method - {None,’orthographic’,’VandeVen’} method to convert to cl
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_bse">
-<code class="sig-name descname">add_bse</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">id1</em>, <em class="sig-param">id2</em>, <em class="sig-param">kw1</em>, <em class="sig-param">kw2</em>, <em class="sig-param">kcm</em>, <em class="sig-param">ecc</em>, <em class="sig-param">pb</em>, <em class="sig-param">semi</em>, <em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">logl1</em>, <em class="sig-param">logl2</em>, <em class="sig-param">logr1</em>, <em class="sig-param">logr2</em>, <em class="sig-param">ep1=None</em>, <em class="sig-param">ep2=None</em>, <em class="sig-param">ospin1=None</em>, <em class="sig-param">ospin2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_bse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_bse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_bse</code><span class="sig-paren">(</span><em class="sig-param">id1</em>, <em class="sig-param">id2</em>, <em class="sig-param">kw1</em>, <em class="sig-param">kw2</em>, <em class="sig-param">kcm</em>, <em class="sig-param">ecc</em>, <em class="sig-param">pb</em>, <em class="sig-param">semi</em>, <em class="sig-param">m1</em>, <em class="sig-param">m2</em>, <em class="sig-param">logl1</em>, <em class="sig-param">logl2</em>, <em class="sig-param">logr1</em>, <em class="sig-param">logr2</em>, <em class="sig-param">ep1=None</em>, <em class="sig-param">ep2=None</em>, <em class="sig-param">ospin1=None</em>, <em class="sig-param">ospin2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_bse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_bse" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <p>add_bse</p>
 <p>PURPOSE:</p>
@@ -275,7 +297,7 @@ Notes:
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_energies">
-<code class="sig-name descname">add_energies</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">kin</em>, <em class="sig-param">pot</em>, <em class="sig-param">etot</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_energies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_energies</code><span class="sig-paren">(</span><em class="sig-param">kin</em>, <em class="sig-param">pot</em>, <em class="sig-param">etot</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_energies" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_energies</p>
@@ -308,7 +330,7 @@ Notes:</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_nbody6">
-<code class="sig-name descname">add_nbody6</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">nc=0</em>, <em class="sig-param">rc=0.0</em>, <em class="sig-param">rbar=1.0</em>, <em class="sig-param">rtide=0.0</em>, <em class="sig-param">xc=0.0</em>, <em class="sig-param">yc=0.0</em>, <em class="sig-param">zc=0.0</em>, <em class="sig-param">zmbar=1.0</em>, <em class="sig-param">vstar=1.0</em>, <em class="sig-param">rscale=1.0</em>, <em class="sig-param">ns=0.0</em>, <em class="sig-param">nb=0.0</em>, <em class="sig-param">np=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_nbody6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_nbody6" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_nbody6</code><span class="sig-paren">(</span><em class="sig-param">nc=0</em>, <em class="sig-param">rc=0.0</em>, <em class="sig-param">rbar=1.0</em>, <em class="sig-param">rtide=0.0</em>, <em class="sig-param">xc=0.0</em>, <em class="sig-param">yc=0.0</em>, <em class="sig-param">zc=0.0</em>, <em class="sig-param">zmbar=1.0</em>, <em class="sig-param">vstar=1.0</em>, <em class="sig-param">rscale=1.0</em>, <em class="sig-param">ns=0.0</em>, <em class="sig-param">nb=0.0</em>, <em class="sig-param">np=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_nbody6"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_nbody6" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_nbody6</p>
@@ -343,7 +365,7 @@ Notes:</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_orbit">
-<code class="sig-name descname">add_orbit</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">xgc</em>, <em class="sig-param">ygc</em>, <em class="sig-param">zgc</em>, <em class="sig-param">vxgc</em>, <em class="sig-param">vygc</em>, <em class="sig-param">vzgc</em>, <em class="sig-param">ounits=None</em>, <em class="sig-param">initialize=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_orbit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_orbit</code><span class="sig-paren">(</span><em class="sig-param">xgc</em>, <em class="sig-param">ygc</em>, <em class="sig-param">zgc</em>, <em class="sig-param">vxgc</em>, <em class="sig-param">vygc</em>, <em class="sig-param">vzgc</em>, <em class="sig-param">ounits=None</em>, <em class="sig-param">initialize=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_orbit" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_orbit</p>
@@ -375,7 +397,7 @@ Notes:</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_sse">
-<code class="sig-name descname">add_sse</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">kw</em>, <em class="sig-param">logl</em>, <em class="sig-param">logr</em>, <em class="sig-param">ep</em>, <em class="sig-param">ospin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_sse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_sse" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_sse</code><span class="sig-paren">(</span><em class="sig-param">kw</em>, <em class="sig-param">logl</em>, <em class="sig-param">logr</em>, <em class="sig-param">ep</em>, <em class="sig-param">ospin</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_sse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_sse" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_sse</p>
@@ -411,7 +433,7 @@ Notes:</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.add_stars">
-<code class="sig-name descname">add_stars</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">vx</em>, <em class="sig-param">vy</em>, <em class="sig-param">vz</em>, <em class="sig-param">m=None</em>, <em class="sig-param">id=None</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_stars" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_stars</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y</em>, <em class="sig-param">z</em>, <em class="sig-param">vx</em>, <em class="sig-param">vy</em>, <em class="sig-param">vz</em>, <em class="sig-param">m=None</em>, <em class="sig-param">id=None</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.add_stars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.add_stars" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>add_stars</p>
@@ -449,57 +471,57 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.alpha_prof">
-<code class="sig-name descname">alpha_prof</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.alpha_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.alpha_prof" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">alpha_prof</code><span class="sig-paren">(</span><em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.alpha_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.alpha_prof" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.calc_actions">
-<code class="sig-name descname">calc_actions</code><span class="sig-paren">(</span><em class="sig-param">self, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13aae0950&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13aae0990&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13aae09d0&gt;], ro=8.0, vo=220.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.calc_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.calc_actions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">calc_actions</code><span class="sig-paren">(</span><em class="sig-param">pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], ro=8.0, vo=220.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.calc_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.calc_actions" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.convert_binary_units">
-<code class="sig-name descname">convert_binary_units</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">param</em>, <em class="sig-param">from_units</em>, <em class="sig-param">to_units</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.convert_binary_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.convert_binary_units" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">convert_binary_units</code><span class="sig-paren">(</span><em class="sig-param">param</em>, <em class="sig-param">from_units</em>, <em class="sig-param">to_units</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.convert_binary_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.convert_binary_units" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.energies">
-<code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.energies" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">energies</code><span class="sig-paren">(</span><em class="sig-param">specific=True</em>, <em class="sig-param">i_d=None</em>, <em class="sig-param">full=True</em>, <em class="sig-param">parallel=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.energies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.energies" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.eta_function">
-<code class="sig-name descname">eta_function</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.eta_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.eta_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">eta_function</code><span class="sig-paren">(</span><em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.eta_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.eta_function" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.find_centre">
-<code class="sig-name descname">find_centre</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">xstart=0.0</em>, <em class="sig-param">ystart=0.0</em>, <em class="sig-param">zstart=0.0</em>, <em class="sig-param">vxstart=0.0</em>, <em class="sig-param">vystart=0.0</em>, <em class="sig-param">vzstart=0.0</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">nsigma=1.0</em>, <em class="sig-param">nsphere=100</em>, <em class="sig-param">density=True</em>, <em class="sig-param">rmin=0.1</em>, <em class="sig-param">nmax=100</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.find_centre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.find_centre" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">find_centre</code><span class="sig-paren">(</span><em class="sig-param">xstart=0.0</em>, <em class="sig-param">ystart=0.0</em>, <em class="sig-param">zstart=0.0</em>, <em class="sig-param">vxstart=0.0</em>, <em class="sig-param">vystart=0.0</em>, <em class="sig-param">vzstart=0.0</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">nsigma=1.0</em>, <em class="sig-param">nsphere=100</em>, <em class="sig-param">density=True</em>, <em class="sig-param">rmin=0.1</em>, <em class="sig-param">nmax=100</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.find_centre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.find_centre" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.find_centre_of_density">
-<code class="sig-name descname">find_centre_of_density</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">xstart=0.0</em>, <em class="sig-param">ystart=0.0</em>, <em class="sig-param">zstart=0.0</em>, <em class="sig-param">vxstart=0.0</em>, <em class="sig-param">vystart=0.0</em>, <em class="sig-param">vzstart=0.0</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">rmin=0.1</em>, <em class="sig-param">nmax=100</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.find_centre_of_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.find_centre_of_density" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">find_centre_of_density</code><span class="sig-paren">(</span><em class="sig-param">xstart=0.0</em>, <em class="sig-param">ystart=0.0</em>, <em class="sig-param">zstart=0.0</em>, <em class="sig-param">vxstart=0.0</em>, <em class="sig-param">vystart=0.0</em>, <em class="sig-param">vzstart=0.0</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">rmin=0.1</em>, <em class="sig-param">nmax=100</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.find_centre_of_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.find_centre_of_density" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.find_centre_of_mass">
-<code class="sig-name descname">find_centre_of_mass</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.find_centre_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.find_centre_of_mass" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">find_centre_of_mass</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.find_centre_of_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.find_centre_of_mass" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.from_radec">
-<code class="sig-name descname">from_radec</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.from_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.from_radec" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_radec</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.from_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.from_radec" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.from_sky">
-<code class="sig-name descname">from_sky</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.from_sky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.from_sky" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">from_sky</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.from_sky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.from_sky" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.key_params">
-<code class="sig-name descname">key_params</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.key_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.key_params" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">key_params</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.key_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.key_params" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>key_params</p>
@@ -524,102 +546,102 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.mass_function">
-<code class="sig-name descname">mass_function</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.mass_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.mass_function" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">mass_function</code><span class="sig-paren">(</span><em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">nmass=10</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=1</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">mcorr=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.mass_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.mass_function" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rlagrange">
-<code class="sig-name descname">rlagrange</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">nlagrange=10</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rlagrange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rlagrange" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rlagrange</code><span class="sig-paren">(</span><em class="sig-param">nlagrange=10</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rlagrange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rlagrange" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rlimiting">
-<code class="sig-name descname">rlimiting</code><span class="sig-paren">(</span><em class="sig-param">self, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13aae0950&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13aae0990&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13aae09d0&gt;], rgc=None, ro=8.0, vo=220.0, nrad=20, projected=False, plot=False, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rlimiting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rlimiting" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rlimiting</code><span class="sig-paren">(</span><em class="sig-param">pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], rgc=None, ro=8.0, vo=220.0, nrad=20, projected=False, plot=False, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rlimiting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rlimiting" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rtidal">
-<code class="sig-name descname">rtidal</code><span class="sig-paren">(</span><em class="sig-param">self, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13aae0950&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13aae0990&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13aae09d0&gt;], rtiterate=0, rgc=None, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rtidal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rtidal" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rtidal</code><span class="sig-paren">(</span><em class="sig-param">pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], rtiterate=0, rgc=None, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rtidal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rtidal" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rv3d">
-<code class="sig-name descname">rv3d</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rv3d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rv3d</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rv3d" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.rvirial">
-<code class="sig-name descname">rvirial</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">H=70.0</em>, <em class="sig-param">Om=0.3</em>, <em class="sig-param">overdens=200.0</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rvirial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rvirial" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">rvirial</code><span class="sig-paren">(</span><em class="sig-param">H=70.0</em>, <em class="sig-param">Om=0.3</em>, <em class="sig-param">overdens=200.0</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.rvirial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.rvirial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_centre">
-<code class="sig-name descname">to_centre</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">centre_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_centre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_centre" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_centre</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">centre_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_centre"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_centre" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_cluster">
-<code class="sig-name descname">to_cluster</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">centre_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_cluster" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_cluster</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">centre_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_cluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_cluster" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_galaxy">
-<code class="sig-name descname">to_galaxy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_galaxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_galaxy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_galaxy</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_galaxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_galaxy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_galpy">
-<code class="sig-name descname">to_galpy</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_galpy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_galpy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_galpy</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_galpy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_galpy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_kpckms">
-<code class="sig-name descname">to_kpckms</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_kpckms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_kpckms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_kpckms</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_kpckms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_kpckms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_nbody">
-<code class="sig-name descname">to_nbody</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_nbody"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_nbody" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_nbody</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_nbody"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_nbody" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_origin">
-<code class="sig-name descname">to_origin</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">origin</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_origin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_origin" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_origin</code><span class="sig-paren">(</span><em class="sig-param">origin</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_origin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_origin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_pckms">
-<code class="sig-name descname">to_pckms</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_pckms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_pckms" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_pckms</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_pckms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_pckms" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_radec">
-<code class="sig-name descname">to_radec</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_radec" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_radec</code><span class="sig-paren">(</span><em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_radec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_radec" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_sky">
-<code class="sig-name descname">to_sky</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_sky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_sky" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_sky</code><span class="sig-paren">(</span><em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_sky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_sky" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_tail">
-<code class="sig-name descname">to_tail</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_tail" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_tail</code><span class="sig-paren">(</span><em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_tail"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_tail" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.to_units">
-<code class="sig-name descname">to_units</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">units</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_units" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">to_units</code><span class="sig-paren">(</span><em class="sig-param">units</em>, <em class="sig-param">do_order=False</em>, <em class="sig-param">do_key_params=False</em>, <em class="sig-param">ro=8.0</em>, <em class="sig-param">vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.to_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.to_units" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.vcirc_prof">
-<code class="sig-name descname">vcirc_prof</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=15</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.vcirc_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.vcirc_prof" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">vcirc_prof</code><span class="sig-paren">(</span><em class="sig-param">mmin=None</em>, <em class="sig-param">mmax=None</em>, <em class="sig-param">rmin=None</em>, <em class="sig-param">rmax=None</em>, <em class="sig-param">nrad=20</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">emin=None</em>, <em class="sig-param">emax=None</em>, <em class="sig-param">kwmin=0</em>, <em class="sig-param">kwmax=15</em>, <em class="sig-param">indx=None</em>, <em class="sig-param">projected=False</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.vcirc_prof"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.vcirc_prof" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="clustertools.analysis.cluster.StarCluster.virial_radius">
-<code class="sig-name descname">virial_radius</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.virial_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.virial_radius" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">virial_radius</code><span class="sig-paren">(</span><em class="sig-param">projected=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/cluster.html#StarCluster.virial_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.cluster.StarCluster.virial_radius" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -653,7 +675,6 @@ of (degrees, degrees, kpc, mas/yr, mas/yr km/s)</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jeremy J. Webb.
-      Last updated on 22 Jun 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
     </div>
   </body>

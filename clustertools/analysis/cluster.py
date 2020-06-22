@@ -22,76 +22,70 @@ from copy import copy
 
 class StarCluster(object):
     """ A class that represents a star cluster population that functions can be performed on
-    NAME:
-
-    __init__
-
-    PURPOSE:
-
-    A class that represents a star cluster population that functions can be performed on
-
+    
     Parameters
     ----------
-    tphys: float
-            Time (units not necessary) associated with the population (default: 0)
-    units: str
-            Units of stellar positions and velocties. Options include 'pckms',
-            'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
-            stellar velocities are assumed to be km/s. (default: None)
-    origin: str
-            Origin of coordinate system within which stellar positions and velocities are defined. 
-            Options include 'centre', 'cluster', 'galaxy' and 'sky'. Note that 'centre' corresponds
-            to the systems centre of density or mass (as calculated by clustertools) while 'cluster' corresponds
-            to the orbital position of the cluster's initial centre of mass given 'tphys'. In some cases
-            these two coordinate systems may be the same. (default: None)
-    ctype: str
-            Code type used to generate the cluster population. Current options include 'snapshot',
-            'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
-            informs clustertools how to load the stellar popuation and advance to the next snapshot.
-            (default: 'snapshot')
+        tphys: float
+                Time (units not necessary) associated with the population (default: 0)
+        units: str
+                Units of stellar positions and velocties. Options include 'pckms',
+                'kpckms','degrees','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
+                stellar velocities are assumed to be km/s. (default: None)
+        origin: str
+                Origin of coordinate system within which stellar positions and velocities are defined. 
+                Options include 'centre', 'cluster', 'galaxy' and 'sky'. Note that 'centre' corresponds
+                to the systems centre of density or mass (as calculated by clustertools) while 'cluster' corresponds
+                to the orbital position of the cluster's initial centre of mass given 'tphys'. In some cases
+                these two coordinate systems may be the same. (default: None)
+        ctype: str
+                Code type used to generate the cluster population. Current options include 'snapshot',
+                'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
+                informs clustertools how to load the stellar popuation and advance to the next snapshot.
+                (default: 'snapshot')
 
-    projected: bool
-        return projected values instead of 3D value. (default: False)
+        projected: bool
+            return projected values instead of 3D value. (default: False)
 
-    **kwargs
+    Key Word Arguments (**kwargs)
+    ----------
 
-    sfile: str
-            name of file containing single star data
-    bfile: str
-            name of file contain binary star data
-    ofilename: str
-            orbit filename if ofile is not given
-    ounits: str
-            {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
-    nsnap: int
-            if a specific snapshot is to be read in instead of starting from zero
-    nzfill: int
-            value for zfill when reading and writing snapshots (default: 5)
-    snapbase: str
-            string of characters in filename before nsnap (default: '')
-    snapend: str
-            string of character in filename after nsnap (default: '.dat')
-    snapdir: str
-            string name of directory of snapshots if different than wdir (Default: '')
-    delimiter: str 
-            choice of delimiter when reading ascii/csv files (default: ',')
-    wdir: str
-            working directory of snapshots if not current directory
-    intialize: bool
-            initialize a galpy orbit after reading in orbital information (default: False)
-    advance: bool
-            set to True if this a snapshot that has been advanced to from an initial one? (default: False)
-    centre_method: str
-            {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
+        sfile: str
+                name of file containing single star data
+        bfile: str
+                name of file contain binary star data
+        ofilename: str
+                orbit filename if ofile is not given
+        ounits: str
+                {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
+        nsnap: int
+                if a specific snapshot is to be read in instead of starting from zero
+        nzfill: int
+                value for zfill when reading and writing snapshots (default: 5)
+        snapbase: str
+                string of characters in filename before nsnap (default: '')
+        snapend: str
+                string of character in filename after nsnap (default: '.dat')
+        snapdir: str
+                string name of directory of snapshots if different than wdir (Default: '')
+        delimiter: str 
+                choice of delimiter when reading ascii/csv files (default: ',')
+        wdir: str
+                working directory of snapshots if not current directory
+        intialize: bool
+                initialize a galpy orbit after reading in orbital information (default: False)
+        advance: bool
+                set to True if this a snapshot that has been advanced to from an initial one? (default: False)
+        centre_method: str
+                {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
 
     Returns
     ----------
 
-    StarCluster
+        StarCluster
 
     HISTORY:
     ----------
-    2018 - Written - Webb (UofT)
+        2018 - Written - Webb (UofT)
 
     """
     
@@ -184,6 +178,32 @@ class StarCluster(object):
         # variable for galpy orbit
         self.orbit = None
 
+        # variables for add_nbody6
+        # Number of stars in the core
+        self.nc = 0
+        # Core radius
+        self.rc = 0
+        # Distance scaling parameter
+        self.rbar = 1.
+        # Tidal limit from NBODY6 (not neccesarily a true tidal radius)
+        self.rtide = 0.
+        # Center of mass of cluster (x,yz)
+        self.xc = 0.
+        self.yc = 0.
+        self.zc = 0.
+        # Mass scaling parameter
+        self.zmbar = 1.
+        # Velocity scaling parameter
+        self.vstar = 1.
+        # Scale radius of cluster
+        self.rscale = 1.
+        # Number of single stars
+        self.ns = 0
+        # Number of binary stars
+        self.nb = 0
+        # Number of particles (from NBODY6 when tidal tail is being integrated)
+        self.np = 0
+
         # variables for add_sse (stellar evolution information)
         self.logl = np.asarray([])
         self.logr = np.asarray([])
@@ -241,41 +261,39 @@ class StarCluster(object):
         self, x, y, z, vx, vy, vz,m=None,id=None,do_key_params=False, do_order=False
     ):
         """add stars to StarCluster
-        NAME:
-
-           add_stars
-
-        PURPOSE:
-
-           Add stars to the StarCluster instance
 
         Parameters
+        ----------
 
-           id - star id
+            x,y,z: float
+                stellar positions. Input is assumed to be in cartesian coordinates unless self.units=='degrees' 
+                and self.origin=='sky', then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)
 
-           m - mass
+            vx,vy,vz: float
+                atellar velocities. Input is assumed to be in cartesian coordinates unless self.units=='degrees' 
+                and self.origin=='sky', then positions are assumed to be pmra,pmdec,vlos (mas/yr, mas/yr, km/s)
 
-           x,y,z - positions
+            m: float int
+                stellar mass
 
-           vx,vy,vz - velocities
+            id: int 
+                star id
 
-           kw - stellar evolution tag (optional,for using with NBODY6) (default:0)
+            do_key_params: bool
+                call key_params() after adding stars (default: False)
 
-           do_key_params - call key_params() after adding stars (default: False)
-
-            do_key_params - order stars by radius when calling key_params() (default: False)
-
-        NOTES:
-         if self.units==radec, input is assumed to be ra,dec,dist,pmra,pmdec,vlos with units 
-         of (degrees, degrees, kpc, mas/yr, mas/yr km/s)
+            do_order: bool
+                order stars by radius when calling key_params() (default: False)
 
         Returns
+        ----------
 
-           None
+            None
 
         HISTORY:
+        ----------
 
-           2018 - Written - Webb (UofT)
+            2018 - Written - Webb (UofT)
 
         """
 
@@ -371,28 +389,37 @@ class StarCluster(object):
         ro=8.0,
         vo=220.0,
     ):
-        """
-        NAME:
-
-           add_orbit
-
-        PURPOSE:
-
-           Add orbital information of the star cluster
-           Notes:
-            - the input units are assumed to be equal that of self.units
+        """ add orbit properties to StarCluster
 
         Parameters
+        ----------
+            xgc,ygc,zgc: float
+                cluster's galactocentric position
 
-           xgc,ygc,zgc - cluster's galactocentric position
+            vxgc,vygc,vzgc: float
+                cluster's galactocentric velocity
 
-           vxgc,vygc,vzgc - cluster's galactocentric velocity
+            ounits: str
+                units of position and velocity. Options include 'pckms',
+                'kpckms','degrees','nbody',and 'galpy'. Values will be converted 
+                to match self.units
+
+            initialize: bool
+                Initialize a galpy orbit for self.orbit (default: False)
+
+            ro: float
+                galpy position scaling parameter (default: 8.)
+
+            vo: float
+                galpy velocity scaling parameter (default: 220.)
 
         Returns
+        ----------
 
            None
 
-        HISTORY:
+        History:
+        ----------
 
            2018 - Written - Webb (UofT)
 
@@ -475,44 +502,53 @@ class StarCluster(object):
         nb=0.0,
         np=0.0,
     ):
-        """
-        NAME:
+        """ Add additional information to StarCluster
 
-           add_nbody6
-
-        PURPOSE:
-
-           For data generated using NBDOY6 (or one of its variants), add additional information from output files
+            Notes:
+                - parameters are common output variables in NBODY6
+                - values are never adjusted during unit or coordinate changes
 
         Parameters
+        ----------
 
-           nc - number of stars in core (default:0)
+            nc: int
+                number of stars in core (default:0)
 
-           rc - core radius (default:0)
+            rc: int
+                core radius (default:0)
 
-           rbar - scaling factor between NBODY units and pc (default:1.)
+            rbar: float
+                scaling factor between NBODY units and pc (default:1.)
 
-           rtide - rtide set in the simulation (default:0)
+            rtide:
+                rtide set in the simulation (default:0)
 
-           xc,yc,zc - position of cluster centre (default:0)
+            xc,yc,zc: float
+                position of cluster centre (default:0)
 
-           zmbar - scaling factor between NBODY units and Msun (default:1.)
+            zmbar: float
+                scaling factor between NBODY units and Msun (default:1.)
 
-           vstar - scaling factor between NBODY units and km/s (default:1.)
+            vstar:
+                scaling factor between NBODY units and km/s (default:1.)
 
-           rscale - the scale radius of data (default:1.)
+            rscale: float
+                the scale radius of data (default:1.)
 
-           ns - number of single stars (default:0)
+            ns: int
+                number of single stars (default:0)
 
-           nb - number of binary stars (default:0)
+            nb: int
+                number of binary stars (default:0)
 
-           np - number of particles (default:0)
+            np: int
+                number of particles (default:0)
 
         Returns
+        ----------
+            None
 
-           None
-
-        HISTORY:
+        History:
 
            2018 - Written - Webb (UofT)
 
@@ -543,36 +579,35 @@ class StarCluster(object):
         self.np = np
 
     def add_sse(self, kw, logl, logr, ep, ospin):
-        """
-        NAME:
-
-           add_sse
-
-        PURPOSE:
-
-           Add stellar evolution information to stars
-           Notes:
+        """Add stellar evolution information to stars
+        
+        Notes:
             - parameters are common output variables in NBODY6
             - values are never adjusted during unit or coordinate changes
 
         Parameters
+        ----------
+            kw: int
+                stellar evolution type (based on NBODY6) 
 
-           kw - stellar evolution tag (for using with NBODY6) 
+            logl: float
+                log of luminosity
 
-           logl - log of luminosity
+            logr: float
+                log of stellar radius
 
-           logr - log of stellar radius
+            ep: float
+                epoch
 
-           ep - epoch
-
-           ospin - ospin
+            ospin: float
+                ospin
 
         Returns
-
+        ----------
            None
 
-        HISTORY:
-
+        History:
+        ----------
            2018 - Written - Webb (UofT)
 
         """
@@ -606,46 +641,55 @@ class StarCluster(object):
         ospin2=None,
     ):
         """
-        NAME:
+        NAME: Add binary star evolution information to stars
 
-        add_bse
-
-        PURPOSE:
-
-        Add binary star evolution information to stars
         Notes:
-        - parameters are common output variables in NBODY6
-        - values are never adjusted during unit or coordinate changes
+            - parameters are common output variables in NBODY6
+            - values are never adjusted during unit or coordinate changes
 
         Parameters
+        ----------
 
-        id1/id2 - id of star1 and star2
+        id1/id2: int
+            id of star1 and star2
 
-        kw1/kw2 - stellar evolution tags (for using with NBODY6) 
+        kw1/kw2: int
+            stellar evolution tags (for using with NBODY6) 
 
-        kcm - stellar evolution tag for binary star
+        kcm: int
+            stellar evolution tag for binary star
 
-        ecc - eccentricity of binary orbit
+        ecc: float 
+            eccentricity of binary orbit
 
-        pb - period of binary orbit
+        pb: float
+            period of binary orbit
 
-        semi - semi major axis of binary orbit
+        semi: float 
+            semi major axis of binary orbit
 
-        m1/m2 - masses of binary stars
+        m1/m2: float
+            masses of binary stars
 
-        logl1/logl2 - luminosities of binary stars
+        logl1/logl2: float
+            luminosities of binary stars
 
-        logr1/logr2 - radii of binary stars
+        logr1/logr2: float
+            radii of binary stars
 
-        ep1/ep2 - epochs of binary stars
+        ep1/ep2: float
+            epochs of binary stars
 
-        ospin1/ospin2 - opsin of binary stars
+        ospin1/ospin2: float
+            opsin of binary stars
 
         Returns
+        ----------
 
         None
 
-        HISTORY:
+        History:
+        ----------
 
         2018 - Written - Webb (UofT)
         """
@@ -671,31 +715,30 @@ class StarCluster(object):
 
         self.eb=0.5*self.m1*self.m2/self.semi
 
-    def add_energies(self, kin, pot, etot):
-        """
-        NAME:
+    def add_energies(self, kin, pot, etot=None):
+        """ add energy information for stars 
 
-           add_energies
-
-        PURPOSE:
-
-           Add energy information to stars and calculate total energy and Q for the cluster
            Notes:
+            - total energy and Q for the cluster are also calculated
             - values are never adjusted during unit or coordinate changes
 
         Parameters
+        ----------
+           kin: float
+                kinetic energy 
 
-           kin - kinetic energy 
+           pot: float
+                potentail energy
 
-           pot - potentail energy
-
-           etot - total energy
+           etot: float
+                total energy - calculated as kin+pot if not given
 
         Returns
-
+        ----------
            None
 
         HISTORY:
+        ----------
 
            2018 - Written - Webb (UofT)
 
@@ -703,7 +746,12 @@ class StarCluster(object):
 
         self.kin = np.array(kin)
         self.pot = np.array(pot)
-        self.etot = np.array(etot)
+
+        if etot==None:
+            self.etot=self.kin+self.pot 
+        else:
+            self.etot = np.array(etot)
+
         self.ektot = np.sum(self.kin)
         self.ptot = np.sum(self.pot) / 2.0
 
@@ -713,24 +761,27 @@ class StarCluster(object):
             self.qvir = self.ektot / self.ptot
 
     def add_actions(self, JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz):
-        """
-        NAME:
-
-           add_actions
-
-        PURPOSE:
-
-           Add action angle values to the cluster instance
+        """ Add action values to the cluster instance
 
         Parameters
+        ----------
 
-           JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz
+            JR,Jphi,Jz: float
+                orbit actions
+
+            OR,Ophi,Oz: float
+                orbit frequencies
+
+            TR,Tphi,Tz: float
+                orbit periods
 
         Returns
+        ----------
 
             None
 
         HISTORY:
+        ----------
 
            2019 - Written - Webb (UofT)
 
@@ -740,36 +791,50 @@ class StarCluster(object):
         self.TR, self.Tphi, self.Tz = TR, Tphi, Tz
 
     def rv3d(self):
-        if self.units == "radec":
-            self.r = np.sqrt(self.x ** 2.0 + self.y ** 2.0)
-            self.rpro = self.r
-            self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
-            self.vpro = self.v
-        else:
-            self.r = np.sqrt(self.x ** 2.0 + self.y ** 2.0 + self.z ** 2.0)
-            self.rpro = np.sqrt(self.x ** 2.0 + self.y ** 2.0)
-            self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
-            self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
-
-    def key_params(self, do_order=False):
-        """
-        NAME:
-
-           key_params
-
-        PURPOSE:
-
-           Find key parameters of the cluster (mass,luminosity,r10,r50,rh10,rh50)
+        """ Calculate 3D and projected positions and velocities
 
         Parameters
+        ----------
 
-           do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)
+            None
 
         Returns
+        ----------
 
             None
 
         HISTORY:
+        ----------
+
+           2019 - Written - Webb (UofT)
+        """
+
+        self.r = np.sqrt(self.x ** 2.0 + self.y ** 2.0 + self.z ** 2.0)
+        self.rpro = np.sqrt(self.x ** 2.0 + self.y ** 2.0)
+        self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
+        self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
+
+    def key_params(self, do_order=False):
+        """ Find key parameters of the cluster 
+
+            Notes:
+                - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),
+                10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50)
+                are all calculated if necessary information is given
+                - r10, r50, rh10, and rh50 also calculated in projection
+
+        Parameters
+        ----------
+
+           do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)
+
+        Returns
+        ----------
+
+            None
+
+        HISTORY:
+        ----------
 
            2018 - Written - Webb (UofT)
 
@@ -793,7 +858,7 @@ class StarCluster(object):
             indx = msum >= 0.1 * self.mtot
             self.r10 = self.r[self.rorder[indx][0]]
 
-        if self.projected and self.rproorder is not None:
+        if self.rproorder is not None:
             msum = np.cumsum(self.m[self.rproorder])
             indx = msum >= 0.5 * self.mtot
             self.rmpro = self.rpro[self.rproorder[indx][0]]
@@ -810,7 +875,7 @@ class StarCluster(object):
             indx = lsum >= 0.1 * self.ltot
             self.rh10 = self.r[self.rorder[indx][0]]
 
-            if self.projected and self.rproorder is not None:
+            if self.rproorder is not None:
                 lsum = np.cumsum(self.lum[self.rproorder])
                 indx = lsum >= 0.5 * self.ltot
                 self.rhpro = self.rpro[self.rproorder[indx][0]]
@@ -882,10 +947,10 @@ class StarCluster(object):
     def to_nbody(self, do_key_params=False, ro=8.0, vo=220.0):
         to_nbody(self, do_key_params=do_key_params, ro=ro, vo=vo)
 
-    def to_radec(self, do_key_params=False, ro=8.0, vo=220.0):
+    def to_degrees(self, do_key_params=False, ro=8.0, vo=220.0):
         to_radec(self, do_key_params=do_key_params, ro=ro, vo=vo)
 
-    def from_radec(self, do_order=False, do_key_params=False):
+    def from_degrees(self, do_order=False, do_key_params=False):
         from_radec(self, do_order=do_order, do_key_params=do_key_params)
 
     def to_galpy(self, do_key_params=False, ro=8.0, vo=220.0):
@@ -893,9 +958,6 @@ class StarCluster(object):
 
     def to_units(self, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
         to_units(self, units, do_order=do_order, do_key_params=do_key_params, ro=ro, vo=vo)
-
-    def convert_binary_units(self,param,from_units,to_units):
-        convert_binary_units(self,param,from_units,to_units)
 
     def to_centre(self, do_order=False, do_key_params=False, centre_method=None):
         to_centre(self, do_order=do_order, do_key_params=do_key_params, centre_method=centre_method)
@@ -920,50 +982,50 @@ class StarCluster(object):
     def to_origin(self, origin, do_order=False, do_key_params=False):
         to_origin(self, origin, do_order=do_order, do_key_params=do_key_params)
 
+    def save_cluster(self):
+        self.units0,self.origin0=save_cluster(self)
+
+    def return_cluster(self, units0, origin0, do_order=False, do_key_params=False):
+        return_cluster(self, self.units0, self.origin0, do_order=do_order, do_key_params=do_key_params)
+
+    def reset_nbody_scale(self, mass=True, radii=True, rvirial=False, **kwargs):
+        reset_nbody_scale(self, mass=mass, radii=radii, rvirial=rvirial, **kwargs)
+
+    def convert_binary_units(self,param,from_units,to_units):
+        convert_binary_units(self,param,from_units,to_units)
+
+    def add_rotation(self, qrot):
+        add_rotation(self, qrot)
+
     # Directly call from functions.py (see functions.py files for documenation):
 
-    def energies(self, specific=True, i_d=None, full=True, parallel=False):
-        ek, pot, etot = energies(
-            self, specific=specific, i_d=i_d, full=full, parallel=parallel
-        )
+    def relaxation_time(self, rad=None, multimass=True, projected=self.projected,method='spitzer'):
+        relaxation_time(self, rad=rad, multimass=multimass, projected=projected,method='spitzer')
+
+    def half_mass_relaxation_time(self, multimass=True, projected=self.projected):
+        half_mass_relaxation_time(self, multimass=multimass, projected=projected)
+
+    def core_relaxation_time(self, multimass=True, projected=self.projected):
+        core_relaxation_time(self, multimass=True, projected=self.projected)
+
+    def energies(self, specific=True, i_d=None, full=True, projected=self.projected, parallel=False):
+        ek, pot, etot=energies(self, specific=specific, i_d=i_d, full=full, projected=projected, parallel=parallel)
         self.add_energies(ek, pot, etot)
 
-    def rlagrange(self, nlagrange=10, projected=False):
+    def closest_star(self, projected=self.projected):
+        self.dclosest=closest_star(self, projected=projected)
+
+    def virialize(self, specific=True, full=True, projected=self.projected):
+        virialize(self, specific=True, full=True, projected=projected)
+
+    def rlagrange(self, nlagrange=10, projected=self.projected):
         self.rn = rlagrange(self, nlagrange=nlagrange, projected=projected)
 
-    def rvirial(self, H=70.0, Om=0.3, overdens=200.0, nrad=20, projected=False):
-        self.rv = rvirial(
-            self, H=H, Om=Om, overdens=overdens, nrad=nrad, projected=projected
-        )
+    def virial_radius(self,method='inverse_distance', full=True, H=70.0, Om=0.3, overdens=200.0,
+        nrad=20, projected=self.projected, plot=False, **kwargs):
 
-    def virial_radius(self, projected=False):
-        self.rv = virial_radius(self, projected=projected)
-
-    def rtidal(self, pot=MWPotential2014, rtiterate=0, rgc=None, ro=8.0, vo=220.0):
-        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate, rgc=rgc, ro=ro, vo=vo)
-
-    def rlimiting(
-        self,
-        pot=MWPotential2014,
-        rgc=None,
-        ro=8.0,
-        vo=220.0,
-        nrad=20,
-        projected=False,
-        plot=False,
-        **kwargs
-    ):
-        self.rl = rlimiting(
-            self,
-            pot=pot,
-            rgc=rgc,
-            ro=ro,
-            vo=vo,
-            nrad=nrad,
-            projected=projected,
-            plot=plot,
-            **kwargs
-        )
+        self.rv = virial_radius(self,method=method, full=full, H=H, Om=Om, overdens=overdens,
+        nrad=nrad, projected=projected, plot=plot, **kwargs)
 
     def mass_function(
         self,
@@ -1064,7 +1126,36 @@ class StarCluster(object):
         )
         self.eta = eta
 
+    # Directly call from orbit.py (see orbit,py files for documentation):
+
+    def rtidal(self, pot=MWPotential2014, rtiterate=0, rgc=None, ro=8.0, vo=220.0):
+        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate, rgc=rgc, ro=ro, vo=vo)
+
+    def rlimiting(
+        self,
+        pot=MWPotential2014,
+        rgc=None,
+        ro=8.0,
+        vo=220.0,
+        nrad=20,
+        projected=False,
+        plot=False,
+        **kwargs
+    ):
+        self.rl = rlimiting(
+            self,
+            pot=pot,
+            rgc=rgc,
+            ro=ro,
+            vo=vo,
+            nrad=nrad,
+            projected=projected,
+            plot=plot,
+            **kwargs
+        )
+
     # Directly call from profiles.py (see profiles.py files for documenation):
+
 
     def alpha_prof(
         self,

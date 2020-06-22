@@ -183,7 +183,7 @@ def core_relaxation_time(cluster, multimass=True, projected=False):
     return trelax
 
 
-def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
+def energies(cluster, specific=True, i_d=None, full=True, projected=False, parallel=False):
     """
     NAME:
 
@@ -227,10 +227,17 @@ def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
     else:
         grav = 1.0
 
-    if specific:
-        ek = 0.5 * (cluster.v ** 2.0)
+    if projected:
+      if specific:
+          ek = 0.5 * (cluster.vpro ** 2.0)
+      else:
+          ek = 0.5 * cluster.m * (cluster.vpro ** 2.0)
     else:
-        ek = 0.5 * cluster.m * (cluster.v ** 2.0)
+
+      if specific:
+          ek = 0.5 * (cluster.v ** 2.0)
+      else:
+          ek = 0.5 * cluster.m * (cluster.v ** 2.0)
 
     if i_d != None:
         indx = cluster.id == i_d
@@ -244,7 +251,11 @@ def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
         else:
             m = cluter.m[indx] * cluster.m
 
-        dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+        if projected:
+          dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+        else:
+          dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+
         rindx = dr != 0.0
         gmr = -grav * m[rindx] / dr[rindx]
 
@@ -253,7 +264,10 @@ def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
         etot = ek + pot
 
     elif full:
-        x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
+        if projected:
+          x = np.array([cluster.x, cluster.y, np.zeros(len(cluster.x)), cluster.m]).T
+        else:
+          x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
         if parallel:
             pot = grav * np.array(potential_energy_parallel(x))
         else:
@@ -276,7 +290,11 @@ def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
             else:
                 m = cluter.m[i] * cluster.m
 
-            dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+            if projected:
+              dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+            else:
+              dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+
             indx = dr != 0.0
             gmr = -grav * m[indx] / dr[indx]
 
@@ -369,7 +387,7 @@ def closest_star(cluster, projected=False):
     return minimum_distance(x)
 
 
-def virialize(cluster, specific=True, full=True):
+def virialize(cluster, specific=True, full=True, projected=False):
     """
     NAME:
 
@@ -401,7 +419,7 @@ def virialize(cluster, specific=True, full=True):
         qv = np.sqrt(np.abs(0.5 / cluster.qvir))
     except:
         print("NEED TO CALCULATE ENERGIES FIRST")
-        energies(cluster, specific=specific, full=full)
+        energies(cluster, specific=specific, full=full, projected=projected)
         qv = np.sqrt(np.abs(0.5 / cluster.qvir))
 
     cluster.vx *= qv
@@ -409,7 +427,7 @@ def virialize(cluster, specific=True, full=True):
     cluster.vz *= qv
     cluster.key_params()
 
-    energies(cluster, specific=specific, full=full)
+    energies(cluster, specific=specific, full=full, projected=projected)
     qv = np.sqrt(np.abs(0.5 / cluster.qvir))
 
     return_cluster(cluster, units0, origin0)

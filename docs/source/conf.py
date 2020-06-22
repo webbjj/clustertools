@@ -15,6 +15,13 @@
 # sys.path.insert(0, os.path.abspath('.'))
 import datetime
 
+try:
+    from sphinx_astropy.conf.v1 import *  # noqa
+except ImportError:
+    print(
+        "ERROR: the documentation requires the sphinx-astropy package to be installed"
+    )
+    sys.exit(1)
 
 # -- Project information -----------------------------------------------------
 
@@ -36,7 +43,7 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['nbsphinx','sphinx.ext.todo', "nbsphinx", 'sphinx.ext.viewcode', 'sphinx.ext.autodoc',
+extensions += ['nbsphinx','sphinx.ext.todo', "nbsphinx", 'sphinx.ext.viewcode', 'sphinx.ext.autodoc',
 'IPython.sphinxext.ipython_console_highlighting','sphinxcontrib.bibtex',
 'sphinx.ext.autosectionlabel','sphinx.ext.mathjax','sphinx.ext.ifconfig','sphinx_automodapi.smart_resolver',
 'sphinx_automodapi.automodapi'

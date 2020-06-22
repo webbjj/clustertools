@@ -14,6 +14,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="_static/astropy_logo.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="find_centre" href="api/clustertools.analysis.operations.find_centre.html" />
@@ -62,29 +65,6 @@
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="api/clustertools.analysis.initialize.c_to_w0.html"
-                        title="previous chapter">c_to_w0</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="api/clustertools.analysis.operations.find_centre.html"
-                        title="next chapter">find_centre</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/analysis.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -204,7 +184,7 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trh</span><span class="o">=</span><span class="n">half_mass_relaxation_time</span><span class="p">(</span><span class="n">cluster</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>When called externally, no variables within <cite>cluster</cite> are set.</p>
+<p>When called externally, no variables within <code class="xref py py-obj docutils literal notranslate"><span class="pre">cluster</span></code> are set.</p>
 <p>Some functions, including <code class="docutils literal notranslate"><span class="pre">mass_function</span></code> and <code class="docutils literal notranslate"><span class="pre">eta_function</span></code> can be applied to only a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster’s half-mass radius one can call:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m_mean</span><span class="p">,</span> <span class="n">m_hist</span><span class="p">,</span> <span class="n">dm</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">ealpha</span><span class="p">,</span> <span class="n">yalpha</span><span class="p">,</span> <span class="n">eyalpha</span> <span class="o">=</span> <span class="n">mass_function</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span>
 <span class="go">        mmin=0.1,mmax=0.8,rmin=0.,rmax=cluster.rm)</span>
@@ -431,6 +411,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jeremy J. Webb.
+      Last updated on 22 Jun 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
     </div>
   </body>

@@ -14,6 +14,9 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="_static/astropy_logo.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="sub_cluster" href="api/clustertools.analysis.cluster.sub_cluster.html" />
@@ -51,29 +54,6 @@
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="installation.html"
-                        title="previous chapter">Installation</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="api/clustertools.analysis.cluster.sub_cluster.html"
-                        title="next chapter">sub_cluster</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/cluster.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -84,7 +64,7 @@
             
   <div class="section" id="starcluster">
 <h1>StarCluster<a class="headerlink" href="#starcluster" title="Permalink to this headline">¶</a></h1>
-<p>The <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> class is the foundation on which ‘’clustertools’’ has been built. All functions have been designed to either act on or use elements of <cite>StarCluster`</cite>. Its purpose is to be a python representation of a star cluster, based on either a snapshot provided by a simulation or a distribution function. At minimum, a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> contains the positions and velocities of all stars in a star cluster. However, <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> has been designed to store all information related to the cluster’s orbit, Single Star Evolution, Binary Star Evolution, and metadata related to the software used to generate the data and/or the data file it was read from. Once initiated, <code class="docutils literal notranslate"><span class="pre">clustertools</span></code> is able to perform a large number of operations, measurements, and calculations on the <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> class.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> class is the foundation on which ‘’clustertools’’ has been built. All functions have been designed to either act on or use elements of <code class="xref py py-obj docutils literal notranslate"><span class="pre">StarCluster`</span></code>. Its purpose is to be a python representation of a star cluster, based on either a snapshot provided by a simulation or a distribution function. At minimum, a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> contains the positions and velocities of all stars in a star cluster. However, <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> has been designed to store all information related to the cluster’s orbit, Single Star Evolution, Binary Star Evolution, and metadata related to the software used to generate the data and/or the data file it was read from. Once initiated, <code class="docutils literal notranslate"><span class="pre">clustertools</span></code> is able to perform a large number of operations, measurements, and calculations on the <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code> class.</p>
 <p>To initialize a <code class="docutils literal notranslate"><span class="pre">StarCluster</span></code>, one can simply start with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">clustertools</span>
 </pre></div>
@@ -276,6 +256,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jeremy J. Webb.
+      Last updated on 22 Jun 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
     </div>
   </body>

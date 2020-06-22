@@ -14,6 +14,9 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/language_data.js"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/astropy_logo.ico"/>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="clustertools.analysis.profiles module" href="clustertools.analysis.profiles.html" />
@@ -41,29 +44,6 @@
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="clustertools.analysis.operations.html"
-                        title="previous chapter">clustertools.analysis.operations module</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="clustertools.analysis.profiles.html"
-                        title="next chapter">clustertools.analysis.profiles module</a></p>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/reference/clustertools.analysis.orbit.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
 
@@ -77,7 +57,7 @@
 <p>Functions and Operations that heavily use galpy and focus on the cluster’s orbit</p>
 <dl class="function">
 <dt id="clustertools.analysis.orbit.rtidal">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">rtidal</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#rtidal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.rtidal" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">rtidal</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#rtidal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.rtidal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate rtidal.
 NAME:</p>
 <blockquote>
@@ -114,7 +94,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.rlimiting">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">rlimiting</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], rgc=None, ro=8.0, vo=220.0, nrad=20, projected=False, plot=False, verbose=False, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#rlimiting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.rlimiting" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">rlimiting</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], rgc=None, ro=8.0, vo=220.0, nrad=20, projected=False, plot=False, verbose=False, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#rlimiting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.rlimiting" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>rlimiting</p>
@@ -206,7 +186,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.integrate_orbit">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">integrate_orbit</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#integrate_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.integrate_orbit" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">integrate_orbit</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#integrate_orbit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.integrate_orbit" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>integrate_orbit</p>
@@ -237,7 +217,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.orbit_interpolate">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">orbit_interpolate</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], from_centre=False, do_tails=False, rmin=None, rmax=None, emin=None, emax=None, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#orbit_interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.orbit_interpolate" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">orbit_interpolate</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], from_centre=False, do_tails=False, rmin=None, rmax=None, emin=None, emax=None, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#orbit_interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.orbit_interpolate" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>orbit_interpolate</p>
@@ -270,7 +250,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.orbital_path">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">orbital_path</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], from_centre=False, skypath=False, initialize=False, ro=8.0, vo=220.0, plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#orbital_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.orbital_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">orbital_path</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], from_centre=False, skypath=False, initialize=False, ro=8.0, vo=220.0, plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#orbital_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.orbital_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>orbital_path</p>
@@ -304,7 +284,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.orbital_path_match">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">orbital_path_match</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], from_centre=False, to_path=False, do_full=False, ro=8.0, vo=220.0, plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#orbital_path_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.orbital_path_match" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">orbital_path_match</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], from_centre=False, to_path=False, do_full=False, ro=8.0, vo=220.0, plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#orbital_path_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.orbital_path_match" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>orbital_path_match</p>
@@ -340,7 +320,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.tail_path">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">tail_path</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], from_centre=False, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#tail_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.tail_path" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">tail_path</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], from_centre=False, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#tail_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.tail_path" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>tail_path</p>
@@ -372,7 +352,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.tail_path_match">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">tail_path_match</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], from_centre=False, to_path=False, do_full=False, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#tail_path_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.tail_path_match" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">tail_path_match</code><span class="sig-paren">(</span><em class="sig-param">cluster, dt=0.1, nt=100, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], from_centre=False, to_path=False, do_full=False, ro=8.0, vo=220.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#tail_path_match"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.tail_path_match" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>tail_path_match</p>
@@ -436,7 +416,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.calc_actions">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">calc_actions</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], ro=8.0, vo=220.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#calc_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.calc_actions" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">calc_actions</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], ro=8.0, vo=220.0, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#calc_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.calc_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>calc_actions</p>
@@ -470,7 +450,7 @@ NAME:</p>
 
 <dl class="function">
 <dt id="clustertools.analysis.orbit.ttensor">
-<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">ttensor</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object&gt;], ro=8.0, vo=220.0, eigenval=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#ttensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.ttensor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">clustertools.analysis.orbit.</code><code class="sig-name descname">ttensor</code><span class="sig-paren">(</span><em class="sig-param">cluster, pot=[&lt;galpy.potential.PowerSphericalPotentialwCutoff.PowerSphericalPotentialwCutoff object at 0x13df93dd0&gt;, &lt;galpy.potential.MiyamotoNagaiPotential.MiyamotoNagaiPotential object at 0x13df93e10&gt;, &lt;galpy.potential.TwoPowerSphericalPotential.NFWPotential object at 0x13df93e50&gt;], ro=8.0, vo=220.0, eigenval=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/clustertools/analysis/orbit.html#ttensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#clustertools.analysis.orbit.ttensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>NAME:</p>
 <blockquote>
 <div><p>ttensor</p>
@@ -526,6 +506,7 @@ NAME:</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Jeremy J. Webb.
+      Last updated on 22 Jun 2020.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.2.1.
     </div>
   </body>

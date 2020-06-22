@@ -35,7 +35,7 @@ master_doc = 'index'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['nbsphinx','sphinx.ext.todo', "nbsphinx", 'sphinx.ext.viewcode', 'sphinx.ext.autodoc','sphinx-astropy',
+extensions = ['nbsphinx','sphinx.ext.todo', "nbsphinx", 'sphinx.ext.viewcode', 'sphinx.ext.autodoc',
 'sphinx.ext.autosectionlabel','sphinx.ext.mathjax','sphinx.ext.ifconfig','sphinx_automodapi.smart_resolver',
 ]
 

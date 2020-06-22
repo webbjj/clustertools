@@ -45,7 +45,7 @@ def load_cluster(
        Load a StarCluster snapshot from a generic code output
        --> Note user can easily create their own def my_code() for new code output types
 
-    INPUT:
+    Parameters
 
        ctype - Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)
 
@@ -86,7 +86,7 @@ def load_cluster(
         do_rorder - sort stars in order from closes to the origin to the farthest
 
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 
@@ -226,7 +226,7 @@ def advance_cluster(cluster,custom_override=True,ofile=None, orbit=None, filenam
        --> ofile or orbit need to be provded again, same as load_cluster.
        --> Be sure that advance is set to True so next line of orbit file is read in
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance to be advanced
 
@@ -242,7 +242,7 @@ def advance_cluster(cluster,custom_override=True,ofile=None, orbit=None, filenam
 
         same as load_cluster
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 
@@ -363,7 +363,7 @@ def get_advanced_kwargs(cluster, **kwargs):
 
        get **kwargs from current cluster before advancing
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -371,7 +371,7 @@ def get_advanced_kwargs(cluster, **kwargs):
 
         same a load_cluster
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -420,7 +420,7 @@ def get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
             --> Note that gc_orbit.dat comes from running 'grep 'CLUSTER ORBIT' logfile > gc_orbit.dat' on 
             the standard Nbody6 logfile
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -432,7 +432,7 @@ def get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
         nsnap - if nsnap is provided, read line # nsnap from the orbit file
         ounits - if you units are not the same as StarCluster units, provide them and they will be converted
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -501,7 +501,7 @@ def get_gyrfalcon(
 
        Extract a single snapshot from an ascii file output from a gyrfalcon simulation
 
-    INPUT:
+    Parameters
 
        filein - opened gyrfalcon file
 
@@ -516,7 +516,7 @@ def get_gyrfalcon(
 
         same as load_cluster
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 
@@ -628,7 +628,7 @@ def get_nbody6se_custom(fort82, fort83, ofile=None, advance=False, **kwargs):
        --> Difference between Jarrod's output and the public version is found in /Node/hrplot.f of Nbody6
        --> Called for Nbody6 simulations with stellar evolution
 
-    INPUT:
+    Parameters
 
        fort82 - opened fort.82 file containing binary star information
 
@@ -642,7 +642,7 @@ def get_nbody6se_custom(fort82, fort83, ofile=None, advance=False, **kwargs):
 
         same as load_cluster
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 
@@ -864,7 +864,7 @@ def get_nbody6_custom(out9, out34, advance=False, **kwargs):
        --> Difference between Jeremy's output and the public version is found in /Node/output.f of Nbody6
        --> Called for Nbody6 simulations without stellar evolution
 
-    INPUT:
+    Parameters
 
        out9 - opened OUT34 file containing binary star information
 
@@ -878,7 +878,7 @@ def get_nbody6_custom(out9, out34, advance=False, **kwargs):
 
         same as load_cluster
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 
@@ -1118,7 +1118,7 @@ def get_snapshot(
 
        Load a generic snapshot where column names and numbers can be manually assigned
 
-    INPUT:
+    Parameters
 
        ctype - code used to generate data (nbody6/nbody6se/gyrfalcon/...)
 
@@ -1141,7 +1141,7 @@ def get_snapshot(
 
         same as load_cluster
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 
@@ -1304,7 +1304,7 @@ def get_amuse_particles(
 
        Convert AMUSE particle dataset to a StarCluster instance
 
-    INPUT:
+    Parameters
 
        particles - AMUSE particle dataset
 
@@ -1316,7 +1316,7 @@ def get_amuse_particles(
 
         same as load_cluster
 
-    OUTPUT:
+    Returns
 
        StarCluster instance
 

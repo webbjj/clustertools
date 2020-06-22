@@ -30,7 +30,7 @@ class StarCluster(object):
 
     A class that represents a star cluster population that functions can be performed on
 
-    INPUT:
+    Parameters
     tphys -Time (units not necessary) associated with the population (default: 0)
     units - Units of stellar positions and velocties. Options include 'pckms',
     'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
@@ -64,7 +64,7 @@ class StarCluster(object):
     projected - calculate projected values as well as 3D values (Default: True)
     centre_method - {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
 
-    OUTPUT:
+    Returns
 
     StarCluster
 
@@ -211,7 +211,7 @@ class StarCluster(object):
 
            Add stars to the StarCluster instance
 
-        INPUT:
+        Parameters
 
            id - star id
 
@@ -231,7 +231,7 @@ class StarCluster(object):
          if self.units==radec, input is assumed to be ra,dec,dist,pmra,pmdec,vlos with units 
          of (degrees, degrees, kpc, mas/yr, mas/yr km/s)
 
-        OUTPUT:
+        Returns
 
            None
 
@@ -344,13 +344,13 @@ class StarCluster(object):
            Notes:
             - the input units are assumed to be equal that of self.units
 
-        INPUT:
+        Parameters
 
            xgc,ygc,zgc - cluster's galactocentric position
 
            vxgc,vygc,vzgc - cluster's galactocentric velocity
 
-        OUTPUT:
+        Returns
 
            None
 
@@ -446,7 +446,7 @@ class StarCluster(object):
 
            For data generated using NBDOY6 (or one of its variants), add additional information from output files
 
-        INPUT:
+        Parameters
 
            nc - number of stars in core (default:0)
 
@@ -470,7 +470,7 @@ class StarCluster(object):
 
            np - number of particles (default:0)
 
-        OUTPUT:
+        Returns
 
            None
 
@@ -517,7 +517,7 @@ class StarCluster(object):
             - parameters are common output variables in NBODY6
             - values are never adjusted during unit or coordinate changes
 
-        INPUT:
+        Parameters
 
            kw - stellar evolution tag (for using with NBODY6) 
 
@@ -529,7 +529,7 @@ class StarCluster(object):
 
            ospin - ospin
 
-        OUTPUT:
+        Returns
 
            None
 
@@ -579,7 +579,7 @@ class StarCluster(object):
         - parameters are common output variables in NBODY6
         - values are never adjusted during unit or coordinate changes
 
-        INPUT:
+        Parameters
 
         id1/id2 - id of star1 and star2
 
@@ -603,7 +603,7 @@ class StarCluster(object):
 
         ospin1/ospin2 - opsin of binary stars
 
-        OUTPUT:
+        Returns
 
         None
 
@@ -645,7 +645,7 @@ class StarCluster(object):
            Notes:
             - values are never adjusted during unit or coordinate changes
 
-        INPUT:
+        Parameters
 
            kin - kinetic energy 
 
@@ -653,7 +653,7 @@ class StarCluster(object):
 
            etot - total energy
 
-        OUTPUT:
+        Returns
 
            None
 
@@ -684,11 +684,11 @@ class StarCluster(object):
 
            Add action angle values to the cluster instance
 
-        INPUT:
+        Parameters
 
            JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz
 
-        OUTPUT:
+        Returns
 
             None
 
@@ -723,11 +723,11 @@ class StarCluster(object):
 
            Find key parameters of the cluster (mass,luminosity,r10,r50,rh10,rh50)
 
-        INPUT:
+        Parameters
 
            do_order - Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)
 
-        OUTPUT:
+        Returns
 
             None
 
@@ -1148,7 +1148,7 @@ def sub_cluster(
        Notes:
         -- automatically moves cluster to centre of mass, so all constraints are in clustercentric coordinates and current cluster.units
 
-    INPUT:
+    Parameters
 
        rmin/rmax - minimum and maximum stellar radii
 
@@ -1166,7 +1166,7 @@ def sub_cluster(
 
        reset_centre - re-calculate cluster centre after extraction (default:False)
 
-    OUTPUT:
+    Returns
 
        instance
 

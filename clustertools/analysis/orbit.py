@@ -60,7 +60,7 @@ def rtidal(
        --> More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal
            radius again until the change is less than 90%
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -74,7 +74,7 @@ def rtidal(
 
        ro,vo - GALPY scaling parameters
 
-    OUTPUT:
+    Returns
 
         rt
 
@@ -161,7 +161,7 @@ def rlimiting(
        Calculate limiting radius of the cluster
        --> The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -181,7 +181,7 @@ def rlimiting(
 
        Same as ..util.plots.nplot
 
-    OUTPUT:
+    Returns
 
         rl
 
@@ -313,7 +313,7 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
 
        Initialize a galpy orbit instance for the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -323,7 +323,7 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
 
        vo - galpy velocity scale (Default: 220.)
 
-    OUTPUT:
+    Returns
 
        orbit instance
 
@@ -391,7 +391,7 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0):
        Initialize a galpy orbit for every stars in the cluster
        --> Note currently depends on version of galpy with Orbits, which is soon to be replace by a generic Orbit function
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -399,7 +399,7 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0):
 
        vo - galpy velocity scale (Default: 220.)
 
-    OUTPUT:
+    Returns
 
        orbit instance for each stars
 
@@ -438,7 +438,7 @@ def integrate_orbit(
 
        Integrate a galpy orbit instance for the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -454,7 +454,7 @@ def integrate_orbit(
 
        plot - show plot of cluster's orbit
 
-    OUTPUT:
+    Returns
 
        timesteps, orbit instance
 
@@ -494,7 +494,7 @@ def orbit_interpolate(
 
        Move the cluster centre and stars backwards or forwards along its orbit assuming stars only feel a force from the galaxy
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -514,7 +514,7 @@ def orbit_interpolate(
 
        vo - galpy velocity scale (Default: 220.)
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -658,7 +658,7 @@ def orbital_path(
 
        Calculate orbital path +/- dt Gyr around the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -681,7 +681,7 @@ def orbital_path(
        plot - plot a snapshot of the cluster in galactocentric coordinates with the orbital path
 
 
-    OUTPUT:
+    Returns
 
        t,x,y,z,vx,vy,vz
 
@@ -812,7 +812,7 @@ def orbital_path_match(
 
        Match stars to a position along the orbital path of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -834,7 +834,7 @@ def orbital_path_match(
 
        plot - plot the distance of each star from the orbital path versus distance along the orbital path to the progenitor
 
-    OUTPUT:
+    Returns
 
        tstar - orbital time associated with star
 
@@ -977,7 +977,7 @@ def tail_path(
 
        Calculate tail path +/- dt Gyr around the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -993,7 +993,7 @@ def tail_path(
 
        vo - galpy velocity scale (Default: 220.)
 
-    OUTPUT:
+    Returns
 
        t,x,y,z,vx,vy,vz
     HISTORY:
@@ -1074,7 +1074,7 @@ def tail_path_match(
 
        Match stars to a position along the tail path of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster
 
@@ -1092,7 +1092,7 @@ def tail_path_match(
 
        vo - galpy velocity scale (Default: 220.)
 
-    OUTPUT:
+    Returns
 
        tstar - tail time associated with star
 
@@ -1211,7 +1211,7 @@ def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
 
        Get the measured orbital parameters of a Galactic globular cluster has measured by Vasiliev 2019 using Gaia DR2 via Galpy
 
-    INPUT:
+    Parameters
 
        gcname - name or list of GC names whose orbits are to be retrieved
         --> Note that list just returns the list to read, while 'all' gets the orbits for all the clusters
@@ -1220,7 +1220,7 @@ def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
 
        ro,vo - GALPY scaling parameters
 
-    OUTPUT:
+    Returns
 
         orbit
 
@@ -1241,7 +1241,7 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
 
        Calculate action angle values for each star 
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -1259,7 +1259,7 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
 
        Additional KWARGS can be included for other action angle calculation methods in galpy
 
-    OUTPUT:
+    Returns
 
         JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz
 
@@ -1297,7 +1297,7 @@ def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
 
         Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -1307,7 +1307,7 @@ def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
 
        eigenval - return eigenvalues if true (optional; boolean)
 
-    OUTPUT:
+    Returns
 
         Tidal Tensor
 

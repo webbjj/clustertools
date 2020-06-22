@@ -35,7 +35,7 @@ def nbinmaker(x, nbin=10, nsum=False):
 
      Split an array into nbin bin's of equal number elements
 
-  INPUT:
+  Parameters
 
      x - input array
 
@@ -43,7 +43,7 @@ def nbinmaker(x, nbin=10, nsum=False):
 
      nsum - return number of points in each bin
 
-  OUTPUT:
+  Returns
 
      x_lower,x_mid,x_upper,x_hist (if nsum==False)
 
@@ -96,7 +96,7 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
 
      Split an array into nbin bin's of equal size
 
-  INPUT:
+  Parameters
 
      x - input array
 
@@ -106,7 +106,7 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
 
      steptype - linear or logarithmic steps
 
-  OUTPUT:
+  Returns
 
      x_lower,x_mid,x_upper,x_hist (if nsum==False)
 
@@ -152,7 +152,7 @@ def power_law_distribution_function(n, alpha, xmin, xmax):
   PURPOSE:
 
      Generate points from a power-law distribution function
-  INPUT:
+  Parameters
 
      n - number of points
 
@@ -160,7 +160,7 @@ def power_law_distribution_function(n, alpha, xmin, xmax):
 
      xmin,xmax - minimum and maximum values of distribution
 
-  OUTPUT:
+  Returns
 
      c
 
@@ -197,7 +197,7 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
     PURPOSE:
 
      Find distribution function using nx bins containing an equal number of points
-    INPUT:
+    Parameters
 
      x - input array
 
@@ -207,7 +207,7 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
 
      x_lower,x_mean,x_upper - preset bins
 
-    OUTPUT:
+    Returns
 
      x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
 
@@ -263,7 +263,7 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
 
         Find histogram
 
-    INPUT:
+    Parameters
 
         x input array
 
@@ -273,7 +273,7 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
 
         x_lower,x_mean,x_upper
 
-    OUTPUT:
+    Returns
 
         x_mean,x_hist
 
@@ -305,7 +305,7 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
     PURPOSE:
 
      Calculate mean profile of parameter y that depends on x  
-    INPUT:
+    Parameters
 
      x,y coordinates from which to measure the mean profile
 
@@ -317,7 +317,7 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
 
      median - find median instead of mean (Default: False)
 
-    OUTPUT:
+    Returns
 
      x_bin,y_bin,y_sig
 
@@ -367,7 +367,7 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
 
      Smooth a profile
 
-    INPUT:
+    Parameters
 
      x,y coordinates from which to measure the mean profile
 
@@ -381,7 +381,7 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
 
      dx - width of smoothening bin
 
-    OUTPUT:
+    Returns
 
      x_bin,y_bin,y_sig
 
@@ -446,7 +446,7 @@ def interpolate(r1, r2, x=None, y=None):
 
      Perform simple linear interpolate between two points in 2D
 
-    INPUT:
+    Parameters
 
      r1,r2 - x,y coordinates from which to interpolate
 
@@ -454,7 +454,7 @@ def interpolate(r1, r2, x=None, y=None):
 
      y - y-value from which to interpolate x
 
-    OUTPUT:
+    Returns
 
      interpolated value
 
@@ -488,13 +488,13 @@ def rotate(x, y, z, thetax=0.0, thetay=0.0, thetaz=0.0):
 
      Rotate StarCluster
 
-    INPUT:
+    Parameters
 
      x,y,z - coordinates of stars
 
      thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates
 
-    OUTPUT:
+    Returns
 
      rotated values of x,y,z
 
@@ -539,7 +539,7 @@ def area_enclosed(
 
      calculate area enclosed by a collection of points by finding what fraction of a random distribution overlaps with points
 
-    INPUT:
+    Parameters
 
      x,y - x and y coorindates
      
@@ -551,7 +551,7 @@ def area_enclosed(
      
      plot - plot overlap (Default: False)
 
-    OUTPUT:
+    Returns
 
      area
 
@@ -639,11 +639,11 @@ def minimum_distance(x):
 
        Find distance to each point's nearest neighbour
 
-    INPUT:
+    Parameters
 
        x=[x,y,z].T
 
-    OUTPUT:
+    Returns
 
        distance to nearest neighbour
 
@@ -679,12 +679,12 @@ def distance(x1, x2):
 
     Find distance between two points (made for use with numba)
 
-    INPUT:
+    Parameters
 
     x1=[x,y,z]
     x2=[x,y,z]
 
-    OUTPUT:
+    Returns
 
     distance
 

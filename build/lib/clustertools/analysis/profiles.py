@@ -53,7 +53,7 @@ def rho_prof(
 
        Measure the density profile of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -79,7 +79,7 @@ def rho_prof(
 
         Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         rprof,pprof,nprof (radius, density, number of stars)
 
@@ -224,7 +224,7 @@ def m_prof(
 
        Measure the mass profile of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -252,7 +252,7 @@ def m_prof(
 
        Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         rprof,mprof,nprof (radius, mass, number of stars)
 
@@ -389,7 +389,7 @@ def alpha_prof(
 
        Measure the radial variation in the mass function
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -421,7 +421,7 @@ def alpha_prof(
 
        Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         lrprofn - natural log of radius (normalized by half-mass radius)
 
@@ -598,7 +598,7 @@ def sigv_prof(
 
        Measure the radial variation in the velocity dispersion
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -631,7 +631,7 @@ def sigv_prof(
 
        Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         lrprofn - natural log of radius (normalized by half-mass radius)
 
@@ -786,7 +786,7 @@ def beta_prof(
 
        Measure the anisotropy profile of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -818,7 +818,7 @@ def beta_prof(
 
        Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         lrprofn - natural log of radius (normalized by half-mass radius)
 
@@ -962,7 +962,7 @@ def v_prof(
 
        Measure the radial variation in the mean velocity 
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -988,7 +988,7 @@ def v_prof(
 
        Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         lrprofn - natural log of radius (normalized by half-mass radius)
 
@@ -1126,7 +1126,7 @@ def eta_prof(
 
        Measure the radial variation in eta
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -1154,7 +1154,7 @@ def eta_prof(
 
        Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         lrprofn - natural log of radius (normalized by half-mass radius)
 
@@ -1285,7 +1285,7 @@ def vcirc_prof(
 
        Measure the circulr velocity profile of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -1311,7 +1311,7 @@ def vcirc_prof(
 
         Same as for ..util.plot.nplot
 
-    OUTPUT:
+    Returns
 
         rprof,vprof,rvmax,vmax (radius, circular velocity, radius of maximum virc, maximum vcirc)
 

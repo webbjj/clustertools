@@ -37,7 +37,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None,pot=None, *
        Setup an N-body realization of a StarCluster with specific parameters
        --> Relies heavily on LIMEPY/SPES models (REFERENCE)
 
-    INPUT:
+    Parameters
 
        ctype - Type of model used to generate cluster ('SPES',LIMEPY','WOOLEY','KING','WILSON',Name/List of Galactic Clusters)
              --> To add: PLUMMER
@@ -64,7 +64,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None,pot=None, *
 
        -- Additional KWARGS passed to get_limepy, and get_spes
 
-    OUTPUT:
+    Returns
 
         StarCluster instance
 
@@ -136,7 +136,7 @@ def get_limepy(g=1, **kwargs):
 
        Get an Nbody realization of a LIMEPY model cluster (REFERENCE)
 
-    INPUT:
+    Parameters
 
        g - model type for LIMEPY
 
@@ -152,7 +152,7 @@ def get_limepy(g=1, **kwargs):
 
        N - number of stars to generate in model cluster
 
-    OUTPUT:
+    Returns
 
         StarCluster instance
 
@@ -218,7 +218,7 @@ def get_spes(**kwargs):
 
        Get an Nbody realization of a SPES model cluster (REFERENCE)
 
-    INPUT:
+    Parameters
 
        None
 
@@ -240,7 +240,7 @@ def get_spes(**kwargs):
 
        N - number of stars to generate in model cluster
 
-    OUTPUT:
+    Returns
 
         StarCluster instance
 
@@ -316,13 +316,13 @@ def c_to_w0(c, invert=False):
 
        Convert King central concentration (c) values to central potential (W0) values 
 
-    INPUT:
+    Parameters
 
        c - central concentration
 
        invert - convert from W0 to c instead, in which case the input c is the central potential (Default: False)
 
-    OUTPUT:
+    Returns
 
         W0 (or c if invert==True)
 
@@ -768,12 +768,12 @@ def w0_to_c(w0):
 
        Convert central potential (W0) values to King central concentration (c)
 
-    INPUT:
+    Parameters
 
        W0 - central potential
 
 
-    OUTPUT:
+    Returns
 
        c
 
@@ -795,7 +795,7 @@ def get_cluster(gcname, source="default", mbar=0.4, names=False, params=False):
 
        Generate a StarCluster instance based on a Galactic Globular Cluster
 
-    INPUT:
+    Parameters
 
        gcname - name of cluster to be modelled.
 
@@ -809,7 +809,7 @@ def get_cluster(gcname, source="default", mbar=0.4, names=False, params=False):
 
         params -  return mass and size of clusters generate (Default: False)
 
-    OUTPUT:
+    Returns
 
        StarCluster (if gcname != 'list')
 
@@ -864,7 +864,7 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
        Generate a StarCluster instance based on a measurements of Galactic Globular Clusters by de Boer et al. 2019
        --> Cluster is also assigned an orbit based on Vasiliev 2019
 
-    INPUT:
+    Parameters
 
        data - table of parameters from de Boer et al. 2019 (see ./data)
 
@@ -875,7 +875,7 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
 
        names - return names of clusters genereated (Default: False)
 
-    OUTPUT:
+    Returns
 
        StarCluster
 
@@ -944,7 +944,7 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
        Generate a StarCluster instance based on the Harris 1996 (2010 Edition) catalogue of Galactic Globular Clusters 
        --> Cluster is also assigned an orbit based on Vasiliev 2019
 
-    INPUT:
+    Parameters
 
        data - table of parameters from Harris 1996 (2010 Edition) (see ./data)
 
@@ -955,7 +955,7 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
 
        names - return names of clusters genereated (Default: False)
 
-    OUTPUT:
+    Returns
 
        StarCluster
 

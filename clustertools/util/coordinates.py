@@ -29,11 +29,11 @@ def sphere_coords(cluster):
 
        Get the spherical coordinates of every star in the cluster
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
-    OUTPUT:
+    Returns
 
        r,theta,phi,vr,vtheta,vphi
 
@@ -56,11 +56,11 @@ def cart_to_sphere(x,y,z,vx,vy,vz):
 
        Convert cartesian coordinates to spherical coordinates
 
-    INPUT:
+    Parameters
 
        x,y,z,vx,vy,vz
 
-    OUTPUT:
+    Returns
 
        r,theta,phi,vr,vtheta,vphi
 
@@ -102,11 +102,11 @@ def cyl_coords(cluster):
 
        Get the cylindrical coordinates of every star in the cluster
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
-    OUTPUT:
+    Returns
 
        r,theta,z,vr,vtheta,vz
 
@@ -127,11 +127,11 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
 
        Convert cylindrical to spherical coordinates
 
-    INPUT:
+    Parameters
 
        x,y,z,vx,vy,vz
 
-    OUTPUT:
+    Returns
 
        r,theta,z,vr,vtheta,vz
 
@@ -156,11 +156,11 @@ def sky_coords(cluster):
 
        Get the sky coordinates of every star in the cluster
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
-    OUTPUT:
+    Returns
 
        ra,dec,d0,pmra,pmdec,vr0
 

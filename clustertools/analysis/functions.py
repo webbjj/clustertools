@@ -42,7 +42,7 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
 
        Calculate the relaxation time (Spitzer & Hart 1971) within a given radius of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -54,7 +54,7 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
 
        method - choose between Spitzer & Hart 1971 and other methods to be added later
 
-    OUTPUT:
+    Returns
 
        trelax
 
@@ -104,7 +104,7 @@ def half_mass_relaxation_time(cluster, multimass=True, projected=False):
 
        Calculate the half-mass relaxation time (Spitzer 1987) of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -112,7 +112,7 @@ def half_mass_relaxation_time(cluster, multimass=True, projected=False):
 
        projected - use projected values (default: False)
 
-    OUTPUT:
+    Returns
 
        trelax
 
@@ -151,7 +151,7 @@ def core_relaxation_time(cluster, multimass=True, projected=False):
 
        Calculate the core relaxation time (Stone & Ostriker 2015) of the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -161,7 +161,7 @@ def core_relaxation_time(cluster, multimass=True, projected=False):
 
        method - choose between Spitzer 1987 and other methods to be added later
 
-    OUTPUT:
+    Returns
 
        trelax
 
@@ -193,7 +193,7 @@ def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
 
        Calculate kinetic and potential energy of every star
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -205,7 +205,7 @@ def energies(cluster, specific=True, i_d=None, full=True, parallel=False):
 
        parallel - calculate distances in parallel if True (default: False)
 
-    OUTPUT:
+    Returns
 
        ek,pot,etot
 
@@ -301,11 +301,11 @@ def potential_energy(cluster):
 
        Find potential energy for each star in a cluster
 
-    INPUT:
+    Parameters
 
        cluster=[x,y,z,m].T
 
-    OUTPUT:
+    Returns
 
         energy
 
@@ -335,11 +335,11 @@ def potential_energy_parallel(cluster):
 
        Find potential energy for each star in a cluster (done in parallel)
 
-    INPUT:
+    Parameters
 
        cluster=[x,y,z,m].T
 
-    OUTPUT:
+    Returns
 
         energy
 
@@ -379,13 +379,13 @@ def virialize(cluster, specific=True, full=True):
 
        Adjust stellar velocities so cluster is in virial equilibrium
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
        specific - find specific energies (default: True)
        full - do full array of stars at once with numbra (default: True)
 
-    OUTPUT:
+    Returns
 
        qv
 
@@ -428,13 +428,13 @@ def rlagrange(cluster, nlagrange=10, projected=False):
        Calculate lagrange radii of the cluster by mass
        --> Note units of lagrange radii will be equal to cluster.units
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
        nlagrange - number of lagrange radii bins (default: 10)
        projected - calculate projected lagrange radii (default: False)
 
-    OUTPUT:
+    Returns
 
        rn
 
@@ -505,7 +505,7 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
                  average inverse distance between particles, weighted by their masses
        --> Definition taken from AMUSE (www.amusecode.org)
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -513,7 +513,7 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
 
        full - Use Numba (default:True)
 
-    OUTPUT:
+    Returns
 
        rv
 
@@ -570,11 +570,11 @@ def weighted_inverse_distance_sum(cluster):
 
        Find the sum of the mass weighted inverse distance for each star
 
-    INPUT:
+    Parameters
 
        cluster=[x,y,z,m].T
 
-    OUTPUT:
+    Returns
 
         weighted inverse distance sum
 
@@ -612,7 +612,7 @@ def virial_radius_critical_density(
        Calculate virial radius of the cluster as the radius at which the density is equal to the critical 
            density of the Universe at the redshift of the system, multiplied by an overdensity constant
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -626,7 +626,7 @@ def virial_radius_critical_density(
 
        projected - calculate projected virial radius (default: False)
 
-    OUTPUT:
+    Returns
 
        rv
 
@@ -743,7 +743,7 @@ def mass_function(
 
        Find mass function over a given mass range using nmass bins containing an equal number of stars
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
        mmin/mmax - specific mass range
@@ -759,7 +759,7 @@ def mass_function(
        plot - plot the mass function
        **kwargs - key words for plotting
 
-    OUTPUT:
+    Returns
 
        if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
        if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror
@@ -909,7 +909,7 @@ def eta_function(
 
        Find eta over a given mass range using nmass bins containing an equal number of stars
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -933,7 +933,7 @@ def eta_function(
        
        **kwargs - key words for plotting
 
-    OUTPUT:
+    Returns
 
        m_mean,sigvm,eta,eeta,yeta,eyeta
 
@@ -1053,7 +1053,7 @@ def surface_area(
 
      calculate surface area enclosed by cluster by finding what fraction of a random distribution overlaps with points
 
-    INPUT:
+    Parameters
 
      cluster - StarCluster instance
      
@@ -1075,7 +1075,7 @@ def surface_area(
      
      plot - plot overlap (Default: False)
 
-    OUTPUT:
+    Returns
 
      area
 

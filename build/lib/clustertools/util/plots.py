@@ -52,7 +52,7 @@ def nscatter(
 
        Wrapper for matplotlib.pyplot.scatter that allows for most pyplot commands to be assigned when calling the function
 
-    INPUT:
+    Parameters
 
        x,y - points to be plotted
 
@@ -80,7 +80,7 @@ def nscatter(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -165,7 +165,7 @@ def nplot(
 
        Wrapper for plotting points with matplotlib.pyplot.plot that allows for most pyplot commands to be assigned when calling the function
 
-    INPUT:
+    Parameters
 
        x,y - points to be plotted
 
@@ -197,7 +197,7 @@ def nplot(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -281,7 +281,7 @@ def nlplot(
 
        Wrapper for plotting lines with matplotlib.pyplot.plot that allows for most pyplot commands to be assigned when calling the function
 
-    INPUT:
+    Parameters
 
        x,y - points to be plotted
 
@@ -315,7 +315,7 @@ def nlplot(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -365,7 +365,7 @@ def nhist(
 
        Wrapper for matplotlib.pyplot.hist that allows for most pyplot commands to be assigned when calling the function
 
-    INPUT:
+    Parameters
 
        x - points to make histogram with
 
@@ -389,7 +389,7 @@ def nhist(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -450,7 +450,7 @@ def nhist2d(
 
        Wrapper for matplotlib.pyplot.nhist2d that allows for most pyplot commands to be assigned when calling the function
 
-    INPUT:
+    Parameters
 
        x, y - points to make histogram with
 
@@ -474,7 +474,7 @@ def nhist2d(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -528,7 +528,7 @@ def ndens(
 
        Wrapper for matplotlib.pyplot.histogram2d that allows for most pyplot commands to be assigned when calling the function
 
-    INPUT:
+    Parameters
 
        x, y - points to make histogram with
 
@@ -550,7 +550,7 @@ def ndens(
 
        cmap - colour map for imshow
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -606,7 +606,7 @@ def starplot(
 
        Plot the xy/xz/yz coordinates of each star in the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -628,7 +628,7 @@ def starplot(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 
@@ -798,7 +798,7 @@ def skyplot(
 
        Plot the ra/dec or pmra/pmdec coordinates of each star in the cluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -820,7 +820,7 @@ def skyplot(
 
         same as matplotlib.pyplot
 
-    OUTPUT:
+    Returns
 
        pyplot.figure()
 

@@ -7,11 +7,11 @@ PURPOSE:
 
 A list of commonly used constants
 
-INPUT:
+Parameters
 
 None
 
-OUTPUT:
+Returns
 
 kmperpc - convert km to pc
 
@@ -38,11 +38,11 @@ def kwtypes():
 
        Print legend for converting kwtype (from NBODY6) to stellar evolution type
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
        None
 

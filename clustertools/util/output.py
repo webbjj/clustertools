@@ -32,13 +32,13 @@ def extrct_out(cluster, fileout, projected=False):
        Extrct key cluster properties and write to file
        --> N, Nbinary, trh, mtot, rlagrange_1-10, rmpro, rhpro, rv, rl, rt, rvmax, vmax
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
        fileout - opened file to write data to
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -114,7 +114,7 @@ def rho_prof_out(cluster, fileout, **kwargs):
 
        Write density profile to file
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
@@ -123,7 +123,7 @@ def rho_prof_out(cluster, fileout, **kwargs):
        **kwargs - key words for rho_prof
 
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -163,7 +163,7 @@ def alpha_prof_out(
 
        Write alpha profile and delta_alpha to file
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
@@ -172,7 +172,7 @@ def alpha_prof_out(
        **kwargs - key words for alpha_prof
 
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -215,7 +215,7 @@ def sigv_prof_out(cluster, fileout,**kwargs,
 
        Write velopcity dispersion profile to file
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
@@ -224,7 +224,7 @@ def sigv_prof_out(cluster, fileout,**kwargs,
        **kwargs - key words for sigv_prof
 
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -260,7 +260,7 @@ def eta_prof_out(
 
        Write eta profile to file
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
@@ -269,7 +269,7 @@ def eta_prof_out(
        **kwargs - key words for sigv_prof
 
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -310,7 +310,7 @@ def snapout(cluster, filename, energies=False, observations=False):
 
        Output a snapshot in clustertools format
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
@@ -320,7 +320,7 @@ def snapout(cluster, filename, energies=False, observations=False):
 
        observations - include sky coordinates of stars (Default: False) 
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -441,7 +441,7 @@ def fortout(
 
        Output a snapshot in NBODY6 fort.10 format
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
@@ -453,7 +453,7 @@ def fortout(
 
        reset_nbody_radii - reset nbody radii scaling parameter (Default: False)
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -500,13 +500,13 @@ def gyrout(cluster, filename="init.nemo.dat"):
 
        Output a snapshot in gyrfalcon/NEMO format
 
-    INPUT:
+    Parameters
 
        cluster - a StarCluster-class object
 
        filename - name of file to be written to (Default: 'init.nemo.dat')
 
-    OUTPUT:
+    Returns
 
        None
 

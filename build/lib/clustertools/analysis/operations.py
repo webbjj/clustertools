@@ -64,7 +64,7 @@ def find_centre(
         to perform the C.O.M calculation. This step prevents long tidal tails from affecting the 
         calculation
 
-    INPUT:
+    Parameters
        xstart,ystart,zstart - starting position for centre
        vxstart,vystart,vzstart - starting velocity for centre
        indx - subset of stars to use when finding center
@@ -76,7 +76,7 @@ def find_centre(
            - nmax - maximum number of iterations to find centre
        ro,vo - For converting to and from galpy units (Default: 8., 220.)
 
-    OUTPUT:
+    Returns
 
        xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
 
@@ -166,13 +166,13 @@ def find_centre_of_density(
        Notes - the general framework for this code was taken from Yohai Meiron,
        who made a python adaptation of the centre of density finder in PhiGrape
 
-    INPUT:
+    Parameters
        xstart,ystart,zstart - starting position for centre
        vxstart,vystart,vzstart - starting velocity for centre
        rmin - minimum radius of sphere around which to estimate density centre (default: 0.1 pc)
        nmax - maximum number of iterations (default:100)
 
-    OUTPUT:
+    Returns
 
        xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
 
@@ -262,10 +262,10 @@ def find_centre_of_mass(cluster):
 
        Find the centre of mass of the cluster
 
-    INPUT:
+    Parameters
        None
 
-    OUTPUT:
+    Returns
 
        xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
 
@@ -294,11 +294,11 @@ def to_pckms(cluster, do_key_params=False):
 
        Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -375,11 +375,11 @@ def to_kpckms(cluster, do_key_params=False, ro=8.0, vo=220.0):
 
        Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -473,11 +473,11 @@ def to_nbody(cluster, do_key_params=False, ro=8.0, vo=220.0):
        Notes:
         - requires that cluster.zmbar, cluster.rbar, cluster.vstar are set (defaults are 1 in add_nbody6)
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -529,11 +529,11 @@ def to_radec(cluster, do_key_params=False, ro=8.0, vo=220.0):
 
        Convert to on-sky position, proper motion, and radial velocity of cluster
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         ra,dec,dist,pmra,pmdec,vlos
 
@@ -648,11 +648,11 @@ def from_radec(cluster, do_order=False, do_key_params=False):
 
        Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         x,y,z,vx,vy,vz
 
@@ -730,11 +730,11 @@ def to_galpy(cluster, do_key_params=False, ro=8.0, vo=220.0):
 
        Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -786,11 +786,11 @@ def to_units(cluster, units, do_order=False, do_key_params=False, ro=8.0, vo=220
 
        Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units
 
-    INPUT:
+    Parameters
 
        units - 'nbody','pckms','kpckms','galpy'
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -823,11 +823,11 @@ def rotate_to_tail(cluster):
 
        Rotate the coordinate system to be aligned with cluster's orbit (Work in progress)
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -859,11 +859,11 @@ def to_centre(cluster, do_order=False, do_key_params=False, centre_method=None):
 
        Shift coordinates such that origin is the centre of mass
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -902,7 +902,7 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
 
        Shift coordinates to clustercentric reference frame
 
-    INPUT:
+    Parameters
 
        do_order - re-sort cluster radii (default: False)
 
@@ -922,7 +922,7 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
         Note the the line of site positions and velocities will just have the galactocentric coordinates of the cluster
         subtracted off. Be sure to set projected=True when making any calculations to use only x and y coordinates
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -1016,11 +1016,11 @@ def to_galaxy(cluster, do_order=False, do_key_params=False):
 
        Shift coordinates to galactocentric reference frame
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -1059,11 +1059,11 @@ def to_sky(cluster, do_order=False, do_key_params=False):
 
        Calculate on-sky position, proper motion, and radial velocity of cluster
         --> Also changes units to radec
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -1085,11 +1085,11 @@ def from_sky(cluster, do_order=False, do_key_params=False):
 
        Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
         -> Also changes units to kpckms
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -1112,11 +1112,11 @@ def to_tail(cluster, plot=False):
        Calculate positions and velocities of stars when rotated such that clusters velocity vector
        points along x-axis
 
-    INPUT:
+    Parameters
 
        None
 
-    OUTPUT:
+    Returns
 
         x_rot,y_rot,z_rot,vx_rot,vy_rot,vz_rot
 
@@ -1168,11 +1168,11 @@ def to_origin(cluster, origin, do_order=False, do_key_params=False):
 
        Shift cluster to origin as defined by keyword
 
-    INPUT:
+    Parameters
 
        origin - accepts 'cluster','centre','galaxy'
 
-    OUTPUT:
+    Returns
 
         None
 
@@ -1202,11 +1202,11 @@ def save_cluster(cluster):
 
        Save cluster's units and origin
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
-    OUTPUT:
+    Returns
 
        units, origin
 
@@ -1228,7 +1228,7 @@ def return_cluster(cluster, units0, origin0, do_order=False, do_key_params=False
 
        return cluster to a specific combination of units and origin
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -1237,7 +1237,7 @@ def return_cluster(cluster, units0, origin0, do_order=False, do_key_params=False
        origin0 - origin that StarCluster will be changed to
 
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -1260,7 +1260,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=False, **kwargs):
 
        Assign new conversions for real mass, size, and velocity to Nbody units
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
@@ -1274,7 +1274,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=False, **kwargs):
 
        same as rvirial
 
-    OUTPUT:
+    Returns
 
        None
 
@@ -1393,13 +1393,13 @@ def add_rotation(cluster, qrot):
 
        Add a degree of rotation to an already generated StarCluster
 
-    INPUT:
+    Parameters
 
        cluster - StarCluster instance
 
        qrot - the fraction of stars with v_phi < 0 that are switched to vphi > 0
 
-    OUTPUT:
+    Returns
 
        None
 

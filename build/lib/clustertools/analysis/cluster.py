@@ -7,7 +7,7 @@ __author__ = "Jeremy J Webb"
 
 __all__ = [
     "StarCluster",
-    "sub_cluster"
+    "sub_cluster",
 ]
 
 import numpy as np
@@ -21,70 +21,70 @@ from .operations import *
 from copy import copy
 
 class StarCluster(object):
-    r""" A class that represents a star cluster population that functions can be performed on
+    """ A class that represents a star cluster population that functions can be performed on
     
     Parameters
     ----------
-    tphys: float
-            Time (units not necessary) associated with the population (default: 0)
-    units: str
-            Units of stellar positions and velocties. Options include 'pckms',
-            'kpckms','degrees','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
-            stellar velocities are assumed to be km/s. (default: None)
-    origin: str
-            Origin of coordinate system within which stellar positions and velocities are defined. 
-            Options include 'centre', 'cluster', 'galaxy' and 'sky'. Note that 'centre' corresponds
-            to the systems centre of density or mass (as calculated by clustertools) while 'cluster' corresponds
-            to the orbital position of the cluster's initial centre of mass given 'tphys'. In some cases
-            these two coordinate systems may be the same. (default: None)
-    ctype: str
-            Code type used to generate the cluster population. Current options include 'snapshot',
-            'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
-            informs clustertools how to load the stellar popuation and advance to the next snapshot.
-            (default: 'snapshot')
+    tphys : float
+        Time (units not necessary) associated with the population (default: 0)
+    units : str
+        Units of stellar positions and velocties. Options include 'pckms',
+        'kpckms','degrees','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
+        stellar velocities are assumed to be km/s. (default: None)
+    origin : str
+        Origin of coordinate system within which stellar positions and velocities are defined. 
+        Options include 'centre', 'cluster', 'galaxy' and 'sky'. Note that 'centre' corresponds
+        to the systems centre of density or mass (as calculated by clustertools) while 'cluster' corresponds
+        to the orbital position of the cluster's initial centre of mass given 'tphys'. In some cases
+        these two coordinate systems may be the same. (default: None)
+    ctype : str
+        Code type used to generate the cluster population. Current options include 'snapshot',
+        'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
+        informs clustertools how to load the stellar popuation and advance to the next snapshot.
+        (default: 'snapshot')
 
-    projected: bool
+    projected : bool
         return projected values instead of 3D value. (default: False)
 
-    Key Word Arguments (**kwargs)
-    ----------
+    Key Word Arguments (kwargs)
+    ---------------------------
 
-    sfile: str
-            name of file containing single star data
-    bfile: str
-            name of file contain binary star data
-    ofilename: str
-            orbit filename if ofile is not given
-    ounits: str
-            {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
-    nsnap: int
-            if a specific snapshot is to be read in instead of starting from zero
-    nzfill: int
-            value for zfill when reading and writing snapshots (default: 5)
-    snapbase: str
-            string of characters in filename before nsnap (default: '')
-    snapend: str
-            string of character in filename after nsnap (default: '.dat')
-    snapdir: str
-            string name of directory of snapshots if different than wdir (Default: '')
-    delimiter: str 
-            choice of delimiter when reading ascii/csv files (default: ',')
-    wdir: str
-            working directory of snapshots if not current directory
-    intialize: bool
-            initialize a galpy orbit after reading in orbital information (default: False)
-    advance: bool
-            set to True if this a snapshot that has been advanced to from an initial one? (default: False)
+    sfile : str
+        name of file containing single star data
+    bfile : str
+        name of file contain binary star data
+    ofilename : str
+        orbit filename if ofile is not given
+    ounits : str
+        {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
+    nsnap : int
+        if a specific snapshot is to be read in instead of starting from zero
+    nzfill : int
+        value for zfill when reading and writing snapshots (default: 5)
+    snapbase : str
+        string of characters in filename before nsnap (default: '')
+    snapend : str
+        string of character in filename after nsnap (default: '.dat')
+    snapdir : str
+        string name of directory of snapshots if different than wdir (Default: '')
+    delimiter : str 
+        choice of delimiter when reading ascii/csv files (default: ',')
+    wdir : str
+        working directory of snapshots if not current directory
+    intialize : bool
+        initialize a galpy orbit after reading in orbital information (default: False)
+    advance : bool
+        set to True if this a snapshot that has been advanced to from an initial one? (default: False)
     centre_method: str
-            {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
+        {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in degrees (Default: None)
 
     Returns
-    ----------
+    -------
 
     StarCluster
 
-    HISTORY:
-    ----------
+    History
+    -------
     2018 - Written - Webb (UofT)
 
     """
@@ -503,44 +503,43 @@ class StarCluster(object):
     ):
         """ Add additional information to StarCluster
 
-            Notes:
-                - parameters are common output variables in NBODY6
-                - values are never adjusted during unit or coordinate changes
+        - parameters are common output variables in NBODY6
+        - values are never adjusted during unit or coordinate changes
 
         Parameters
         ----------
 
-            nc: int
+            nc : int
                 number of stars in core (default:0)
 
-            rc: int
+            rc : int
                 core radius (default:0)
 
-            rbar: float
+            rbar : float
                 scaling factor between NBODY units and pc (default:1.)
 
-            rtide:
+            rtide :
                 rtide set in the simulation (default:0)
 
-            xc,yc,zc: float
+            xc,yc,zc : float
                 position of cluster centre (default:0)
 
-            zmbar: float
+            zmbar : float
                 scaling factor between NBODY units and Msun (default:1.)
 
-            vstar:
+            vstar : float
                 scaling factor between NBODY units and km/s (default:1.)
 
-            rscale: float
+            rscale : float
                 the scale radius of data (default:1.)
 
-            ns: int
+            ns : int
                 number of single stars (default:0)
 
-            nb: int
+            nb : int
                 number of binary stars (default:0)
 
-            np: int
+            np : int
                 number of particles (default:0)
 
         Returns
@@ -580,9 +579,8 @@ class StarCluster(object):
     def add_sse(self, kw, logl, logr, ep, ospin):
         """Add stellar evolution information to stars
         
-        Notes:
-            - parameters are common output variables in NBODY6
-            - values are never adjusted during unit or coordinate changes
+        - parameters are common output variables in NBODY6
+        - values are never adjusted during unit or coordinate changes
 
         Parameters
         ----------
@@ -642,9 +640,8 @@ class StarCluster(object):
         """
         NAME: Add binary star evolution information to stars
 
-        Notes:
-            - parameters are common output variables in NBODY6
-            - values are never adjusted during unit or coordinate changes
+        - parameters are common output variables in NBODY6
+        - values are never adjusted during unit or coordinate changes
 
         Parameters
         ----------
@@ -717,19 +714,18 @@ class StarCluster(object):
     def add_energies(self, kin, pot, etot=None):
         """ add energy information for stars 
 
-           Notes:
-            - total energy and Q for the cluster are also calculated
-            - values are never adjusted during unit or coordinate changes
+        - total energy and Q for the cluster are also calculated
+        - values are never adjusted during unit or coordinate changes
 
         Parameters
         ----------
-           kin: float
+            kin : float
                 kinetic energy 
 
-           pot: float
+            pot : float
                 potentail energy
 
-           etot: float
+            etot : float
                 total energy - calculated as kin+pot if not given
 
         Returns
@@ -765,22 +761,20 @@ class StarCluster(object):
         Parameters
         ----------
 
-            JR,Jphi,Jz: float
+            JR,Jphi,Jz : float
                 orbit actions
-
-            OR,Ophi,Oz: float
+            OR,Ophi,Oz : float
                 orbit frequencies
-
-            TR,Tphi,Tz: float
+            TR,Tphi,Tz : float
                 orbit periods
 
         Returns
-        ----------
+        -------
 
             None
 
         HISTORY:
-        ----------
+        --------
 
            2019 - Written - Webb (UofT)
 
@@ -816,11 +810,11 @@ class StarCluster(object):
     def key_params(self, do_order=False):
         """ Find key parameters of the cluster 
 
-            Notes:
-                - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),
-                10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50)
-                are all calculated if necessary information is given
-                - r10, r50, rh10, and rh50 also calculated in projection
+
+        - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),
+        10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50)
+        are all calculated if necessary information is given
+        - r10, r50, rh10, and rh50 also calculated in projection
 
         Parameters
         ----------
@@ -993,6 +987,8 @@ class StarCluster(object):
     def convert_binary_units(self,param,from_units,to_units):
         convert_binary_units(self,param,from_units,to_units)
 
+    # /def
+    
     def add_rotation(self, qrot):
         add_rotation(self, qrot)
 

@@ -62,7 +62,7 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s2">&quot;StarCluster&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;sub_cluster&quot;</span>
+    <span class="s2">&quot;sub_cluster&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -76,70 +76,70 @@
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
 
 <div class="viewcode-block" id="StarCluster"><a class="viewcode-back" href="../../../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster">[docs]</a><span class="k">class</span> <span class="nc">StarCluster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot; A class that represents a star cluster population that functions can be performed on</span>
+    <span class="sd">&quot;&quot;&quot; A class that represents a star cluster population that functions can be performed on</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    tphys: float</span>
-<span class="sd">            Time (units not necessary) associated with the population (default: 0)</span>
-<span class="sd">    units: str</span>
-<span class="sd">            Units of stellar positions and velocties. Options include &#39;pckms&#39;,</span>
-<span class="sd">            &#39;kpckms&#39;,&#39;degrees&#39;,&#39;nbody&#39;,and &#39;galpy&#39;. For &#39;pckms&#39; and &#39;kpckms&#39;, </span>
-<span class="sd">            stellar velocities are assumed to be km/s. (default: None)</span>
-<span class="sd">    origin: str</span>
-<span class="sd">            Origin of coordinate system within which stellar positions and velocities are defined. </span>
-<span class="sd">            Options include &#39;centre&#39;, &#39;cluster&#39;, &#39;galaxy&#39; and &#39;sky&#39;. Note that &#39;centre&#39; corresponds</span>
-<span class="sd">            to the systems centre of density or mass (as calculated by clustertools) while &#39;cluster&#39; corresponds</span>
-<span class="sd">            to the orbital position of the cluster&#39;s initial centre of mass given &#39;tphys&#39;. In some cases</span>
-<span class="sd">            these two coordinate systems may be the same. (default: None)</span>
-<span class="sd">    ctype: str</span>
-<span class="sd">            Code type used to generate the cluster population. Current options include &#39;snapshot&#39;,</span>
-<span class="sd">            &#39;nbody6&#39;,&#39;nbody6se&#39;,&#39;gyrfalcon&#39;,&#39;snaptrim&#39;, amuse&#39;,&#39;clustertools&#39;,&#39;snapauto&#39;. The parameter</span>
-<span class="sd">            informs clustertools how to load the stellar popuation and advance to the next snapshot.</span>
-<span class="sd">            (default: &#39;snapshot&#39;)</span>
+<span class="sd">    tphys : float</span>
+<span class="sd">        Time (units not necessary) associated with the population (default: 0)</span>
+<span class="sd">    units : str</span>
+<span class="sd">        Units of stellar positions and velocties. Options include &#39;pckms&#39;,</span>
+<span class="sd">        &#39;kpckms&#39;,&#39;degrees&#39;,&#39;nbody&#39;,and &#39;galpy&#39;. For &#39;pckms&#39; and &#39;kpckms&#39;, </span>
+<span class="sd">        stellar velocities are assumed to be km/s. (default: None)</span>
+<span class="sd">    origin : str</span>
+<span class="sd">        Origin of coordinate system within which stellar positions and velocities are defined. </span>
+<span class="sd">        Options include &#39;centre&#39;, &#39;cluster&#39;, &#39;galaxy&#39; and &#39;sky&#39;. Note that &#39;centre&#39; corresponds</span>
+<span class="sd">        to the systems centre of density or mass (as calculated by clustertools) while &#39;cluster&#39; corresponds</span>
+<span class="sd">        to the orbital position of the cluster&#39;s initial centre of mass given &#39;tphys&#39;. In some cases</span>
+<span class="sd">        these two coordinate systems may be the same. (default: None)</span>
+<span class="sd">    ctype : str</span>
+<span class="sd">        Code type used to generate the cluster population. Current options include &#39;snapshot&#39;,</span>
+<span class="sd">        &#39;nbody6&#39;,&#39;nbody6se&#39;,&#39;gyrfalcon&#39;,&#39;snaptrim&#39;, amuse&#39;,&#39;clustertools&#39;,&#39;snapauto&#39;. The parameter</span>
+<span class="sd">        informs clustertools how to load the stellar popuation and advance to the next snapshot.</span>
+<span class="sd">        (default: &#39;snapshot&#39;)</span>
 
-<span class="sd">    projected: bool</span>
+<span class="sd">    projected : bool</span>
 <span class="sd">        return projected values instead of 3D value. (default: False)</span>
 
-<span class="sd">    Key Word Arguments (**kwargs)</span>
-<span class="sd">    ----------</span>
+<span class="sd">    Key Word Arguments (kwargs)</span>
+<span class="sd">    ---------------------------</span>
 
-<span class="sd">    sfile: str</span>
-<span class="sd">            name of file containing single star data</span>
-<span class="sd">    bfile: str</span>
-<span class="sd">            name of file contain binary star data</span>
-<span class="sd">    ofilename: str</span>
-<span class="sd">            orbit filename if ofile is not given</span>
-<span class="sd">    ounits: str</span>
-<span class="sd">            {&#39;pckms&#39;,&#39;kpckms&#39;,&#39;radec&#39;,&#39;nbody&#39;,&#39;galpy&#39;} units of orbital information (else assumed equal to StarCluster.units)</span>
-<span class="sd">    nsnap: int</span>
-<span class="sd">            if a specific snapshot is to be read in instead of starting from zero</span>
-<span class="sd">    nzfill: int</span>
-<span class="sd">            value for zfill when reading and writing snapshots (default: 5)</span>
-<span class="sd">    snapbase: str</span>
-<span class="sd">            string of characters in filename before nsnap (default: &#39;&#39;)</span>
-<span class="sd">    snapend: str</span>
-<span class="sd">            string of character in filename after nsnap (default: &#39;.dat&#39;)</span>
-<span class="sd">    snapdir: str</span>
-<span class="sd">            string name of directory of snapshots if different than wdir (Default: &#39;&#39;)</span>
-<span class="sd">    delimiter: str </span>
-<span class="sd">            choice of delimiter when reading ascii/csv files (default: &#39;,&#39;)</span>
-<span class="sd">    wdir: str</span>
-<span class="sd">            working directory of snapshots if not current directory</span>
-<span class="sd">    intialize: bool</span>
-<span class="sd">            initialize a galpy orbit after reading in orbital information (default: False)</span>
-<span class="sd">    advance: bool</span>
-<span class="sd">            set to True if this a snapshot that has been advanced to from an initial one? (default: False)</span>
+<span class="sd">    sfile : str</span>
+<span class="sd">        name of file containing single star data</span>
+<span class="sd">    bfile : str</span>
+<span class="sd">        name of file contain binary star data</span>
+<span class="sd">    ofilename : str</span>
+<span class="sd">        orbit filename if ofile is not given</span>
+<span class="sd">    ounits : str</span>
+<span class="sd">        {&#39;pckms&#39;,&#39;kpckms&#39;,&#39;radec&#39;,&#39;nbody&#39;,&#39;galpy&#39;} units of orbital information (else assumed equal to StarCluster.units)</span>
+<span class="sd">    nsnap : int</span>
+<span class="sd">        if a specific snapshot is to be read in instead of starting from zero</span>
+<span class="sd">    nzfill : int</span>
+<span class="sd">        value for zfill when reading and writing snapshots (default: 5)</span>
+<span class="sd">    snapbase : str</span>
+<span class="sd">        string of characters in filename before nsnap (default: &#39;&#39;)</span>
+<span class="sd">    snapend : str</span>
+<span class="sd">        string of character in filename after nsnap (default: &#39;.dat&#39;)</span>
+<span class="sd">    snapdir : str</span>
+<span class="sd">        string name of directory of snapshots if different than wdir (Default: &#39;&#39;)</span>
+<span class="sd">    delimiter : str </span>
+<span class="sd">        choice of delimiter when reading ascii/csv files (default: &#39;,&#39;)</span>
+<span class="sd">    wdir : str</span>
+<span class="sd">        working directory of snapshots if not current directory</span>
+<span class="sd">    intialize : bool</span>
+<span class="sd">        initialize a galpy orbit after reading in orbital information (default: False)</span>
+<span class="sd">    advance : bool</span>
+<span class="sd">        set to True if this a snapshot that has been advanced to from an initial one? (default: False)</span>
 <span class="sd">    centre_method: str</span>
-<span class="sd">            {None,&#39;orthographic&#39;,&#39;VandeVen&#39;} method to convert to clustercentric coordinates when units are in degrees (Default: None)</span>
+<span class="sd">        {None,&#39;orthographic&#39;,&#39;VandeVen&#39;} method to convert to clustercentric coordinates when units are in degrees (Default: None)</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    ----------</span>
+<span class="sd">    -------</span>
 
 <span class="sd">    StarCluster</span>
 
-<span class="sd">    HISTORY:</span>
-<span class="sd">    ----------</span>
+<span class="sd">    History</span>
+<span class="sd">    -------</span>
 <span class="sd">    2018 - Written - Webb (UofT)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -558,44 +558,43 @@
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add additional information to StarCluster</span>
 
-<span class="sd">            Notes:</span>
-<span class="sd">                - parameters are common output variables in NBODY6</span>
-<span class="sd">                - values are never adjusted during unit or coordinate changes</span>
+<span class="sd">        - parameters are common output variables in NBODY6</span>
+<span class="sd">        - values are never adjusted during unit or coordinate changes</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
-<span class="sd">            nc: int</span>
+<span class="sd">            nc : int</span>
 <span class="sd">                number of stars in core (default:0)</span>
 
-<span class="sd">            rc: int</span>
+<span class="sd">            rc : int</span>
 <span class="sd">                core radius (default:0)</span>
 
-<span class="sd">            rbar: float</span>
+<span class="sd">            rbar : float</span>
 <span class="sd">                scaling factor between NBODY units and pc (default:1.)</span>
 
-<span class="sd">            rtide:</span>
+<span class="sd">            rtide :</span>
 <span class="sd">                rtide set in the simulation (default:0)</span>
 
-<span class="sd">            xc,yc,zc: float</span>
+<span class="sd">            xc,yc,zc : float</span>
 <span class="sd">                position of cluster centre (default:0)</span>
 
-<span class="sd">            zmbar: float</span>
+<span class="sd">            zmbar : float</span>
 <span class="sd">                scaling factor between NBODY units and Msun (default:1.)</span>
 
-<span class="sd">            vstar:</span>
+<span class="sd">            vstar : float</span>
 <span class="sd">                scaling factor between NBODY units and km/s (default:1.)</span>
 
-<span class="sd">            rscale: float</span>
+<span class="sd">            rscale : float</span>
 <span class="sd">                the scale radius of data (default:1.)</span>
 
-<span class="sd">            ns: int</span>
+<span class="sd">            ns : int</span>
 <span class="sd">                number of single stars (default:0)</span>
 
-<span class="sd">            nb: int</span>
+<span class="sd">            nb : int</span>
 <span class="sd">                number of binary stars (default:0)</span>
 
-<span class="sd">            np: int</span>
+<span class="sd">            np : int</span>
 <span class="sd">                number of particles (default:0)</span>
 
 <span class="sd">        Returns</span>
@@ -635,9 +634,8 @@
 <div class="viewcode-block" id="StarCluster.add_sse"><a class="viewcode-back" href="../../../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_sse">[docs]</a>    <span class="k">def</span> <span class="nf">add_sse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">logr</span><span class="p">,</span> <span class="n">ep</span><span class="p">,</span> <span class="n">ospin</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add stellar evolution information to stars</span>
 <span class="sd">        </span>
-<span class="sd">        Notes:</span>
-<span class="sd">            - parameters are common output variables in NBODY6</span>
-<span class="sd">            - values are never adjusted during unit or coordinate changes</span>
+<span class="sd">        - parameters are common output variables in NBODY6</span>
+<span class="sd">        - values are never adjusted during unit or coordinate changes</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -697,9 +695,8 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        NAME: Add binary star evolution information to stars</span>
 
-<span class="sd">        Notes:</span>
-<span class="sd">            - parameters are common output variables in NBODY6</span>
-<span class="sd">            - values are never adjusted during unit or coordinate changes</span>
+<span class="sd">        - parameters are common output variables in NBODY6</span>
+<span class="sd">        - values are never adjusted during unit or coordinate changes</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -772,19 +769,18 @@
 <div class="viewcode-block" id="StarCluster.add_energies"><a class="viewcode-back" href="../../../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_energies">[docs]</a>    <span class="k">def</span> <span class="nf">add_energies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kin</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">etot</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; add energy information for stars </span>
 
-<span class="sd">           Notes:</span>
-<span class="sd">            - total energy and Q for the cluster are also calculated</span>
-<span class="sd">            - values are never adjusted during unit or coordinate changes</span>
+<span class="sd">        - total energy and Q for the cluster are also calculated</span>
+<span class="sd">        - values are never adjusted during unit or coordinate changes</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">           kin: float</span>
+<span class="sd">            kin : float</span>
 <span class="sd">                kinetic energy </span>
 
-<span class="sd">           pot: float</span>
+<span class="sd">            pot : float</span>
 <span class="sd">                potentail energy</span>
 
-<span class="sd">           etot: float</span>
+<span class="sd">            etot : float</span>
 <span class="sd">                total energy - calculated as kin+pot if not given</span>
 
 <span class="sd">        Returns</span>
@@ -820,22 +816,20 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 
-<span class="sd">            JR,Jphi,Jz: float</span>
+<span class="sd">            JR,Jphi,Jz : float</span>
 <span class="sd">                orbit actions</span>
-
-<span class="sd">            OR,Ophi,Oz: float</span>
+<span class="sd">            OR,Ophi,Oz : float</span>
 <span class="sd">                orbit frequencies</span>
-
-<span class="sd">            TR,Tphi,Tz: float</span>
+<span class="sd">            TR,Tphi,Tz : float</span>
 <span class="sd">                orbit periods</span>
 
 <span class="sd">        Returns</span>
-<span class="sd">        ----------</span>
+<span class="sd">        -------</span>
 
 <span class="sd">            None</span>
 
 <span class="sd">        HISTORY:</span>
-<span class="sd">        ----------</span>
+<span class="sd">        --------</span>
 
 <span class="sd">           2019 - Written - Webb (UofT)</span>
 
@@ -871,11 +865,11 @@
 <div class="viewcode-block" id="StarCluster.key_params"><a class="viewcode-back" href="../../../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.key_params">[docs]</a>    <span class="k">def</span> <span class="nf">key_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_order</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Find key parameters of the cluster </span>
 
-<span class="sd">            Notes:</span>
-<span class="sd">                - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),</span>
-<span class="sd">                10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50)</span>
-<span class="sd">                are all calculated if necessary information is given</span>
-<span class="sd">                - r10, r50, rh10, and rh50 also calculated in projection</span>
+
+<span class="sd">        - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),</span>
+<span class="sd">        10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50)</span>
+<span class="sd">        are all calculated if necessary information is given</span>
+<span class="sd">        - r10, r50, rh10, and rh50 also calculated in projection</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1048,6 +1042,8 @@
 <div class="viewcode-block" id="StarCluster.convert_binary_units"><a class="viewcode-back" href="../../../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.convert_binary_units">[docs]</a>    <span class="k">def</span> <span class="nf">convert_binary_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">from_units</span><span class="p">,</span><span class="n">to_units</span><span class="p">):</span>
         <span class="n">convert_binary_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">param</span><span class="p">,</span><span class="n">from_units</span><span class="p">,</span><span class="n">to_units</span><span class="p">)</span></div>
 
+    <span class="c1"># /def</span>
+    
 <div class="viewcode-block" id="StarCluster.add_rotation"><a class="viewcode-back" href="../../../reference/clustertools.analysis.cluster.html#clustertools.analysis.cluster.StarCluster.add_rotation">[docs]</a>    <span class="k">def</span> <span class="nf">add_rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qrot</span><span class="p">):</span>
         <span class="n">add_rotation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">qrot</span><span class="p">)</span></div>
 

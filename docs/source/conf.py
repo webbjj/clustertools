@@ -36,7 +36,7 @@ master_doc = 'index'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['nbsphinx','sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.autodoc',
-'sphinx_automodapi.automodapi',
+'sphinx_automodapi.automodapi','numpydoc',
 'sphinx.ext.autosectionlabel','sphinx.ext.mathjax','sphinx.ext.ifconfig','sphinx_automodapi.smart_resolver',
 ]
 

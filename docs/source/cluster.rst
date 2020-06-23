@@ -24,8 +24,9 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
 * rv3d
 * key_params
 
-.. automodapi:: clustertools.analysis.cluster
+.. automodapi:: clustertools.analysis.cluster_custom
         :no-inheritance-diagram:
+        :skip: StarCluster.add_rotation,add_rotation
 
 The ``add_stars`` function is the intended way to actually add stars to ``cluster``. Assuming stellar positions (x,y,z) and velocities (vx,vy,vz) have already been read in via a snapshot, one can call:
 

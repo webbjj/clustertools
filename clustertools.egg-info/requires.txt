@@ -1,6 +1,0 @@
-numpy>=1.7
-scipy
-galpy
-numba
-limepy
-seaborn

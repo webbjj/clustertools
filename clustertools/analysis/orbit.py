@@ -3,23 +3,6 @@
 """
 __author__ = "Jeremy J Webb"
 
-
-__all__ = [
-    "rtidal",
-    "rlimiting",
-    "initialize_orbit",
-    "initialize_orbits",
-    "integrate_orbit",
-    "orbit_interpolate",
-    "orbital_path",
-    "orbital_path_match",
-    "tail_path",
-    "tail_path_match",
-    "get_cluster_orbit",
-    "calc_actions",
-    "ttensor"
-]
-
 from galpy.orbit import Orbit
 from galpy.util import bovy_coords, bovy_conversion
 from galpy import potential
@@ -47,41 +30,42 @@ def rtidal(
     vo=220.0,
     verbose=False,
 ):
-    """Calculate rtidal.
-    NAME:
-
-       rtidal
-
-    PURPOSE:
-
-       Calculate tidal radius of the cluster
-       --> The calculation uses Galpy, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
-       --> riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
-       --> More iterations take the mass within the previous iterations calculation of the tidal radius and calculates the tidal
-           radius again until the change is less than 90%
+    """Calculate tidal radius of the cluster
+    - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
+    -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
+    -- Bovy J., 2015, ApJS, 216, 29
+    - riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
+    -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal
+       radius again using the new mass until the change is less than 90%
+    - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
 
     Parameters
 
-       cluster - StarCluster instance
-
-       pot - GALPY potential used to calculate actions
-
-       rtiterate - how many times to iterate on the calculation of r_t
-
-       rtconverge - criteria for tidal radius convergence within iterations
-
-       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
-
-       ro,vo - GALPY scaling parameters
+    cluster : class
+        StarCluster instance
+    pot : class 
+        GALPY potential used to calculate tidal radius (default: MWPotential2014)
+    rtiterate : int
+        how many times to iterate on the calculation of r_t (default: 0)
+    rtconverge : float
+        criteria for tidal radius convergence within iterations (default 0.9)
+    rgc : float
+        Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
+    ro : float
+        GALPY radius scaling parameter
+    vo : float
+        GALPY velocity scaling parameter
+    verbose : bool
+        Print information about iterative calculation of rt
 
     Returns
+    -------
+    rt : float
+        tidal radius
 
-        rt
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
+    History
+    _______
+    2019 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
 
@@ -132,8 +116,6 @@ def rtidal(
     elif units0 == "nbody":
         rt *= 1000.0 * ro / cluster.rbar
 
-    cluster.rt = rt
-
     return_cluster(cluster, units0, origin0)
 
     return rt
@@ -148,47 +130,46 @@ def rlimiting(
     nrad=20,
     projected=False,
     plot=False,
-    verbose=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       rlimiting
-
-    PURPOSE:
-
-       Calculate limiting radius of the cluster
-       --> The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
+    """Calculate limiting radius of the cluster
+       
+    - The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
+    - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
 
     Parameters
+    ----------
 
-       cluster - StarCluster instance
-
-       pot - GALPY potential used to calculate actions
-
-       rgc - Set galactocentric distance at which the tidal radius is to be evaluated
-
-       ro,vo - GALPY scaling parameters
-
-       nrad - number of radial bins used to calculate density profile (Default: 20)
-
-       projected - use projected values (Default: False)
-
-       plot - plot the density profile and mark the limiting radius of the cluster (Default: False)
-
-    KWARGS:
-
-       Same as ..util.plots.nplot
+    cluster : class
+        StarCluster
+    pot : class 
+        GALPY potential used to calculate actions
+    rgc : 
+        Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
+    ro : float
+        GALPY radius scaling parameter
+    vo : float
+        GALPY velocity scaling parameter
+    nrad : int
+        number of radial bins used to calculate density profile (Default: 20)
+    projected : bool
+        use projected values (default: False)
+    plot : bool
+        plot the density profile and mark the limiting radius of the cluster (default: False)
 
     Returns
+    -------
+        rl : float
+            limiting radius
 
-        rl
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
 
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
+    History
+    -------
+    2019 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
 
@@ -230,8 +211,6 @@ def rlimiting(
         rl *= ro
     elif units0 == "nbody":
         rl *= 1000.0 * ro / cluster.rbar
-
-    cluster.rl = rl
 
     return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
@@ -304,32 +283,27 @@ def rlimiting(
 
 
 def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
-    """
-    NAME:
-
-       initialize_orbit
-
-    PURPOSE:
-
-       Initialize a galpy orbit instance for the cluster
+    """ Initialize a galpy orbit instance for the cluster
 
     Parameters
-
-       cluster - StarCluster
-
-       from_centre - genrate orbit from cluster's assigned galactocentric coordinates (default) or from its centre
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
+    ----------
+    cluster : class
+        StarCluster
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    ro : float
+        galpy distance scale (default: 8.)
+    vo : float
+        galpy velocity scale (default: 220.)
 
     Returns
+    -------
+    orbit : class
+        GALPY orbit
 
-       orbit instance
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
     if cluster.units == "radec":
         o = Orbit(
@@ -373,39 +347,29 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
         
         return_cluster(cluster, units0, origin0)
 
-
-    cluster.orbit = o
-
-
     return o
 
 
 def initialize_orbits(cluster, ro=8.0, vo=220.0):
-    """
-    NAME:
-
-       initialize_orbits
-
-    PURPOSE:
-
-       Initialize a galpy orbit for every stars in the cluster
-       --> Note currently depends on version of galpy with Orbits, which is soon to be replace by a generic Orbit function
+    """Initialize a galpy orbit for every star in the cluster
 
     Parameters
-
-       cluster - StarCluster
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
+    ----------
+    cluster : class
+        StarCluster
+    ro : float
+        galpy distance scale (default: 8.)
+    vo : float
+        galpy velocity scale (default: 220.)
 
     Returns
+    -------
+    orbit : class
+        GALPY orbit
 
-       orbit instance for each stars
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -429,47 +393,86 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0):
 def integrate_orbit(
     cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
 ):
-    """
-    NAME:
-
-       integrate_orbit
-
-    PURPOSE:
-
-       Integrate a galpy orbit instance for the cluster
+    """Integrate a galpy orbit instance for the cluster
 
     Parameters
-
-       cluster - StarCluster
-
-       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
-
-       tfinal - final time (in Gyr) to integrate orbit to (Default: 12 Gyr)
-
-       nt - number of timesteps
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
-
-       plot - show plot of cluster's orbit
+    ----------
+    cluster : class
+        StarCluster
+    pot : class
+        Galpy potential that orbit is to be integrate in (default: MWPotential2014)
+    tfinal : float
+        final time (in Gyr) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    plot : float
+        show plot of cluster's orbit
 
     Returns
+    -------
+    ts : float
+        timesteps
+    o : class
+        galpy orbit
 
-       timesteps, orbit instance
-
-    HISTORY:
-
+    History
+    -------
        2018 - Written - Webb (UofT)
     """
-    cluster.orbit = initialize_orbit(cluster)
+    o = initialize_orbit(cluster)
     ts = np.linspace(0, tfinal / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), nt)
-    cluster.orbit.integrate(ts, pot)
+    o.integrate(ts, pot)
 
     if plot:
-        cluster.orbit.plot()
+        o.plot()
 
-    return ts, cluster.orbit
+    return ts, o
+
+def integrate_orbits(
+    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
+):
+    """Integrate a galpy orbit instance for each star
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    pot : class
+        Galpy potential that orbit is to be integrate in (default: MWPotential2014)
+    tfinal : float
+        final time (in Gyr) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    plot : float
+        show plot of cluster's orbit
+
+    Returns
+    -------
+    ts : float
+        timesteps
+    o : class
+        galpy orbit
+
+    History
+    -------
+       2018 - Written - Webb (UofT)
+    """
+    os = initialize_orbits(cluster)
+    ts = np.linspace(0, tfinal / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+    os.integrate(ts, pot)
+
+    if plot:
+        os.plot()
+
+    return ts, os
 
 
 def orbit_interpolate(
@@ -482,45 +485,50 @@ def orbit_interpolate(
     rmax=None,
     emin=None,
     emax=None,
+    indx=None,
     ro=8.0,
     vo=220.0,
 ):
     """
-    NAME:
+    NAME: Interpolate past or future position of cluster and escaped stars
 
-       orbit_interpolate
-
-    PURPOSE:
-
-       Move the cluster centre and stars backwards or forwards along its orbit assuming stars only feel a force from the galaxy
+    - When moving the cluster centre and stars backwards or forwards along their orbits, stars within the cluster are shifted with the cluster centre.
+    Tail stars, identified using either rmin/rmax, emin/emax, or indx can be integrated separately in the potential 
+    - Note that this function operates on the cluster and changes the positions and velocities of all stars
 
     Parameters
-
-       cluster - StarCluster
-
-       dt - timestep that StarCluster is to be moved to
-
-       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
-
-       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
-
-       do_tails - interpolate the orbits of tail stars separately (Default: False)
-
-       rmin/rmax - radial range corresponding to cluster (needed to identify tail stars)
-
-       emin/emax - energy range corresponding to cluster (needed to identify tail stars)
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
+    ----------
+    cluster : class
+        StarCluster
+    dt : float
+        timestep that StarCluster is to be moved to
+    pot : class
+        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    do_tails : bool
+        interpolate the orbits of tail stars separately (default: False)
+    rmin/rmax : float
+        radial range corresponding to cluster (needed to identify tail stars)
+    emin/emax : float
+        energy range corresponding to cluster (needed to identify tail stars)
+    indx : bool 
+        specific subset of stars
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
 
     Returns
+    -------
+    x,y,z : float
+        interpolated positions of each star
+    x,y,z : float
+        interpolated velocities of each star    
 
-       None
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     cluster.tphys += dt
@@ -548,7 +556,11 @@ def orbit_interpolate(
         else:
             eindx = cluster.id > -1
 
-        indx = rindx * eindx
+        if indx is None:
+            indx = rindx * eindx
+        else:
+            indx*=(rindx*eindx)
+
         tindx = np.invert(indx)
 
         cluster.to_galaxy()
@@ -556,12 +568,17 @@ def orbit_interpolate(
     else:
         indx = cluster.id > -1
 
-    cluster.orbit = initialize_orbit(cluster, from_centre)
+    if cluster.orbit is None:
+        cluster.orbit = initialize_orbit(cluster, from_centre)
+
     ts = np.linspace(0, dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), 10)
 
     cluster.orbit.integrate(ts, pot)
 
     cluster.to_kpckms()
+
+    x,y,z=cluster.x,cluster.y,cluster.z
+    vx,vy,vz=cluster.vx,cluster.vy,cluster.vz
 
     if from_centre:
         dx = cluster.orbit.x(ts[-1]) - cluster.xc - cluster.xgc
@@ -578,30 +595,30 @@ def orbit_interpolate(
         dvy = cluster.orbit.vy(ts[-1]) - cluster.vygc
         dvz = cluster.orbit.vz(ts[-1]) - cluster.vzgc
 
-    cluster.x[indx] += dx
-    cluster.y[indx] += dy
-    cluster.z[indx] += dz
-    cluster.vx[indx] += dvx
-    cluster.vy[indx] += dvy
-    cluster.vz[indx] += dvz
+    x[indx] += dx
+    y[indx] += dy
+    z[indx] += dz
+    vx[indx] += dvx
+    vy[indx] += dvy
+    vz[indx] += dvz
 
     if from_centre:
-        cluster.xc, cluster.yc, cluster.zc = 0.0, 0.0, 0.0
-        cluster.vxc, cluster.vyc, cluster.vzc = 0.0, 0.0, 0.0
+        xc, yc, zc = 0.0, 0.0, 0.0
+        vxc, vyc, vzc = 0.0, 0.0, 0.0
     else:
-        cluster.xc += dx
-        cluster.yc += dy
-        cluster.zc += dz
-        cluster.vxc += dvx
-        cluster.vyc += dvy
-        cluster.vzc += dvz
+        xc += dx
+        yc += dy
+        zc += dz
+        vxc += dvx
+        vyc += dvy
+        vzc += dvz
 
-    cluster.xgc, cluster.ygc, cluster.zgc = (
+    xgc, ygc, zgc = (
         cluster.orbit.x(ts[-1]),
         cluster.orbit.y(ts[-1]),
         cluster.orbit.z(ts[-1]),
     )
-    cluster.vxgc, cluster.vygc, cluster.vzgc = (
+    vxgc, vygc, vzgc = (
         cluster.orbit.vx(ts[-1]),
         cluster.orbit.vy(ts[-1]),
         cluster.orbit.vz(ts[-1]),
@@ -611,8 +628,8 @@ def orbit_interpolate(
         cluster.to_galaxy()
         cluster.to_galpy()
 
-        x, y, z = cluster.x[tindx], cluster.y[tindx], cluster.z[tindx]
-        vx, vy, vz = cluster.vx[tindx], cluster.vy[tindx], cluster.vz[tindx]
+        xt, yt, zt = cluster.x[tindx], cluster.y[tindx], cluster.z[tindx]
+        vxt, vyt, vzt = cluster.vx[tindx], cluster.vy[tindx], cluster.vz[tindx]
 
         R, phi, z = bovy_coords.rect_to_cyl(x, y, z)
         vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
@@ -626,15 +643,16 @@ def orbit_interpolate(
 
         otail.integrate(ts, pot)
 
-        cluster.x[tindx] = np.array(otail.x(ts[-1]))
-        cluster.y[tindx] = np.array(otail.y(ts[-1]))
-        cluster.z[tindx] = np.array(otail.z(ts[-1]))
-
-        cluster.vx[tindx] = np.array(otail.vx(ts[-1]))
-        cluster.vy[tindx] = np.array(otail.vy(ts[-1]))
-        cluster.vz[tindx] = np.array(otail.vz(ts[-1]))
+        x[tindx] = np.array(otail.x(ts[-1]))
+        y[tindx] = np.array(otail.y(ts[-1]))
+        z[tindx] = np.array(otail.z(ts[-1]))
+        vx[tindx] = np.array(otail.vx(ts[-1]))
+        vy[tindx] = np.array(otail.vy(ts[-1]))
+        vz[tindx] = np.array(otail.vz(ts[-1]))
 
     return_cluster(cluster, units0, origin0)
+
+    return x,y,z,vx,vy,vz
 
 
 def orbital_path(
@@ -649,45 +667,44 @@ def orbital_path(
     vo=220.0,
     plot=False
 ):
-    """
-    NAME:
-
-       orbital_path
-
-    PURPOSE:
-
-       Calculate orbital path +/- dt Gyr around the cluster
+    """Calculate the cluster's orbital path
 
     Parameters
-
-       cluster - StarCluster
-
-       dt - timestep that StarCluster is to be moved to
-
-       nt - number of timesteps
-
-       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
-
-       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
-
-       sky_path - return sky coordinates instead of cartesian coordinates (Default: False)
-
-       initialize - Initialize and return Orbit (Default: False)
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
-
-       plot - plot a snapshot of the cluster in galactocentric coordinates with the orbital path
-
+    ----------
+    cluster : class
+        StarCluster
+    dt : float
+        timestep that StarCluster is to be moved to
+    nt : int
+        number of timesteps
+    pot : class
+        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    sky_path : bool
+        return sky coordinates instead of cartesian coordinates (default: False)
+    initialize : bool
+        Initialize and return Orbit (default: False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    plot : bool
+        plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
 
     Returns
-
-       t,x,y,z,vx,vy,vz
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    -------
+    t : float
+        times for which path is provided
+    x,y,z : float
+        orbit positions
+    vx,vy,vz : float
+        orbit velocity
+    o : class
+        galpy orbit (if initialize==True)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
     o = initialize_orbit(cluster, from_centre=from_centre)
 
@@ -785,11 +802,9 @@ def orbital_path(
                 plt.savefig(filename)
 
         if initialize:
-            cluster.orbit = o
             return t, x, y, z, vx, vy, vz, o
         else:
             return t, x, y, z, vx, vy, vz
-
 
 def orbital_path_match(
     cluster,
@@ -803,49 +818,45 @@ def orbital_path_match(
     vo=220.0,
     plot=False,
 ):
-    """
-    NAME:
-
-       orbital_path_match
-
-    PURPOSE:
-
-       Match stars to a position along the orbital path of the cluster
+    """Match stars to a position along the orbital path of the cluster
 
     Parameters
-
-       cluster - StarCluster
-
-       dt - timestep that StarCluster is to be moved to
-
-       nt - number of timesteps
-
-       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
-
-       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
-
-       to_path - measure distance to central point along the path (Default) or to the path itself 
-
-       do_full - calculate dpath all at once in a single numpy array (can be memory intensive) (Default:False)
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
-
-       plot - plot the distance of each star from the orbital path versus distance along the orbital path to the progenitor
+    ----------
+    cluster : class
+        StarCluster
+    dt : float
+        timestep that StarCluster is to be moved to
+    nt : int
+        number of timesteps
+    pot : class
+        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    to_path : bool
+        measure distance to the path itself instead of distance to central point along the path (default: False)
+    do_full : bool
+        calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    plot : bool
+        plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
 
     Returns
+    -------
+    tstar : float
+        orbital time associated with star
+    dprog : float
+        distance along the orbit to the progenitor
+    dpath : 
+        distance to centre of the orbital path bin (Default) or the orbit path (to_path = True)
 
-       tstar - orbital time associated with star
-
-       dprog - distance along the orbit to the progenitor
-
-       dpath - distance to centre of the orbital path bin (Default) or the orbit path (to_path = True)
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
+
     units0, origin0 = save_cluster(cluster)
     cluster.to_galaxy()
     cluster.to_kpckms()
@@ -966,40 +977,42 @@ def orbital_path_match(
 
 
 def tail_path(
-    cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, ro=8.0, vo=220.0
+    cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, ro=8.0, vo=220.0,
+    plot=False
 ):
-    """
-    NAME:
+    """Calculate tail path +/- dt Gyr around the cluster
 
-       tail_path
-
-    PURPOSE:
-
-       Calculate tail path +/- dt Gyr around the cluster
-
-    Parameters
-
-       cluster - StarCluster
-
-       dt - timestep that StarCluster is to be moved to
-
-       nt - number of timesteps
-
-       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
-
-       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
+        Parameters
+    ----------
+    cluster : class
+        StarCluster
+    dt : float
+        timestep that StarCluster is to be moved to
+    nt : int
+        number of timesteps
+    pot : class
+        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    plot : bool
+        plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
 
     Returns
-
-       t,x,y,z,vx,vy,vz
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
-       2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
+    -------
+    t : float
+        times for which path is provided
+    x,y,z : float
+        tail path positions
+    vx,vy,vz : float
+        tail path velocities
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -1064,45 +1077,45 @@ def tail_path_match(
     do_full=False,
     ro=8.0,
     vo=220.0,
+    plot=False,
 ):
-    """
-    NAME:
-
-       tail_path_match
-
-    PURPOSE:
-
-       Match stars to a position along the tail path of the cluster
+    """Match stars to a position along the tail path of the cluster
 
     Parameters
-
-       cluster - StarCluster
-
-       dt - timestep that StarCluster is to be moved to
-
-       nt - number of timesteps
-
-       pot - Potential orbit is to be integrate in (Default: MWPotential2014)
-
-       from_centre - interpolate from cluster's define position (default) or the measured centre of cluster 
-
-       to_path - measure distance to central point along the path (Default) or to the path itself 
-
-       ro - galpy distance scale (Default: 8.)
-
-       vo - galpy velocity scale (Default: 220.)
+    ----------
+    cluster : class
+        StarCluster
+    dt : float
+        timestep that StarCluster is to be moved to
+    nt : int
+        number of timesteps
+    pot : class
+        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    to_path : bool
+        measure distance to the path itself instead of distance to central point along the path (default: False)
+    do_full : bool
+        calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    plot : bool
+        plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
 
     Returns
+    -------
+    tstar : float
+        orbital time associated with star
+    dprog : float
+        distance along the path to the progenitor
+    dpath : 
+        distance to centre of the tail path bin (default) or the tail path (to_path = True)
 
-       tstar - tail time associated with star
-
-       dprog - distance along the tail to the progenitor
-
-       dpath - distance to centre of the tail path bin (Default) or the tail path (to_path = True)
-
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
     cluster.to_galaxy()
@@ -1202,71 +1215,68 @@ def tail_path_match(
 
 
 def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
-    """
-    NAME:
-
-       get_cluster_orbit
-
-    PURPOSE:
-
-       Get the measured orbital parameters of a Galactic globular cluster has measured by Vasiliev 2019 using Gaia DR2 via Galpy
+    """Get the measured orbital parameters of a Galactic globular cluster
+    - This is a simply wrapper for Orbit.from_name in galpy (Bovy 2015), which uses orbits measured by Vasiliev 2019 using Gaia DR2 via Galpy
+    -- Bovy J., 2015, ApJS, 216, 29
 
     Parameters
-
-       gcname - name or list of GC names whose orbits are to be retrieved
-        --> Note that list just returns the list to read, while 'all' gets the orbits for all the clusters
-
-       pot - GALPY potential used to calculate actions
-
-       ro,vo - GALPY scaling parameters
-
+    ----------
+    gcname : str
+        name of GC whose orbits is to be retrieved
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
     Returns
+    -------
+    orbit : class
+        galpy orbit
 
-        orbit
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
+    History
+    -------
+    2019 - Written - Webb (UofT)
 
     """
     return Orbit.from_name(gcname,ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
 
 def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
-    """
-    NAME:
-
-       calc_actions
-
-    PURPOSE:
-
-       Calculate action angle values for each star 
+    """Calculate action angle values for each star 
+    - This is a simple wrapper for calculating actions from an Orbit in galpy (Bovy 2015)
+    -- Bovy J., 2015, ApJS, 216, 29
 
     Parameters
-
-       cluster - StarCluster instance
-
-       pot - GALPY potential used to calculate actions
-
-       ro,vo - GALPY scaling parameters
-
-    KWARGS:
-
-       type - method for calculating actions (default: staeckel)
-
-       delta - focus for staeckel method (default: 0.45 - optimal for MWPotential2014)
-
-       c - if True, always use C for calculations
-
-       Additional KWARGS can be included for other action angle calculation methods in galpy
+    ----------
+    cluster : class
+        StarCluster instance
+    pot : class 
+        GALPY potential used to calculate actions
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
 
     Returns
+    -------
+    JR,Jphi,Jz : float
+        orbit actions
+    OR,Ophi,Oz : float
+        orbital frequencies
+    TR,Tphi,Tz : float
+        orbital periods
 
-        JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
+    Other Parameters
+    ----------------
+    type : str
+        method for calculating actions (default: staeckel)
+    delta : float
+        focus for staeckel method (default: 0.45 - optimal for MWPotential2014)
+    c : bool
+        if True, always use C for calculations (default: True)
+    kwargs : str
+        key word arguments can be included for other action calculation methods in galpy
+    History
+    -------
+    2019 - Written - Webb (UofT)
     """
 
     os = initialize_orbits(cluster, ro, vo)
@@ -1287,34 +1297,28 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
     return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
 
 def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
-    """
-
-    NAME:
-
-        ttensor
-
-    PURPOSE:
-
-        Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
-
+    """Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
+    - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
+    -- Bovy J., 2015, ApJS, 216, 29
     Parameters
-
-       cluster - StarCluster instance
-
-       pot - GALPY potential used to calculate actions
-
-       ro,vo - GALPY scaling parameters
-
-       eigenval - return eigenvalues if true (optional; boolean)
+    ----------
+    cluster : class
+        StarCluster instance
+    pot : class 
+        GALPY potential used to calculate tidal tensor
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    eigenval : bool
+        return eigenvalues if true (default; False)
 
     Returns
-
+    -------
         Tidal Tensor
-
-    HISTORY:
-
-        2018-03-21 - Written - Webb (UofT)
-
+    History
+    -------
+    2018-03-21 - Written - Webb (UofT)
     """
 
     o = initialize_orbit(cluster, ro, vo)

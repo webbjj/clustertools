@@ -19,7 +19,7 @@ kmperkpc - convert km to kpc
 
 spermyr - convert seconds to myr
 
-HISTORY:
+History
 
 2018 - Written - Webb (UofT)
 """
@@ -46,7 +46,7 @@ def kwtypes():
 
        None
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 

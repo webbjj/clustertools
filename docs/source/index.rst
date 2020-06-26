@@ -1,4 +1,4 @@
-``clustertools``
+``clustertools (Documentation in Progress)``
 ================
 
 ``clustertools`` is a Python package with tools for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able use or to act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
@@ -62,6 +62,21 @@ Planned Future Additions
 * More analysis features that are comparable to standard techniques used by observers
 
 * Incorporation of a fast evolution code like in order to predict a clusters forward evolution
+
+References
+-----------------
+
+Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
+
+Bovy J., 2015, ApJS, 216, 29
+
+Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357
+
+Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9
+
+Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
+
+Spitzer, L. 1987,  Dynamical evolution of globular clusters
 
 Library Reference
 -----------------

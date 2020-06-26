@@ -42,7 +42,7 @@ def extrct_out(cluster, fileout, projected=False):
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -127,7 +127,7 @@ def rho_prof_out(cluster, fileout, **kwargs):
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -176,7 +176,7 @@ def alpha_prof_out(
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -228,7 +228,7 @@ def sigv_prof_out(cluster, fileout,**kwargs,
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -273,7 +273,7 @@ def eta_prof_out(
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -324,7 +324,7 @@ def snapout(cluster, filename, energies=False, observations=False):
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -457,7 +457,7 @@ def fortout(
 
        None
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -510,7 +510,7 @@ def gyrout(cluster, filename="init.nemo.dat"):
 
        None
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 

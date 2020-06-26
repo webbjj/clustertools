@@ -3,18 +3,6 @@
 """
 __author__ = "Jeremy J Webb"
 
-
-__all__ = [
-    "rho_prof",
-    "m_prof",
-    "alpha_prof",
-    "sigv_prof",
-    "beta_prof",
-    "v_prof",
-    "eta_prof",
-    "vcirc_prof"
-]
-
 import numpy as np
 from galpy.util import bovy_coords
 
@@ -83,7 +71,7 @@ def rho_prof(
 
         rprof,pprof,nprof (radius, density, number of stars)
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -256,7 +244,7 @@ def m_prof(
 
         rprof,mprof,nprof (radius, mass, number of stars)
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -435,7 +423,7 @@ def alpha_prof(
 
         rbinerror - if mcorr is not None, output lowest corrected mass fraction at each radius
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -639,7 +627,7 @@ def sigv_prof(
 
         betaprof - anisotropy parameter 
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -824,7 +812,7 @@ def beta_prof(
 
         betaprof - anisotropy parameter 
 
-    HISTORY:
+    History
 
        2020 - Written - Webb (UofT)
 
@@ -994,7 +982,7 @@ def v_prof(
 
         vprof - mean velocity
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -1166,7 +1154,7 @@ def eta_prof(
 
         ydeta,eydeta - y-intercept and error in fit to eta vs ln(r/rm)
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -1315,7 +1303,7 @@ def vcirc_prof(
 
         rprof,vprof,rvmax,vmax (radius, circular velocity, radius of maximum virc, maximum vcirc)
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 

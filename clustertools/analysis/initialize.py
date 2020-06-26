@@ -68,7 +68,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None,pot=None, *
 
         StarCluster instance
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -156,7 +156,7 @@ def get_limepy(g=1, **kwargs):
 
         StarCluster instance
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -244,7 +244,7 @@ def get_spes(**kwargs):
 
         StarCluster instance
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -326,7 +326,7 @@ def c_to_w0(c, invert=False):
 
         W0 (or c if invert==True)
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -777,7 +777,7 @@ def w0_to_c(w0):
 
        c
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -817,7 +817,7 @@ def get_cluster(gcname, source="default", mbar=0.4, names=False, params=False):
 
        Mtot and rm (if params ==True)
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -879,7 +879,7 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
 
        StarCluster
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -959,7 +959,7 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
 
        StarCluster
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 

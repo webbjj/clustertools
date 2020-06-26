@@ -1,6 +1,6 @@
-virialize
+rlagrange
 =========
 
 .. currentmodule:: clustertools.analysis.functions
 
-.. autofunction:: virialize
+.. autofunction:: rlagrange

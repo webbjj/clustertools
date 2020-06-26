@@ -90,7 +90,7 @@ def load_cluster(
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -246,7 +246,7 @@ def advance_cluster(cluster,custom_override=True,ofile=None, orbit=None, filenam
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -375,7 +375,7 @@ def get_advanced_kwargs(cluster, **kwargs):
 
        None
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 
@@ -436,7 +436,7 @@ def get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
 
        None
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -520,7 +520,7 @@ def get_gyrfalcon(
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -646,7 +646,7 @@ def get_nbody6se_custom(fort82, fort83, ofile=None, advance=False, **kwargs):
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
     """
@@ -882,7 +882,7 @@ def get_nbody6_custom(out9, out34, advance=False, **kwargs):
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
     """
@@ -1145,7 +1145,7 @@ def get_snapshot(
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
     """
@@ -1320,7 +1320,7 @@ def get_amuse_particles(
 
        StarCluster instance
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
     """

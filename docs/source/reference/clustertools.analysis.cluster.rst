@@ -3,5 +3,5 @@ clustertools.analysis.cluster module
 
 .. automodule:: clustertools.analysis.cluster
    :members:
-   :undoc-members:
+   :no-undoc-members:
    :show-inheritance:

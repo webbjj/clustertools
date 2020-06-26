@@ -49,7 +49,7 @@ def nbinmaker(x, nbin=10, nsum=False):
 
      x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)
 
-  HISTORY:
+  History
 
      2018 - Written - Webb (UofT)
 
@@ -112,7 +112,7 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
 
      x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)
 
-  HISTORY:
+  History
 
      2018 - Written - Webb (UofT)
 
@@ -164,7 +164,7 @@ def power_law_distribution_function(n, alpha, xmin, xmax):
 
      c
 
-  HISTORY:
+  History
 
      2019 - Written - Webb (UofT)
   """
@@ -212,7 +212,7 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
      x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
 
 
-    HISTORY:
+    History
 
      2018 - Written - Webb (UofT)
 
@@ -277,7 +277,7 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
 
         x_mean,x_hist
 
-    HISTORY:
+    History
 
         2019 - Written - Webb (UofT)
 
@@ -321,7 +321,7 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
 
      x_bin,y_bin,y_sig
 
-    HISTORY:
+    History
 
      2018 - Written - Webb (UofT)
 
@@ -385,7 +385,7 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
 
      x_bin,y_bin,y_sig
 
-    HISTORY:
+    History
 
      2018 - Written - Webb (UofT)
 
@@ -458,7 +458,7 @@ def interpolate(r1, r2, x=None, y=None):
 
      interpolated value
 
-    HISTORY:
+    History
 
      2019 - Written - Webb (UofT)
 
@@ -498,7 +498,7 @@ def rotate(x, y, z, thetax=0.0, thetay=0.0, thetaz=0.0):
 
      rotated values of x,y,z
 
-    HISTORY:
+    History
 
      2019 - Written - Webb (UofT)
 
@@ -555,7 +555,7 @@ def area_enclosed(
 
      area
 
-    HISTORY:
+    History
 
      2019 - Written - Webb (UofT)
 
@@ -647,7 +647,7 @@ def minimum_distance(x):
 
        distance to nearest neighbour
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
     """
@@ -688,7 +688,7 @@ def distance(x1, x2):
 
     distance
 
-    HISTORY:
+    History
 
     2019 - Written - Webb (UofT)
     """

@@ -8,21 +8,6 @@ calculate key parameters
 __author__ = "Jeremy J Webb"
 
 
-__all__ = [
-  "relaxation_time",
-  "half_mass_relaxation_time",
-  "core_relaxation_time",
-  "energies",
-  "closest_star",
-  "virialize",
-  "virial_radius",
-  "virial_radius_inverse_distance",
-  "virial_radius_critical_density",
-  "mass_function",
-  "eta_function",
-  "surface_area",
-]
-
 import numpy as np
 import numba
 from galpy.util import bovy_coords
@@ -32,38 +17,274 @@ from ..util.recipes import *
 from .operations import *
 from ..util.plots import *
 
-def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='spitzer'):
-    """
-    NAME:
+def find_centre(
+    cluster,
+    xstart=0.0,
+    ystart=0.0,
+    zstart=0.0,
+    vxstart=0.0,
+    vystart=0.0,
+    vzstart=0.0,
+    indx=None,
+    nsigma=1.0,
+    nsphere=100,
+    density=True,
+    rmin=0.1,
+    nmax=100,
+    ro=8.0,
+    vo=220.0,
+):
+    """Find the cluster's centre
 
-       relaxation_time
-
-    PURPOSE:
-
-       Calculate the relaxation time (Spitzer & Hart 1971) within a given radius of the cluster
+    - The default assumes the cluster's centre is the centre of density. 
+    - For density=False, the routine first works to identify a sphere of nsphere stars around the centre in which
+    to perform a centre of mass calculation (similar to NBODY6). This step prevents long tidal tails from affecting the 
+    calculation
 
     Parameters
-
-       cluster - StarCluster instance
-
-       rad - radius within which to calculate the relaxation time
-
-       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
-
-       projected - use projected values (default: False)
-
-       method - choose between Spitzer & Hart 1971 and other methods to be added later
+    ----------
+    cluster : class
+        StarCluster
+    xstart,ystart,zstart : float
+        starting position for centre
+    vxstart,vystart,vzstart :
+        starting velocity for centre
+    indx : bool
+        subset of stars to use when finding center
+    nsigma : int
+        number of standard deviations to within which to keep stars
+    nsphere : int
+        number of stars in centre sphere (default:100)
+    density : bool
+        use Yohai Meiron's centre of density calculator instead (default: True)
+    rmin : float
+        minimum radius to start looking for stars
+    nmax : int
+        maximum number of iterations to find centre
+    ro,vo - For converting to and from galpy units (Default: 8., 220.)
 
     Returns
+    -------
+    xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
 
-       trelax
+    History:
+    -------
+    2019 - Written - Webb (UofT)
+    """
+    if indx is None:
+        indx = np.ones(cluster.ntot, bool)
+    elif np.sum(indx) == 0.0:
+        print("NO SUBSET OF STARS GIVEN")
+        return 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
-    HISTORY:
+    if density:
+        xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(
+            cluster=cluster,
+            xstart=xstart,
+            ystart=ystart,
+            zstart=zstart,
+            vxstart=vxstart,
+            vystart=vystart,
+            vzstart=vzstart,
+            indx=indx,
+            rmin=rmin,
+            nmax=nmax,
+            ro=ro,
+            vo=vo,
+        )
+    else:
 
-       2020 - Written - Webb (UofT)
+        x = cluster.x[indx] - xstart
+        y = cluster.y[indx] - ystart
+        z = cluster.z[indx] - zstart
+        r = np.sqrt(x ** 2.0 + y ** 2.0 + z ** 2.0)
+        i_d = cluster.id[indx]
+
+        while len(r) > nsphere:
+            sigma = nsigma * np.std(r)
+            indx = r < sigma
+
+            if len(r[indx]) > nsphere:
+                i_d = i_d[indx]
+                x = x[indx] - np.mean(x[indx])
+                y = y[indx] - np.mean(y[indx])
+                z = z[indx] - np.mean(z[indx])
+                r = np.sqrt(x * x + y * y + z * z)
+            else:
+                break
+
+        # Find centre of mass and velocity of inner stars:
+        indx = np.in1d(cluster.id, i_d)
+
+        xc = np.sum(cluster.m[indx] * cluster.x[indx]) / np.sum(cluster.m[indx])
+        yc = np.sum(cluster.m[indx] * cluster.y[indx]) / np.sum(cluster.m[indx])
+        zc = np.sum(cluster.m[indx] * cluster.z[indx]) / np.sum(cluster.m[indx])
+
+        vxc = np.sum(cluster.m[indx] * cluster.vx[indx]) / np.sum(cluster.m[indx])
+        vyc = np.sum(cluster.m[indx] * cluster.vy[indx]) / np.sum(cluster.m[indx])
+        vzc = np.sum(cluster.m[indx] * cluster.vz[indx]) / np.sum(cluster.m[indx])
+
+    return xc, yc, zc, vxc, vyc, vzc
+
+def find_centre_of_density(
+    cluster,
+    xstart=0.0,
+    ystart=0.0,
+    zstart=0.0,
+    vxstart=0.0,
+    vystart=0.0,
+    vzstart=0.0,
+    indx=None,
+    rmin=0.1,
+    nmax=100,
+):
+    """ find cluste's centre of density
+
+    - the motivation behind this piece of code comes from phigrape
+    (Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357) courtesy
+    of Yohai Meiron
+
+    Parameters
+    ----------
+        cluster : class
+            StarCluster
+        xstart,ystart,zstart : float
+            starting position for centre (default: 0,0,0)
+        vxstart,vystart,vzstart : float
+            starting velocity for centre (default: 0,0,0)
+        indx: bool
+            subset of stars to perform centre of density calculation on (default: None)
+        rmin : float
+            minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
+        nmax : float
+            maximum number of iterations (default:100)
+
+    Returns
+    -------
+    xc,yc,zc,vxc,vyc,vzc : float
+        coordinates of centre of mass
+
+    HISTORY
+    -------
+    2019 - Written - Webb (UofT) with Yohai Meiron (UofT)
+    """
+    if indx is None:
+        indx = np.ones(cluster.ntot, bool)
+
+    m = cluster.m[indx]
+    x = cluster.x[indx] - xstart
+    y = cluster.y[indx] - ystart
+    z = cluster.z[indx] - zstart
+    vx = cluster.vx[indx] - vxstart
+    vy = cluster.vy[indx] - vystart
+    vz = cluster.vz[indx] - vzstart
+
+    r = np.sqrt(x ** 2.0 + y ** 2.0 + z ** 2.0)
+    rlim = np.amax(r)
+
+    xdc, ydc, zdc = xstart, ystart, zstart
+    vxdc, vydc, vzdc = vxstart, vystart, vzstart
+
+    n = 0
+
+    while (rlim > rmin) and (n < nmax):
+        r2 = x ** 2.0 + y ** 2.0 + z ** 2.0
+        indx = r2 < rlim ** 2
+        nc = np.sum(indx)
+        mc = np.sum(m[indx])
+
+        if mc == 0:
+            xc, yc, zc = 0.0, 0.0, 0.0
+            vxc, vyc, vzc = 0.0, 0.0, 0.0
+        else:
+
+            xc = np.sum(m[indx] * x[indx]) / mc
+            yc = np.sum(m[indx] * y[indx]) / mc
+            zc = np.sum(m[indx] * z[indx]) / mc
+
+            vxc = np.sum(m[indx] * vx[indx]) / mc
+            vyc = np.sum(m[indx] * vy[indx]) / mc
+            vzc = np.sum(m[indx] * vz[indx]) / mc
+
+        if (mc > 0) and (nc > 100):
+            x -= xc
+            y -= yc
+            z -= zc
+            xdc += xc
+            ydc += yc
+            zdc += zc
+
+            vx -= vxc
+            vy -= vyc
+            vz -= vzc
+            vxdc += vxc
+            vydc += vyc
+            vzdc += vzc
+
+        else:
+            break
+        rlim *= 0.8
+        n += 1
+
+    return xdc, ydc, zdc,vxdc, vydc, vzdc
+
+
+def find_centre_of_mass(cluster):
+    """ Find the centre of mass of the cluster
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+
+    Returns
+    -------
+    xc,yc,zc,vxc,vyc,vzc : float
+        coordinates of centre of mass
+
+    HISTORY
+    -------
+    2018 - Written - Webb (UofT)
+    """
+    xc = np.sum(cluster.m * cluster.x) / cluster.mtot
+    yc = np.sum(cluster.m * cluster.y) / cluster.mtot
+    zc = np.sum(cluster.m * cluster.z) / cluster.mtot
+
+    vxc = np.sum(cluster.m * cluster.vx) / cluster.mtot
+    vyc = np.sum(cluster.m * cluster.vy) / cluster.mtot
+    vzc = np.sum(cluster.m * cluster.vz) / cluster.mtot
+
+    return xdc, ydc, zdc,vxdc, vydc, vzdc
+
+
+def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spitzer'):
+    """Calculate the relaxation time (Spitzer & Hart 1971) within a given radius of the cluster
+
+    - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 (Equation 5)
+
+    Parameters
+    ----------
+    cluster : class
+      StarCluster
+    rad : float
+      radius within which to calculate the relaxation time (defult: cluster.rm)
+    coulomb : float
+      Coulomb parameter (default: 0.4)
+    projected : bool
+      use projected values (default: False)
+    method : str
+      choose between Spitzer & Hart 1971 and other methods (in development)
+
+    Returns
+    -------
+       trelax : float
+          relaxation time within radius rad
+
+    History
+    -------
+    2020 - Written - Webb (UofT)
 
     """
-
     if rad is None and projected:
         rad=cluster.rmpro
     elif rad is None:
@@ -85,7 +306,7 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
     
     #v2=0.4*grav*cluster.mtot/rad
     
-    lnlambda=np.log(0.4*cluster.ntot)
+    lnlambda=np.log(coulomb*cluster.ntot)
     
     trelax=v2**(3./2.)/(15.4*grav**2.*mbar**2.*rho*lnlambda)
 
@@ -94,30 +315,28 @@ def relaxation_time(cluster, rad=None, multimass=True, projected=False,method='s
 
     return trelax
 
-def half_mass_relaxation_time(cluster, multimass=True, projected=False):
-    """
-    NAME:
-
-       relaxation_time
-
-    PURPOSE:
-
-       Calculate the half-mass relaxation time (Spitzer 1987) of the cluster
+def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
+    """ Calculate the half-mass relaxation time (Spitzer 1987) of the cluster
+    - Spitzer, L. 1987,  Dynamical evolution of globular clusters
 
     Parameters
+    ----------
+    cluster : class
+      StarCluster
 
-       cluster - StarCluster instance
+    coulomb : float
+      Coulomb parameter (default: 0.4)
 
-       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
-
-       projected - use projected values (default: False)
+    projected : bool
+      use projected values (default: False)
 
     Returns
+    -------
+       trh : float
+          half-mass relaxation time within radius rad
 
-       trelax
-
-    HISTORY:
-
+    History
+    -------
        2019 - Written - Webb (UofT)
 
     """
@@ -126,7 +345,7 @@ def half_mass_relaxation_time(cluster, multimass=True, projected=False):
     mass=cluster.mtot
     ntot=float(cluster.ntot)
     mbar=mass/ntot
-    lnlambda = np.log(0.4*ntot)
+    lnlambda = np.log(coulomb*ntot)
 
     if projected:
         rm=cluster.rmpro
@@ -134,40 +353,39 @@ def half_mass_relaxation_time(cluster, multimass=True, projected=False):
         rm=cluster.rm
 
 
-    trelax=0.138*(mass**0.5)*(rm**1.5)/(mbar*np.sqrt(grav)*lnlambda)
+    trh=0.138*(mass**0.5)*(rm**1.5)/(mbar*np.sqrt(grav)*lnlambda)
     # Units of Myr
-    trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
+    trh*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return trelax
+    return trh
 
 
-def core_relaxation_time(cluster, multimass=True, projected=False):
-    """
-    NAME:
-
-       core_relaxation_time
-
-    PURPOSE:
-
-       Calculate the core relaxation time (Stone & Ostriker 2015) of the cluster
+def core_relaxation_time(cluster, coulomb=0.4, projected=False):
+    """ Calculate the core relaxation time (Stone & Ostriker 2015) of the cluster
+    
+    - Stone, N.C. & Ostriker, J.P. 2015, ApJ, 806, 28
 
     Parameters
 
-       cluster - StarCluster instance
+    cluster : class
+      StarCluster
 
-       multimass - use multimass (True) or single mass (False) value for ln lambda (default: True)
+    coulomb : float
+      Coulomb parameter (default: 0.4)
 
-       projected - use projected values (default: False)
+    projected : bool
+      use projected values (default: False)
 
-       method - choose between Spitzer 1987 and other methods to be added later
+    method : str
+      choose between Stone & Ostriker 2015 and other methods (in development)
 
     Returns
 
-       trelax
+     trc
 
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
+    History
+    -------
+    2019 - Written - Webb (UofT)
 
     """
 
@@ -178,39 +396,34 @@ def core_relaxation_time(cluster, multimass=True, projected=False):
     rh=cluster.rm
     grav=4.302e-3
 
-    trelax=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
+    trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
 
-    return trelax
+    return trc
 
 
 def energies(cluster, specific=True, i_d=None, full=True, projected=False, parallel=False):
-    """
-    NAME:
-
-       energies
-
-    PURPOSE:
-
-       Calculate kinetic and potential energy of every star
+    """Calculate kinetic and potential energy of every star
 
     Parameters
-
-       cluster - StarCluster instance
-
-       specific - find specific energies (default: True)
-
-       i_d - find energies for a specific star
-
-       full - calculate distance of full array of stars at once with numbra (default: True)
-
-       parallel - calculate distances in parallel if True (default: False)
+    ----------
+    cluster : class
+      StarCluster instance
+    specific : bool
+      find specific energies (default: True)
+    i_d : int
+      if given, find energies for a specific star only (default: None)
+    full : bool
+      calculate distance of full array of stars at once with numbra (default: True)
+    parallel : bool
+      calculate distances in parallel (default: False)
 
     Returns
+    -------
+    ek,pot : float
+      kinetic and potential energy of every star
 
-       ek,pot,etot
-
-    HISTORY:
-
+    History
+    -------
        2019 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
@@ -275,9 +488,6 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
         if specific:
             pot /= cluster.m
-
-        etot = ek + pot
-        cluster.add_energies(ek, pot, etot)
     else:
         pot = []
 
@@ -300,85 +510,89 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
             pot.append(np.sum(gmr))
 
-        etot = ek + pot
-        cluster.add_energies(ek, pot, etot)
-
     return_cluster(cluster, units0, origin0)
 
-    return ek, pot, etot
+    return ek, pot
 
 
 @numba.njit
-def potential_energy(cluster):
-    """
-    NAME:
-
-       potential_energy
-
-    PURPOSE:
-
-       Find potential energy for each star in a cluster
+def _potential_energy(cluster):
+    """Find potential energy for each star in a cluster
+    - uses numba
 
     Parameters
-
-       cluster=[x,y,z,m].T
+    ----------
+    cluster : class
+        StarCluster
 
     Returns
+    -------
+        pot : float
+            potential energy of every star
 
-        energy
-
-    HISTORY:
-
+    History
+    -------
        2019 - Written - Webb (UofT)
     """
-    energy = [0.0] * len(cluster)
+    pot = [0.0] * len(cluster)
     for i in range(len(cluster) - 1):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
             m2 = cluster[i, 3] * cluster[j, 3]
-            energy[i] += -m2 / r
-            energy[j] += -m2 / r
+            pot[i] += -m2 / r
+            pot[j] += -m2 / r
 
-    return energy
+    return pot
 
 
 @numba.njit(parallel=True)
-def potential_energy_parallel(cluster):
-    """
-    NAME:
-
-       potential_energy
-
-    PURPOSE:
-
-       Find potential energy for each star in a cluster (done in parallel)
+def _potential_energy_parallel(cluster):
+    """Find potential energy for each star in a cluster in parallel
+    - uses numba
 
     Parameters
-
-       cluster=[x,y,z,m].T
+    ----------
+    cluster : class
+        StarCluster
 
     Returns
+    -------
+        pot : float
+            potential energy of every star
 
-        energy
-
-    HISTORY:
-
+    History
+    -------
        2019 - Written - Webb (UofT)
     """
-
-    energy = [0.0] * len(cluster)
+    pot = [0.0] * len(cluster)
     for i in numba.prange(len(cluster) - 1):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
             m2 = cluster[i, 3] * cluster[j, 3]
-            energy[i] += -m2 / r
-            energy[j] += -m2 / r
+            pot[i] += -m2 / r
+            pot[j] += -m2 / r
 
-    return energy
+    return pot
 
 
 def closest_star(cluster, projected=False):
+    """Find distance to closest star for each star
+    - uses numba
 
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+
+    Returns
+    -------
+        minimum_distance : float
+            distance to closest star for each star
+
+    History
+    -------
+       2019 - Written - Webb (UofT)
+    """
     if projected:
         z = np.zeros(cluster.ntot)
         x = np.array([cluster.x, cluster.y, z]).T
@@ -387,77 +601,25 @@ def closest_star(cluster, projected=False):
     return minimum_distance(x)
 
 
-def virialize(cluster, specific=True, full=True, projected=False):
-    """
-    NAME:
-
-       virialize
-
-    PURPOSE:
-
-       Adjust stellar velocities so cluster is in virial equilibrium
-
-    Parameters
-
-       cluster - StarCluster instance
-       specific - find specific energies (default: True)
-       full - do full array of stars at once with numbra (default: True)
-
-    Returns
-
-       qv
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-    """
-
-    units0, origin0 = save_cluster(cluster)
-    cluster.to_centre()
-
-    try:
-        qv = np.sqrt(np.abs(0.5 / cluster.qvir))
-    except:
-        print("NEED TO CALCULATE ENERGIES FIRST")
-        energies(cluster, specific=specific, full=full, projected=projected)
-        qv = np.sqrt(np.abs(0.5 / cluster.qvir))
-
-    cluster.vx *= qv
-    cluster.vy *= qv
-    cluster.vz *= qv
-    cluster.key_params()
-
-    energies(cluster, specific=specific, full=full, projected=projected)
-    qv = np.sqrt(np.abs(0.5 / cluster.qvir))
-
-    return_cluster(cluster, units0, origin0)
-
-    return qv
-
-
 def rlagrange(cluster, nlagrange=10, projected=False):
-    """
-    NAME:
-
-       rlagrange
-
-    PURPOSE:
-
-       Calculate lagrange radii of the cluster by mass
-       --> Note units of lagrange radii will be equal to cluster.units
+    """Calculate lagrange radii of the cluster by mass
 
     Parameters
-
-       cluster - StarCluster instance
-       nlagrange - number of lagrange radii bins (default: 10)
-       projected - calculate projected lagrange radii (default: False)
+    ----------
+    cluster : class
+        StarCluster
+    nlagrange : int 
+        number of lagrange radii bins (default: 10)
+    projected : bool
+        calculate projected lagrange radii (default: False)
 
     Returns
+    -------
+    rn : float
+        lagrange radii
 
-       rn
-
-    HISTORY:
-
+    History
+    -------
        2019 - Written - Webb (UofT)
     """
 
@@ -503,7 +665,45 @@ def virial_radius(cluster, method='inverse_distance',
     projected=False,
     plot=False,
     **kwargs):
+    """Calculate virial radius of the cluster
+    - Virial radius is calculated using either:
+    -- the average inverse distance between particles, weighted by their masses (default)
+    -- the radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    method : str
+        method for calculating virial radius (default: 'inverse_distance')
 
+    Returns
+    -------
+    rv : float
+        virial radius
+
+    Other Parameters
+    ---------------------------
+    full : bool
+        Use Numba to calculate average inverse distance between stars (default:True)
+    H : float
+        Hubble constant
+    Om : float
+        density of matter
+    overdens : float
+        overdensity constant
+    nrad : int
+        number of radial bins used to calculate cluster density profile
+    projected : bool
+        calculate projected virial radius (default: False)
+    plot : bool
+        plot cluster density profile and illustrate virial radius calculation
+    kwargs : str
+        key word arguments for plotting function
+
+    History
+    -------
+       2019 - Written - Webb (UofT)
+    """
     if method=='inverse_distance':
         rv=virial_radius_inverse_distance(cluster,projected=projected,full=full)
     else:
@@ -512,36 +712,29 @@ def virial_radius(cluster, method='inverse_distance',
     return rv
 
 def virial_radius_inverse_distance(cluster, projected=False, full=True):
-    """
-    NAME:
-
-       virial_radius
-
-    PURPOSE:
-
-       Calculate virial radius of the cluster as the inverse of the 
-                 average inverse distance between particles, weighted by their masses
-       --> Definition taken from AMUSE (www.amusecode.org)
+    """ Calculate virial radius of the cluster 
+    - Virial radius is defined as the inverse of the average inverse distance between particles, weighted by their masses
+    -- Definition taken from AMUSE (www.amusecode.org)
+    -- Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9
 
     Parameters
-
-       cluster - StarCluster instance
-
-       projected - calculate projected virial radius (default: False)
-
-       full - Use Numba (default:True)
+    ----------
+    cluster : class
+        StarCluster
+    projected : bool
+        calculate projected virial radius (default: False)
+    full : bool
+        Use Numba to calculate average inverse distance between stars (default:True)
 
     Returns
+    -------
+    r_v : float
+        virial radius
 
-       rv
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
-
-
+    History
+    -------
+    2019 - Written - Webb (UofT)
     """
-
     if full:
         if projected:
             x = np.array([cluster.x, cluster.y, np.zeros(cluster.ntot), cluster.m]).T
@@ -549,7 +742,7 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
             x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
 
         ms = cluster.m
-        partial_sum = weighted_inverse_distance_sum(x)
+        partial_sum = _weighted_inverse_distance_sum(x)
 
     else:
         partial_sum = 0.0
@@ -574,31 +767,26 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
             m_m = ms[i] * ms[i + 1 :]
             partial_sum += np.sum(m_m / dr)
 
-    return (np.sum(ms) ** 2) / (2 * partial_sum)
-
+    r_v=(np.sum(ms) ** 2) / (2 * partial_sum)
+    return r_v
 
 @numba.njit
-def weighted_inverse_distance_sum(cluster):
-    """
-    NAME:
-
-       weighted_inverse_distance_sum
-
-    PURPOSE:
-
-       Find the sum of the mass weighted inverse distance for each star
+def _weighted_inverse_distance_sum(cluster):
+    """Find the sum of the mass weighted inverse distance for each star
 
     Parameters
-
-       cluster=[x,y,z,m].T
+    ----------
+    cluster : class
+        StarCluster
 
     Returns
+    -------
+    weighted_sum : float
+        sum of the mass weighted inverse distance for each star
 
-        weighted inverse distance sum
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
+    History
+    -------
+    2019 - Written - Webb (UofT)
     """
     weighted_sum = 0.0
     for i in range(len(cluster) - 1):
@@ -620,37 +808,39 @@ def virial_radius_critical_density(
     plot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       rvirial
-
-    PURPOSE:
-
-       Calculate virial radius of the cluster as the radius at which the density is equal to the critical 
-           density of the Universe at the redshift of the system, multiplied by an overdensity constant
+    """Calculate virial radius of the cluster
+    
+    - Virial radius is defined as the radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
+    - Note that this a quick method that is a bit of an approximation as it interpolates the cluster's density profile. A more accurate (but expensive)
+    approach would be to subtract the product of the critical density and the overdensity constant from the density profile and find the root (in development)
 
     Parameters
-
-       cluster - StarCluster instance
-
-       H - Hubble constant
-
-       Om - density of matter
-
-       overdens - overdensity constant
-
-       nrad - number of radial bins used to calculate cluster density profile
-
-       projected - calculate projected virial radius (default: False)
+    ----------
+    cluster : class
+        StarCluster
+    H : float
+        Hubble constant
+    Om : float
+        density of matter
+    overdens : float
+        overdensity constant
+    nrad : int
+        number of radial bins used to calculate cluster density profile
+    projected : bool
+        calculate projected virial radius (default: False)
+    plot : bool
+        plot cluster density profile and illustrate virial radius calculation
+    kwargs : str
+        key word arguments for plotting function
 
     Returns
+    -------
+    r_v : float
+        virial radius
 
-       rv
-
-    HISTORY:
-
-       2019 - Written - Webb (UofT)
+    History
+    -------
+    2019 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -682,6 +872,9 @@ def virial_radius_critical_density(
     rindx = np.argmax(pprof)
     rmax = rprof[rindx]
 
+    r_v=np.interp(rhocrit * overdens,pprof,rprof)
+
+    """
     indx1 = (rprof > rmax) * (pprof > rhocrit * overdens)
     indx2 = (rprof > rmax) * (pprof < rhocrit * overdens)
 
@@ -697,6 +890,7 @@ def virial_radius_critical_density(
 
         print(r1, r2, rho1, rho2, rhocrit * overdens)
         r_v = interpolate([r1, rho1], [r2, rho2], y=rhocrit * overdens)
+    """
 
     if plot:
         rho_local = rhocrit * overdens
@@ -748,59 +942,64 @@ def mass_function(
     indx=None,
     projected=False,
     mcorr=None,
-    omask=None,
     plot=False,
     **kwargs
 ):
-    """
-    NAME:
+    """Find mass function over a given mass range
 
-       mass_function
-
-    PURPOSE:
-
-       Find mass function over a given mass range using nmass bins containing an equal number of stars
+    - mass bins are set up so that there are an equal number of stars in each bin
 
     Parameters
-
-       cluster - StarCluster instance
-       mmin/mmax - specific mass range
-       nmass - number of mass bins used to calculate alpha
-       rmin/rmax - specific radial range
-       vmin/vmax - specific velocity range
-       emin/emax - specific energy range
-       kwmin/kwmax - specific stellar evolution type range
-       indx - specific subset of stars
-       projected - use projected values
-       mcorr - correction for masses
-       omask - place a mask over the dataset to mimic observed data
-       plot - plot the mass function
-       **kwargs - key words for plotting
+    ----------
+    cluster : class
+        StarCluster instance
+    mmin/mmax : float
+        specific mass range
+    nmass : 
+        number of mass bins used to calculate alpha
+    rmin/rmax : 
+        specific radial range
+    vmin/vmax : float
+        specific velocity range
+    emin/emax : float
+        specific energy range
+    kwmin/kwmax : int
+        specific stellar evolution type range
+    indx : bool 
+        specific subset of stars
+    projected : bool 
+        use projected values (default: False)
+    mcorr : float
+        completeness correction for masses
+    plot : bool 
+        plot the mass function
 
     Returns
+    -------
+    m_mean : float
+        mean mass in each bin
+    m_hist : float
+        number of stars in each bin
+    dm : float
+        dN/dm of each bin
+    alpha : float
+        power-law slope of the mass function (dN/dm ~ m^alpha)
+    ealpha : float
+        error in alpha
+    yalpha : float
+        y-intercept of fit to log(dN/dm) vs log(m)
+    eyalpha : float
+        error in yalpha
 
-       if omask is None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha
-       if omask is not None: m_mean,m_hist,dm,alpha,ealpha,yalpha,eyalpha, mbinerror
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
 
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
-
-    if mcorr is None:
-        if omask is not None:
-            try:
-                mcorr = omask.mcorr
-                return_error=True
-            except:
-                mcorr = np.ones(cluster.ntot)
-                return_error=False
-        else:
-            mcorr = np.ones(cluster.ntot)
-            return_error=False
-    else:
-        return_error=True
-
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -842,25 +1041,16 @@ def mass_function(
         indx *= cluster.etot <= emax
 
     if np.sum(indx) >= nmass:
-        if omask is None:
-            m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
-            m_corr_hist=m_hist
-            mbinerror=np.ones(nmass)
-        else:
-            try:
-                m_lower, m_mean, m_upper = omask.m_lower, omask.m_mean, omask.m_upper
-                nmass = len(m_mean)
-                m_hist = np.zeros(nmass)
-            except:
-                m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
 
-            m_corr_hist = np.zeros(len(m_hist))
-            for i in range(0, len(m_hist)):
-                mindx = (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i]) * indx
-                m_hist[i]=np.sum(mindx)
-                m_corr_hist[i] = np.sum(1.0 / mcorr[mindx])
+        m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
 
-            mbinerror = m_hist / m_corr_hist
+        m_corr_hist = np.zeros(len(m_hist))
+        for i in range(0, len(m_hist)):
+            mindx = (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i]) * indx
+            m_hist[i]=np.sum(mindx)
+            m_corr_hist[i] = np.sum(1.0 / mcorr[mindx])
+
+        mbinerror = m_hist / m_corr_hist
 
         lm_mean = np.log10(m_mean)
         dm = m_corr_hist / (m_upper - m_lower)
@@ -883,11 +1073,7 @@ def mass_function(
 
             if filename != None:
                 plt.savefig(filename)
-
-        if return_error:
-            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror
-        else:
-            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
+        return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
     else:
         print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
         return (
@@ -919,45 +1105,56 @@ def eta_function(
     **kwargs
 ):
     """
-    NAME:
-
-       eta_function
-
-    PURPOSE:
-
-       Find eta over a given mass range using nmass bins containing an equal number of stars
+    NAME: Find power slope of velocity dispersion versus mass
+    
+    - mass bins are set up so that there are an equal number of stars in each bin
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - specific mass range
-
-       nmass - number of mass bins used to calculate eta
-
-       rmin/rmax - specific radial range
-
-       vmin/vmax - specific velocity range
-
-       emin/emax - specific energy range
-
-       kwmin/kwmax - specific stellar evolution type range
-
-       indx - specific subset of stars
-
-       projected - use projected values
-
-       plot - plot the mass function
-       
-       **kwargs - key words for plotting
+    ----------
+    cluster : class
+        StarCluster instance
+    mmin/mmax : float
+        specific mass range
+    nmass : 
+        number of mass bins used to calculate alpha
+    rmin/rmax : 
+        specific radial range
+    vmin/vmax : float
+        specific velocity range
+    emin/emax : float
+        specific energy range
+    kwmin/kwmax : int
+        specific stellar evolution type range
+    indx : bool 
+        specific subset of stars
+    projected : bool 
+        use projected values (default: False)
+    plot : bool 
+        plot the mass function
 
     Returns
+    -------
+    m_mean : float
+        mean mass in each bin
+    sigvm : float
+        velocity dispersion of stars in each bin
+    eta : float
+        power-law slope of (sigvm ~ m^eta)
+    eeta : float
+        error in eta
+    yeta : float
+        y-intercept of fit to log(sigvm) vs log(m)
+    eeta : float
+        error in yeta
 
-       m_mean,sigvm,eta,eeta,yeta,eyeta
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
 
-    HISTORY:
-
-       2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
     if projected:
         r = cluster.rpro
@@ -1039,120 +1236,3 @@ def eta_function(
             -1000.0,
             -1000.0,
         )
-
-
-def surface_area(
-    cluster,
-    mmin=None,
-    mmax=None,
-    rmin=None,
-    rmax=None,
-    vmin=None,
-    vmax=None,
-    emin=None,
-    emax=None,
-    kwmin=0,
-    kwmax=1,
-    indx=None,
-    projected=False,
-    coords="xy",
-    thresh=None,
-    nrand=1000,
-    method="sphere",
-    full=False,
-    plot=False,
-):
-    """
-    NAME:
-
-     surface_area
-
-    PURPOSE:
-
-     calculate surface area enclosed by cluster by finding what fraction of a random distribution overlaps with points
-
-    Parameters
-
-     cluster - StarCluster instance
-     
-     mmin/mmax - specific mass range
-     rmin/rmax - specific radial range
-     vmin/vmax - specific velocity range
-     emin/emax - specific energy range
-     kwmin/kwmax - specific stellar evolution type range
-     indx - specific subset of stars
-     projected - use projected values
-     
-     coords - choose axis to project cluster (Default: xy)
-     
-     thresh - threshold for overlap between random distribution and points (Default: None - use maximum nearest neighbour)
-
-     nrand - number of random points to be generated in uniform distribution (Default: 1000)
-
-     method - generate spherical or rectangular distribution of random points (Default: sphere)
-     
-     plot - plot overlap (Default: False)
-
-    Returns
-
-     area
-
-    HISTORY:
-
-     2019 - Written - Webb (UofT)
-
-    """
-
-    if projected:
-        r = cluster.rpro
-        v = cluster.vpro
-    else:
-        r = cluster.r
-        v = cluster.v
-
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
-    )
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-
-    if coords == "xy":
-        x = cluster.x
-        y = cluster.y
-    elif coords == "xz":
-        x = cluster.x
-        y = cluster.z
-    elif coords == "yz":
-        x = cluster.y
-        y = cluster.z
-
-    return area_enclosed(
-        x, y, thresh=thresh, nrand=nrand, method=method, full=full, plot=plot
-    )

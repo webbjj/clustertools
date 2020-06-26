@@ -24,9 +24,11 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
 * rv3d
 * key_params
 
-.. automodapi:: clustertools.analysis.cluster_custom
+.. automodapi:: clustertools.analysis.cluster
         :no-inheritance-diagram:
-        :skip: StarCluster.add_rotation,add_rotation
+        :no-main-docstr:
+        :no-heading:
+        :skip: sub_cluster
 
 The ``add_stars`` function is the intended way to actually add stars to ``cluster``. Assuming stellar positions (x,y,z) and velocities (vx,vy,vz) have already been read in via a snapshot, one can call:
 
@@ -126,3 +128,9 @@ Finally, it is also possible within ``clustertools`` to extract a subset of star
 >>> new_cluster=ctools.sub_cluster(cluster,rmin=0,rmax=cluster.rm)
 
 In this example, ``new_cluster`` will contain all the same information as ``cluster`` but only for stars within ``cluster.rm``. Please consult the ``sub_cluster`` documentation for the complete list of criteria that can be given to ``sub_cluster``.
+
+.. automodapi:: clustertools.analysis.cluster
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:
+        :skip: StarCluster

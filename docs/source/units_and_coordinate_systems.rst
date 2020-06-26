@@ -34,7 +34,7 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - kpc
      - km/s
      - Msun
-   * - degrees
+   * - radec
      - units for comparison to observations
      - degrees (Ra, Dec), and kpc (distance)
      - mas (proper motions) and kms (radial velocity)

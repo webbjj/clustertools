@@ -11,6 +11,9 @@ from . import profiles
 #
 sub_cluster=cluster.sub_cluster
 
+find_centre=functions.find_centre
+find_centre_of_density=functions.find_centre_of_density
+find_centre_of_mass=functions.find_centre_of_mass
 relaxation_time=functions.relaxation_time
 half_mass_relaxation_time=functions.half_mass_relaxation_time
 core_relaxation_time=functions.core_relaxation_time
@@ -31,9 +34,6 @@ w0_to_c=initialize.w0_to_c
 load_cluster=load.load_cluster
 advance_cluster=load.advance_cluster
 
-find_centre=operations.find_centre
-find_centre_of_density=operations.find_centre_of_density
-find_centre_of_mass=operations.find_centre_of_mass
 to_pckms=operations.to_pckms
 to_kpckms=operations.to_kpckms
 to_nbody=operations.to_nbody
@@ -48,9 +48,7 @@ to_tail=operations.to_tail
 to_origin=operations.to_origin
 save_cluster=operations.save_cluster
 return_cluster=operations.return_cluster
-rotate_to_tail=operations.rotate_to_tail
 reset_nbody_scale=operations.reset_nbody_scale
-convert_binary_units=operations.convert_binary_units
 add_rotation=operations.add_rotation
 
 

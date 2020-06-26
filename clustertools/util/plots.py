@@ -84,7 +84,7 @@ def nscatter(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -201,7 +201,7 @@ def nplot(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -319,7 +319,7 @@ def nlplot(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -393,7 +393,7 @@ def nhist(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -478,7 +478,7 @@ def nhist2d(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -554,7 +554,7 @@ def ndens(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -632,7 +632,7 @@ def starplot(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -824,7 +824,7 @@ def skyplot(
 
        pyplot.figure()
 
-    HISTORY:
+    History
 
        2019 - Written - Webb (UofT)
 

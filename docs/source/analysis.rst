@@ -4,26 +4,14 @@ Analysis
 Operations
 ----------------------------------
 
-Several operations are available within ``clustertools`` to perform large scale changes to a ``StarCluster``, primarily related to unit and coordinate system changes. Operations are primarily meant to be called as functions internal to the ``StarCluser`` class (``StarCluster.operation_name()``), however it is also possible to call operations as external functions (``operation_name(StarCluster)`` for cases where the operation returns information of interest (i.e. a rotation matrix). No information is returned when an operation is called internally and no variables within cluster are set when an operation is called externally.
-
-An example of the difference between internal and external operation calls would be finding a cluster's centre. One can call the function internally via:
-
->>> cluster.find_centre()
-
-When called internally, the position (cluster.xc, cluster.yc, cluster.zc) and velocity (cluster.vxc, cluster.vyc, cluster.vzc) of the cluster's centre are set. Unless ``cluster.origin=='galaxy'``, then the cluster's centre is set equal to its galactocentric position and velocity (cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc). 
-
-Alternatively, when called externally via:
-
->>> xc,yc,zc,vxc,vyc,vzv=find_centre(cluster)
-
-no variables within ``cluster`` are actually set. 
+Several operations are available within ``clustertools`` to perform large scale changes to a ``StarCluster``, primarily related to unit and coordinate system changes. Operations are meant to be called as internal functions (``StarCluster.operation_name()``), however it is also possible to call operations as external functions (``operation_name(StarCluster)`` if preferred. No information is returned when an operation is called.
 
 A change of units or coordinate system can be implemented using:
 
 >>> cluster.to_galaxy()
 >>> cluster.to_kpckms()
 
-It is important to note that only ``rv3d`` is called after a change in either units or coordinate system. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If sorting and re-calculations are preferred, then be sure to set ``do_order=True`` and ``do_key_params=True`` via:
+It is important to note that the operation ``rv3d`` is called after a change in either units or coordinate system, such that the radii and velocities of each star are updated. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If sorting and re-calculations are preferred, then be sure to set ``do_order=True`` and ``do_key_params=True`` via:
 
 >>> cluster.to_galaxy(do_order=True)
 >>> cluster.to_kpckms(do_key_params=True)
@@ -38,7 +26,7 @@ All available operations are listed below.
 Functions
 ----------------------------------
 
-A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. Similar to operations, functions can be called internally (``StarCluster.function_name()``) or externally (``function_name(StarCluster)``). When called internally, changes are made to variables within ``StarCluster`` with nothing returned. When called externally, some operations have data returned. For example, a cluster's half-mass relaxation time can be called internally via:
+A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. When functions are called internally (``StarCluster.function_name()``), changes are made to variables within ``StarCluster`` with nothing returned. When called externally (``function_name(StarCluster)``), no changes are made within the ``StarCluster`` while the called function returns the necessary information. For example, a cluster's half-mass relaxation time can be called internally via:
 
 >>> cluster.half_mass_relaxation_time()
 
@@ -46,7 +34,7 @@ where the variable cluster.trh now represents the cluster's half-mass relaxation
 
 >>> trh=half_mass_relaxation_time(cluster)
 
-When called externally, no variables within `cluster` are set.
+When called externally, cluster.trh is not set.
 
 Some functions, including ``mass_function`` and ``eta_function`` can be applied to only a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster's half-mass radius one can call:
 
@@ -55,7 +43,7 @@ Some functions, including ``mass_function`` and ``eta_function`` can be applied 
 
 Other constraints include velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
-All functions can be called using projected valeus using ``projeted=True``.
+All functions can be called using projected valeus using ``projected=True``. When called internally, a function call will default to whatever ``StarCluster.projected`` is set to if ``projeted`` is not given.
 
 The complete list of available functions are tabulated below in their external form.
 
@@ -99,7 +87,7 @@ In cases where the ``StarCluster`` does not evolve in isolation, it is possible 
 
 **Cluster Properties Dependent on the External Tidal Field**
 
-In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to calcuate additional cluster properties like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius). The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a potential using the ``pot`` variable where applicable.
+Cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a potential using the ``pot`` variable where applicable.
 
 For example, the limiting radius of a cluster (radius where the density falls to background) can be measured via:
 
@@ -115,14 +103,25 @@ Alternatively, one can define a different potential and make the calculation aga
 
 .. image:: /images/rlplot_log.png
 
+If the cluster's orbit is not know it is possible to a galactocentric distance using ``rgc``.
+
 **Orbit Properties**
 
-The majority of the orbital analysis performed in ``clusertools`` is just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class, especially ``calc_actions``,``get_cluster_orbit``, and ``ttensor``. At the moment, orbital analysis can be done internally using the ``StarCluster`` class. Hence all orbit analysis function should be called externally. For example, one can easily initialize and integrate a cluster's orbit, given its galactocentric coordinates are known, using:
+The majority of the orbital analysis performed in ``clusertools`` is just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class, especially ``calc_actions``,``get_cluster_orbit``, and ``ttensor``. Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and integrate a cluster's orbit, given its galactocentric coordinates are known, using:
 
->> orbit=initialize_orbit(cluster)
->> dt,orbit=integrate_orbit(cluster,tfinal=12)
+>> cluster.initialize_orbit()
+>> cluster.integrate_orbit(tfinal=12)
 
-where ``tfinal=12`` means that the orbit is being integrated 12 Gyr into the future. The returned orbit is also stored in ``cluster.orbit`` while the array dt are the times (in galpy units) for which the orbit was integrated for. ``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits``, however this feature is likely only of interest for tail stars that are no longer bound to the cluster as orbit integration does not account for the cluster's potential.
+where ``tfinal=12`` means that the orbit is being integrated 12 Gyr into the future. The returned orbit is also stored in ``cluster.orbit`` while the array self.ts is set which lists the times (in galpy units) for which the orbit was integrated for. If you are familiar with ``galpy`` and prefer to just extract the galpy orbit, you can use:
+
+>> o=initialize_orbit(cluster)
+
+or
+
+>> ts,o=integrate_orbit(cluster,tfinal=12)
+
+
+``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits(``, however this feature is likely only of interest for tail stars that are no longer bound to the cluster as orbit integration does not account for the cluster's potential.
 
 It may also be helpful to have the cluster's orbital path within +/- dt, especially if looking at escaped stars. Arrays for the cluster's past and future coordinates can be generated via:
 

@@ -18,7 +18,6 @@ StarCluster
       ~StarCluster.add_rotation
       ~StarCluster.add_sse
       ~StarCluster.add_stars
-      ~StarCluster.alpha_prof
       ~StarCluster.calc_actions
       ~StarCluster.closest_star
       ~StarCluster.convert_binary_units
@@ -28,11 +27,17 @@ StarCluster
       ~StarCluster.find_centre
       ~StarCluster.find_centre_of_density
       ~StarCluster.find_centre_of_mass
-      ~StarCluster.from_degrees
-      ~StarCluster.from_sky
+      ~StarCluster.get_cluster_orbit
       ~StarCluster.half_mass_relaxation_time
+      ~StarCluster.initialize_orbit
+      ~StarCluster.initialize_orbits
+      ~StarCluster.integrate_orbit
+      ~StarCluster.integrate_orbits
       ~StarCluster.key_params
       ~StarCluster.mass_function
+      ~StarCluster.orbit_interpolate
+      ~StarCluster.orbital_path
+      ~StarCluster.orbital_path_match
       ~StarCluster.relaxation_time
       ~StarCluster.reset_nbody_scale
       ~StarCluster.return_cluster
@@ -41,19 +46,21 @@ StarCluster
       ~StarCluster.rtidal
       ~StarCluster.rv3d
       ~StarCluster.save_cluster
+      ~StarCluster.tail_path
+      ~StarCluster.tail_path_match
       ~StarCluster.to_centre
       ~StarCluster.to_cluster
-      ~StarCluster.to_degrees
       ~StarCluster.to_galaxy
       ~StarCluster.to_galpy
       ~StarCluster.to_kpckms
       ~StarCluster.to_nbody
       ~StarCluster.to_origin
       ~StarCluster.to_pckms
+      ~StarCluster.to_radec
       ~StarCluster.to_sky
       ~StarCluster.to_tail
       ~StarCluster.to_units
-      ~StarCluster.vcirc_prof
+      ~StarCluster.ttensor
       ~StarCluster.virial_radius
       ~StarCluster.virialize
 
@@ -67,7 +74,6 @@ StarCluster
    .. automethod:: add_rotation
    .. automethod:: add_sse
    .. automethod:: add_stars
-   .. automethod:: alpha_prof
    .. automethod:: calc_actions
    .. automethod:: closest_star
    .. automethod:: convert_binary_units
@@ -77,11 +83,17 @@ StarCluster
    .. automethod:: find_centre
    .. automethod:: find_centre_of_density
    .. automethod:: find_centre_of_mass
-   .. automethod:: from_degrees
-   .. automethod:: from_sky
+   .. automethod:: get_cluster_orbit
    .. automethod:: half_mass_relaxation_time
+   .. automethod:: initialize_orbit
+   .. automethod:: initialize_orbits
+   .. automethod:: integrate_orbit
+   .. automethod:: integrate_orbits
    .. automethod:: key_params
    .. automethod:: mass_function
+   .. automethod:: orbit_interpolate
+   .. automethod:: orbital_path
+   .. automethod:: orbital_path_match
    .. automethod:: relaxation_time
    .. automethod:: reset_nbody_scale
    .. automethod:: return_cluster
@@ -90,18 +102,20 @@ StarCluster
    .. automethod:: rtidal
    .. automethod:: rv3d
    .. automethod:: save_cluster
+   .. automethod:: tail_path
+   .. automethod:: tail_path_match
    .. automethod:: to_centre
    .. automethod:: to_cluster
-   .. automethod:: to_degrees
    .. automethod:: to_galaxy
    .. automethod:: to_galpy
    .. automethod:: to_kpckms
    .. automethod:: to_nbody
    .. automethod:: to_origin
    .. automethod:: to_pckms
+   .. automethod:: to_radec
    .. automethod:: to_sky
    .. automethod:: to_tail
    .. automethod:: to_units
-   .. automethod:: vcirc_prof
+   .. automethod:: ttensor
    .. automethod:: virial_radius
    .. automethod:: virialize

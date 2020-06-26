@@ -37,7 +37,7 @@ def sphere_coords(cluster):
 
        r,theta,phi,vr,vtheta,vphi
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -64,7 +64,7 @@ def cart_to_sphere(x,y,z,vx,vy,vz):
 
        r,theta,phi,vr,vtheta,vphi
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -110,7 +110,7 @@ def cyl_coords(cluster):
 
        r,theta,z,vr,vtheta,vz
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -135,7 +135,7 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
 
        r,theta,z,vr,vtheta,vz
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 
@@ -164,7 +164,7 @@ def sky_coords(cluster):
 
        ra,dec,d0,pmra,pmdec,vr0
 
-    HISTORY:
+    History
 
        2018 - Written - Webb (UofT)
 

@@ -19,13 +19,14 @@ half_mass_relaxation_time=functions.half_mass_relaxation_time
 core_relaxation_time=functions.core_relaxation_time
 energies=functions.energies
 closest_star=functions.closest_star
-virialize=functions.virialize
 rlagrange=functions.rlagrange
 virial_radius=functions.virial_radius
 virial_radius_inverse_distance=functions.virial_radius_inverse_distance
 virial_radius_critical_density=functions.virial_radius_critical_density
 mass_function=functions.mass_function
 eta_function=functions.eta_function
+rtidal=functions.rtidal
+rlimiting=functions.rlimiting
 
 setup_cluster=initialize.setup_cluster
 c_to_w0=initialize.c_to_w0
@@ -44,12 +45,12 @@ to_centre=operations.to_centre
 to_cluster=operations.to_cluster
 to_galaxy=operations.to_galaxy
 to_sky=operations.to_sky
-to_tail=operations.to_tail
 to_origin=operations.to_origin
 save_cluster=operations.save_cluster
 return_cluster=operations.return_cluster
 reset_nbody_scale=operations.reset_nbody_scale
 add_rotation=operations.add_rotation
+virialize=operations.virialize
 
 
 rho_prof=profiles.rho_prof
@@ -67,12 +68,11 @@ integrate_orbit=orbit.integrate_orbit
 orbit_interpolate=orbit.orbit_interpolate
 orbital_path=orbit.orbital_path
 orbital_path_match=orbit.orbital_path_match
-tail_path=orbit.tail_path
-tail_path_match=orbit.tail_path_match
-rtidal=orbit.rtidal
-rlimiting=orbit.rlimiting
-get_cluster_orbit=orbit.get_cluster_orbit
 calc_actions=orbit.calc_actions
+
+to_tail=tails.to_tail
+tail_path=tails.tail_path
+tail_path_match=tails.tail_path_match
 
 #
 # Classes

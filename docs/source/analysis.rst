@@ -43,7 +43,25 @@ Some functions, including ``mass_function`` and ``eta_function`` can be applied 
 
 Other constraints include velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
-All functions can be called using projected valeus using ``projected=True``. When called internally, a function call will default to whatever ``StarCluster.projected`` is set to if ``projeted`` is not given.
+Finally, cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a potential using the ``pot`` variable where applicable.
+
+For example, the limiting radius of a cluster (radius where the density falls to background) can be measured via:
+
+>> cluster.rlimiting(plot=True)
+
+Since ``plot=True``, a figure showing the cluster's density profile and the background density in MWPotential at the cluster's position is returned in order to view exactly where the limiting radius is. cluster.rl is now set equal to the the measured limiting radius.
+
+.. image:: /images/rlplot.png
+
+Alternatively, one can define a different potential and make the calculation again:
+
+>> cluster.rlimiting(pot=LogarithmicHaloPotential,plot=True)
+
+.. image:: /images/rlplot_log.png
+
+If the cluster's orbit is not know it is possible to a galactocentric distance using ``rgc``.
+
+All functions, with the exception of calculating the cluster's tidal radius, can be called using projected valeus using ``projected=True``. When called internally, a function call will default to whatever ``StarCluster.projected`` is set to if ``projected`` is not given.
 
 The complete list of available functions are tabulated below in their external form.
 
@@ -83,29 +101,7 @@ All available profiles are listed below.
 Orbit
 ----------------------------------
 
-In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to calcuate additional cluster and orbital properties.
-
-**Cluster Properties Dependent on the External Tidal Field**
-
-Cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a potential using the ``pot`` variable where applicable.
-
-For example, the limiting radius of a cluster (radius where the density falls to background) can be measured via:
-
->> cluster.rlimiting(plot=True)
-
-Since ``plot=True``, a figure showing the cluster's density profile and the background density in MWPotential at the cluster's position is returned in order to view exactly where the limiting radius is. cluster.rl is now set equal to the the measured limiting radius.
-
-.. image:: /images/rlplot.png
-
-Alternatively, one can define a different potential and make the calculation again:
-
->> cluster.rlimiting(pot=LogarithmicHaloPotential,plot=True)
-
-.. image:: /images/rlplot_log.png
-
-If the cluster's orbit is not know it is possible to a galactocentric distance using ``rgc``.
-
-**Orbit Properties**
+In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyise the cluster's orbital properties.
 
 The majority of the orbital analysis performed in ``clusertools`` is just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class, especially ``calc_actions``,``get_cluster_orbit``, and ``ttensor``. Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and integrate a cluster's orbit, given its galactocentric coordinates are known, using:
 
@@ -137,10 +133,23 @@ Stars can also be matched to a point along the orbital path, where each stars di
 
 Since ``plot=True``, a figure showing ``dpath`` vs ``dprog`` is returned.
 
+A complete list of all functions related to a cluster's orbit can be found below.
 
-**Tidal Tails**
+.. automodapi:: clustertools.analysis.orbit
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:
 
-Since stars which escape a cluster do so with velocities slightly larger or smaller than the progenitor cluster, tidal tails will not follow the cluster's orbit path. Therefore ``clustertools`` can generate a tail path by first matching stars to the cluster's orbital path (as above) and then binning stars based on their distance from the progenitor along the path. The mean coordinates of stars in each bin marks the tail path. Similar to a cluster's orbital path, ``clustertools`` can also match stars to the tail path as well.
+Tidal Tails
+----------------------------------
+
+Since stars which escape a cluster lead to the formation of tidal tails, which survive as stellar streams long after the cluster has dissolved. For star cluster simulations that keep track of a cluster's tidal tails, a few methods are included in ``clustertools`` to help in their analysis. The first of which is the ``to_tail`` operation, which rotates the system such that the cluster's velocity is pointing along the positive x-axis. Calling the operation externally returns each stars coordinates in the rotated system:
+
+>>> x,y,z,vx,vy,vz=to_tails(cluster)
+
+Alternatively, an internal operation call (``cluster.to_tail()``) defines the parameters `` cluster.x_tail, cluster.y_tail, cluster.z_tail, cluster.vx_tail, cluster.vy_tail, cluster.vz_tail``.
+
+Secondly, since stars that escape the cluster do so with velocities slightly larger or smaller than the progenitor cluster, tidal tails will not follow the cluster's orbit path. Therefore ``clustertools`` can generate a tail path by first matching stars to the cluster's orbital path (as above) and then binning stars based on their distance from the progenitor along the path. The mean coordinates of stars in each bin marks the tail path. Similar to a cluster's orbital path, ``clustertools`` can also match stars to the tail path as well.
 
 >>> t, x, y, z, vx, vy, vz = tail_path(cluster,dt=0.1,plot=True)
 
@@ -152,7 +161,7 @@ Since stars which escape a cluster do so with velocities slightly larger or smal
 
 A complete list of all functions related to a cluster's orbit can be found below.
 
-.. automodapi:: clustertools.analysis.orbit
+.. automodapi:: clustertools.analysis.tails
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:

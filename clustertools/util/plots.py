@@ -2,17 +2,9 @@
 
 """
 __author__ = "Jeremy J Webb"
-
-
-__all__ = [
-    "nscatter",
-    "nplot",
-    "nlplot",
-    "nhist",
-    "nhist2d",
-    "ndens",
-    "starplot",
-    "skyplot",
+__all__=[
+  "starplot",
+  "skyplot",
 ]
 
 import matplotlib.pyplot as plt
@@ -28,7 +20,7 @@ bovy_plot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=
 current_palette = sns.color_palette()
 
 
-def nscatter(
+def _scatter(
     x,
     y,
     z=None,
@@ -43,50 +35,46 @@ def nscatter(
     overplot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       nscatter
-
-    PURPOSE:
-
-       Wrapper for matplotlib.pyplot.scatter that allows for most pyplot commands to be assigned when calling the function
+    """Wrapper for matplotlib.pyplot.scatter 
+      - allows for most pyplot commands to be assigned when calling the function
 
     Parameters
-
-       x,y - points to be plotted
-
-       z - value for colour-coding
-
-       xlabel - X-axis label
-
-       ylabel - Y-axis label
-
-       legend - Plot legend (Default: False)
-
-       title - Title of plot
-
-       xlim - X-axis limits
-
-       ylim - Y-axis limits
-
-       scale - if only xlim or ylim is given, set limits of axis to match points in given range
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    x,y : float
+      points to be plotted
+    z : float
+      value for colour-coding
+    xlabel : str
+      X-axis label
+    ylabel : str
+      Y-axis label
+    legend : bool
+      Plot legend (default: False)
+    title : str
+      Title of plot
+    xlim : float 
+      X-axis limits (list)
+    ylim : float list
+      Y-axis limits (list)
+    scale : bool
+      if only xlim or ylim is given, set limits of axis to match points in given range (default: True)
+    filename : str
+      filename to save figure to
+    overplot : bool
+      overplot onto existing figure (default: False)
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.scatter
 
     History
-
-       2018 - Written - Webb (UofT)
+    -------
+    2018 - Written - Webb (UofT)
 
     """
     x = np.asarray(x)
@@ -138,7 +126,7 @@ def nscatter(
         return out
 
 
-def nplot(
+def _plot(
     x,
     y,
     ptype=".",
@@ -156,55 +144,52 @@ def nplot(
     overplot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       nplot
-
-    PURPOSE:
-
-       Wrapper for plotting points with matplotlib.pyplot.plot that allows for most pyplot commands to be assigned when calling the function
+    """Wrapper for plotting points with matplotlib.pyplot.plot
+      - allows for most pyplot commands to be assigned when calling the function
 
     Parameters
-
-       x,y - points to be plotted
-
-       xlabel - X-axis label
-
-       ylabel - Y-axis label
-
-       legend - Plot legend (Default: False)
-
-       title - Title of plot
-
-       xlim - X-axis limits
-
-       ylim - Y-axis limits
-
-       scale - if only xlim or ylim is given, set limits of axis to match points in given range
-
-       log - use log axis (Default: False)
-
-       logx - use log x-axis (Default: False)
-
-       logy - use log y-axis (Default: False)
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    x,y : float
+      points to be plotted
+    ptype : str
+      point type
+    xlabel : str
+      X-axis label
+    ylabel : str
+      Y-axis label
+    legend : bool
+      Plot legend (default: False)
+    title : str
+      Title of plot
+    xlim : float 
+      X-axis limits (list)
+    ylim : float list
+      Y-axis limits (list)
+    scale : bool
+      if only xlim or ylim is given, set limits of axis to match points in given range (default: True)
+    log : bool
+      use log axis (default: False)
+    logx : bool
+      use log x-axis (default: False)
+    logy : bool
+      use log y-axis (default: False)
+    filename : str
+      filename to save figure to
+    overplot : bool
+      overplot onto existing figure (default: False)
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.plot
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     if not overplot:
         plt.figure()
@@ -254,7 +239,7 @@ def nplot(
         return out
 
 
-def nlplot(
+def _lplot(
     x,
     y,
     ltype="-",
@@ -272,59 +257,54 @@ def nlplot(
     overplot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       nlplot
-
-    PURPOSE:
-
-       Wrapper for plotting lines with matplotlib.pyplot.plot that allows for most pyplot commands to be assigned when calling the function
+    """ Wrapper for plotting lines with matplotlib.pyplot.plot 
+      - allows for most pyplot commands to be assigned when calling the function
 
     Parameters
-
-       x,y - points to be plotted
-
-       ltype - line type
-
-       xlabel - X-axis label
-
-       ylabel - Y-axis label
-
-       legend - Plot legend (Default: False)
-
-       title - Title of plot
-
-       xlim - X-axis limits
-
-       ylim - Y-axis limits
-
-       scale - if only xlim or ylim is given, set limits of axis to match points in given range
-
-       log - use log axis (Default: False)
-
-       logx - use log x-axis (Default: False)
-
-       logy - use log y-axis (Default: False)
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    x,y : float
+      points to be plotted
+    ltype : str
+      line type
+    xlabel : str
+      X-axis label
+    ylabel : str
+      Y-axis label
+    legend : bool
+      Plot legend (default: False)
+    title : str
+      Title of plot
+    xlim : float 
+      X-axis limits (list)
+    ylim : float list
+      Y-axis limits (list)
+    scale : bool
+      if only xlim or ylim is given, set limits of axis to match points in given range (default: True)
+    log : bool
+      use log axis (default: False)
+    logx : bool
+      use log x-axis (default: False)
+    logy : bool
+      use log y-axis (default: False)
+    filename : str
+      filename to save figure to
+    overplot : bool
+      overplot onto existing figure (default: False)
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.plot
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 
     """
-    return nplot(
+    return _plot(
         x,
         y,
         ptype=ltype,
@@ -344,7 +324,7 @@ def nlplot(
     )
 
 
-def nhist(
+def _hist(
     x,
     nbin=10,
     xlabel="",
@@ -356,47 +336,42 @@ def nhist(
     overplot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       nhist
-
-    PURPOSE:
-
-       Wrapper for matplotlib.pyplot.hist that allows for most pyplot commands to be assigned when calling the function
+    """Wrapper for matplotlib.pyplot.hist 
+      - allows for most pyplot commands to be assigned when calling the function
 
     Parameters
-
-       x - points to make histogram with
-
-       nbin - number of bins
-
-       xlabel - X-axis label
-
-       legend - Plot legend (Default: False)
-
-       title - Title of plot
-
-       xlim - X-axis limits
-
-       fill - Fill histogram bars
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    x : float
+      points to make histogram with
+    nbin : int
+      number of bins
+    xlabel : str
+      X-axis label
+    legend : bool
+      Plot legend (default: False)
+    title : str
+      Title of plot
+    xlim : float 
+      X-axis limits (list)
+    fill : bool
+      Fill histogram bars (default: False)
+    filename : str
+      filename to save figure to
+    overplot : bool
+      overplot onto existing figure (default: False)
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.plot
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     nbin = kwargs.pop("bins", nbin)
 
@@ -429,7 +404,7 @@ def nhist(
         return out
 
 
-def nhist2d(
+def _hist2d(
     x,
     y,
     nbin=10,
@@ -441,49 +416,43 @@ def nhist2d(
     filename=None,
     **kwargs
 ):
-    """
-    NAME:
-
-       nhist2d
-
-    PURPOSE:
-
-       Wrapper for matplotlib.pyplot.nhist2d that allows for most pyplot commands to be assigned when calling the function
+    """Wrapper for matplotlib.pyplot._hist2d
+      - allows for most pyplot commands to be assigned when calling the function
 
     Parameters
-
-       x, y - points to make histogram with
-
-       nbin - number of bins
-
-       xlabel - X-axis label
-
-       ylabel - Y-axis label
-
-       title - Title of plot
-
-       xlim - X-axis limits
-
-       ylim - Y-axis limits
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    x,y : float
+      points to make histogram with
+    nbin : int
+      number of bins
+    xlabel : str
+      X-axis label
+    ylabel : str
+      Y-axis label
+    legend : bool
+      Plot legend (default: False)
+    title : str
+      Title of plot
+    xlim : float 
+      X-axis limits (list)
+    ylim : float 
+      Y-axis limits (list)
+    filename : str
+      filename to save figure to
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.hist2d
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-
     if xlim == None:
         xlim = [np.min(x), np.max(x)]
     if ylim == None:
@@ -505,7 +474,7 @@ def nhist2d(
     return out
 
 
-def ndens(
+def _dens(
     x,
     y,
     z=None,
@@ -519,45 +488,39 @@ def ndens(
     interpolation="nearest",
     cmap="Spectral",
 ):
-    """
-    NAME:
-
-       histogram2d
-
-    PURPOSE:
-
-       Wrapper for matplotlib.pyplot.histogram2d that allows for most pyplot commands to be assigned when calling the function
+    """Wrapper for matplotlib.pyplot.histogram2d 
+      - allows for most pyplot commands to be assigned when calling the function
 
     Parameters
-
-       x, y - points to make histogram with
-
-       z - value for colour-coding
-
-       normed - normalize 
-
-       xstep - step size between xbins
-
-       ystep - step size between ybins
-
-       sigx/sigy - dispersion for Gaussian filter
-
-       order - order of Gaussian filter
-
-       extent - axis range for imshow
-
-       interpolation - interpolation type for imshow
-
-       cmap - colour map for imshow
+    ----------
+    x,y : float
+      points to make histogram with
+    z : float
+      value for colour-coding
+    normed : bool
+      normalize (default: False)
+    xstep : float
+      step size between xbins
+    ystep : float
+      step size between ybins
+    sigx/sigy : float
+      dispersion for Gaussian filter
+    order : float
+      order of Gaussian filter (default: 0)
+    extent : float
+      axis range for imshow (default: None)
+    interpolation : str
+      interpolation type for imshow (default: nearest)
+    cmap : str
+      colour map for imshow (default: Spectral)
 
     Returns
-
-       pyplot.figure()
+    -------
+    pyplot.figure()
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     xbins = np.arange(x.min(), x.max() + xstep, xstep)
     ybins = np.arange(y.min(), y.max() + ystep, ystep)
@@ -597,46 +560,41 @@ def starplot(
     do_centre=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       starplot
-
-    PURPOSE:
-
-       Plot the xy/xz/yz coordinates of each star in the cluster
+    """Plot the xy/xz/yz coordinates of each star in the cluster
 
     Parameters
-
-       cluster - StarCluster instance
-
-       coords - coordinates to be plotted ('xy','xz','yz','xyz') (Default: 'xyz' returns a two panel plot)
-
-       xlim - X-axis limits
-
-       ylim - Y-axis limits
-
-       legend - Plot legend (Default: False)
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-       do_centre - plot centre of cluster (Default:False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    cluster : class
+      StarCluster
+    coords : str
+      coordinates to be plotted ('xy','xz','yz','xyz') (default: 'xyz' returns a two panel plot)
+    xlim : float 
+      X-axis limits (list)
+    ylim : float 
+      Y-axis limits (list)
+    legend : bool
+      Plot legend (default: False)
+    filename : str
+      filename to save figure to
+    overplot : bool
+      overplot onto existing figure (default: False)
+    do_centre : bool
+      plot centre of cluster (default:False)
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.plot
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
+
     alpha = kwargs.pop("alpha", 0.1)
 
     if coords != "xyz":
@@ -789,45 +747,39 @@ def skyplot(
     do_centre=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       skyplot
-
-    PURPOSE:
-
-       Plot the ra/dec or pmra/pmdec coordinates of each star in the cluster
+    """Plot the ra/dec or pmra/pmdec coordinates of each star in the cluster
 
     Parameters
-
-       cluster - StarCluster instance
-
-       coords - coordinates to be plotted ('radec','pm') (Default: 'radec')
-
-       xlim - X-axis limits
-
-       ylim - Y-axis limits
-
-       legend - Plot legend (Default: False)
-
-       filename - filename for savefig
-
-       overplot - overplot onto existing figure (Default: False)
-
-       do_centre - plot centre of cluster (Default:False)
-
-    KWARGS:
-
-        same as matplotlib.pyplot
+    ----------
+    cluster : class
+      StarCluster
+    coords : str
+      coordinates to be plotted ('radec','pm') (default: 'radec')
+    xlim : float 
+      X-axis limits (list)
+    ylim : float 
+      Y-axis limits (list)
+    legend : bool
+      Plot legend (default: False)
+    filename : str
+      filename to save figure to
+    overplot : bool
+      overplot onto existing figure (default: False)
+    do_centre : bool
+      plot centre of cluster (default:False)
 
     Returns
+    -------
+    pyplot.figure()
 
-       pyplot.figure()
+    Other Parameters
+    ----------------
+    kwargs : str
+      key word arguments for matplotlib.pyplot.plot
 
     History
-
-       2019 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     units0, origin0 = cluster.units,cluster.origin

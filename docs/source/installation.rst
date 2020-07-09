@@ -14,7 +14,7 @@ Requirements
 
 ``clustertools`` requires the following python packages:
 
-* galpy
+* galpy (https://docs.galpy.org/en/v1.6.0/)
 * matplotlib
 * numpy
 * numba
@@ -23,5 +23,5 @@ Requirements
 
 Optional:
 
-* limepy
-* AMUSE
+* limepy (https://readthedocs.org/projects/limepy/)
+* AMUSE (https://amuse.readthedocs.io/en/latest/)

@@ -3,12 +3,10 @@
 """
 
 __author__ = "Jeremy J Webb"
-
-
 __all__ = [
     "setup_cluster",
+    "c_to_w0",
     "w0_to_c",
-    "c_to_w0"
 ]
 
 import numpy as np
@@ -24,88 +22,103 @@ except:
 
 from .cluster import StarCluster
 from .profiles import m_prof
-from .orbit import get_cluster_orbit
 
-def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None,pot=None, **kwargs):
-    """
-    NAME:
+def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, **kwargs):
+    """ Setup an N-body realization of a StarCluster with specific parameters
+    -Relies heavily on LIMEPY/SPES models (Woolley 1954, King 1966, Wilson, 1975, Gieles & Zocchi 2015, Claydon et al. 2019)
+    - When setting up a specific Galactic cluster, makes use of de Boer et al. 2019 and Harris 1996 (2010 Edition). Cluster is also assigned an orbit based on Vasiliev 2019
+    - When setting up a cluster based on galpy potential, relies on Galpy (Bovy 2015)
 
-       setup_cluster
-
-    PURPOSE:
-
-       Setup an N-body realization of a StarCluster with specific parameters
-       --> Relies heavily on LIMEPY/SPES models (REFERENCE)
+    Bovy J., 2015, ApJS, 216, 29
+    Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
+    de Boer, T. J. L.,  Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906
+    Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
+    Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487
+    King I. R., 1966, AJ, 71, 64
+    Vasiliev E., 2019, MNRAS, 484,2832  
+    Wilson C. P., 1975, AJ, 80, 175
+    Woolley R. V. D. R., 1954, MNRAS, 114, 191
 
     Parameters
-
-       ctype - Type of model used to generate cluster ('SPES',LIMEPY','WOOLEY','KING','WILSON',Name/List of Galactic Clusters)
-             --> To add: PLUMMER
-
-       units - units of generated model (Default: 'pckms')
-
-       origin - origin of generated model (Default: 'cluster')
-
-       orbit - Galpy orbit of cluster to be generate
-
-
-    KWARGS:
-
-       g - model type for LIMEPY
-
-       M/rh - Mass and half-mass radius of cluster (for Plummer)
-
-       source - Source for extracting Galactic GC parameters (Harris 1996 (2010 Edition), de Boer et al. 2019). The default checks 
-                de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found
-
-       mbar - mean mass of stars in the cluster (only single mass models available at the moment)
-
-       names - return names of Galactic clusters generate (Default: False)
-
-       -- Additional KWARGS passed to get_limepy, and get_spes
+    ----------
+    ctype : str
+        Type of model used to generate cluster ('SPES',LIMEPY','WOOLLEY','KING','WILSON',Name of Galactic Cluster, 'galpy')
+    units : str
+        units of generated model (default: 'pckms')
+    origin : str
+        origin of generated model (default: 'cluster')
+    orbit : class
+        Galpy orbit of cluster to be generated
 
     Returns
+    -------
+    cluster: class
+        StarCluster
 
-        StarCluster instance
+    Other Parameters
+    ----------------
+    N : int
+        number of stars in the cluster (default: 1000)
+    g : float
+        model type for LIMEPY
+    M : float
+        Mass of cluster 
+    rh : float 
+        half-mass radius of cluster
+    source : str
+        Source for extracting Galactic GC parameters (Harris 1996 (2010 Edition) or de Boer et al. 2019). The default checks 
+            de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found
+    mbar : float
+        mean mass of stars in the cluster (only single mass models available at the moment)
+    kwargs : str
+        Additional key word arguments needed by limepy and spes models can be passed. See https://readthedocs.org/projects/limepy/
+
+    if ctype=='galpy':
+        pot : class
+            galpy potential
+        rmin : float
+            minimum stellar radius (default: 0.01)
+        rmax : float
+            maximnum stellar radius (default: 100.)
+        ro : float
+            galpy distance scaling parameter
+        vo : float
+            galpy velocity scaling parameter
+        coordinates : str
+            coordinate system to return (default: cartesian)
 
     History
-
-       2019 - Written - Webb (UofT)
-
+    -------
+    2019 - Written - Webb (UofT)
     """
-
     if isinstance(ctype, str):
 
-        if ctype == "plummer":
-            M = float(kwargs.get("M"))
-            rh = float(kwargs.get("rh"))
-            cluster = get_plummer(M, rh)
-        elif ctype == "spes":
-            cluster = get_spes(**kwargs)
+        if ctype == "spes":
+            cluster = _get_spes(**kwargs)
         elif ctype == "limepy":
             g = kwargs.pop("g")
-            cluster = get_limepy(g=g, **kwargs)
+            cluster = _get_limepy(g=g, **kwargs)
         elif ctype == "woolley":
             g = kwargs.pop("g", 0)
-            cluster = get_limepy(g=g, **kwargs)
+            cluster = _get_limepy(g=g, **kwargs)
         elif ctype == "king":
             g = kwargs.pop("g", 1)
-            cluster = get_limepy(g=g, **kwargs)
+            cluster = _get_limepy(g=g, **kwargs)
         elif ctype == "wilson":
             g = kwargs.pop("g", 2)
-            cluster = get_limepy(g=g, **kwargs)
+            cluster = _get_limepy(g=g, **kwargs)
         elif ctype=='galpy':
             cluster=get_galpy(pot,**kwargs)
         else:
             source = kwargs.pop("source", "default")
             mbar = kwargs.pop("mbar", 0.4)
             names = kwargs.pop("names", False)
-            cluster = get_cluster(ctype, source, mbar, names)
+            cluster = _get_cluster(ctype, source, mbar, names)
     else:
         source = kwargs.pop("source", "default")
         mbar = kwargs.pop("mbar", 0.4)
         names = kwargs.pop("names", False)
-        cluster = get_cluster(ctype, source, mbar, names)
+        cluster = _get_cluster(ctype, source, mbar, names)
 
     # Add galpy orbit if given
     if orbit != None:
@@ -126,42 +139,33 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None,pot=None, *
     return cluster
 
 
-def get_limepy(g=1, **kwargs):
-    """
-    NAME:
-
-       get_limepy
-
-    PURPOSE:
-
-       Get an Nbody realization of a LIMEPY model cluster (REFERENCE)
+def _get_limepy(g=1, **kwargs):
+    """Get an Nbody realization of a LIMEPY model cluster
 
     Parameters
-
-       g - model type for LIMEPY
-
-    KWARGS:
-
-       phi0 - Central potential
-
-       project - return projected values
-
-       M - cluster mass
-
-       ro/rh/rv/rt - radius used for scaling population from model units (scale,half-mass,virial,limitig radius)
-
-       N - number of stars to generate in model cluster
+    ----------
+    g : float
+        model type for LIMEPY
+    phi0 : float
+        Central potential
+    project : bool
+        return projected values
+    M : float
+        cluster mass
+    ro/rh/rv/rt : float
+        radius used for scaling population from model units (scale,half-mass,virial,limitig radius)
+    N : int
+        number of stars to generate in model cluster
 
     Returns
-
-        StarCluster instance
+    -------
+        cluster : class
+            StarCluster
 
     History
-
+    -------
        2019 - Written - Webb (UofT)
-
     """
-
     phi0 = float(kwargs.get("phi0"))
     project = bool(kwargs.get("project", False))
 
@@ -208,45 +212,36 @@ def get_limepy(g=1, **kwargs):
     return cluster
 
 
-def get_spes(**kwargs):
-    """
-    NAME:
-
-       get_spes
-
-    PURPOSE:
-
-       Get an Nbody realization of a SPES model cluster (REFERENCE)
+def _get_spes(**kwargs):
+    """Get an Nbody realization of a SPES model cluster
 
     Parameters
-
-       None
-
-    KWARGS:
-
-       phi0 - Central potential
-
-       project - return projected values
-
-       B - B parameter
-
-       eta - eta parameter
-
-       fpe - fpe parameter
-
-       M - cluster mass
-
-       ro/rh/rv/rt - radius used for scaling population from model units (scale,half-mass,virial,limitig radius)
-
-       N - number of stars to generate in model cluster
+    ----------
+    phi0 : float
+        Central potential
+    project : bool
+        return projected values
+    B : float
+        B parameter
+    eta : float
+        eta parameter
+    fpe : float
+        fpe parameter
+    M : float
+        cluster mass
+    ro/rh/rv/rt : float
+        radius used for scaling population from model units (scale,half-mass,virial,limitig radius)
+    N : int
+        number of stars to generate in model cluster
 
     Returns
-
-        StarCluster instance
+    -------
+    cluster : class
+        StarCluster 
 
     History
-
-       2019 - Written - Webb (UofT)
+    -------
+    2019 - Written - Webb (UofT)
 
     """
     phi0 = float(kwargs.get("phi0"))
@@ -298,37 +293,25 @@ def get_spes(**kwargs):
 
     return cluster
 
-
-def get_plummer(M, rm):
-    # WIP
-    cluster = StarCluster()
-
-    return cluster
-
-
 def c_to_w0(c, invert=False):
-    """
-    NAME:
-
-       c_to_w0
-
-    PURPOSE:
-
-       Convert King central concentration (c) values to central potential (W0) values 
+    """ Convert King central concentration (c) values to central potential (W0) values 
 
     Parameters
+    ----------
+    c : float
+        central concentration
 
-       c - central concentration
-
-       invert - convert from W0 to c instead, in which case the input c is the central potential (Default: False)
+    invert : bool
+        convert from W0 to c instead, in which case the input c is the central potential (default: False)
 
     Returns
-
-        W0 (or c if invert==True)
+    -------
+    W0 : float
+        central potential (or c if invert==True)
 
     History
-
-       2019 - Written - Webb (UofT)
+    -------
+    2019 - Written - Webb (UofT)
 
     """
     # From gridfit (Dean McLaughlin)
@@ -759,70 +742,60 @@ def c_to_w0(c, invert=False):
 
 
 def w0_to_c(w0):
-    """
-    NAME:
-
-       w0_to_c
-
-    PURPOSE:
-
-       Convert central potential (W0) values to King central concentration (c)
+    """Convert central potential (W0) values to King central concentration (c)
 
     Parameters
-
-       W0 - central potential
-
+    ----------
+    W0 : float
+        central potential
 
     Returns
-
-       c
+    -------
+    c : float
+        central concentration
 
     History
-
+    -------
        2019 - Written - Webb (UofT)
 
     """
     return c_to_w0(w0, invert=True)
 
 
-def get_cluster(gcname, source="default", mbar=0.4, names=False, params=False):
-    """
-    NAME:
+def _get_cluster(gcname, source="default", mbar=0.3, params=False):
+    """Generate a StarCluster based on a Galactic Globular Cluster
 
-       get_cluster
-
-    PURPOSE:
-
-       Generate a StarCluster instance based on a Galactic Globular Cluster
+    By default, the functio looks for the best LIMEPY model fit to the cluster from de Boer et al. 2019. Since
+    de Boer et al. 2019 does not fit every Galactic cluster, the function then looks to Harris 1996 (2010) edition
+    for the best fit King (1966) model. Alternatively one can also specifiy de Boer et al. 2019 or Harris 1996 (2010).
+    It is important to note that de Boer et al. 2019 find that their SPES models fit observed clusters better than LIMEPY models, 
+    however a sampler for SPES models has not been implemented.
 
     Parameters
-
-       gcname - name of cluster to be modelled.
-
-       source - source of model parameters to generate cluster. Default looks to LIMEPY models from
-                de Boer et al. 2019 first before checking Harris 1996 (2010) edition second.
-              - Can also specifiy de Boer et al. 2019 or Harris 1996 (2010) only
-
-        mbar - mean mass of stars in model
-
-        names - return names of clusters genereated (Default: False)
-
-        params -  return mass and size of clusters generate (Default: False)
+    ----------
+    gcname : str
+        name of cluster to be modelled.
+    source : str
+        source of model parameters to generate cluster. 
+    mbar : float
+        mean mass of stars in model (default: 0.3 Msun)
+    params : bool
+        return mass and size of clusters generate (default: False)
 
     Returns
-
-       StarCluster (if gcname != 'list')
-
-       Name (if names==True)
-
-       Mtot and rm (if params ==True)
+    _______
+    cluster : class
+        StarCluster 
+    if params == True:
+        Mtot :float
+            mass of cluster
+        rm : fliat
+            half-mass radius of cluster
 
     History
-
-       2019 - Written - Webb (UofT)
-
+    -------
+    2019 - Written - Webb (UofT)
     """
-
     ddata = np.loadtxt(
         "/Users/webbjere/Codes/clustertools/clustertools/data/deBoer2019.dat", str, skiprows=1
     )
@@ -845,46 +818,37 @@ def get_cluster(gcname, source="default", mbar=0.4, names=False, params=False):
     if (
         source == "default" or "deboer" in source or "deBoer" in source
     ) and gcname in dname:
-        cluster = get_deBoer_cluster(ddata, gcname, mbar, names)
+        cluster = _get_deBoer_cluster(ddata, gcname, mbar, names)
     elif (source == "default" or "harris" in source or "Harris" in source) and (
         gcname in hname or gcname in hname2
     ):
-        cluster = get_harris_cluster(hdata, gcname, mbar, names)
+        cluster = _get_harris_cluster(hdata, gcname, mbar, names)
 
     return cluster
 
-def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
-    """
-    NAME:
-
-       get_deBoer_cluster
-
-    PURPOSE:
-
-       Generate a StarCluster instance based on a measurements of Galactic Globular Clusters by de Boer et al. 2019
+def _get_deBoer_cluster(data, gcname, mbar=0.4):
+    """Generate a StarCluster instance based on a measurements of Galactic Globular Clusters by de Boer et al. 2019
        --> Cluster is also assigned an orbit based on Vasiliev 2019
 
     Parameters
+    ----------
+    data : float
+        table of parameters from de Boer et al. 2019 (see ./data)
 
-       data - table of parameters from de Boer et al. 2019 (see ./data)
-
-       gcname - name of cluster (or clusters) to be modelled. Also accepts 'list' to simply print out
-                the list of clusters available and 'all' to generate each Galactic Globular Cluster
-
-       mbar - mean mass of stars in model
-
-       names - return names of clusters genereated (Default: False)
+    gcname : str
+        name of cluster to be modelled. 
+    mbar : float
+        mean mass of stars in model
 
     Returns
-
-       StarCluster
+    -------
+    cluster : class
+        StarCluster
 
     History
-
-       2019 - Written - Webb (UofT)
-
+    -------
+    2019 - Written - Webb (UofT)
     """
-
     spes = False  # Not yet implemented into LIMEPY
     limepy = True
 
@@ -902,7 +866,7 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
         M_pe = data[i_d, 17].astype(float)
         fpe = 10.0 ** data[i_d, 19].astype(float)
         N = M_pe / mbar
-        cluster = get_spes(
+        cluster = _get_spes(
             phi0=W_pe, B=B_pe, eta=eta_pe, fpe=fpe, M=M_pe, rt=rt_pe, N=N
         )
 
@@ -913,9 +877,9 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
         M_lime = data[i_d, 7].astype(float)
         N = M_lime / mbar
 
-        cluster = get_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
+        cluster = _get_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
 
-    cluster.orbit = get_cluster_orbit(gcname)
+    cluster.orbit = _get_cluster_orbit(gcname)
 
     if cluster.orbit != -1:
         cluster.add_orbit(
@@ -933,36 +897,28 @@ def get_deBoer_cluster(data, gcname, mbar=0.4, names=False):
     return cluster
 
 
-def get_harris_cluster(data, gcname, mbar=0.4, names=False):
-    """
-    NAME:
-
-       get_harris_cluster
-
-    PURPOSE:
-
-       Generate a StarCluster instance based on the Harris 1996 (2010 Edition) catalogue of Galactic Globular Clusters 
+def _get_harris_cluster(data, gcname, mbar=0.4):
+    """Generate a StarCluster instance based on the Harris 1996 (2010 Edition) catalogue of Galactic Globular Clusters 
        --> Cluster is also assigned an orbit based on Vasiliev 2019
 
     Parameters
+    ----------
+    data : float
+        table of parameters from de Boer et al. 2019 (see ./data)
 
-       data - table of parameters from Harris 1996 (2010 Edition) (see ./data)
-
-       gcname - name of cluster to be modelled. Also accepts 'list' to simply print out
-                the list of clusters available and 'all' to generate each Galactic Globular Cluster
-
-       mbar - mean mass of stars in model
-
-       names - return names of clusters genereated (Default: False)
+    gcname : str
+        name of cluster to be modelled. 
+    mbar : float
+        mean mass of stars in model
 
     Returns
-
-       StarCluster
+    -------
+    cluster : class
+        StarCluster
 
     History
-
-       2019 - Written - Webb (UofT)
-
+    -------
+    2019 - Written - Webb (UofT)
     """
 
     name = data[:, 0]
@@ -977,8 +933,8 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
     c = np.log10(rl / rc)
     w0 = c_to_w0(c)
     N = mgc / mbar
-    cluster = get_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
-    cluster.orbit = get_cluster_orbit(gcname)
+    cluster = _get_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
+    cluster.orbit = _get_cluster_orbit(gcname)
 
     if cluster.orbit != -1:
         cluster.add_orbit(
@@ -995,7 +951,38 @@ def get_harris_cluster(data, gcname, mbar=0.4, names=False):
 
     return cluster
 
-def get_galpy(pot,**kwargs):
+def _get_galpy(pot,**kwargs):
+    """Generate a StarCluster instance based on a galpy potentail
+
+    Parameters
+    ----------
+    pot : class
+        galpy potential
+
+    Returns
+    -------
+    cluster : class
+        StarCluster
+
+    Other Parameters
+    ----------
+    N : int
+        number of stars in the cluster (default: 1000)
+    rmin : float
+        minimum stellar radius (default: 0.01)
+    rmax : float
+        maximnum stellar radius (default: 100.)
+    coordinates : str
+        coordinate system to return (default: cartesian)
+    ro : float
+        galpy distance scaling parameter
+    vo : float
+        galpy velocity scaling parameter
+
+    History
+    -------
+    2020 - Written - Webb (UofT)
+    """
     N = int(kwargs.get("N", 1000))
     rmin=kwargs.get('rmin',0.01)
     rmax=kwargs.get('rmax',100.)
@@ -1003,7 +990,7 @@ def get_galpy(pot,**kwargs):
     ro=kwargs.get('ro',8.)
     vo=kwargs.get('vo',220.)
 
-    x,y,z,vx,vy,vz=sample_galpy_potential(pot,N,rmin,rmax,ro=ro,vo=vo,coordinates=coordinates)
+    x,y,z,vx,vy,vz=_sample_galpy_potential(pot,N,rmin,rmax,ro=ro,vo=vo,coordinates=coordinates)
 
     mbar = kwargs.get("mbar", 1.)
     m=np.ones(N)*mbar
@@ -1025,7 +1012,35 @@ def get_galpy(pot,**kwargs):
 
     return cluster
 
-def sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian'):
+def _sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian'):
+    """Generate positions and velocities from galpy potentail
+
+    Parameters
+    ----------
+    pot : class
+        galpy potential
+    N : int
+        number of stars in the cluster (default: 1000)
+    rmin : float
+        minimum stellar radius (default: 0.01)
+    rmax : float
+        maximnum stellar radius (default: 100.)
+    ro : float
+        galpy distance scaling parameter
+    vo : float
+        galpy velocity scaling parameter
+    coordinates : str
+        coordinate system to return (default: cartesian)
+
+    Returns
+    -------
+    x,y,z,vx,vy,vz : float
+        positions and velocities of generated points
+
+    History
+    -------
+    2020 - Written - Webb (UofT)
+    """
     ran=np.random.rand(n)
     rad=np.linspace(rmin,rmax,n)
     
@@ -1071,3 +1086,28 @@ def sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian'
         vx,vy,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z,True)
     
     return x,y,z,vx,vy,vz
+
+def _get_cluster_orbit(gcname,ro=8.0, vo=220.0):
+    """Get the measured orbital parameters of a Galactic globular cluster
+    - This is a simply wrapper for Orbit.from_name in galpy (Bovy 2015), which uses orbits measured by Vasiliev 2019 using Gaia DR2 via Galpy
+    -- Bovy J., 2015, ApJS, 216, 29
+
+    Parameters
+    ----------
+    gcname : str
+        name of GC whose orbits is to be retrieved
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    Returns
+    -------
+    orbit : class
+        galpy orbit
+
+    History
+    -------
+    2019 - Written - Webb (UofT)
+
+    """
+    return Orbit.from_name(gcname,ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])

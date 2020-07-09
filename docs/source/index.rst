@@ -35,8 +35,8 @@ Example List
 .. toctree::
    :maxdepth: 1
 
-   notebooks/clustertools_example.ipynb
-   notebooks/Galactic_Cluster_Example.ipynb
+   notebooks/load_and_advance.ipynb
+   notebooks/functions.ipynb
 
 Planned Future Additions
 ----------------------------------
@@ -70,13 +70,26 @@ Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
 
 Bovy J., 2015, ApJS, 216, 29
 
+Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
+
+de Boer, T. J. L.,  Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 and
+
+Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
+
 Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357
+
+Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487
 
 Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9
 
 Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
 
 Spitzer, L. 1987,  Dynamical evolution of globular clusters
+
+Vasiliev E., 2019, MNRAS, 484,2832
+
+Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383
+
 
 Library Reference
 -----------------

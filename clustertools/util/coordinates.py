@@ -20,54 +20,41 @@ from galpy.util import bovy_coords
 
 
 def sphere_coords(cluster):
-    """
-    NAME:
-
-       cart_to_sphere
-
-    PURPOSE:
-
-       Get the spherical coordinates of every star in the cluster
+    """Get the spherical coordinates of every star in the cluster
 
     Parameters
-
-       cluster - a StarCluster-class object
+    ----------
+    cluster : class
+      StarCluster
 
     Returns
-
-       r,theta,phi,vr,vtheta,vphi
+    -------
+    r,theta,phi,vr,vtheta,vphi : float
+      stellar positions and velocities in spherical coordinates
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-
     return cart_to_sphere(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
 
 
 def cart_to_sphere(x,y,z,vx,vy,vz):
-    """
-    NAME:
-
-       cart_to_sphere
-
-    PURPOSE:
-
-       Convert cartesian coordinates to spherical coordinates
+    """Convert cartesian coordinates to spherical coordinates
 
     Parameters
-
-       x,y,z,vx,vy,vz
+    ----------
+    x,y,z,vx,vy,vz : float
+      positions and velocities in cartesian coordinates
 
     Returns
-
-       r,theta,phi,vr,vtheta,vphi
+    -------
+    r,theta,phi,vr,vtheta,vphi : float
+      positions and velocities in spherical coordinates
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     r=np.sqrt(x**2.+y**2.+z**2.)
@@ -93,52 +80,40 @@ def cart_to_sphere(x,y,z,vx,vy,vz):
     return r,phi,theta,vr,vphi,vtheta
 
 def cyl_coords(cluster):
-    """
-    NAME:
-
-       cyl_coords
-
-    PURPOSE:
-
-       Get the cylindrical coordinates of every star in the cluster
+    """Get the cylindrical coordinates of every star in the cluster
 
     Parameters
-
-       cluster - a StarCluster-class object
+    ----------
+    cluster : class
+      StarCluster
 
     Returns
-
-       r,theta,z,vr,vtheta,vz
+    -------
+    r, theta, z, vr, vtheta, vz : float
+      stellar positions and velocities in cylindrical coordinates
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     return cart_to_cyl(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
 
 def cart_to_cyl(x,y,z,vx,vy,vz):
-    """
-    NAME:
-
-       cart_to_cyl
-
-    PURPOSE:
-
-       Convert cylindrical to spherical coordinates
+    """Convert cartesian coordinates to cylindrical coordinates
 
     Parameters
-
-       x,y,z,vx,vy,vz
+    ----------
+    x,y,z,vx,vy,vz : float
+      positions and velocities in cartesian coordinates
 
     Returns
-
-       r,theta,z,vr,vtheta,vz
+    -------
+    r, theta, z, vr, vtheta, vz : float
+      stellar positions and velocities in cylindrical coordinates
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     r, theta, z = bovy_coords.rect_to_cyl(x, y, z)
     vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
@@ -147,27 +122,21 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
     return r, theta, z, vr, vtheta, vz
 
 def sky_coords(cluster):
-    """
-    NAME:
-
-       sky_coords
-
-    PURPOSE:
-
-       Get the sky coordinates of every star in the cluster
+    """Get the sky coordinates of every star in the cluster
 
     Parameters
-
-       cluster - a StarCluster-class object
+    ----------
+    cluster : class
+        StarCluster
 
     Returns
-
-       ra,dec,d0,pmra,pmdec,vr0
-
+    -------
+    ra,dec,d0,pmra,pmdec,vr0 : float
+      on-sky positions and velocities of cluster stars
+      
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     origin0 = cluster.origin
 

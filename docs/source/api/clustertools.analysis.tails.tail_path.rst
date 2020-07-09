@@ -1,6 +1,6 @@
 tail_path
 =========
 
-.. currentmodule:: clustertools.analysis.orbit
+.. currentmodule:: clustertools.analysis.tails
 
 .. autofunction:: tail_path

@@ -1,14 +1,16 @@
-""" Output files containing key cluster properties
+""" For quickly writing key cluster properties to previously opened output files
 
 """
 __author__ = "Jeremy J Webb"
-
-
 __all__ = [
     "extrct_out",
+    "rho_prof_out",
+    "alpha_prof_out",
+    "sigv_prof_out",
+    "eta_prof_out",
     "snapout",
     "fortout",
-    "gyrout",
+    "gyrout"
 ]
 
 import numpy as np
@@ -22,30 +24,28 @@ from ..analysis.operations import *
 
 
 def extrct_out(cluster, fileout, projected=False):
-    """
-    NAME:
-
-       extrct_out
-
-    PURPOSE:
-
-       Extrct key cluster properties and write to file
-       --> N, Nbinary, trh, mtot, rlagrange_1-10, rmpro, rhpro, rv, rl, rt, rvmax, vmax
+    """Extrct key cluster properties and write to file
+        - Number of stars, number of binary stars, half-mass relaxation time, total mass, 10-100% Lagrange radii, 
+        projected 50% radius, projected half-light radius, virial radius, limiting radius, tidal radius, 
+        radius of maximal circular velocity, maximal circular velocity
+        - Note that limiting radius and tidal radius are only calculated if cluster.rl and cluster.rt are != None
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       fileout - opened file to write data to
+    ----------
+    cluster : class
+        StarCluster
+    fileout : file
+        opened file to write data to
+    projected : bool
+        calculate projected values when possible (default: False)
 
     Returns
-
-       None
+    -------
+    None
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
 
@@ -105,32 +105,27 @@ def extrct_out(cluster, fileout, projected=False):
     return_cluster(cluster, units0, origin0)
 
 def rho_prof_out(cluster, fileout, **kwargs):
-    """
-    NAME:
-
-       rho_prof_out
-
-    PURPOSE:
-
-       Write density profile to file
+    """Write density profile to file
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       fileout - opened file to write data to
-
-       **kwargs - key words for rho_prof
-
+    ----------
+    cluster : class
+        StarCluster
+    fileout : file
+        opened file to write data to
 
     Returns
+    -------
+    None
 
-       None
+    Other Parameters
+    ----------------
+    kwargs : str
+        key word arguments for rho_prof
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     fileout.write("%f " % (cluster.tphys))
@@ -154,32 +149,27 @@ def alpha_prof_out(
     fileout,
     **kwargs,
 ):
-    """
-    NAME:
-
-       alpha_prof_out
-
-    PURPOSE:
-
-       Write alpha profile and delta_alpha to file
+    """Write alpha profile and delta_alpha to file
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       fileout - opened file to write data to
-
-       **kwargs - key words for alpha_prof
-
+    ----------
+    cluster : class
+        StarCluster
+    fileout : file
+        opened file to write data to
 
     Returns
+    -------
+    None
 
-       None
+    Other Parameters
+    ----------------
+    kwargs : str
+        key word arguments for alpha_prof
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(
@@ -206,34 +196,28 @@ def alpha_prof_out(
 
 def sigv_prof_out(cluster, fileout,**kwargs,
 ):
-    """
-    NAME:
-
-       sigv_prof_out
-
-    PURPOSE:
-
-       Write velopcity dispersion profile to file
+    """Write velopcity dispersion profile to file
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       fileout - opened file to write data to
-
-       **kwargs - key words for sigv_prof
-
+    ----------
+    cluster : class
+        StarCluster
+    fileout : file
+        opened file to write data to
 
     Returns
+    -------
+    None
 
-       None
+    Other Parameters
+    ----------------
+    kwargs : str
+        key word arguments for sigv_prof
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-
     fileout.write("%f %f " % (cluster.tphys, cluster.mtot))
 
     lrprofn, sigvprof=sigv_prof(cluster, **kwargs)
@@ -251,32 +235,27 @@ def eta_prof_out(
     fileout,
     **kwargs,
 ):
-    """
-    NAME:
-
-       sigv_prof_out
-
-    PURPOSE:
-
-       Write eta profile to file
+    """Write eta profile to file
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       fileout - opened file to write data to
-
-       **kwargs - key words for sigv_prof
-
+    ----------
+    cluster : class
+        StarCluster
+    fileout : file
+        opened file to write data to
 
     Returns
+    -------
+    None
 
-       None
+    Other Parameters
+    ----------------
+    kwargs : str
+        key word arguments for eta_function and eta_prof
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     m_mean, sigvm, eta, eeta, yeta, eyeta = eta_function(
@@ -300,36 +279,35 @@ def eta_prof_out(
 
     fileout.write("%f %f %f %f\n" % (deta, edeta, ydeta, eydeta))
 
-def snapout(cluster, filename, energies=False, observations=False):
-    """
-    NAME:
-
-       snapout
-
-    PURPOSE:
-
-       Output a snapshot in clustertools format
+def snapout(cluster, filename, energies=False, radec=False):
+    """Output a snapshot in clustertools format
+        - clustertools column format is mass,x,y,z,vx,vy,vz,id,kwtype where
+        positions and velocities are in cartiesian coordinates, id is the star id, and
+        kwtype is the stars stellar evolution type
+        - units and coordinate system will be cluster.units and cluster.origin.
+        - if energies==True, columns for kinetic energy, potential energy, and total energy will be added
+        - if radec==True, columns for RA, Dec, distance, Proper Motion in RA, Proper Motion in Dec, and radial velocity will be added
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       filename - name of file to be written to
-
-       energies - include energies in output (Default: False)
-
-       observations - include sky coordinates of stars (Default: False) 
+    ----------
+    cluster : class
+        StarCluster
+    filenamw : str
+        name of file to be written to
+    energies : bool 
+        include energies in output (default: False)
+    radec : bool
+        include sky coordinates of stars (default: False) 
 
     Returns
-
-       None
+    -------
+    None
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-    if observations:
+    if radec:
 
         ra, dec, d0, pmra, pmdec, vr0 = sky_coords(cluster)
 
@@ -432,34 +410,28 @@ def fortout(
     reset_nbody_mass=True,
     reset_nbody_radii=True,
 ):
-    """
-    NAME:
-
-       fortout
-
-    PURPOSE:
-
-       Output a snapshot in NBODY6 fort.10 format
+    """Output a snapshot in NBODY6 fort.10 format
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       filename - name of file to be written to (Default: 'fort.10')
-
-       reset_nbody_scale - reset nbody scaling parameters (Default: False)
-
-       reset_nbody_mass - reset nbody mass scaling parameter (Default: False)
-
-       reset_nbody_radii - reset nbody radii scaling parameter (Default: False)
+    ----------
+    cluster : class
+        StarCluster
+    filename : str
+        name of file to be written to (default: 'fort.10')
+    reset_nbody_scale : bool
+        reset nbody scaling parameters (default: False)
+    reset_nbody_mass : bool
+        reset nbody mass scaling parameter (default: False)
+    reset_nbody_radii : bool
+        reset nbody radii scaling parameter (default: False)
 
     Returns
-
-       None
+    -------
+    None
 
     History
-
-       2019 - Written - Webb (UofT)
+    -------
+    2019 - Written - Webb (UofT)
 
     """
     units0, origin0 = save_cluster(cluster)
@@ -491,28 +463,23 @@ def fortout(
 
 
 def gyrout(cluster, filename="init.nemo.dat"):
-    """
-    NAME:
-
-       gyrout
-
-    PURPOSE:
-
-       Output a snapshot in gyrfalcon/NEMO format
+    """Output a snapshot in gyrfalcon/NEMO format
+    - Units are converted to Walter Dehnen units (WDunits in GYRFALCON)
 
     Parameters
-
-       cluster - a StarCluster-class object
-
-       filename - name of file to be written to (Default: 'init.nemo.dat')
-
+    ----------
+    cluster : class
+        StarCluster
+    filename : str
+        name of file to be written to (default: 'init.nemo.dat')
+   
     Returns
-
-       None
+    -------
+    None
 
     History
-
-       2019 - Written - Webb (UofT)
+    -------
+    2019 - Written - Webb (UofT)
 
     """
     vcon = 220.0 / bovy_conversion.velocity_in_kpcGyr(220.0, 8.0)

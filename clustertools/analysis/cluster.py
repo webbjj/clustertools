@@ -13,10 +13,11 @@ import numpy as np
 from galpy.util import bovy_conversion, bovy_coords
 from textwrap import dedent
 from galpy.potential import MWPotential2014
-from .orbit import rtidal, rlimiting, initialize_orbit, calc_actions
+from .orbit import initialize_orbit, calc_actions
 from .functions import *
 from .profiles import *
 from .operations import *
+from .tails import *
 from copy import copy
 
 class StarCluster(object):
@@ -362,7 +363,6 @@ class StarCluster(object):
             self.key_params(do_order=do_order)
 
         if len(self.id) != self.ntot:
-            print("Added %i stars to StarCluster" % (len(self.id) - self.ntot))
             self.ntot = len(self.id)
 
     def add_orbit(

@@ -2,7 +2,16 @@
 
 """
 __author__ = "Jeremy J Webb"
-
+__all__ = [
+    "rho_prof",
+    "m_prof",
+    "alpha_prof",
+    "sigv_prof",
+    "beta_prof",
+    "v_prof",
+    "eta_prof",
+    "vcirc_prof",
+]
 import numpy as np
 from galpy.util import bovy_coords
 
@@ -32,49 +41,48 @@ def rho_prof(
     plot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       rho_prof
-
-    PURPOSE:
-
-       Measure the density profile of the cluster
+    """Measure the density profile of the cluster
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       plot - plot the density profile (Default: False)
-
-    KWARGS:
-
-        Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    plot : bool 
+        plot the density profile (default: False)
 
     Returns
+    -------
+    rprof : float
+        radius bins
+    pprof : float
+        mass density in each bin
+    nprof : float
+        number of stars in each bin
 
-        rprof,pprof,nprof (radius, density, number of stars)
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -165,7 +173,7 @@ def rho_prof(
             yunits = ""
 
         x, y, n = rprof, pprof, nprof
-        nlplot(
+        _lplot(
             x,
             y,
             xlabel=r"$R %s$" % xunits,
@@ -203,51 +211,50 @@ def m_prof(
     plot=False,
     **kwargs
 ):
-    """
-    NAME:
-
-       m_prof
-
-    PURPOSE:
-
-       Measure the mass profile of the cluster
+    """ Measure the mass profile of the cluster
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       cumalitive - determine the cumulative mass profile instead (Default: False)
-
-       plot - plot the mean mass profile (Default: False)
-
-    KWARGS:
-
-       Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    cumalitive : bool
+        determine the cumulative mass profile instead (default: False)
+    plot : bool 
+        plot the mass profile (default: False)
 
     Returns
+    -------
+    rprof : float
+        radius bins
+    mprof : float
+        mass within radial bin (or enclosed mass if cumalitve==True)
+    nprof : float
+        number of stars in each bin
 
-        rprof,mprof,nprof (radius, mass, number of stars)
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
     cluster.to_centre(do_order=True, do_key_params=True)
@@ -329,7 +336,7 @@ def m_prof(
             yunits = ""
 
         x, y, n = rprof, mprof, nprof
-        nlplot(
+        _lplot(
             x,
             y,
             xlabel=r"$R %s $" % xunits,
@@ -364,85 +371,74 @@ def alpha_prof(
     indx=None,
     projected=False,
     mcorr=None,
-    omask=None,
     plot=False,
     **kwargs
 ):
-    """
-    NAME:
+    """Measure the radial variation in the mass function
 
-       alpha_prof
-
-    PURPOSE:
-
-       Measure the radial variation in the mass function
+    - measure the delta_alpha parameter from Webb & Vesperini 2016
+    - Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       nmass - number of mass bins to calculate slope of mass function
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       mcorr - correction for masses
-   
-       omask - place a mask over the dataset to mimic observed data
-
-       plot - plot the alpha profile (Default: False)
-
-    KWARGS:
-
-       Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    nmass : int
+        number of mass bins (default: 10)
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    mcorr : bool
+        completeness correction for masses (default: None)
+    plot : bool 
+        plot the alpha profile (default: False)
 
     Returns
+    -------
+    lrprofn : float
+        natural log of each radius bin (normalized by half-mass radius)
+    aprof : float
+        slope of the mass function in each bin
+    dalpha : float
+        radial variation in alpha calculated as delta_alpha = d(alpha)/d(ln(r/rm) 
+    edalpha : float
+        error in dalpha
+    ydalpha : float
+        y-intercept in fit to alpha vs ln(r/rm)
+    eydalpha : float
+        error in ydalpha
+    rbinerror : float
+        if mcorr is not None, output lowest corrected mass fraction at each radius
 
-        lrprofn - natural log of radius (normalized by half-mass radius)
-
-        aprof - slope of the mass function
-
-        dalpha - delta_alpha = d(alpha)/d(ln(r/rm) 
-
-        edalpha - error in dalpha
-
-        ydalpha,eydalpha - y-intercept and error in fit to alpha vs ln(r/rm)
-
-        rbinerror - if mcorr is not None, output lowest corrected mass fraction at each radius
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
     cluster.to_centre(do_order=True, do_key_params=True)
 
-    if mcorr is None:
-        if omask is not None:
-            try:
-                mcorr = omask.mcorr
-                return_error=True
-            except:
-                mcorr = np.ones(cluster.ntot)
-                return_error=False
-        else:
-            mcorr = np.ones(cluster.ntot)
-            return_error=False
+    if mcorr is None:        
+        mcorr = np.ones(cluster.ntot)
+        return_error=False
     else:
         return_error=True
 
@@ -489,13 +485,7 @@ def alpha_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    if omask is None:
-        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
-    else:
-        try:
-            r_lower, r_mean, r_upper = omask.r_lower, omask.r_mean, omask.r_upper
-        except:
-            r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     rbinerror=np.zeros(len(r_mean))
 
@@ -503,10 +493,10 @@ def alpha_prof(
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if return_error:
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,omask=omask,plot=False,**kwargs)
+            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
             rbinerror[i]=np.amin(mbinerror)
         else:
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,omask=omask,plot=False,**kwargs)
+            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
             rbinerror[i]=1.
 
         if alpha > -100:
@@ -531,7 +521,7 @@ def alpha_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
-        nplot(
+        _plot(
             lrprofn,
             aprof,
             xlabel=r"$\ln(r/r_m)$",
@@ -541,13 +531,11 @@ def alpha_prof(
         )
         rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
         afit = dalpha * rfit + ydalpha
-        nlplot(rfit, afit, overplot=True, label=(r"d$\alpha$ = %f" % dalpha))
+        _lplot(rfit, afit, overplot=True, label=(r"d$\alpha$ = %f" % dalpha))
         plt.legend()
 
         if filename != None:
             plt.savefig(filename)
-
-    cluster.dalpha = dalpha
 
     return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
@@ -572,67 +560,56 @@ def sigv_prof(
     kwmax=None,
     indx=None,
     projected=False,
-    rcustom=None,
     coord=None,
     normalize=True,
     plot=False,
 ):
-    """
-    NAME:
-
-       sigv_prof
-
-    PURPOSE:
-
-       Measure the radial variation in the velocity dispersion
+    """Measure the radial variation in the velocity dispersion
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       rcustom - use custom radius to bin data (not well implemented)
-
-       coord - choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2)
-
-       normalize - normalize radial bins by cluster's half-mass radius (default: True)
-
-       plot - plot the velocity dispersion profile (Default: False)
-
-
-    KWARGS:
-
-       Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    coord : str
+        choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2).
+        Alternatively can ask for 'r', 'phi', or 'theta' for spherical coordinate velocity dispersions.
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: true)
+    plot : bool 
+        plot the velocity disperions profile (default: False)
 
     Returns
+    -------
+    lrprofn : float
+        natural log of radius (normalized by half-mass radius)
+    sigvprof : float
+        velocity dispersion
 
-        lrprofn - natural log of radius (normalized by half-mass radius)
-
-        sigvprof - velocity dispersion
-
-        betaprof - anisotropy parameter 
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-
     units0, origin0 = save_cluster(cluster)
     cluster.to_centre(do_order=True, do_key_params=True)
 
@@ -688,9 +665,6 @@ def sigv_prof(
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
-    if rcustom is not None:
-        r=rcustom
-
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
@@ -731,7 +705,7 @@ def sigv_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
-        nplot(
+        _plot(
             lrprofn,
             sigvprof,
             xlabel=r"$\ln(r/r_m)$",
@@ -760,62 +734,51 @@ def beta_prof(
     kwmax=None,
     indx=None,
     projected=False,
-    rcustom=None,
-    coord=None,
     normalize=True,
     plot=False,
 ):
-    """
-    NAME:
-
-       beta_prof
-
-    PURPOSE:
-
-       Measure the anisotropy profile of the cluster
+    """Measure the anisotropy profile of the cluster
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       rcustom - use custom radius to bin data (not well implemented)
-
-       coord - choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2)
-
-       normalize - normalize radial bins by cluster's half-mass radius (default: True)
-
-       plot - plot the orbital anisotropy profile (Default: False)
-
-    KWARGS:
-
-       Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: true)
+    plot : bool 
+        plot the density profile (default: False)
 
     Returns
+    -------
+    lrprofn : float
+        natural log of radius (normalized by half-mass radius)
+    betaprof : float
+        orbital anisotropy parameter beta
 
-        lrprofn - natural log of radius (normalized by half-mass radius)
-
-        betaprof - anisotropy parameter 
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2020 - Written - Webb (UofT)
-
+    -------
+    2020 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -873,9 +836,6 @@ def beta_prof(
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
-    if rcustom is not None:
-        r=rcustom
-
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
@@ -909,7 +869,7 @@ def beta_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
-        nplot(
+        _plot(
             lrprofn,
             sigvprof,
             xlabel=r"$\ln(r/r_m)$",
@@ -941,51 +901,46 @@ def v_prof(
     projected=False,
     plot=False,
 ):
-    """
-    NAME:
-
-       v_prof
-
-    PURPOSE:
-
-       Measure the radial variation in the mean velocity 
+    """Measure the radial variation in the mean velocity 
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       plot - plot the mean velocity profile (Default: False)
-
-    KWARGS:
-
-       Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    plot : bool 
+        plot the velocity disperions profile (default: False)
 
     Returns
+    -------
+    lrprofn : float
+        natural log of radius (normalized by half-mass radius)
+    vprof : float
+        mean velocity
 
-        lrprofn - natural log of radius (normalized by half-mass radius)
-
-        vprof - mean velocity
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -1073,7 +1028,7 @@ def v_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
-        nplot(
+        _plot(
             lrprofn,
             vprof,
             xlabel=r"$\ln(r/r_m)$",
@@ -1104,62 +1059,59 @@ def eta_prof(
     kwmax=1,
     indx=None,
     projected=False,
+    plot=False,
 ):
-    """
-    NAME:
-
-       eta_prof
-
-    PURPOSE:
-
-       Measure the radial variation in eta
+    """Measure the radial variation in eta
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       nmass - number of mass bins over which to measure eta
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       plot - plot the eta profile (Default: False)
-
-    KWARGS:
-
-       Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    nmass : int
+        number of mass bins (default: 10)
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    plot : bool 
+        plot the alpha profile (default: False)
 
     Returns
+    -------
+    lrprofn : float
+        natural log of each radius bin (normalized by half-mass radius)
+    eprof : float
+        slope of the sigma_v-mass function
+    deta : float
+        radial variation in eta calculated as deta = d(eta)/d(ln(r/rm)
+    edeta : float
+        error in deta
+    ydeta : float
+        y-intercept in fit to eta vs ln(r/rm)
+    eydeta : float
+        error in ydeta
 
-        lrprofn - natural log of radius (normalized by half-mass radius)
-
-        eprof - slope of the sigma_v-mass function
-
-        deta - deta = d(eta)/d(ln(r/rm) 
-
-        edeta - error in deta
-
-        ydeta,eydeta - y-intercept and error in fit to eta vs ln(r/rm)
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-
     units0, origin0 = save_cluster(cluster)
     cluster.to_centre(do_order=True, do_key_params=True)
 
@@ -1241,10 +1193,29 @@ def eta_prof(
         edeta = 0.0
         eydeta = 0.0
 
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        _plot(
+            lrprofn,
+            eprof,
+            xlabel=r"$\ln(r/r_m)$",
+            ylabel=r"$\eta$",
+            overplot=overplot,
+            **kwargs
+        )
+        rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
+        efit = deta * rfit + ydeta
+        _lplot(rfit, efit, overplot=True, label=(r"d$\eta$ = %f" % deta))
+        plt.legend()
+
+        if filename != None:
+            plt.savefig(filename)
+
     return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
     return lrprofn, eprof, deta, edeta, ydeta, eydeta
-
 
 def vcirc_prof(
     cluster,
@@ -1274,39 +1245,49 @@ def vcirc_prof(
        Measure the circulr velocity profile of the cluster
 
     Parameters
-
-       cluster - StarCluster instance
-
-       mmin/mmax - minimum and maximum stellar mass
-
-       rmin/rmax - minimum and maximum stellar radii
-
-       nrad - number of radial bins
-
-       vmin/vmax - minimum and maximum stellar velocity
-
-       emin/emax - minimum and maximum stellar energy
-
-       kwmin/kwmax - minimum and maximum stellar type (kw)
-
-       indx - user defined boolean array from which to extract the subset
-
-       projected - use projected values and constraints (Default:False)
-
-       plot - plot the circular velocity profile (Default: False)
-
-    KWARGS:
-
-        Same as for ..util.plot.nplot
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    nmass : int
+        number of mass bins (default: 10)
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    plot : bool 
+        plot the alpha profile (default: False)
 
     Returns
-
-        rprof,vprof,rvmax,vmax (radius, circular velocity, radius of maximum virc, maximum vcirc)
+    -------
+    rprof : float
+        radius bins
+    vprof : float
+        circular velocity
+    rvmax : float
+        radius of maximum circular velocity
+    vmax : float
+        maximum circular velocity
+    
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
 
     History
-
-       2019 - Written - Webb (UofT)
-
+    -------
+    2019 - Written - Webb (UofT)
     """
 
     units0, origin0 = save_cluster(cluster)
@@ -1407,7 +1388,7 @@ def vcirc_prof(
             yunits = ""
 
         x, y = rprof, vcprof
-        nlplot(
+        _lplot(
             x,
             y,
             xlabel=r"$R %s$" % xunits,
@@ -1417,8 +1398,8 @@ def vcirc_prof(
             overplot=overplot,
             filename=filename,
         )
-        nlplot([rvmax, rvmax], [np.amin(y), np.amax(y)], "--", overplot=True)
-        nlplot([np.amin(x), np.amax(x)], [vmax, vmax], "--", overplot=True)
+        _lplot([rvmax, rvmax], [np.amin(y), np.amax(y)], "--", overplot=True)
+        _lplot([np.amin(x), np.amax(x)], [vmax, vmax], "--", overplot=True)
 
         if filename != None:
             plt.savefig(filename)

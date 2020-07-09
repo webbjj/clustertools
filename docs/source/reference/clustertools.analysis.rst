@@ -18,3 +18,4 @@ Submodules
    clustertools.analysis.operations
    clustertools.analysis.orbit
    clustertools.analysis.profiles
+   clustertools.analysis.tails

@@ -2,10 +2,8 @@
 
 """
 __author__ = "Jeremy J Webb"
-
-
-__all__ = [
-    "nbinmaker",
+__all__ =[
+    'nbinmaker',
     "binmaker",
     "power_law_distribution_function",
     "dx_function",
@@ -13,10 +11,8 @@ __all__ = [
     "mean_prof",
     "smooth",
     "interpolate",
-    "rotate",
-    "area_enclosed",
     "minimum_distance",
-    "distance"
+    "distance",
 ]
 
 import numpy as np
@@ -26,34 +22,36 @@ from ..util.plots import *
 
 
 def nbinmaker(x, nbin=10, nsum=False):
+    """Split an array into bins with equal numbers of elements
+
+    Parameters
+    ----------
+    x : float
+      input array
+    nbin : int
+      number of bins
+    nsum : bool
+      return number of points in each bin (default: False)
+
+    Returns
+    -------
+    x_lower : float
+      lower bin values
+    x_mid : float
+      mean value in each bin
+    x_upper : float
+      upper bin values
+    x_hist : 
+      number of points in bin
+
+    if nsum==True:
+      x_sum : float
+        sum of point values in each bin
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
-  NAME:
-
-     nbinmaker
-
-  PURPOSE:
-
-     Split an array into nbin bin's of equal number elements
-
-  Parameters
-
-     x - input array
-
-     nbin - number of bins
-
-     nsum - return number of points in each bin
-
-  Returns
-
-     x_lower,x_mid,x_upper,x_hist (if nsum==False)
-
-     x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)
-
-  History
-
-     2018 - Written - Webb (UofT)
-
-  """
     x = np.asarray(x)
 
     xorder = np.argsort(x)
@@ -87,36 +85,38 @@ def nbinmaker(x, nbin=10, nsum=False):
 
 
 def binmaker(x, nbin=10, nsum=False, steptype="linear"):
+    """Split an array into bins of equal size
+
+    Parameters
+    ----------
+    x : float
+      input array
+    nbin : int
+      number of bins
+    nsum : bool
+      return number of points in each bin (default: False)
+    steptype : str
+      linear or logarithmic steps (default: linear)
+
+    Returns
+    -------
+    x_lower : float
+      lower bin values
+    x_mid : float
+      mean value in each bin
+    x_upper : float
+      upper bin values
+    x_hist : 
+      number of points in bin
+
+    if nsum==True:
+      x_sum : float
+        sum of point values in each bin
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
     """
-  NAME:
-
-     binmaker
-
-  PURPOSE:
-
-     Split an array into nbin bin's of equal size
-
-  Parameters
-
-     x - input array
-
-     nbin - number of bins
-
-     nsum - return number of points in each bin
-
-     steptype - linear or logarithmic steps
-
-  Returns
-
-     x_lower,x_mid,x_upper,x_hist (if nsum==False)
-
-     x_lower,x_mid,x_upper,x_hist,x_sum (if nsum==True)
-
-  History
-
-     2018 - Written - Webb (UofT)
-
-  """
 
     x_hist = np.zeros(nbin)
     x_sum = np.zeros(nbin)
@@ -144,30 +144,26 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
 
 
 def power_law_distribution_function(n, alpha, xmin, xmax):
+    """Generate points from a power-law distribution function
+
+    Parameters
+    ----------
+    n : int
+      number of points
+    alpha : float
+      power-law slope of distribution function
+    xmin,xmax : float
+      minimum and maximum values of distribution
+
+    Returns
+    -------
+    x : float
+      array of values drawn from distribution
+
+    History
+    -------
+    2019 - Written - Webb (UofT)
     """
-  NAME:
-
-     power_law_distribution_function
-
-  PURPOSE:
-
-     Generate points from a power-law distribution function
-  Parameters
-
-     n - number of points
-
-     alpha - power-law slope of distribution function
-
-     xmin,xmax - minimum and maximum values of distribution
-
-  Returns
-
-     c
-
-  History
-
-     2019 - Written - Webb (UofT)
-  """
 
     eta = alpha + 1.0
 
@@ -189,35 +185,40 @@ def power_law_distribution_function(n, alpha, xmin, xmax):
 
 
 def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None, plot=False, **kwargs):
-    """
-    NAME:
+    """Find distribution function using nx bins
 
-     dx_function
-
-    PURPOSE:
-
-     Find distribution function using nx bins containing an equal number of points
     Parameters
-
-     x - input array
-
-     nx - number of bins
-
-     bintype - bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
-
-     x_lower,x_mean,x_upper - preset bins
+    ----------
+    x : float
+      input arrayå
+    nx : int
+      number of bins (default : 10)
+    bintype : str
+      bin with equal number of stars per bin (num) or evenly in x (fix) (default: num)
+    x_lower,x_mean,x_upper : float
+      preset lower limit, mean value, and upper limit bins
 
     Returns
-
-     x_mean,x_hist,dx,alpha,ealpha,yalpha,eyalpha
-
+    -------
+    x_mean : float
+      mean value in each bin
+    x_hist : float
+      number of stars in each bin
+    dx : float
+      number of stars in each bin divided by width of bin
+    alpha : float
+      power law slope fit to dx vs x_mean
+    ealpha : float
+      error in alpha
+    yalpha : float
+      y-intercept of fit to log(dx) vs lod(x_mean)
+    eyalpha : float
+      error in yalpha
 
     History
-
-     2018 - Written - Webb (UofT)
-
+    -------
+    2018 - Written - Webb (UofT)
     """
-
     if x_lower is None:
         if bintype == "num":
             x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
@@ -239,10 +240,10 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
 
     if plot:
             filename = kwargs.get("filename", None)
-            nplot(x_mean, np.log10(dx), xlabel="x", ylabel="LOG(dN/dx)", **kwargs)
+            _plot(x_mean, np.log10(dx), xlabel="x", ylabel="LOG(dN/dx)", **kwargs)
             xfit = np.linspace(np.min(x_mean), np.max(x_mean), nx)
             dxfit = 10.0 ** (alpha * np.log10(xfit) + yalpha)
-            nlplot(
+            _lplot(
                 xfit, np.log10(dxfit), overplot=True, label=(r"$\alpha$ = %f" % alpha)
             )
 
@@ -254,33 +255,29 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
     return x_mean, x_hist, dx, alpha, ealpha, yalpha, eyalpha
 
 def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
-    """
-    NAME:
-
-        x_hist
-
-    PURPOSE:
-
-        Find histogram
+    """Find histogram data using nx bins
 
     Parameters
-
-        x input array
-
-        nx number of bins
-
-        bintype bin with equal number of stars per bin (bin) or evenly in x (fix) (default: num)
-
-        x_lower,x_mean,x_upper
+    ----------
+    x : float
+      input arrayå
+    nx : int
+      number of bins (default : 10)
+    bintype : str
+      bin with equal number of stars per bin (num) or evenly in x (fix) (default: num)
+    x_lower,x_mean,x_upper : float
+      preset lower limit, mean value, and upper limit bins
 
     Returns
-
-        x_mean,x_hist
+    -------
+    x_mean : float
+      mean value in each bin
+    x_his : float
+      number of stars in each bin
 
     History
-
-        2019 - Written - Webb (UofT)
-
+    -------
+    2019 - Written - Webb (UofT)
     """
 
     if x_lower is None:
@@ -296,34 +293,34 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
 
     return x_mean,x_hist
 
-def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
-    """
-    NAME:
+def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False):
+    """ Calculate mean profile of parameter y that depends on x
 
-     mean_prof
-
-    PURPOSE:
-
-     Calculate mean profile of parameter y that depends on x  
     Parameters
-
-     x,y coordinates from which to measure the mean profile
-
-     nbin - number of bins
-
-     bintype - can be bins of fixed size ('fix') or equal number of stars ('num')
-
-     steptype - for fixed size arrays, set step size to 'linear' or 'log'
-
-     median - find median instead of mean (Default: False)
+    ----------
+    x,y : float
+      coordinates from which to measure the mean profile
+    nbin : int
+      number of bins
+    bintype : str
+      can be bins of fixed size ('fix') or equal number of stars ('num') (default: num)
+    steptype : str
+      for fixed size arrays, set step size to 'linear' or 'log'
+    median : bool
+      find median instead of mean (Default: False)
 
     Returns
-
-     x_bin,y_bin,y_sig
+    -------
+    x_bin : float
+      x values of mean profile
+    y_bin : float
+      y values of mean profile
+    y_sig : float
+      dispersion about the mean profile
 
     History
-
-     2018 - Written - Webb (UofT)
+    -------
+    2018 - Written - Webb (UofT)
 
     """
     if bintype == "num":
@@ -357,46 +354,46 @@ def mean_prof(x, y, nbin=10, bintype="fix", steptype="linear", median=False):
     return np.array(x_bin), np.array(y_bin), np.array(y_sig)
 
 
-def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
-    """
-    NAME:
-
-     smooth
-
-    PURPOSE:
-
-     Smooth a profile
+def smooth(x, y, dx, bintype="num", median=False):
+    """Smooth a profile
 
     Parameters
-
-     x,y coordinates from which to measure the mean profile
-
-     nbin - number of bins to smooth over
-
-     bintype - can be bins of fixed size ('fix') or equal number of stars ('num')
-
-     median - find median instead of mean (Default: False)
-
-    KWARGS:
-
-     dx - width of smoothening bin
+    ----------
+    x,y : float
+      coordinates from which to measure the mean profile
+    dx : float
+      width of x smoothening bin
+    bintype : str
+      can be bins of fixed size ('fix') or equal number of stars ('num') (default: num)
+    steptype : str
+      for fixed size arrays, set step size to 'linear' or 'log'
+    median : bool
+      find median instead of mean (Default: False)
 
     Returns
+    -------
+    x_bin : float
+      x values of mean profile
+    y_bin : float
+      y values of mean profile
+    y_sig : float
+      dispersion about the mean profile
 
-     x_bin,y_bin,y_sig
+    Other Parameters
+    ----------------
+    dx : float
+      width of smoothening bin
 
     History
-
-     2018 - Written - Webb (UofT)
+    -------
+    2018 - Written - Webb (UofT)
 
     """
     x = np.array(x)
     y = np.array(y)
 
     # Smooth by intervals in dx
-    if "dx" in kwargs:
-        dx = float(kwargs.get("dx"))
-        nbin = int((np.max(x) - np.min(x)) / dx)
+    nbin = int((np.max(x) - np.min(x)) / dx)
 
     if bintype == "num":
         x_lower, x_mid, x_upper, x_hist = nbinmaker(x, nbin)
@@ -437,30 +434,30 @@ def smooth(x, y, nbin=10, bintype="fix", median=False, **kwargs):
 
 
 def interpolate(r1, r2, x=None, y=None):
-    """
-    NAME:
-
-     interpolate
-
-    PURPOSE:
-
-     Perform simple linear interpolate between two points in 2D
+    """Perform simple linear interpolate between two points in 2D
+      - one of x or y must be defined
 
     Parameters
+    ----------
 
-     r1,r2 - x,y coordinates from which to interpolate
+    r1,r2 : float
+      x,y coordinates from which to interpolate
 
-     x - x-value from which to interpolate y
+    x : float
+      x-value from which to interpolate y (default: None)
 
-     y - y-value from which to interpolate x
+    y : float
+      y-value from which to interpolate x (default: None)
 
     Returns
+    -------
 
-     interpolated value
+    val : float
+      interpolated value
 
     History
 
-     2019 - Written - Webb (UofT)
+    2019 - Written - Webb (UofT)
 
     """
     x1, y1 = r1
@@ -470,186 +467,32 @@ def interpolate(r1, r2, x=None, y=None):
     b = y1 - m * x1
 
     if x != None:
-        return m * x + b
+        val= m * x + b
     elif y != None:
-        return (y - b) / m
+        val=(y - b) / m
     else:
         print("NO INTERMEDIATE COORDINATE GIVEN")
-        return 0
+        val=0
 
-def rotate(x, y, z, thetax=0.0, thetay=0.0, thetaz=0.0):
-    """
-    NAME:
-
-     rotate
-     --> This function is a work in progress. It is meant to eventually be a function for rotating streams to phi1/phi2 coordinates
-
-    PURPOSE:
-
-     Rotate StarCluster
-
-    Parameters
-
-     x,y,z - coordinates of stars
-
-     thetax,thetay,thetaz - angle about corresponding axis to rotate coordinates
-
-    Returns
-
-     rotated values of x,y,z
-
-    History
-
-     2019 - Written - Webb (UofT)
-
-    """
-    # rotate about x axis:
-    y2 = y * np.cos(thetax) - z * np.sin(thetax)
-    z2 = -y * np.sin(thetax) + z * np.cos(thetax)
-
-    y = y2
-    z = z2
-
-    # rotate about y axis:
-    x2 = x * np.cos(thetay) - z * np.sin(thetay)
-    z2 = -x * np.sin(thetay) + z * np.cos(thetay)
-
-    x = x2
-    z = z2
-
-    # rotate about z axis:
-    x2 = x * np.cos(thetaz) - y * np.sin(thetaz)
-    y2 = -x * np.sin(thetaz) + y * np.cos(thetaz)
-
-    x = x2
-    y = y2
-
-    return np.array(x), np.array(y), np.array(z)
-
-
-def area_enclosed(
-    x, y, thresh=None, nrand=1000, method="sphere", full=False, plot=False
-):
-    """
-    NAME:
-
-     area_enclosed
-
-    PURPOSE:
-
-     calculate area enclosed by a collection of points by finding what fraction of a random distribution overlaps with points
-
-    Parameters
-
-     x,y - x and y coorindates
-     
-     thresh - threshold for overlap between random distribution and points (Default: None - use maximum nearest neighbour)
-
-     nrand - number of random points to be generated in uniform distribution (Default: 1000)
-
-     method - generate spherical or rectangular distribution of random points (Default: sphere)
-     
-     plot - plot overlap (Default: False)
-
-    Returns
-
-     area
-
-    History
-
-     2019 - Written - Webb (UofT)
-
-    """
-
-    if thresh is None:
-        z = np.zeros(len(x))
-        rmin = minimum_distance(np.array([x, y, z]).T)
-        thresh = np.amax(rmin)
-
-    if method == "rectangle":
-        xmin, xmax = np.amin(x), np.amax(x)
-        ymin, ymax = np.amin(y), np.amax(y)
-
-        dx = np.fabs(xmax - xmin)
-        dy = np.fabs(ymax - ymin)
-
-        atot = dx * dy
-
-        # Generate random particles in area
-        xrand = np.random.rand(nrand) * dx + xmin
-        yrand = np.random.rand(nrand) * dy + ymin
-
-    elif method == "sphere":
-        r = np.sqrt(x ** 2.0 + y ** 2.0)
-        rmin, rmax = np.amin(r), np.amax(r)
-
-        phi = np.arctan2(y, x)
-        phi[phi < 0] += 2.0 * np.pi
-        phimin, phimax = np.amin(phi), np.amax(phi)
-
-        if phimin < 0:
-            phimin += 2.0 * np.pi
-
-        dr = np.amax(r) - np.amin(r)
-
-        atot = np.pi * (rmax ** 2.0 - rmin ** 2.0)
-        rrand = np.random.rand(nrand) * dr + rmin
-        phirand = np.random.rand(nrand) * np.fabs(phimax - phimin) + phimin
-        xrand = rrand * np.cos(phirand)
-        yrand = rrand * np.sin(phirand)
-
-    drmin = np.array([])
-    if full:
-        xrfull = np.tile(xrand, len(x))
-        yrfull = np.tile(yrand, len(x))
-
-        xfull = np.repeat(x, nrand)
-        yfull = np.repeat(y, nrand)
-
-        dr = np.sqrt((xrfull - xfull) ** 2.0 + (yrfull - yfull) ** 2.0)
-        dr = dr.reshape(len(x), nrand)
-        drmin = np.amin(dr, 0)
-    else:
-        for i in range(0, nrand):
-            dr = np.sqrt((xrand[i] - x) ** 2.0 + (yrand[i] - y) ** 2.0)
-            drmin = np.append(drmin, np.amin(dr))
-
-    indx = drmin < thresh
-
-    area = atot * np.sum(indx) / float(nrand)
-
-    if plot:
-        plt.plot(x, y, ".")
-        plt.plot(xrand[indx], yrand[indx], "o", alpha=0.1)
-        plt.xlabel("X")
-        plt.ylabel("Y")
-        plt.show()
-
-    return area
-
+    return val
 
 @numba.njit
 def minimum_distance(x):
-    """
-    NAME:
-
-       minimum_distance
-
-    PURPOSE:
-
-       Find distance to each point's nearest neighbour
+    """Find distance to each point's nearest neighbour
 
     Parameters
-
-       x=[x,y,z].T
+    ----------
+    x : float (array)
+      3D position of each point of the form [x,y,z].Transpose
 
     Returns
-
-       distance to nearest neighbour
+    -------
+    min_distance : float
+      distance to each points nearest neighbour
 
     History
-
-       2019 - Written - Webb (UofT)
+    -------
+    2019 - Written - Webb (UofT)
     """
     min_distance = [-1.0] * len(x)
     for i in range(len(x) - 1):
@@ -670,29 +513,24 @@ def minimum_distance(x):
 
 @numba.njit
 def distance(x1, x2):
-    """
-    NAME:
-
-    distance
-
-    PURPOSE:
-
-    Find distance between two points (made for use with numba)
+    """Find distance between two points (made for use with numba)
 
     Parameters
-
-    x1=[x,y,z]
-    x2=[x,y,z]
+    ----------
+    x1 : float
+      3D position of first point of the form [x,y,z]
+    x2 : float
+      3D position of first point of the form [x,y,z]
 
     Returns
-
-    distance
+    -------
+    distance : float
+      distance between the two points
 
     History
-
+    -------
     2019 - Written - Webb (UofT)
     """
-
     dx = x2[0] - x1[0]
     dy = x2[1] - x1[1]
     dz = x2[2] - x1[2]

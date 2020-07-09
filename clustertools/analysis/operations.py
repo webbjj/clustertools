@@ -4,6 +4,25 @@
 
 __author__ = "Jeremy J Webb"
 
+__all__ = [
+    "to_pckms",
+    "to_kpckms",
+    "to_nbody",
+    "to_radec",
+    "to_galpy",
+    "to_units",
+    "to_centre",
+    "to_cluster",
+    "to_galaxy",
+    "to_sky",
+    "to_origin",
+    "save_cluster",
+    "return_cluster",
+    "reset_nbody_scale",
+    "add_rotation",
+    "virialize",
+]
+
 import numpy as np
 from galpy.util import bovy_conversion,_rotate_to_arbitrary_vector
 
@@ -760,61 +779,6 @@ def _from_sky(cluster, do_order=False, do_key_params=False):
 
     """
     cluster._from_radec(do_order=do_order, do_key_params=do_key_params)
-
-def to_tail(cluster):
-    """Calculate positions and velocities of stars when rotated such that clusters velocity vector
-       points along x-axis
-
-    - no change to coordinates in StarCluster
-
-    Parameters
-    ----------
-    cluster : class
-        StarCluster
-
-    Returns
-    -------
-    x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail : float
-        rotated coordinates with cluster's velocity vector point along x-axis
-
-    History:
-    -------
-    2018 - Written - Webb (UofT)
-
-    """
-    units0, origin0 = cluster.units, cluster.origin
-
-    cluster.to_centre()
-
-    v_vec = np.array([cluster.vxgc, cluster.vygc, cluster.vzgc])
-    new_v_vec = np.array([1.0, 0.0, 0.0])
-
-    rot = _rotate_to_arbitrary_vector(
-        np.atleast_2d(v_vec), new_v_vec, inv=False, _dontcutsmall=False
-    )
-
-    x_tail = (
-        cluster.x * rot[:, 0, 0] + cluster.y * rot[:, 1, 0] + cluster.z * rot[:, 2, 0]
-    )
-    y_tail = (
-        cluster.x * rot[:, 0, 1] + cluster.y * rot[:, 1, 1] + cluster.z * rot[:, 2, 1]
-    )
-    z_tail = (
-        cluster.x * rot[:, 0, 2] + cluster.y * rot[:, 1, 2] + cluster.z * rot[:, 2, 2]
-    )
-    vx_tail = (
-        cluster.vx * rot[:, 0, 0] + cluster.vy * rot[:, 1, 0] + cluster.vz * rot[:, 2, 0]
-    )
-    vy_tail = (
-        cluster.vx * rot[:, 0, 1] + cluster.vy * rot[:, 1, 1] + cluster.vz * rot[:, 2, 1]
-    )
-    vz_tail = (
-        cluster.vx * rot[:, 0, 2] + cluster.vy * rot[:, 1, 2] + cluster.vz * rot[:, 2, 2]
-    )
-
-    cluster.to_origin(origin0)
-
-    return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
 def to_origin(cluster, origin, do_order=False, do_key_params=False):
     """Shift cluster to origin as defined by keyword

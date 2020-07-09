@@ -1,286 +1,35 @@
-""" Functions and Operations that heavily use galpy and focus on the cluster's orbit
+""" Functions and Operations related to the cluster's orbit
 
 """
 __author__ = "Jeremy J Webb"
+__all__ = [
+    "initialize_orbit",
+    "initialize_orbits",
+    "integrate_orbit",
+    "integrate_orbits",
+    "orbit_interpolate",
+    "orbital_path",
+    "orbital_path_match",
+    "calc_actions",
+    "ttensor",
+]
 
 from galpy.orbit import Orbit
 from galpy.util import bovy_coords, bovy_conversion
 from galpy import potential
-from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
+from galpy.potential import MWPotential2014
 from galpy.actionAngle import actionAngleStaeckel
 from galpy.actionAngle.actionAngleIsochroneApprox import actionAngleIsochroneApprox
 
 import numpy as np
 
-from ..util.recipes import rotate, interpolate, binmaker
+from ..util.recipes import interpolate, binmaker
 from .operations import save_cluster, return_cluster
 from .profiles import rho_prof
 from ..util.plots import *
 
 import astropy.coordinates as coord
 import astropy.units as u
-
-def rtidal(
-    cluster,
-    pot=MWPotential2014,
-    rtiterate=0,
-    rtconverge=0.9,
-    rgc=None,
-    ro=8.0,
-    vo=220.0,
-    verbose=False,
-):
-    """Calculate tidal radius of the cluster
-    - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
-    -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
-    -- Bovy J., 2015, ApJS, 216, 29
-    - riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
-    -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal
-       radius again using the new mass until the change is less than 90%
-    - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
-
-    Parameters
-
-    cluster : class
-        StarCluster instance
-    pot : class 
-        GALPY potential used to calculate tidal radius (default: MWPotential2014)
-    rtiterate : int
-        how many times to iterate on the calculation of r_t (default: 0)
-    rtconverge : float
-        criteria for tidal radius convergence within iterations (default 0.9)
-    rgc : float
-        Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
-    ro : float
-        GALPY radius scaling parameter
-    vo : float
-        GALPY velocity scaling parameter
-    verbose : bool
-        Print information about iterative calculation of rt
-
-    Returns
-    -------
-    rt : float
-        tidal radius
-
-    History
-    _______
-    2019 - Written - Webb (UofT)
-    """
-    units0, origin0 = save_cluster(cluster)
-
-    cluster.to_centre()
-    cluster.to_galpy()
-
-    if rgc != None:
-        R = rgc / ro
-        z = 0.0
-    else:
-        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
-        z = cluster.zgc
-
-    # Calculate rtide
-    rt = rtide(pot, R, z, M=cluster.mtot,use_physical=False)
-    nit = 0
-    for i in range(0, rtiterate):
-        msum = 0.0
-
-        indx = cluster.r < rt
-        msum = np.sum(cluster.m[indx])
-
-        rtnew = rtide(pot, R, z, M=msum,use_physical=False)
-
-        if verbose:
-            print(rt, rtnew, rtnew / rt, msum / cluster.mtot)
-
-        if rtnew / rt >= rtconverge:
-            break
-        rt = rtnew
-        nit += 1
-
-    if verbose:
-        print(
-            "FINAL RT: ",
-            rt * ro * 1000.0,
-            "pc after",
-            nit,
-            " of ",
-            rtiterate,
-            " iterations",
-        )
-
-    if units0 == "pckms":
-        rt *= 1000.0 * ro
-    elif units0 == "kpckms":
-        rt *= ro
-    elif units0 == "nbody":
-        rt *= 1000.0 * ro / cluster.rbar
-
-    return_cluster(cluster, units0, origin0)
-
-    return rt
-
-
-def rlimiting(
-    cluster,
-    pot=MWPotential2014,
-    rgc=None,
-    ro=8.0,
-    vo=220.0,
-    nrad=20,
-    projected=False,
-    plot=False,
-    **kwargs
-):
-    """Calculate limiting radius of the cluster
-       
-    - The limiting radius is defined to be where the cluster's density reaches the local background density of the host galaxy
-    - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
-
-    Parameters
-    ----------
-
-    cluster : class
-        StarCluster
-    pot : class 
-        GALPY potential used to calculate actions
-    rgc : 
-        Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
-    ro : float
-        GALPY radius scaling parameter
-    vo : float
-        GALPY velocity scaling parameter
-    nrad : int
-        number of radial bins used to calculate density profile (Default: 20)
-    projected : bool
-        use projected values (default: False)
-    plot : bool
-        plot the density profile and mark the limiting radius of the cluster (default: False)
-
-    Returns
-    -------
-        rl : float
-            limiting radius
-
-    Other Parameters
-    ----------------
-    kwargs : str
-        key words for plotting
-
-    History
-    -------
-    2019 - Written - Webb (UofT)
-    """
-    units0, origin0 = save_cluster(cluster)
-
-    cluster.to_centre()
-    cluster.to_galpy()
-
-
-    if rgc != None:
-        R = rgc / ro
-        z = 0.0
-    else:
-        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
-        z = cluster.zgc
-
-    # Calculate local density:
-    rho_local = potential.evaluateDensities(
-        pot, R, z, ro=ro, vo=vo, use_physical=False
-    ) / bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-
-    rprof, pprof, nprof = rho_prof(cluster, nrad=nrad, projected=projected)
-
-    if pprof[-1] > rho_local:
-        rl = rprof[-1]
-    elif pprof[0] < rho_local:
-        rl = 0.0
-    else:
-        indx = np.argwhere(pprof < rho_local)[0][0]
-        r1 = (rprof[indx - 1], pprof[indx - 1])
-        r2 = (rprof[indx], pprof[indx])
-
-        rl = interpolate(r1, r2, y=rho_local)
-
-    if verbose:
-        print("FINAL RL: ", rl * ro * 1000.0, "pc")
-
-    if units0 == "pckms":
-        rl *= 1000.0 * ro
-    elif units0 == "kpckms":
-        rl *= ro
-    elif units0 == "nbody":
-        rl *= 1000.0 * ro / cluster.rbar
-
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
-
-    if plot:
-        if verbose:
-            print("LOCAL DENSITY = ", rho_local)
-
-        filename = kwargs.pop("filename", None)
-        overplot = kwargs.pop("overplot", False)
-
-        if cluster.units == "nbody":
-            rprof *= ro * 1000.0 / cluster.rbar
-            pprof *= (
-                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
-            rho_local *= (
-                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
-            xunits = " (NBODY)"
-            yunits = " (NBODY)"
-        elif cluster.units == "pckms":
-            rprof *= ro * 1000.0
-            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            xunits = " (pc)"
-            if projected:
-                yunits = " Msun/pc^2"
-            else:
-                yunits = " Msun/pc^3"
-        elif cluster.units == "kpckms":
-            rprof *= ro
-            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-
-            xunits = " (kpc)"
-            if projected:
-                yunits = " Msun/kpc^2"
-            else:
-                yunits = " Msun/kpc^3"
-        elif cluster.units == "galpy":
-            xunits = " (GALPY)"
-            yunits = " (GALPY)"
-
-        else:
-            xunits = ""
-            yunits = ""
-
-        x, y, n = rprof, pprof, nprof
-        nlplot(
-            x,
-            y,
-            xlabel=r"$R %s$" % (xunits),
-            ylabel=r"$\rho %s$" % (yunits),
-            title="Time = %f" % cluster.tphys,
-            log=True,
-            overplot=overplot,
-            filename=filename,
-        )
-        nlplot(x, np.ones(len(x)) * rho_local, "--", overplot=True)
-        nlplot(np.ones(len(y)) * rl, y, "--", overplot=True)
-
-        if filename != None:
-            plt.savefig(filename)
-
-    return rl
-
 
 def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
     """ Initialize a galpy orbit instance for the cluster
@@ -796,7 +545,7 @@ def orbital_path(
             filename = kwargs.pop("filename", None)
             overplot = kwargs.pop("overplot", False)
             starplot(cluster,coord='xy',overplot=overplot)
-            nlplot(x,y,overplot=True)
+            _lplot(x,y,overplot=True)
 
             if filename != None:
                 plt.savefig(filename)
@@ -966,7 +715,7 @@ def orbital_path_match(
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        nscatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
+        _scatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
 
         if filename != None:
             plt.savefig(filename)
@@ -974,270 +723,6 @@ def orbital_path_match(
     return_cluster(cluster, units0, origin0)
 
     return np.array(tstar), np.array(dprog), np.array(dpath)
-
-
-def tail_path(
-    cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, ro=8.0, vo=220.0,
-    plot=False
-):
-    """Calculate tail path +/- dt Gyr around the cluster
-
-        Parameters
-    ----------
-    cluster : class
-        StarCluster
-    dt : float
-        timestep that StarCluster is to be moved to
-    nt : int
-        number of timesteps
-    pot : class
-        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
-    from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
-    ro :float 
-        galpy distance scale (Default: 8.)
-    vo : float
-        galpy velocity scale (Default: 220.)
-    plot : bool
-        plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
-
-    Returns
-    -------
-    t : float
-        times for which path is provided
-    x,y,z : float
-        tail path positions
-    vx,vy,vz : float
-        tail path velocities
-    History
-    -------
-    2018 - Written - Webb (UofT)
-    2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
-    """
-
-    units0, origin0 = save_cluster(cluster)
-    cluster.to_galaxy()
-    cluster.to_kpckms()
-
-    to, xo, yo, zo, vxo, vyo, vzo, o = orbital_path(
-        cluster,
-        dt=dt,
-        nt=nt,
-        pot=pot,
-        from_centre=from_centre,
-        initialize=True,
-        ro=ro,
-        vo=vo,
-    )
-    tstar, dprog, dpath = orbital_path_match(
-        cluster=cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, ro=ro, vo=vo
-    )
-
-    t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=nt)
-    ttail = []
-    xtail = []
-    ytail = []
-    ztail = []
-    vxtail = []
-    vytail = []
-    vztail = []
-
-    for i in range(0, len(t_mid)):
-        indx = (tstar >= t_lower[i]) * (tstar <= t_upper[i])
-        if np.sum(indx) > 0:
-            ttail = np.append(ttail, t_mid[i])
-            xtail = np.append(xtail, np.mean(cluster.x[indx]))
-            ytail = np.append(ytail, np.mean(cluster.y[indx]))
-            ztail = np.append(ztail, np.mean(cluster.z[indx]))
-            vxtail = np.append(vxtail, np.mean(cluster.vx[indx]))
-            vytail = np.append(vytail, np.mean(cluster.vy[indx]))
-            vztail = np.append(vztail, np.mean(cluster.vz[indx]))
-
-    if plot:
-        filename = kwargs.pop("filename", None)
-        overplot = kwargs.pop("overplot", False)
-        starplot(cluster,coord='xy',overplot=overplot)
-        nlplot(xtail,ytail,overplot=True)
-
-        if filename != None:
-            plt.savefig(filename)
-
-    return_cluster(cluster, units0, origin0)
-
-    return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
-
-
-def tail_path_match(
-    cluster,
-    dt=0.1,
-    nt=100,
-    pot=MWPotential2014,
-    from_centre=False,
-    to_path=False,
-    do_full=False,
-    ro=8.0,
-    vo=220.0,
-    plot=False,
-):
-    """Match stars to a position along the tail path of the cluster
-
-    Parameters
-    ----------
-    cluster : class
-        StarCluster
-    dt : float
-        timestep that StarCluster is to be moved to
-    nt : int
-        number of timesteps
-    pot : class
-        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
-    from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
-    to_path : bool
-        measure distance to the path itself instead of distance to central point along the path (default: False)
-    do_full : bool
-        calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
-    ro :float 
-        galpy distance scale (Default: 8.)
-    vo : float
-        galpy velocity scale (Default: 220.)
-    plot : bool
-        plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
-
-    Returns
-    -------
-    tstar : float
-        orbital time associated with star
-    dprog : float
-        distance along the path to the progenitor
-    dpath : 
-        distance to centre of the tail path bin (default) or the tail path (to_path = True)
-
-    History
-    -------
-    2018 - Written - Webb (UofT)
-    """
-    units0, origin0 = save_cluster(cluster)
-    cluster.to_galaxy()
-    cluster.to_kpckms()
-
-    ts, x, y, z, vx, vy, vz = tail_path(
-        cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, ro=ro, vo=vo
-    )
-    pindx = np.argmin(np.fabs(ts))
-
-    dx = np.tile(x, cluster.ntot).reshape(cluster.ntot, len(ts)) - np.repeat(
-        cluster.x, len(ts)
-    ).reshape(cluster.ntot, len(ts))
-    dy = np.tile(y, cluster.ntot).reshape(cluster.ntot, len(ts)) - np.repeat(
-        cluster.y, len(ts)
-    ).reshape(cluster.ntot, len(ts))
-    dz = np.tile(z, cluster.ntot).reshape(cluster.ntot, len(ts)) - np.repeat(
-        cluster.z, len(ts)
-    ).reshape(cluster.ntot, len(ts))
-    dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
-
-    indx = np.argmin(dr, axis=1)
-    dpath = np.amin(dr, axis=1)
-    tstar = ts[indx]  # *bovy_conversion.time_in_Gyr(ro=ro,vo=vo)
-
-    dxo = x[1:] - x[0:-1]
-    dyo = y[1:] - y[0:-1]
-    dzo = z[1:] - z[0:-1]
-
-    dprogx = np.cumsum(np.fabs(dxo))
-    dprogy = np.cumsum(np.fabs(dyo))
-    dprogz = np.cumsum(np.fabs(dzo))
-
-    dprogx = np.insert(dprogx, 0, 0.0)
-    dprogy = np.insert(dprogy, 0, 0.0)
-    dprogz = np.insert(dprogz, 0, 0.0)
-
-    dprogr = np.sqrt(dprogx ** 2.0 + dprogy ** 2.0 + dprogz ** 2.0)
-    dprog = dprogr[indx] - dprogr[pindx]
-
-    # Find distance to path instead of to central point
-    if to_path:
-        dxo = np.append(dxo, dxo[-1])
-        dyo = np.append(dyo, dyo[-1])
-        dzo = np.append(dzo, dzo[-1])
-
-        if do_full:
-            # Typically it is too expensive to calculate dpath all at once, but will allow option via do_full
-
-            ovec = np.column_stack([dxo, dyo, dzo])
-            mag_ovec = np.sqrt(dxo ** 2.0 + dyo ** 2.0 + dzo ** 2.0)
-            svec = np.column_stack([dx[:, indx], dy[:, indx], dz[:, indx]])
-            mag_svec = dr[:, indx]
-            theta = np.arccos(np.dot(ovec[indx], svec) / (mag_ovec[indx] * mag_svec))
-            dpath = mag_svec * np.sin(theta)
-        else:
-            # Need to optimize this via numba
-            dpath = np.array([])
-            for i in range(0, cluster.ntot):
-                ovec = [dxo[indx[i]], dyo[indx[i]], dzo[indx[i]]]
-                mag_ovec = np.sqrt(
-                    dxo[indx[i]] ** 2.0 + dyo[indx[i]] ** 2.0 + dzo[indx[i]] ** 2.0
-                )
-
-                svec = [dx[i, indx[i]], dy[i, indx[i]], dz[i, indx[i]]]
-                mag_svec = dr[i, indx[i]]
-
-                theta = np.arccos(
-                    (ovec[0] * svec[0] + ovec[1] * svec[1] + ovec[2] * svec[2])
-                    / (mag_ovec * mag_svec)
-                )
-                dpath = np.append(dpath, mag_svec * np.sin(theta))
-
-    # Assign negative to stars with position vectors in opposite direction as local angular momentum vector
-    rgc = np.column_stack([x[indx], y[indx], z[indx]])
-    vgc = np.column_stack([vx[indx], vy[indx], vz[indx]])
-    lz = np.cross(rgc, vgc)
-
-    rstar = np.column_stack(
-        [cluster.x - x[indx], cluster.y - y[indx], cluster.z - z[indx]]
-    )
-
-    ldot = np.sum(rstar * lz, axis=1)
-    dpath[ldot < 0] *= -1
-
-    if plot:
-        filename = kwargs.pop("filename", None)
-        overplot = kwargs.pop("overplot", False)
-        nscatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
-
-        if filename != None:
-            plt.savefig(filename)
-
-    return_cluster(cluster, units0, origin0)
-
-    return np.array(tstar), np.array(dprog), np.array(dpath)
-
-
-def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
-    """Get the measured orbital parameters of a Galactic globular cluster
-    - This is a simply wrapper for Orbit.from_name in galpy (Bovy 2015), which uses orbits measured by Vasiliev 2019 using Gaia DR2 via Galpy
-    -- Bovy J., 2015, ApJS, 216, 29
-
-    Parameters
-    ----------
-    gcname : str
-        name of GC whose orbits is to be retrieved
-    ro :float 
-        galpy distance scale (Default: 8.)
-    vo : float
-        galpy velocity scale (Default: 220.)
-    Returns
-    -------
-    orbit : class
-        galpy orbit
-
-    History
-    -------
-    2019 - Written - Webb (UofT)
-
-    """
-    return Orbit.from_name(gcname,ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
 
 def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
     """Calculate action angle values for each star 

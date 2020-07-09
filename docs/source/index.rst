@@ -19,8 +19,6 @@ Guide
 
    cluster.rst
 
-   units_and_coordinate_systems.rst
-
    initialize.rst
 
    analysis.rst
@@ -29,7 +27,7 @@ Guide
 
    observations.rst
 
-Example List
+Example Notebooks
 -----------------
 
 .. toctree::

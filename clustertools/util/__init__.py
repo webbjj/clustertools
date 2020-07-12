@@ -31,7 +31,6 @@ _hist=plots._hist
 _hist2d=plots._hist2d
 _dens=plots._dens
 
-
 nbinmaker=recipes.nbinmaker
 binmaker=recipes.binmaker
 power_law_distribution_function=recipes.power_law_distribution_function

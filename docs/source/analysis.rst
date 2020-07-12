@@ -2,7 +2,7 @@ Analysis
 ===============
 
 Operations
-----------------------------------
+----------
 
 Several operations are available within ``clustertools`` to perform large scale changes to a ``StarCluster``, primarily related to unit and coordinate system changes. Operations are meant to be called as internal functions (``StarCluster.operation_name()``), however it is also possible to call operations as external functions (``operation_name(StarCluster)`` if preferred. No information is returned when an operation is called.
 
@@ -24,7 +24,7 @@ All available operations are listed below.
         :no-heading:
 
 Functions
-----------------------------------
+---------
 
 A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. When functions are called internally (``StarCluster.function_name()``), changes are made to variables within ``StarCluster`` with nothing returned. When called externally (``function_name(StarCluster)``), no changes are made within the ``StarCluster`` while the called function returns the necessary information. For example, a cluster's half-mass relaxation time can be called internally via:
 
@@ -71,7 +71,7 @@ The complete list of available functions are tabulated below in their external f
         :no-heading:
 
 Profiles
-----------------------------------
+--------
 
 A common measurement to make when analysing star clusters is to determine how a certain parameter varies with clustercentric distance. Therefore a list of commonly measured profiles can be measured via ``clustertools``. Unlike operations and functions, profiles can only be called externally. For example, the density profile of a cluster can be measured via:
 
@@ -99,7 +99,7 @@ All available profiles are listed below.
         :no-heading:
 
 Orbit
-----------------------------------
+-----
 
 In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyise the cluster's orbital properties.
 
@@ -141,7 +141,7 @@ A complete list of all functions related to a cluster's orbit can be found below
         :no-heading:
 
 Tidal Tails
-----------------------------------
+-----------
 
 Since stars which escape a cluster lead to the formation of tidal tails, which survive as stellar streams long after the cluster has dissolved. For star cluster simulations that keep track of a cluster's tidal tails, a few methods are included in ``clustertools`` to help in their analysis. The first of which is the ``to_tail`` operation, which rotates the system such that the cluster's velocity is pointing along the positive x-axis. Calling the operation externally returns each stars coordinates in the rotated system:
 

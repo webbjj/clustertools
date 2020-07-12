@@ -86,7 +86,7 @@ def find_centre(
     -------
     xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
 
-    History:
+    History
     -------
     2019 - Written - Webb (UofT)
     """
@@ -160,21 +160,20 @@ def find_centre_of_density(
     - The motivation behind this piece of code comes from phigrape (Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357) courtesy of Yohai Meiron
     - The routine first finds the centre of density of the whole system, and then works to identify a sphere stars around the centre in which to perform the final centre of density calculation. Stars with radii outside 80% of the maximum radius are removed from the calculation until the final subset of stars are enclosed within a radius rmin. The maximum size of the final subset is nmax. This step prevents long tidal tails from affecting the calculation
 
-
     Parameters
     ----------
-        cluster : class
-            StarCluster
-        xstart,ystart,zstart : float
-            starting position for centre (default: 0,0,0)
-        vxstart,vystart,vzstart : float
-            starting velocity for centre (default: 0,0,0)
-        indx: bool
-            subset of stars to perform centre of density calculation on (default: None)
-        rmin : float
-            minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
-        nmax : float
-            maximum number of iterations (default:100)
+    cluster : class
+        StarCluster
+    xstart,ystart,zstart : float
+        starting position for centre (default: 0,0,0)
+    vxstart,vystart,vzstart : float
+        starting velocity for centre (default: 0,0,0)
+    indx: bool
+        subset of stars to perform centre of density calculation on (default: None)
+    rmin : float
+        minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
+    nmax : float
+        maximum number of iterations (default:100)
 
     Returns
     -------
@@ -499,9 +498,9 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
         else:
           x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
         if parallel:
-            pot = grav * np.array(potential_energy_parallel(x))
+            pot = grav * np.array(_potential_energy_parallel(x))
         else:
-            pot = grav * np.array(potential_energy(x))
+            pot = grav * np.array(_potential_energy(x))
 
         if specific:
             pot /= cluster.m
@@ -699,7 +698,7 @@ def virial_radius(cluster, method='inverse_distance',
         virial radius
 
     Other Parameters
-    ---------------------------
+    ----------------
     full : bool
         Use Numba to calculate average inverse distance between stars (default:True)
     H : float
@@ -1276,7 +1275,7 @@ def rtidal(
     - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
 
     Parameters
-
+    ----------
     cluster : class
         StarCluster instance
     pot : class 
@@ -1300,7 +1299,7 @@ def rtidal(
         tidal radius
 
     History
-    _______
+    -------
     2019 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
@@ -1425,7 +1424,7 @@ def rlimiting(
         pot, R, z, ro=ro, vo=vo, use_physical=False
     ) / bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
 
-    rprof, pprof, nprof = rho_prof(cluster, nrad=nrad, projected=projected)
+    rprof, pprof, nprof = _rho_prof(cluster, nrad=nrad, projected=projected)
 
     if pprof[-1] > rho_local:
         rl = rprof[-1]
@@ -1438,9 +1437,6 @@ def rlimiting(
 
         rl = interpolate(r1, r2, y=rho_local)
 
-    if verbose:
-        print("FINAL RL: ", rl * ro * 1000.0, "pc")
-
     if units0 == "pckms":
         rl *= 1000.0 * ro
     elif units0 == "kpckms":
@@ -1451,8 +1447,6 @@ def rlimiting(
     return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
     if plot:
-        if verbose:
-            print("LOCAL DENSITY = ", rho_local)
 
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
@@ -1517,3 +1511,170 @@ def rlimiting(
 
     return rl
 
+def _rho_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    indx=None,
+    projected=False,
+    plot=False,
+    **kwargs
+):
+    """Measure the density profile of the cluster
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    plot : bool 
+        plot the density profile (default: False)
+
+    Returns
+    -------
+    rprof : float
+        radius bins
+    pprof : float
+        mass density in each bin
+    nprof : float
+        number of stars in each bin
+
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+
+    units0, origin0 = save_cluster(cluster)
+    cluster.to_centre(do_order=True, do_key_params=True)
+
+    rprof = np.array([])
+    pprof = np.array([])
+    nprof = np.array([])
+
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
+
+    if indx is None:
+        indx = cluster.id > -1
+
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
+
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        rprof = np.append(rprof, r_mean[i])
+        if projected:
+            vol = np.pi * (r_upper[i] ** 2 - r_lower[i] ** 2.0)
+        else:
+            vol = (4.0 / 3.0) * np.pi * (r_upper[i] ** 3 - r_lower[i] ** 3.0)
+
+        pprof = np.append(pprof, np.sum(cluster.m[rindx] / vol))
+        nprof = np.append(nprof, np.sum(rindx))
+
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if cluster.units == "nbody":
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+        elif cluster.units == "pckms":
+            xunits = " (pc)"
+            if projected:
+                yunits = " Msun/pc^2"
+            else:
+                yunits = " Msun/pc^3"
+        elif cluster.units == "kpckms":
+            xunits = " (kpc)"
+            if projected:
+                yunits = " Msun/kpc^2"
+            else:
+                yunits = " Msun/kpc^3"
+        elif cluster.units == "galpy":
+            xunits = " (GALPY)"
+            yunits = " (GALPY)"
+
+        else:
+            xunits = ""
+            yunits = ""
+
+        x, y, n = rprof, pprof, nprof
+        _lplot(
+            x,
+            y,
+            xlabel=r"$R %s$" % xunits,
+            ylabel=r"$\rho %s$" % yunits,
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
+
+        if filename != None:
+            plt.savefig(filename)
+
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+
+    return rprof, pprof, nprof

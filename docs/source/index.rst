@@ -33,7 +33,8 @@ Example Notebooks
 .. toctree::
    :maxdepth: 1
 
-   notebooks/load_and_advance.ipynb
+   notebooks/loading_and_advancing.ipynb
+   notebooks/setup.ipynb
    notebooks/functions.ipynb
 
 Planned Future Additions

@@ -12,6 +12,7 @@ __all__ = [
 import numpy as np
 from galpy.util import bovy_conversion,bovy_coords
 from galpy import potential
+from galpy.orbit import Orbit
 import os
 
 try:
@@ -25,6 +26,7 @@ from .profiles import m_prof
 
 def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, **kwargs):
     """ Setup an N-body realization of a StarCluster with specific parameters
+    
     -Relies heavily on LIMEPY/SPES models (Woolley 1954, King 1966, Wilson, 1975, Gieles & Zocchi 2015, Claydon et al. 2019)
     - When setting up a specific Galactic cluster, makes use of de Boer et al. 2019 and Harris 1996 (2010 Edition). Cluster is also assigned an orbit based on Vasiliev 2019
     - When setting up a cluster based on galpy potential, relies on Galpy (Bovy 2015)
@@ -112,13 +114,11 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
         else:
             source = kwargs.pop("source", "default")
             mbar = kwargs.pop("mbar", 0.4)
-            names = kwargs.pop("names", False)
-            cluster = _get_cluster(ctype, source, mbar, names)
+            cluster = _get_cluster(ctype, source, mbar)
     else:
         source = kwargs.pop("source", "default")
         mbar = kwargs.pop("mbar", 0.4)
-        names = kwargs.pop("names", False)
-        cluster = _get_cluster(ctype, source, mbar, names)
+        cluster = _get_cluster(ctype, source, mbar)
 
     # Add galpy orbit if given
     if orbit != None:
@@ -166,7 +166,13 @@ def _get_limepy(g=1, **kwargs):
     -------
        2019 - Written - Webb (UofT)
     """
-    phi0 = float(kwargs.get("phi0"))
+
+    phi0=kwargs.get("W0",None)
+    if phi0 is None:
+        phi0 = float(kwargs.get("phi0"))
+    else:
+        phi0=float(phi0)
+
     project = bool(kwargs.get("project", False))
 
     if "M" in kwargs:
@@ -203,8 +209,9 @@ def _get_limepy(g=1, **kwargs):
         ldata.vx,
         ldata.vy,
         ldata.vz,
-        np.linspace(1, N, N, dtype=int),
         ldata.m,
+        np.linspace(1, N, N, dtype=int),
+
     )
     cluster.find_centre()
     cluster.key_params()
@@ -285,8 +292,8 @@ def _get_spes(**kwargs):
         sdata.vx,
         sdata.vy,
         sdata.vz,
-        np.linspace(1, N, N, dtype=int),
         sdata.m,
+        np.linspace(1, N, N, dtype=int),
     )
     cluster.find_centre()
     cluster.key_params()
@@ -818,11 +825,11 @@ def _get_cluster(gcname, source="default", mbar=0.3, params=False):
     if (
         source == "default" or "deboer" in source or "deBoer" in source
     ) and gcname in dname:
-        cluster = _get_deBoer_cluster(ddata, gcname, mbar, names)
+        cluster = _get_deBoer_cluster(ddata, gcname, mbar)
     elif (source == "default" or "harris" in source or "Harris" in source) and (
         gcname in hname or gcname in hname2
     ):
-        cluster = _get_harris_cluster(hdata, gcname, mbar, names)
+        cluster = _get_harris_cluster(hdata, gcname, mbar)
 
     return cluster
 

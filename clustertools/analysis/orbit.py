@@ -725,7 +725,8 @@ def orbital_path_match(
     return np.array(tstar), np.array(dprog), np.array(dpath)
 
 def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
-    """Calculate action angle values for each star 
+    """Calculate action angle values for each star
+
     - This is a simple wrapper for calculating actions from an Orbit in galpy (Bovy 2015)
     -- Bovy J., 2015, ApJS, 216, 29
 
@@ -783,6 +784,7 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
 
 def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
     """Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
+    
     - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
     -- Bovy J., 2015, ApJS, 216, 29
     Parameters

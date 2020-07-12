@@ -1,6 +1,6 @@
 .. _cluster:
 Introduction
-===============
+============
 
 The StarCluster Class
 ---------------------
@@ -32,6 +32,7 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
         :no-main-docstr:
         :no-heading:
         :skip: sub_cluster
+        :noindex:
 
 The ``add_stars`` function is the intended way to actually add stars to ``cluster``. Assuming stellar positions (x,y,z) and velocities (vx,vy,vz) have already been read in via a snapshot, one can call:
 
@@ -136,9 +137,10 @@ In this example, ``new_cluster`` will contain all the same information as ``clus
         :no-main-docstr:
         :no-heading:
         :skip: StarCluster
+        :noindex:
 
 Units
-------------
+-----
 
 When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. At present, ``clustertools`` supports 6 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
 
@@ -180,7 +182,7 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one set of units to another.
 
 Coordinate Systems
-------------------------
+------------------
 
 Similar to ``StarCluster.units``, when a ``StarCluster`` is initialized the default value of ``StarCluster.origin`` is ``None``. However it is possible for users to specify the origin of the coordinate system used by stars in the ``StarCluster``. At present, ``clustertools`` supports 4 different string inputs for ``StarCluster.origin``. The inputs and their meanings are summarized in Table 2 below.
 

@@ -21,7 +21,7 @@ from .tails import *
 from copy import copy
 
 class StarCluster(object):
-    """ A class that represents a star cluster population that functions can be performed on
+    """ A class that represents a star cluster population that ooperations and functions can be performed on
     
     Parameters
     ----------
@@ -295,14 +295,14 @@ class StarCluster(object):
         self.vz = np.append(self.vz, np.asarray(vz))
 
         if m is None:
-            self.m = np.append(self.m, np.ones(len(x),float))
-        else:
-            self.m = np.append(self.m, np.asarray(m))
+            m = np.ones(len(self.x),float)
+ 
+        self.m = np.append(self.m, np.asarray(m))
 
         if id is None:
-            self.id = np.linspace(0, self.ntot - 1, self.ntot, dtype=int)
-        else:
-            self.id = np.append(self.id, np.asarray(id))
+            id = np.linspace(0, len(self.x) - 1, len(self.x), dtype=int)
+
+        self.id = np.append(self.id, np.asarray(id))
 
         # Check lengths:
         nmax = np.amax(
@@ -1245,8 +1245,7 @@ def sub_cluster(
 ):
     """Extract a sub population of stars from a StarCluster
 
-    - automatically moves cluster to centre of mass, 
-    so all constraints are in clustercentric coordinates and current StarCluster.units
+    - automatically moves cluster to centre of mass, so all constraints are in clustercentric coordinates and current StarCluster.units
 
     Parameters
     ----------
@@ -1254,51 +1253,38 @@ def sub_cluster(
         minimum and maximum stellar radii
    mmin/mmax : float
         minimum and maximum stellar mass
-
    vmin/vmax : float
         minimum and maximum stellar velocity
-
    emin/emax : float
         minimum and maximum stellar energy
-
    kwmin/kwmax : int
         minimum and maximum stellar type (kw)
-
    indx : bool
         user defined boolean array from which to extract the subset
-
    projected : bool 
         use projected values and constraints (default:False)
-
    reset_centre : bool
         re-calculate cluster centre after extraction (default:False)
-
    reset_nbody_scale : bool
         reset nbody scaling factors (default:False)
-
    reset_nbody_mass : bool 
         find new nbody scaling mass (default:False)
-
    reset_nbody_radii : bool
         find new nbody scaling radius (default:False)
-
    reset_rvirial : bool
         use virial radius to find nbody scaling radius (default: True)
-
    reset_projected : bool 
         use projected radii to find nbody scaling radius (default: False)
 
     Returns
-    ----------
-   StarCluster
+    -------
+    StarCluster
 
-    History:
-    ----------
-
-   2018 - Written - Webb (UofT)
+    History
+    -------
+    2018 - Written - Webb (UofT)
 
     """
-
     units0, origin0 = cluster.units, cluster.origin
     cluster.to_centre()
 

@@ -2,7 +2,7 @@
 
 """
 __author__ = "Jeremy J Webb"
-__all__ =[
+__all__ = [
     'nbinmaker',
     "binmaker",
     "power_law_distribution_function",
@@ -85,7 +85,7 @@ def nbinmaker(x, nbin=10, nsum=False):
 
 
 def binmaker(x, nbin=10, nsum=False, steptype="linear"):
-    """Split an array into bins of equal size
+    """Split an array into bins of equal width
 
     Parameters
     ----------
@@ -434,7 +434,7 @@ def smooth(x, y, dx, bintype="num", median=False):
 
 
 def interpolate(r1, r2, x=None, y=None):
-    """Perform simple linear interpolate between two points in 2D
+    """Perform simple linear interpolation between two points in 2D
       - one of x or y must be defined
 
     Parameters

@@ -2,7 +2,7 @@
 
 """
 __author__ = "Jeremy J Webb"
-__all__=[
+__all__ = [
   "starplot",
   "skyplot",
 ]
@@ -15,10 +15,8 @@ import os
 from scipy.ndimage import gaussian_filter
 import matplotlib.colors as colors
 
-
 bovy_plot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
 current_palette = sns.color_palette()
-
 
 def _scatter(
     x,

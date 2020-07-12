@@ -10,7 +10,7 @@ __all__ = [
     "eta_prof_out",
     "snapout",
     "fortout",
-    "gyrout"
+    "gyrout",
 ]
 
 import numpy as np
@@ -196,7 +196,7 @@ def alpha_prof_out(
 
 def sigv_prof_out(cluster, fileout,**kwargs,
 ):
-    """Write velopcity dispersion profile to file
+    """Write velocity dispersion profile to file
 
     Parameters
     ----------
@@ -464,7 +464,8 @@ def fortout(
 
 def gyrout(cluster, filename="init.nemo.dat"):
     """Output a snapshot in gyrfalcon/NEMO format
-    - Units are converted to Walter Dehnen units (WDunits in GYRFALCON)
+
+    - Note that units are converted to Walter Dehnen units (WDunits in GYRFALCON)
 
     Parameters
     ----------

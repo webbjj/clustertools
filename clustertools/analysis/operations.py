@@ -24,7 +24,8 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_conversion,_rotate_to_arbitrary_vector
+from galpy.util import bovy_coords,bovy_conversion,_rotate_to_arbitrary_vector
+from copy import copy
 
 def to_pckms(cluster, do_key_params=False):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
@@ -117,7 +118,7 @@ def to_kpckms(cluster, do_key_params=False, ro=8.0, vo=220.0):
 
     """
     if cluster.units == "radec":
-        cluster._from_radec()
+        from_radec(cluster)
 
     if cluster.units == "galpy":
         cluster.m *= bovy_conversion.mass_in_msol(ro=ro, vo=vo)
@@ -271,7 +272,7 @@ def to_radec(cluster, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
     -------
    2018 - Written - Webb (UofT)
     """
-    try:
+    if len(cluster.ra)==len(cluster.x):
         cluster.x = copy(cluster.ra)
         cluster.y = copy(cluster.dec)
         cluster.z = copy(cluster.dist)
@@ -282,7 +283,7 @@ def to_radec(cluster, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
         cluster.units = "radec"
         cluster.origin = "sky"
 
-    except:
+    else:
 
         units0, origin0 = cluster.units, cluster.origin
 
@@ -366,7 +367,7 @@ def to_radec(cluster, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params(do_order=do_order)
 
-def _from_radec(cluster, do_order=False, do_key_params=False):
+def from_radec(cluster, do_order=False, do_key_params=False):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
     Parameters
@@ -711,7 +712,7 @@ def to_galaxy(cluster, do_order=False, do_key_params=False):
 
     """
     if cluster.units == "radec" and cluster.origin == "sky":
-        cluster._from_radec(do_key_params=False)
+        cluster.from_radec(do_key_params=False)
 
     elif cluster.origin != "galaxy":
         if cluster.origin == "centre":
@@ -755,7 +756,7 @@ def to_sky(cluster, do_order=False, do_key_params=False):
     """
     cluster.to_radec(do_key_params=do_key_params)
 
-def _from_sky(cluster, do_order=False, do_key_params=False):
+def from_sky(cluster, do_order=False, do_key_params=False):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
     - Also changes units to kpckms
@@ -778,7 +779,7 @@ def _from_sky(cluster, do_order=False, do_key_params=False):
     2018 - Written - Webb (UofT)
 
     """
-    cluster._from_radec(do_order=do_order, do_key_params=do_key_params)
+    cluster.from_radec(do_order=do_order, do_key_params=do_key_params)
 
 def to_origin(cluster, origin, do_order=False, do_key_params=False):
     """Shift cluster to origin as defined by keyword

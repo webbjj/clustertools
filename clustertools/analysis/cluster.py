@@ -362,8 +362,7 @@ class StarCluster(object):
         if do_key_params:
             self.key_params(do_order=do_order)
 
-        if len(self.id) != self.ntot:
-            self.ntot = len(self.id)
+        self.ntot = nmax
 
     def add_orbit(
         self,
@@ -842,8 +841,8 @@ class StarCluster(object):
     def to_radec(self, do_key_params=False, ro=8.0, vo=220.0):
         to_radec(self, do_key_params=do_key_params, ro=ro, vo=vo)
 
-    def _from_radec(self, do_order=False, do_key_params=False):
-        _from_radec(self, do_order=do_order, do_key_params=do_key_params)
+    def from_radec(self, do_order=False, do_key_params=False):
+        from_radec(self, do_order=do_order, do_key_params=do_key_params)
 
     def to_galpy(self, do_key_params=False, ro=8.0, vo=220.0):
         to_galpy(self, do_key_params=do_key_params, ro=ro, vo=vo)
@@ -863,8 +862,8 @@ class StarCluster(object):
     def to_sky(self, do_order=False, do_key_params=False):
         to_sky(self, do_order=do_order, do_key_params=do_key_params)
 
-    def _from_sky(self, do_order=False, do_key_params=False):
-        _from_sky(self, do_order=do_order, do_key_params=do_key_params)
+    def from_sky(self, do_order=False, do_key_params=False):
+        from_sky(self, do_order=do_order, do_key_params=do_key_params)
 
     def to_tail(self, plot=False):
         self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail=to_tail(self, plot=plot)

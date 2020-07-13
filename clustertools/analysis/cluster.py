@@ -304,7 +304,9 @@ class StarCluster(object):
 
         self.id = np.append(self.id, np.asarray(id))
 
-        # Check lengths:
+        # Check lengths
+
+        length_error=False
         nmax = np.amax(
             [
                 len(self.id),
@@ -331,21 +333,47 @@ class StarCluster(object):
         )
         if nmax != nmin:
             if len(self.id) == 1:
-                self.id = np.linspace(0, self.ntot - 1, self.ntot, dtype=int)
+                self.id = np.linspace(0, nmax - 1, nmax, dtype=int)
+            elif len(self.id)<nmax:
+                length_error=True
+
             if len(self.m) == 1:
-                self.m = np.ones(nmax) * self.m
+                self.m = np.ones(nmax) * self.m[0]
+            elif len(self.m <nmax):
+                length_error=True
+
             if len(self.x) == 1:
-                self.x = np.ones(nmax) * self.x
+                self.x = np.ones(nmax) * self.x[0]
+            elif len(self.x <nmax):
+                length_error=True
+
             if len(self.y) == 1:
-                self.y = np.ones(nmax) * self.y
+                self.y = np.ones(nmax) * self.y[0]
+            elif len(self.y <nmax):
+                length_error=True
+
             if len(self.z) == 1:
-                self.z = np.ones(nmax) * self.z
+                self.z = np.ones(nmax) * self.z[0]
+            elif len(self.z <nmax):
+                length_error=True
+
             if len(self.vx) == 1:
-                self.vx = np.ones(nmax) * self.vx
+                self.vx = np.ones(nmax) * self.vx[0]
+            elif len(self.vx <nmax):
+                length_error=True
+
             if len(self.vy) == 1:
-                self.vy = np.ones(nmax) * self.vy
+                self.vy = np.ones(nmax) * self.vy[0]
+            elif len(self.vy <nmax):
+                length_error=True
+
             if len(self.vz) == 1:
-                self.vz = np.ones(nmax) * self.vz
+                self.vz = np.ones(nmax) * self.vz[0]
+            elif len(self.vz <nmax):
+                length_error=True
+
+        if length_error:
+            print('ONE OR MORE INPUT ARRAY HAS INCORRECT LENGTH')
 
         if self.units == "radec" and self.origin == "sky":
             self.ra = copy(self.x)

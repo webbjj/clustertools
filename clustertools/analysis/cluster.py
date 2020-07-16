@@ -6,9 +6,10 @@ __author__ = "Jeremy J Webb"
 
 __all__ = [
     'StarCluster',
-    'sub_cluster'
+    'sub_cluster',
 ]
 
+import typing as T
 import numpy as np
 from galpy.util import bovy_conversion, bovy_coords
 from textwrap import dedent
@@ -17,6 +18,7 @@ from .orbit import initialize_orbit, calc_actions
 from .functions import *
 from .profiles import *
 from .operations import *
+from .operations import from_radec
 from .tails import *
 from copy import copy
 
@@ -45,12 +47,8 @@ class StarCluster(object):
     projected : bool
         return projected values instead of 3D value. (default: False)
 
-    Returns
-    -------
-    StarCluster
-
     Other Parameters
-    ---------------------------
+    ----------------
     sfile : str
         name of file containing single star data
     bfile : str
@@ -83,7 +81,152 @@ class StarCluster(object):
     History
     -------
     2018 - Written - Webb (UofT)
+
     """
+
+    @classmethod
+    def from_Table(
+        cls,
+        table,
+        column_mapper: T.Optional[T.Dict[str, str]] = None,
+        units: T.Optional[str] = None,
+        origin: T.Optional[str] = None,
+        do_key_params: bool = False,  # from add_stars
+        do_order: bool = False,  # from add_stars
+        verbose=False,
+        **kwargs,  # for init
+    ):
+        """Create StarCluster from :class:`~astropy.table.Table`.
+
+        Parameters
+        ----------
+        table : `~astropy.table.Table` instance
+        column_mapper: dict, optional
+            Map the ``self.add_stars`` input to column names in `table`
+            If not None,
+            the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
+            the optional keys are "m", "id".
+
+            If None, then performs a basic search of the table column names,
+            lowercasing all names for fuzzy matching. The search options
+            are different if `units` is "radec" and `origin` is "sky".
+            In this case, the search parameters are, ordered by preference and
+            lowercased:
+
+                - x : "right ascension" or "ra"
+                - y : "declination" or "dec"
+                - z : "distance" or "dist" or "dist"
+                - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
+                - vy : "pm_dec" or "pmdec"
+                - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
+
+        Raises
+        ------
+        ValueError
+            If `table` missing mandatory argument and
+            cannot be found with `column_mapper`
+        KeyError
+            if missing a mandatory key in `column_mapper`.
+
+        """
+        # create new instance of class
+        self = super().__new__(cls)
+        # instantiate from arguments
+        self.__init__(
+            units=units,
+            origin=origin,
+            # ntot=0, tphys=0., ctype="snapshot", projected=False,
+            **kwargs,
+        )
+
+        cm = column_mapper or {}  # None -> {}
+
+        if column_mapper is None:
+            # lower-case colum names
+            colnames = [n.lower() for n in table.colnames]
+
+            def _helper(*vs: str, to: str, optional=False):
+                for v in vs:  # equivalent to if/elif series
+                    if v in colnames:
+                        cm[to] = table.colnames[colnames.index(v)]
+                        return table[cm[to]]
+
+                if not optional:
+                    raise ValueError(
+                        (
+                            f"Table missing input {to} "
+                            f"with searched column names {vs}."
+                        )
+                    )
+
+            # /def
+
+            ID = _helper("id", to="id", optional=True)
+            m = _helper("m", "mass", to="m", optional=True)
+
+            if units == "radec" and origin == "sky":  # TOOD lowercase
+                # positions
+                x = _helper("right ascension", "ra", to="x", optional=False)
+                y = _helper("declination", "dec", to="y", optional=False)
+                z = _helper("distance", "dist", "d", to="z", optional=False)
+                # velocities
+                vx = _helper(
+                    "pm_ra_cosdec", "pm_ra", "pmra", to="vx", optional=False
+                )
+                vy = _helper("pm_dec", "pmdec", to="vy", optional=False)
+                vz = _helper(
+                    "radial_velocity",
+                    "rvel",
+                    "v_los",
+                    "vlos",
+                    to="vz",
+                    optional=False,
+                )
+
+            else:
+                # positions
+                x = _helper("x", to="x", optional=False)
+                y = _helper("y", to="y", optional=False)
+                z = _helper("z", to="z", optional=False)
+                # velocities
+                vx = _helper("v_x", "vx", to="vx", optional=False)
+                vy = _helper("v_x", "vy", to="vy", optional=False)
+                vz = _helper("v_x", "vz", to="vz", optional=False)
+
+        else:  # column_mapper not None
+            x = table[cm.pop("x")]
+            y = table[cm.pop("y")]
+            z = table[cm.pop("z")]
+            vx = table[cm.pop("vx")]
+            vy = table[cm.pop("xy")]
+            vz = table[cm.pop("vz")]
+
+            m = table[cm.pop("m")] if "m" in cm else None
+            ID = table[cm.pop("id")] if "id" in cm else None
+
+            if cm:  # not empty after this.
+                raise Exception("passing unused items in column_mapper.")
+
+        self.add_stars(
+            x=x,
+            y=y,
+            z=z,
+            vx=vx,
+            vy=vy,
+            vz=vz,
+            m=m,
+            id=ID,
+            do_key_params=do_key_params,
+            do_order=do_order,
+        )
+
+        if verbose:
+            print(cm)
+
+        return self
+
+    # /def
+
     def __init__(
         self, ntot=0, tphys=0.0, units=None, origin=None, ctype="snapshot", projected=False, **kwargs
     ):
@@ -91,22 +234,21 @@ class StarCluster(object):
         # Age of cluster
         self.tphys = tphys
 
-
-        #Units and origin
+        # Units and origin
         self.units = units
         self.origin = origin
 
         # Cluster Simulation Type
         self.ctype = ctype
 
-        #Return projected values only
-        self.projected=projected
+        # Return projected values only
+        self.projected = projected
 
         # Kwargs
-        self.nsnap = int(kwargs.get("nsnap", "0"))
+        self.nsnap = int(kwargs.get("nsnap", 0))
         self.delimiter = kwargs.get("delimiter", None)
         self.wdir = kwargs.get("wdir", "./")
-        self.nzfill = int(kwargs.get("nzfill", "5"))
+        self.nzfill = int(kwargs.get("nzfill", 5))
         self.snapbase = kwargs.get("snapbase", "")
         self.snapend = kwargs.get("snapend", ".dat")
         self.snapdir = kwargs.get("snapdir", "")
@@ -255,11 +397,10 @@ class StarCluster(object):
     def add_stars(
         self, x, y, z, vx, vy, vz,m=None,id=None,do_key_params=False, do_order=False
     ):
-        """add stars to StarCluster
+        """Add stars to StarCluster.
 
         Parameters
         ----------
-
         x,y,z: float
             stellar positions. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
             and self.origin=='sky', then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)
@@ -275,18 +416,13 @@ class StarCluster(object):
         do_order: bool
             order stars by radius when calling key_params() (default: False)
 
-        Returns
-        ----------
+        Notes
+        -----
+        History:
 
-        None
-
-        History
-        ----------
-
-        2018 - Written - Webb (UofT)
+            - 2018 - Written - Webb (UofT)
 
         """
-
         self.x = np.append(self.x, np.asarray(x))
         self.y = np.append(self.y, np.asarray(y))
         self.z = np.append(self.z, np.asarray(z))

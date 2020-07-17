@@ -23,15 +23,15 @@ except:
 
 
 def load_cluster(
-    ctype="snapshot",
+    ctype: str = "snapshot",
     particles=None,
     custom_override=True,
-    units="pckms",
-    origin="cluster",
+    units: str = "pckms",
+    origin: str = "cluster",
     ofile=None,
     orbit=None,
     filename=None,
-    **kwargs
+    **kwargs,
 ):
     """Load a StarCluster snapshot from a generic code output
        
@@ -41,6 +41,7 @@ def load_cluster(
         Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)
     particles : particles
         AMUSE particle dataset (default: None)
+        or `~astropy.table.Table` instance if `ctype` is "table".
     custom_override : bool
         use a custom function to load data instead of default (default: True)
     units : str
@@ -73,7 +74,7 @@ def load_cluster(
         choice of delimiter when reading ascii/csv files (Default: ',')
     wdir : str
         working directory of snapshots if not current directory
-    intialize : bool
+    initialize : bool
         initialize a galpy orbit after reading in orbital information (default: False)
     projected : bool
         calculate projected values as well as 3D values (Default: True)
@@ -89,8 +90,8 @@ def load_cluster(
     wdir = kwargs.get("wdir", "./")
     initialize = kwargs.get("initialize", False)
 
-    if "ofilename" in kwargs and ofile == None:
-        ofile = open(wdir + kwargs.get("ofilename"), "r")
+    if "ofilename" in kwargs and ofile is None:
+        ofile = open(wdir + kwargs["ofilename"], "r")
 
     if ctype == "nbody6se":
         # When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
@@ -139,14 +140,31 @@ def load_cluster(
             origin=origin,
             ofile=ofile,
             advance=False,
+            **kwargs,
+        )
+    elif ctype.lower() == "table":
+        # have to pop beforehand so can pass kwargs
+        cluster_cls = kwargs.pop("cls", StarCluster)
+
+        # make cluster
+        cluster = _get_from_Table(
+            particles,
+            # column_mapper=column_mapper,  # kwargs
+            units=units,
+            origin=origin,
+            # do_key_params=do_key_params,  # kwargs
+            # do_order=do_order,  # kwargs
+            # verbose=verbose,  # kwargs
+            cls=cluster_cls,
             **kwargs
         )
+
     else:
         print("NO CTYPE GIVEN")
         return 0
 
     # Add galpy orbit if given
-    if orbit != None:
+    if orbit is not None:
         cluster.orbit = orbit
         if cluster.units == "pckms":
             t = (cluster.tphys / 1000.0) / bovy_conversion.time_in_Gyr(ro=8.0, vo=220.0)
@@ -204,7 +222,126 @@ def load_cluster(
     return cluster
 
 
-def advance_cluster(cluster,custom_override=True,ofile=None, orbit=None, filename=None, **kwargs):
+def load_cluster_from_Table(
+    table,
+    column_mapper: T.Optional[T.Dict[str, str]] = None,
+    units: T.Optional[str] = None,
+    origin: T.Optional[str] = None,
+    do_key_params: bool = False,  # from add_stars
+    do_order: bool = False,  # from add_stars
+    orbit=None,
+    *,
+    verbose: bool = False,
+    cls=StarCluster,
+    # Ffor init
+    **kwargs,  # for init
+):
+    """Create StarCluster from :class:`~astropy.table.Table`.
+
+    Parameters
+    ----------
+    table : `~astropy.table.Table` instance
+    column_mapper: dict, optional
+        Map the ``StarCluster.add_stars`` input to column names in `table`
+        If not None,
+        the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
+        the optional keys are "m", "id".
+
+        If None, then performs a basic search of the table column names,
+        lowercasing all names for fuzzy matching. The search options
+        are different if `units` is "radec" and `origin` is "sky".
+        In this case, the search parameters are, ordered by preference and
+        lowercased:
+
+            - x : "right ascension" or "ra"
+            - y : "declination" or "dec"
+            - z : "distance" or "dist" or "dist"
+            - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
+            - vy : "pm_dec" or "pmdec"
+            - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
+
+    units : str, optional
+        Units of stellar positions and velocties. Options include 'pckms',
+        'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
+        stellar velocities are assumed to be km/s. (default: None)
+    origin : str, optional
+        Origin of coordinate system within which stellar positions and
+        velocities are defined.  Options include 'centre', 'cluster', 'galaxy'
+        and 'sky'. Note that 'centre' corresponds to the systems centre of
+        density or mass (as calculated by clustertools) while 'cluster'
+        corresponds to the orbital position of the cluster's initial centre of
+        mass given 'tphys'. In some cases these two coordinate systems may be
+        the same. (default: None)
+
+    do_key_params: bool, optional
+        call key_params() after adding stars (default: False)
+    do_order: bool, optional
+        order stars by radius when calling key_params() (default: False)
+
+    orbit : class
+        a galpy orbit to be used for the StarCluster's orbital information
+        (default: None)
+
+    Returns
+    -------
+    `cls` instance
+        initialized with particles from `table`.
+
+    Other Parameters
+    ----------------
+    verbose : bool, optional
+        Whether to print the `column_mapper`
+    cls : type, optional
+        The constructor class, default `~clustertools.StarCluster`.
+        Generally this should NOT be changed.
+    initialize : bool, optional, keyword only
+        initialize a galpy orbit after reading in orbital information
+        (default: False)
+    **kwargs
+        Arguments to `cls` initialization.
+        See documentation for options.
+
+    Raises
+    ------
+    ValueError
+        If `table` missing mandatory argument and
+        cannot be found with `column_mapper`
+    KeyError
+        If missing a mandatory key in `column_mapper`.
+    UserWarning
+        If unused items in `column_mapper`.
+
+    """
+    # use load_cluster, which will call `_get_from_Table`
+    cluster = load_cluster(
+        ctype="table",
+        particles=table,
+        units=units,
+        origin=origin,
+        orbit=orbit,
+        # AS KWARGS
+        column_mapper=column_mapper,
+        do_key_params=do_key_params,
+        do_order=do_rorder,
+        verbose=verbose,
+        cls=cls,
+        **kwargs,
+    )
+
+    return cluster
+
+
+# /def
+
+
+def advance_cluster(
+    cluster,
+    custom_override=True,
+    ofile=None,
+    orbit=None,
+    filename=None,
+    **kwargs,
+):
     """Advance a loaded StarCluster snapshot to the next timestep
 
    - ofile or orbit need to be provded again, same as load_cluster.
@@ -1326,3 +1463,180 @@ def _get_amuse_particles(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
     return cluster
+
+
+def _get_from_Table(
+    table,
+    column_mapper: T.Optional[T.Dict[str, str]] = None,
+    units: T.Optional[str] = None,
+    origin: T.Optional[str] = None,
+    do_key_params: bool = False,  # from add_stars
+    do_order: bool = False,  # from add_stars
+    *,
+    verbose: bool = False,
+    cls=StarCluster,
+    # for init
+    **kwargs,  # for init
+):
+    """Create StarCluster from :class:`~astropy.table.Table`.
+
+    Parameters
+    ----------
+    table : `~astropy.table.Table` instance
+    column_mapper: dict, optional
+        Map the ``StarCluster.add_stars`` input to column names in `table`
+        If not None,
+        the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
+        the optional keys are "m", "id".
+
+        If None, then performs a basic search of the table column names,
+        lowercasing all names for fuzzy matching. The search options
+        are different if `units` is "radec" and `origin` is "sky".
+        In this case, the search parameters are, ordered by preference and
+        lowercased:
+
+            - x : "right ascension" or "ra"
+            - y : "declination" or "dec"
+            - z : "distance" or "dist" or "dist"
+            - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
+            - vy : "pm_dec" or "pmdec"
+            - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
+
+    units : str, optional
+        Units of stellar positions and velocties. Options include 'pckms',
+        'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
+        stellar velocities are assumed to be km/s. (default: None)
+    origin : str, optional
+        Origin of coordinate system within which stellar positions and
+        velocities are defined.  Options include 'centre', 'cluster', 'galaxy'
+        and 'sky'. Note that 'centre' corresponds to the systems centre of
+        density or mass (as calculated by clustertools) while 'cluster'
+        corresponds to the orbital position of the cluster's initial centre of
+        mass given 'tphys'. In some cases these two coordinate systems may be
+        the same. (default: None)
+
+    do_key_params: bool, optional
+        call key_params() after adding stars (default: False)
+    do_order: bool, optional
+        order stars by radius when calling key_params() (default: False)
+
+    orbit : class
+        a galpy orbit to be used for the StarCluster's orbital information (default: None)
+
+    Returns
+    -------
+    `cls` instance
+        initialized with particles from `table`.
+
+    Other Parameters
+    ----------------
+    verbose : bool, optional
+        Whether to print the `column_mapper`
+    cls : type, optional
+        The constructor class, default `~clustertools.StarCluster`.
+        Generally this should NOT be changed.
+    **kwargs
+        Arguments to `cls` initalization.
+        See documentation for options.
+
+    Raises
+    ------
+    ValueError
+        If `table` missing mandatory argument and
+        cannot be found with `column_mapper`
+    KeyError
+        If missing a mandatory key in `column_mapper`.
+
+    """
+    # create new instance of class
+    cluster = cls(
+        units=units,
+        origin=origin,
+        # ntot=0, tphys=0., ctype="snapshot", projected=False,
+        **kwargs,
+    )
+
+    cm = column_mapper or {}  # None -> {}
+
+    if column_mapper is None:
+        # lower-case colum names
+        colnames = [n.lower() for n in table.colnames]
+
+        def _helper(*vs: str, to: str, optional=False):
+            for v in vs:  # equivalent to if/elif series
+                if v in colnames:
+                    cm[to] = table.colnames[colnames.index(v)]
+                    return table[cm[to]]
+
+            if not optional:
+                raise ValueError(
+                    (
+                        f"Table missing input {to} "
+                        f"with searched column names {vs}."
+                    )
+                )
+
+        # /def
+
+        ID = _helper("id", to="id", optional=True)
+        m = _helper("m", "mass", to="m", optional=True)
+
+        if units == "radec" and origin == "sky":  # TOOD lowercase
+            # positions
+            x = _helper("right ascension", "ra", to="x", optional=False)
+            y = _helper("declination", "dec", to="y", optional=False)
+            z = _helper("distance", "dist", "d", to="z", optional=False)
+            # velocities
+            vx = _helper(
+                "pm_ra_cosdec", "pm_ra", "pmra", to="vx", optional=False
+            )
+            vy = _helper("pm_dec", "pmdec", to="vy", optional=False)
+            vz = _helper(
+                "radial_velocity",
+                "rvel",
+                "v_los",
+                "vlos",
+                to="vz",
+                optional=False,
+            )
+
+        else:
+            # positions
+            x = _helper("x", to="x", optional=False)
+            y = _helper("y", to="y", optional=False)
+            z = _helper("z", to="z", optional=False)
+            # velocities
+            vx = _helper("v_x", "vx", to="vx", optional=False)
+            vy = _helper("v_x", "vy", to="vy", optional=False)
+            vz = _helper("v_x", "vz", to="vz", optional=False)
+
+    else:  # column_mapper not None
+        x = table[cm.pop("x")]
+        y = table[cm.pop("y")]
+        z = table[cm.pop("z")]
+        vx = table[cm.pop("vx")]
+        vy = table[cm.pop("xy")]
+        vz = table[cm.pop("vz")]
+
+        m = table[cm.pop("m")] if "m" in cm else None
+        ID = table[cm.pop("id")] if "id" in cm else None
+
+    cluster.add_stars(
+        x=x,
+        y=y,
+        z=z,
+        vx=vx,
+        vy=vy,
+        vz=vz,
+        m=m,
+        id=ID,
+        do_key_params=do_key_params,
+        do_order=do_order,
+    )
+
+    if verbose:
+        print(cm)
+
+    return cluster
+
+# /def

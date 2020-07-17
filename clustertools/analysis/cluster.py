@@ -5,8 +5,8 @@
 __author__ = "Jeremy J Webb"
 
 __all__ = [
-    'StarCluster',
-    'sub_cluster',
+    "StarCluster",
+    "sub_cluster",
 ]
 
 import typing as T
@@ -67,7 +67,7 @@ class StarCluster(object):
         string of character in filename after nsnap (default: '.dat')
     snapdir : str
         string name of directory of snapshots if different than wdir (Default: '')
-    delimiter : str 
+    delimiter : str
         choice of delimiter when reading ascii/csv files (default: ',')
     wdir : str
         working directory of snapshots if not current directory
@@ -91,9 +91,11 @@ class StarCluster(object):
         column_mapper: T.Optional[T.Dict[str, str]] = None,
         units: T.Optional[str] = None,
         origin: T.Optional[str] = None,
+        *,
         do_key_params: bool = False,  # from add_stars
         do_order: bool = False,  # from add_stars
-        verbose=False,
+        orbit=None,
+        verbose: bool = False,
         **kwargs,  # for init
     ):
         """Create StarCluster from :class:`~astropy.table.Table`.
@@ -102,7 +104,7 @@ class StarCluster(object):
         ----------
         table : `~astropy.table.Table` instance
         column_mapper: dict, optional
-            Map the ``self.add_stars`` input to column names in `table`
+            Map the ``StarCluster.add_stars`` input to column names in `table`
             If not None,
             the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
             the optional keys are "m", "id".
@@ -120,115 +122,78 @@ class StarCluster(object):
                 - vy : "pm_dec" or "pmdec"
                 - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
 
+        units : str, optional
+            Units of stellar positions and velocties. Options include 'pckms',
+            'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
+            stellar velocities are assumed to be km/s. (default: None)
+        origin : str, optional
+            Origin of coordinate system within which stellar positions and
+            velocities are defined.  Options include 'centre', 'cluster',
+            'galaxy' and 'sky'. Note that 'centre' corresponds to the systems
+            centre of density or mass (as calculated by clustertools) while
+            'cluster' corresponds to the orbital position of the cluster's
+            initial centre of mass given 'tphys'. In some cases these two
+            coordinate systems may be the same. (default: None)
+
+        do_key_params: bool, optional, keyword only
+            call key_params() after adding stars (default: False)
+        do_order: bool, optional, keyword only
+            order stars by radius when calling key_params() (default: False)
+
+        orbit : `~galpy.orbit.Orbit` instance, optional, keyword only
+            a galpy orbit to be used for the StarCluster's orbital information
+            (default: None)
+
+        Returns
+        -------
+        `cls` instance
+            initialized with particles from `table`.
+
+        Other Parameters
+        ----------------
+        verbose : bool, optional
+            Whether to print the `column_mapper`
+        **kwargs
+            Arguments to `cls` initalization.
+            See documentation for options.
+
         Raises
         ------
         ValueError
             If `table` missing mandatory argument and
             cannot be found with `column_mapper`
         KeyError
-            if missing a mandatory key in `column_mapper`.
+            If missing a mandatory key in `column_mapper`.
 
         """
-        # create new instance of class
-        self = super().__new__(cls)
-        # instantiate from arguments
-        self.__init__(
+        from .load import load_cluster_from_Table
+
+        self = load_cluster_from_Table(
+            table,
+            column_mapper=column_mapper,
             units=units,
             origin=origin,
-            # ntot=0, tphys=0., ctype="snapshot", projected=False,
-            **kwargs,
-        )
-
-        cm = column_mapper or {}  # None -> {}
-
-        if column_mapper is None:
-            # lower-case colum names
-            colnames = [n.lower() for n in table.colnames]
-
-            def _helper(*vs: str, to: str, optional=False):
-                for v in vs:  # equivalent to if/elif series
-                    if v in colnames:
-                        cm[to] = table.colnames[colnames.index(v)]
-                        return table[cm[to]]
-
-                if not optional:
-                    raise ValueError(
-                        (
-                            f"Table missing input {to} "
-                            f"with searched column names {vs}."
-                        )
-                    )
-
-            # /def
-
-            ID = _helper("id", to="id", optional=True)
-            m = _helper("m", "mass", to="m", optional=True)
-
-            if units == "radec" and origin == "sky":  # TOOD lowercase
-                # positions
-                x = _helper("right ascension", "ra", to="x", optional=False)
-                y = _helper("declination", "dec", to="y", optional=False)
-                z = _helper("distance", "dist", "d", to="z", optional=False)
-                # velocities
-                vx = _helper(
-                    "pm_ra_cosdec", "pm_ra", "pmra", to="vx", optional=False
-                )
-                vy = _helper("pm_dec", "pmdec", to="vy", optional=False)
-                vz = _helper(
-                    "radial_velocity",
-                    "rvel",
-                    "v_los",
-                    "vlos",
-                    to="vz",
-                    optional=False,
-                )
-
-            else:
-                # positions
-                x = _helper("x", to="x", optional=False)
-                y = _helper("y", to="y", optional=False)
-                z = _helper("z", to="z", optional=False)
-                # velocities
-                vx = _helper("v_x", "vx", to="vx", optional=False)
-                vy = _helper("v_x", "vy", to="vy", optional=False)
-                vz = _helper("v_x", "vz", to="vz", optional=False)
-
-        else:  # column_mapper not None
-            x = table[cm.pop("x")]
-            y = table[cm.pop("y")]
-            z = table[cm.pop("z")]
-            vx = table[cm.pop("vx")]
-            vy = table[cm.pop("xy")]
-            vz = table[cm.pop("vz")]
-
-            m = table[cm.pop("m")] if "m" in cm else None
-            ID = table[cm.pop("id")] if "id" in cm else None
-
-            if cm:  # not empty after this.
-                raise Exception("passing unused items in column_mapper.")
-
-        self.add_stars(
-            x=x,
-            y=y,
-            z=z,
-            vx=vx,
-            vy=vy,
-            vz=vz,
-            m=m,
-            id=ID,
             do_key_params=do_key_params,
             do_order=do_order,
+            orbit=orbit,
+            verbose=verbose,
+            cls=cls,
+            **kwargs,
         )
-
-        if verbose:
-            print(cm)
 
         return self
 
     # /def
 
     def __init__(
-        self, ntot=0, tphys=0.0, units=None, origin=None, ctype="snapshot", projected=False, **kwargs
+        self,
+        ntot=0,
+        tphys=0.0,
+        units=None,
+        origin=None,
+        ctype="snapshot",
+        projected=False,
+        **kwargs,
     ):
 
         # Age of cluster

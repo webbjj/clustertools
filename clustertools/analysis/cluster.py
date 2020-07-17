@@ -5,10 +5,11 @@
 __author__ = "Jeremy J Webb"
 
 __all__ = [
-    'StarCluster',
-    'sub_cluster'
+    "StarCluster",
+    "sub_cluster",
 ]
 
+import typing as T
 import numpy as np
 from galpy.util import bovy_conversion, bovy_coords
 from textwrap import dedent
@@ -17,6 +18,7 @@ from .orbit import initialize_orbit, calc_actions
 from .functions import *
 from .profiles import *
 from .operations import *
+from .operations import from_radec
 from .tails import *
 from copy import copy
 
@@ -45,12 +47,8 @@ class StarCluster(object):
     projected : bool
         return projected values instead of 3D value. (default: False)
 
-    Returns
-    -------
-    StarCluster
-
     Other Parameters
-    ---------------------------
+    ----------------
     sfile : str
         name of file containing single star data
     bfile : str
@@ -69,7 +67,7 @@ class StarCluster(object):
         string of character in filename after nsnap (default: '.dat')
     snapdir : str
         string name of directory of snapshots if different than wdir (Default: '')
-    delimiter : str 
+    delimiter : str
         choice of delimiter when reading ascii/csv files (default: ',')
     wdir : str
         working directory of snapshots if not current directory
@@ -83,30 +81,139 @@ class StarCluster(object):
     History
     -------
     2018 - Written - Webb (UofT)
+
     """
+
+    @classmethod
+    def from_Table(
+        cls,
+        table,
+        column_mapper: T.Optional[T.Dict[str, str]] = None,
+        units: T.Optional[str] = None,
+        origin: T.Optional[str] = None,
+        *,
+        do_key_params: bool = False,  # from add_stars
+        do_order: bool = False,  # from add_stars
+        orbit=None,
+        verbose: bool = False,
+        **kwargs,  # for init
+    ):
+        """Create StarCluster from :class:`~astropy.table.Table`.
+
+        Parameters
+        ----------
+        table : `~astropy.table.Table` instance
+        column_mapper: dict, optional
+            Map the ``StarCluster.add_stars`` input to column names in `table`
+            If not None,
+            the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
+            the optional keys are "m", "id".
+
+            If None, then performs a basic search of the table column names,
+            lowercasing all names for fuzzy matching. The search options
+            are different if `units` is "radec" and `origin` is "sky".
+            In this case, the search parameters are, ordered by preference and
+            lowercased:
+
+                - x : "right ascension" or "ra"
+                - y : "declination" or "dec"
+                - z : "distance" or "dist" or "dist"
+                - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
+                - vy : "pm_dec" or "pmdec"
+                - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
+
+        units : str, optional
+            Units of stellar positions and velocties. Options include 'pckms',
+            'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
+            stellar velocities are assumed to be km/s. (default: None)
+        origin : str, optional
+            Origin of coordinate system within which stellar positions and
+            velocities are defined.  Options include 'centre', 'cluster',
+            'galaxy' and 'sky'. Note that 'centre' corresponds to the systems
+            centre of density or mass (as calculated by clustertools) while
+            'cluster' corresponds to the orbital position of the cluster's
+            initial centre of mass given 'tphys'. In some cases these two
+            coordinate systems may be the same. (default: None)
+
+        do_key_params: bool, optional, keyword only
+            call key_params() after adding stars (default: False)
+        do_order: bool, optional, keyword only
+            order stars by radius when calling key_params() (default: False)
+
+        orbit : `~galpy.orbit.Orbit` instance, optional, keyword only
+            a galpy orbit to be used for the StarCluster's orbital information
+            (default: None)
+
+        Returns
+        -------
+        `cls` instance
+            initialized with particles from `table`.
+
+        Other Parameters
+        ----------------
+        verbose : bool, optional
+            Whether to print the `column_mapper`
+        **kwargs
+            Arguments to `cls` initalization.
+            See documentation for options.
+
+        Raises
+        ------
+        ValueError
+            If `table` missing mandatory argument and
+            cannot be found with `column_mapper`
+        KeyError
+            If missing a mandatory key in `column_mapper`.
+
+        """
+        from .load import load_cluster_from_Table
+
+        self = load_cluster_from_Table(
+            table,
+            column_mapper=column_mapper,
+            units=units,
+            origin=origin,
+            do_key_params=do_key_params,
+            do_order=do_order,
+            orbit=orbit,
+            verbose=verbose,
+            cls=cls,
+            **kwargs,
+        )
+
+        return self
+
+    # /def
+
     def __init__(
-        self, ntot=0, tphys=0.0, units=None, origin=None, ctype="snapshot", projected=False, **kwargs
+        self,
+        ntot=0,
+        tphys=0.0,
+        units=None,
+        origin=None,
+        ctype="snapshot",
+        projected=False,
+        **kwargs,
     ):
 
         # Age of cluster
         self.tphys = tphys
 
-
-        #Units and origin
+        # Units and origin
         self.units = units
         self.origin = origin
 
         # Cluster Simulation Type
         self.ctype = ctype
 
-        #Return projected values only
-        self.projected=projected
+        # Return projected values only
+        self.projected = projected
 
         # Kwargs
-        self.nsnap = int(kwargs.get("nsnap", "0"))
+        self.nsnap = int(kwargs.get("nsnap", 0))
         self.delimiter = kwargs.get("delimiter", None)
         self.wdir = kwargs.get("wdir", "./")
-        self.nzfill = int(kwargs.get("nzfill", "5"))
+        self.nzfill = int(kwargs.get("nzfill", 5))
         self.snapbase = kwargs.get("snapbase", "")
         self.snapend = kwargs.get("snapend", ".dat")
         self.snapdir = kwargs.get("snapdir", "")
@@ -254,11 +361,10 @@ class StarCluster(object):
     def add_stars(
         self, x, y, z, vx, vy, vz,m=None,id=None,do_key_params=False, do_order=False
     ):
-        """add stars to StarCluster
+        """Add stars to StarCluster.
 
         Parameters
         ----------
-
         x,y,z: float
             stellar positions. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
             and self.origin=='sky', then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)
@@ -274,18 +380,13 @@ class StarCluster(object):
         do_order: bool
             order stars by radius when calling key_params() (default: False)
 
-        Returns
-        ----------
+        Notes
+        -----
+        History:
 
-        None
-
-        History
-        ----------
-
-        2018 - Written - Webb (UofT)
+            - 2018 - Written - Webb (UofT)
 
         """
-
         self.x = np.append(self.x, np.asarray(x))
         self.y = np.append(self.y, np.asarray(y))
         self.z = np.append(self.z, np.asarray(z))

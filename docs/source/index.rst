@@ -36,6 +36,7 @@ Example Notebooks
    notebooks/loading_and_advancing.ipynb
    notebooks/setup.ipynb
    notebooks/functions.ipynb
+   notebooks/profiles.ipynb
 
 Planned Future Additions
 ----------------------------------

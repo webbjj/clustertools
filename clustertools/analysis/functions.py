@@ -262,13 +262,13 @@ def find_centre_of_mass(cluster):
     -------
     2018 - Written - Webb (UofT)
     """
-    xc = np.sum(cluster.m * cluster.x) / cluster.mtot
-    yc = np.sum(cluster.m * cluster.y) / cluster.mtot
-    zc = np.sum(cluster.m * cluster.z) / cluster.mtot
+    xc = np.sum(cluster.m * cluster.x) / np.sum(cluster.m)
+    yc = np.sum(cluster.m * cluster.y) / np.sum(cluster.m)
+    zc = np.sum(cluster.m * cluster.z) / np.sum(cluster.m)
 
-    vxc = np.sum(cluster.m * cluster.vx) / cluster.mtot
-    vyc = np.sum(cluster.m * cluster.vy) / cluster.mtot
-    vzc = np.sum(cluster.m * cluster.vz) / cluster.mtot
+    vxc = np.sum(cluster.m * cluster.vx) / np.sum(cluster.m)
+    vyc = np.sum(cluster.m * cluster.vy) / np.sum(cluster.m)
+    vzc = np.sum(cluster.m * cluster.vz) / np.sum(cluster.m)
 
     return xdc, ydc, zdc,vxdc, vydc, vzdc
 
@@ -301,12 +301,30 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     2020 - Written - Webb (UofT)
 
     """
+    units0, origin0 = save_cluster(cluster)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
+
+
+    if cluster.units == "nbody":
+        grav = 1.0
+    elif cluster.units == "pckms":
+        # G has units of pc (km/s)^2 / Msun
+        grav = 4.302e-3
+    elif cluster.units == "kpckms":
+        # G has units of kpc (km/s)^2 / Msun
+        grav = 4.302e-6
+    else:
+        grav = 1.0
+
+
     if rad is None and projected:
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         rad=cluster.rmpro
     elif rad is None:
         rad=cluster.rm
-
-    grav=4.302e-3
 
     if projected:
         rindx=cluster.rpro < rad
@@ -320,7 +338,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     
     v2=np.mean(cluster.v**2.)
     
-    #v2=0.4*grav*cluster.mtot/rad
+    #v2=0.4*grav*np.sum(cluster.m)/rad
     
     lnlambda=np.log(coulomb*cluster.ntot)
     
@@ -329,6 +347,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     # Units of Myr
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
+    return_cluster(cluster, units0, origin0,do_order=True)
     return trelax
 
 def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
@@ -356,14 +375,31 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
        2019 - Written - Webb (UofT)
 
     """
+    units0, origin0 = save_cluster(cluster)
 
-    grav=4.302e-3
-    mass=cluster.mtot
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
+
+    if cluster.units == "nbody":
+        grav = 1.0
+    elif cluster.units == "pckms":
+        # G has units of pc (km/s)^2 / Msun
+        grav = 4.302e-3
+    elif cluster.units == "kpckms":
+        # G has units of kpc (km/s)^2 / Msun
+        grav = 4.302e-6
+    else:
+        grav = 1.0
+
+    mass=np.sum(cluster.m)
     ntot=float(cluster.ntot)
     mbar=mass/ntot
     lnlambda = np.log(coulomb*ntot)
 
     if projected:
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         rm=cluster.rmpro
     else:
         rm=cluster.rm
@@ -373,6 +409,7 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     # Units of Myr
     trh*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
+    return_cluster(cluster, units0, origin0,do_order=True)
     return trh
 
 
@@ -404,16 +441,37 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     2019 - Written - Webb (UofT)
 
     """
+    units0, origin0 = save_cluster(cluster)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
+
+    if cluster.units == "nbody":
+        grav = 1.0
+    elif cluster.units == "pckms":
+        # G has units of pc (km/s)^2 / Msun
+        grav = 4.302e-3
+    elif cluster.units == "kpckms":
+        # G has units of kpc (km/s)^2 / Msun
+        grav = 4.302e-6
+    else:
+        grav = 1.0
 
     lnlambda=np.log(0.4*cluster.ntot)
-    mtot=cluster.mtot
+    mtot=np.sum(cluster.m)
     mbar=np.mean(cluster.m)
-    rc=cluster.r10
-    rh=cluster.rm
-    grav=4.302e-3
+    if projected:
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
+        rc=cluster.r10pro
+        rh=cluster.rmpro
+    else:
+        rc=cluster.r10
+        rh=cluster.rm
 
     trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
 
+    return_cluster(cluster, units0, origin0,do_order=True)
     return trc
 
 
@@ -443,7 +501,8 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
        2019 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre()
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
 
     if cluster.units == "nbody":
         grav = 1.0
@@ -609,6 +668,7 @@ def closest_star(cluster, projected=False):
     -------
        2019 - Written - Webb (UofT)
     """
+
     if projected:
         z = np.zeros(cluster.ntot)
         x = np.array([cluster.x, cluster.y, z]).T
@@ -640,30 +700,25 @@ def rlagrange(cluster, nlagrange=10, projected=False):
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre()
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
 
-    # Radially order the stars
-    msum = 0.0
-    nfrac = 1
+    #Array for Lagrange radii
     rn = []
 
     if projected:
-        if cluster.rproorder is None:
-            rorder = np.argsort(cluster.rpro)
-        else:
-            rorder = cluster.rproorder
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
+        rorder = cluster.rproorder
     else:
-        if cluster.rorder is None:
-            rorder = np.argsort(cluster.r)
-        else:
-            rorder = cluster.rorder
+        rorder = cluster.rorder
 
-    for i in range(0, cluster.ntot):
-        mfrac = cluster.mtot * float(nfrac) / float(nlagrange)
-        msum += cluster.m[rorder[i]]
-        if msum >= mfrac:
-            rn.append(cluster.r[rorder[i]])
-            nfrac += 1
+    msum = np.cumsum(cluster.m[rorder])
+
+    for i in range(1, nlagrange):
+        indx = msum >= np.sum(cluster.m) * float(i) / float(nlagrange)
+        rn.append(cluster.r[rorder[indx][0]])
 
     while len(rn) != nlagrange:
         rn.append(np.max(cluster.r))
@@ -720,10 +775,18 @@ def virial_radius(cluster, method='inverse_distance',
     -------
        2019 - Written - Webb (UofT)
     """
+    units0, origin0 = save_cluster(cluster)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
+
     if method=='inverse_distance':
         rv=virial_radius_inverse_distance(cluster,projected=projected,full=full)
     else:
         rv=virial_radius_critical_density(cluster,H,Om,overdens,nrad,projected,plot,**kwargs)
+
+    return_cluster(cluster, units0, origin0)
 
     return rv
 
@@ -751,6 +814,7 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
     -------
     2019 - Written - Webb (UofT)
     """
+
     if full:
         if projected:
             x = np.array([cluster.x, cluster.y, np.zeros(cluster.ntot), cluster.m]).T
@@ -822,6 +886,8 @@ def virial_radius_critical_density(
     nrad=20,
     projected=False,
     plot=False,
+    ro=8.,
+    vo=220.,
     **kwargs
 ):
     """Calculate virial radius of the cluster
@@ -846,13 +912,20 @@ def virial_radius_critical_density(
         calculate projected virial radius (default: False)
     plot : bool
         plot cluster density profile and illustrate virial radius calculation
-    kwargs : str
-        key word arguments for plotting function
+    ro : float
+        GALPY radius scaling parameter
+    vo : float
+        GALPY velocity scaling parameter
 
     Returns
     -------
     r_v : float
         virial radius
+
+    Other Parameters
+    ----------------
+    kwargs : str
+        key word arguments for plotting function
 
     History
     -------
@@ -861,7 +934,6 @@ def virial_radius_critical_density(
 
     units0, origin0 = save_cluster(cluster)
     cluster.to_pckms()
-    cluster.to_centre()
 
     H /= 1000000.0  # (km/s) / pc
     Grav = 4.302e-3  # pc (km/s)^2 / Msun
@@ -869,6 +941,7 @@ def virial_radius_critical_density(
     rhocrit = 3.0 * (H ** 2.0) / (8.0 * np.pi * Grav)  # Msun/pc^3
 
     if projected:
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         indx - cluster.rproorder
     else:
         indx = cluster.rorder
@@ -938,6 +1011,16 @@ def virial_radius_critical_density(
             plt.savefig(filename)
 
     return_cluster(cluster, units0, origin0)
+
+    if units0=='kpckms':
+        r_v/=1000.0
+    elif units0=='galpy':
+        r_v/=ro
+    elif units0=='nbody':
+        r_v/=cluster.rbar
+    elif units0=='radec':
+        print('Conversion of r_v to "radec" no implemented')
+
 
     return r_v
 
@@ -1269,7 +1352,7 @@ def rtidal(
     - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
     -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
     -- Bovy J., 2015, ApJS, 216, 29
-    - riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (cluster.mtot)
+    - riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (np.sum(cluster.m))
     -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal
        radius again using the new mass until the change is less than 90%
     - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
@@ -1304,7 +1387,11 @@ def rtidal(
     """
     units0, origin0 = save_cluster(cluster)
 
-    cluster.to_centre()
+
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
+
+
     cluster.to_galpy()
 
     if rgc != None:
@@ -1315,7 +1402,7 @@ def rtidal(
         z = cluster.zgc
 
     # Calculate rtide
-    rt = rtide(pot, R, z, M=cluster.mtot,use_physical=False)
+    rt = rtide(pot, R, z, M=np.sum(cluster.m),use_physical=False)
     nit = 0
     for i in range(0, rtiterate):
         msum = 0.0
@@ -1326,7 +1413,7 @@ def rtidal(
         rtnew = rtide(pot, R, z, M=msum,use_physical=False)
 
         if verbose:
-            print(rt, rtnew, rtnew / rt, msum / cluster.mtot)
+            print(rt, rtnew, rtnew / rt, msum / np.sum(cluster.m))
 
         if rtnew / rt >= rtconverge:
             break
@@ -1408,7 +1495,9 @@ def rlimiting(
     """
     units0, origin0 = save_cluster(cluster)
 
-    cluster.to_centre()
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
+
     cluster.to_galpy()
 
 
@@ -1574,7 +1663,8 @@ def _rho_prof(
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
 
     rprof = np.array([])
     pprof = np.array([])

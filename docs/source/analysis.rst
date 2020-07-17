@@ -26,11 +26,11 @@ All available operations are listed below.
 Functions
 ---------
 
-A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. When functions are called internally (``StarCluster.function_name()``), changes are made to variables within ``StarCluster`` with nothing returned. When called externally (``function_name(StarCluster)``), no changes are made within the ``StarCluster`` while the called function returns the necessary information. For example, a cluster's half-mass relaxation time can be called internally via:
+A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. When functions are called internally (``StarCluster.function_name()``), changes are made to variables within ``StarCluster`` and the calculated value is returned. In some cases one may wish to call a function externally (``function_name(StarCluster)``) to return additional information or to avoid making changes to ``StarCluster`` . For example, a cluster's mass function can be called internally via:
 
->>> cluster.half_mass_relaxation_time()
+>>> cluster.mass_function()
 
-where the variable cluster.trh now represents the cluster's half-mass relaxation time. Alternatively, the cluster's half-mass relaxation time can be called externally via:
+where the variable cluster.alpha now represents the power-law slope of the cluster's mass functino. Alternatively, the cluster's mass function can be called externally via:
 
 >>> trh=half_mass_relaxation_time(cluster)
 

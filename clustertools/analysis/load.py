@@ -78,9 +78,9 @@ def load_cluster(
     projected : bool
         calculate projected values as well as 3D values (Default: True)
     do_key_params : bool
-        calculate key parameters
+        calculate key parameters (default: True)
     do_rorder : bool
-        sort stars in order from closes to the origin to the farthest
+        sort stars in order from closes to the origin to the farthest (default: True)
 
     History
     _______
@@ -199,7 +199,9 @@ def load_cluster(
     elif initialize:
         initialize_orbit(cluster)
 
-    # cluster.key_params()
+    if kwargs.get("do_key_params", True):
+        do_order=kwargs.get("do_key_params", True)
+        cluster.key_params(do_order=do_order)
 
     return cluster
 
@@ -1229,13 +1231,11 @@ def _get_snapshot(
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
             do_order=kwargs.get("do_key_params", True)
-            # Estimate centre of distribution
-            cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
-            cluster.to_cluster()
+            cluster.key_params(do_order=do_order)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+
 
     return cluster
 

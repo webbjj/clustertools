@@ -900,11 +900,18 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
     2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre()
-    cluster.to_pckms()
+
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
+
+    cluster.to_pckms(do_key_params=True)
 
     if mass:
         zmbar = cluster.mtot
+    else:
+        zmbar = cluster.zmbar
 
     if radii:
         if rvirial:
@@ -917,16 +924,18 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
             nrad = kwargs.get("nrad", 20.0)
             plot = kwargs.get("plot", False)
 
-            cluster.virial_radius(cluster, method=method,full=full,
+            cluster.virial_radius(method=method,full=full,
                 H=H,Om=Om,overdens=overdens,nrad=nrad,projected=projected,
                 plot=plot,**kwargs)
 
             rbar=cluster.rv
         else:
             rbar = 4.0 * cluster.rm / 3.0
+    else:
+        rbar = cluster.rbar
 
-    vstar = 0.06557 * np.sqrt(cluster.zmbar / cluster.rbar)
-    tstar = cluster.rbar / cluster.vstar
+    vstar = 0.06557 * np.sqrt(zmbar / rbar)
+    tstar = rbar / vstar
 
     return_cluster(cluster, units0, origin0)
 
@@ -956,7 +965,8 @@ def virialize(cluster, specific=True, full=True, projected=False):
     2019 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre()
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
 
     try:
         qv = np.sqrt(np.abs(0.5 / cluster.qvir))
@@ -988,6 +998,11 @@ def add_rotation(cluster, qrot):
     -------
     2019 - Written - Webb (UofT)
     """
+    units0, origin0 = save_cluster(cluster)
+
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
+
     r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
     vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
         cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
@@ -1001,5 +1016,7 @@ def add_rotation(cluster, qrot):
     vx,vy,vz = bovy_coords.cyl_to_rect_vec(
         vr, vtheta, vz, theta
     )
+
+    return_cluster(cluster, units0, origin0)
 
     return x,y,z,vx,vy,vz

@@ -113,7 +113,6 @@ class StarCluster(object):
         self.skiprows = kwargs.get("skiprows", 0)
         self.sfile = kwargs.get("sfile", "")
         self.bfile = kwargs.get("bfile", "")
-        self.projected = kwargs.get("projected", True)
         self.centre_method = kwargs.get("centre_method", None)
 
         # Total Number of Stars + Binaries in the cluster
@@ -786,7 +785,7 @@ class StarCluster(object):
         self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
         self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
 
-    def key_params(self, do_order=False):
+    def key_params(self, do_order=False, projected=False):
         """Find key parameters of the cluster 
 
         - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50) are all calculated if necessary information is given
@@ -797,6 +796,8 @@ class StarCluster(object):
 
         do_order : bool
             Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)
+        projected : bool
+          use projected values, but do not change self.projected (default: False) 
 
         Returns
         ----------
@@ -818,7 +819,7 @@ class StarCluster(object):
         # Radially order the stars to find half-mass radius
         if do_order:
             self.rorder = np.argsort(self.r)
-            if self.projected:
+            if self.projected or projected:
                 self.rproorder = np.argsort(self.rpro)
 
         if self.rorder is not None:
@@ -854,6 +855,54 @@ class StarCluster(object):
             else:
                 self.rhpro = 0.0
                 self.rh10pro = 0.0
+
+    def _param_check(self,do_order=True):
+        """Check to see if key parameters have been calculated
+            - run self.key_params() if key parameters have not been calculated
+
+        Parameters
+        ----------
+
+        do_order : bool
+            Also check to see if time consuming task of ordering stars based on radius has been done (default:False)
+
+        Returns
+        ----------
+
+        None
+
+        History
+        ----------
+
+        2020 - Written - Webb (UofT)
+
+        """
+        if do_order:
+            self.order_check()
+        elif self.rm is None:
+            self.key_params(do_order=False)
+
+    def _order_check(self):
+        """Check to see if stars have been sorted by radius
+            - run self.key_params() if key parameters have not been calculated
+
+        Parameters
+        ----------
+        None
+
+        Returns
+        ----------
+
+        None
+
+        History
+        ----------
+
+        2020 - Written - Webb (UofT)
+
+        """
+        if self.rorder is None:
+            self.key_params(do_order=True)
 
     # Directly call from operations.py (see operations.py files for documenation):
 
@@ -914,25 +963,36 @@ class StarCluster(object):
             projected=self.projected
 
         self.zmbar,self.rbar,self.vstar,self.tstar=reset_nbody_scale(self, mass=mass, radii=radii, 
-            rvirial=rvirial,projected=projected **kwargs)
-
-    def convert_binary_units(self,param,from_units,to_units):
-        convert_binary_units(self,param,from_units,to_units)
+            rvirial=rvirial,projected=projected,**kwargs)
 
     def add_rotation(self, qrot):
+
+        units0, origin0 = save_cluster(self)
+        if origin0 != 'cluster' and origin0 != 'centre':
+            self.to_centre(do_key_params=True,do_order=True)
+
         self.x,self.y,self.z,self.vx,self.vy,self.vz=add_rotation(self, qrot)
 
         self.qrot=qrot
 
+        return_cluster(self, units0, origin0)
+
+
     def virialize(self, specific=True, full=True, projected=None):
         if projected==None:
             projected=self.projected
+
+        units0, origin0 = save_cluster(self)
+        if origin0 != 'cluster' and origin0 != 'centre':
+            self.to_centre(do_key_params=True,do_order=True)
 
         self.qv=virialize(self, specific=True, full=True, projected=projected)
 
         self.vx *= self.qv
         self.vy *= self.qv
         self.vz *= self.qv
+
+        return_cluster(self, units0, origin0)
 
     # Directly call from functions.py (see functions.py files for documenation):
 
@@ -966,6 +1026,10 @@ class StarCluster(object):
             self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
             self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0      
 
+            return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+        else:
+            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
     def find_centre_of_density(
         self,
         xstart=0.0,
@@ -984,25 +1048,36 @@ class StarCluster(object):
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             rmin=rmin,nmax=nmax,ro=ro,vo=vo)
 
+        return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
     def find_centre_of_mass(self):
         self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre_of_mass(self)
 
-    def relaxation_time(self, rad=None, multimass=True, projected=None,method='spitzer'):
+        return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+    def relaxation_time(self, rad=None, coulomb=0.4, projected=None,method='spitzer'):
 
         if projected==None:
             projected=self.projected
 
-        self.trelax=relaxation_time(self, rad=rad, multimass=multimass, projected=projected,method='spitzer')
+        self.trelax=relaxation_time(self, rad=rad, coulomb=coulomb, projected=projected,method='spitzer')
 
-    def half_mass_relaxation_time(self, multimass=True, projected=None):
+        return self.trelax
+
+    def half_mass_relaxation_time(self, coulomb=0.4, projected=None):
         if projected==None:
             projected=self.projected
-        self.trh=half_mass_relaxation_time(self, multimass=multimass, projected=projected)
+        self.trh=half_mass_relaxation_time(self, coulomb=coulomb, projected=projected)
 
-    def core_relaxation_time(self, multimass=True, projected=None):
+        return self.trh
+
+
+    def core_relaxation_time(self, coulomb=0.4, projected=None):
         if projected==None:
             projected=self.projected
-        self.trc=core_relaxation_time(self, multimass=True, projected=projected)
+        self.trc=core_relaxation_time(self, coulomb=coulomb, projected=projected)
+
+        return self.trc
 
     def energies(self, specific=True, i_d=None, full=True, projected=None, parallel=False):
         if projected==None:
@@ -1010,16 +1085,22 @@ class StarCluster(object):
         ek, pot=energies(self, specific=specific, i_d=i_d, full=full, projected=projected, parallel=parallel)
         self.add_energies(ek, pot)
 
+        return self.ektot,self.ptot
+
     def closest_star(self, projected=None):
         if projected==None:
             projected=self.projected
 
         self.dclosest=closest_star(self, projected=projected)
 
+        return self.dclosest
+
     def rlagrange(self, nlagrange=10, projected=None):
         if projected==None:
             projected=self.projected
         self.rn = rlagrange(self, nlagrange=nlagrange, projected=projected)
+
+        return self.rn
 
     def virial_radius(self,method='inverse_distance', full=True, H=70.0, Om=0.3, overdens=200.0,
         nrad=20, projected=None, plot=False, **kwargs):
@@ -1028,6 +1109,8 @@ class StarCluster(object):
 
         self.rv = virial_radius(self,method=method, full=full, H=H, Om=Om, overdens=overdens,
         nrad=nrad, projected=projected, plot=plot, **kwargs)
+
+        return self.rv
 
     def mass_function(
         self,
@@ -1076,28 +1159,8 @@ class StarCluster(object):
             **kwargs
         )
         self.alpha = alpha
-        self.rn = rlagrange(self, nlagrange=10, projected=projected)
-        m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(
-            self,
-            mmin=mmin,
-            mmax=mmax,
-            nmass=nmass,
-            rmin=self.rn[4],
-            rmax=self.rn[6],
-            vmin=vmin,
-            vmax=vmax,
-            emin=emin,
-            emax=emax,
-            kwmin=kwmin,
-            kwmax=kwmax,
-            indx=None,
-            mcorr=None,
-            projected=projected,
-            plot=plot,
-            title="AT R50",
-            **kwargs
-        )
-        self.alpha50 = alpha
+
+        return self.alpha
 
     def eta_function(
         self,
@@ -1139,10 +1202,14 @@ class StarCluster(object):
         )
         self.eta = eta
 
+        return self.eta
+
     # Directly call from orbit.py (see orbit,py files for documentation):
 
     def rtidal(self, pot=MWPotential2014, rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, verbose=False):
         self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, ro=ro, vo=vo, verbose=verbose)
+
+        return self.rt
 
     def rlimiting(
         self,
@@ -1169,11 +1236,15 @@ class StarCluster(object):
             **kwargs
         )
 
+        return self.rl
+
     def initialize_orbit(self, from_centre=False, ro=8.0, vo=220.0):
         self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo)
+        return self.orbit
 
     def initialize_orbits(cluster, ro=8.0, vo=220.0):
         self.orbits=initialize_orbits(self, ro=ro, vo=vo)
+        return self.orbits
 
     def integrate_orbit(cluster, pot=MWPotential2014, tfinal=12.0, 
         nt=1000, ro=8.0, vo=220.0, plot=False):
@@ -1181,11 +1252,15 @@ class StarCluster(object):
         self.ts,self.orbit=integrate_orbit(cluster,pot=pot,tfinal=tfinal,
             nt=nt,ro=ro,vo=vo,plot=plot)
 
+        return self.orbit
+
     def integrate_orbits(cluster, pot=MWPotential2014, tfinal=12.0, 
         nt=1000, ro=8.0, vo=220.0, plot=False):
 
         self.ts,self.orbits=integrate_orbits(cluster,pot=pot,tfinal=tfinal,
             nt=nt,ro=ro,vo=vo,plot=plot)
+
+        return self.orbits
 
     def orbit_interpolate(self,dt,pot=MWPotential2014,from_centre=False,
         do_tails=False,rmin=None,rmax=None,emin=None,emax=None,ro=8.0,vo=220.0):
@@ -1211,12 +1286,15 @@ class StarCluster(object):
             self.vxpath,self.vypath,self.vzpath=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,
                 skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot)
 
+        return  self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
+
     def orbital_path_match(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
         to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,):
 
         self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,
         from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,)
 
+        return self.tstar,self.dprog,self.dpath
 
     def tail_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
         ro=8.0,vo=220.0,plot=False):
@@ -1230,14 +1308,20 @@ class StarCluster(object):
             self.vxpath,self.vypath,self.vzpath=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,
                 skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot)
 
+        return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
+
     def tail_path_match(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
         to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,):
 
         self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,
         from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,)
 
+        return self.tstar,self.dprog,self.dpath
+
     def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
         self.orbit=get_cluster_orbit(gcname=gcname,ro=ro, vo=vo)
+
+        return self.orbit
 
     def calc_actions(self, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
         JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_actions(
@@ -1245,8 +1329,11 @@ class StarCluster(object):
         )
         self.add_actions(JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz)
 
+        return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+
     def ttensor(self, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
         self.ttensor=ttensor(self, pot=pot, ro=ro, vo=vo, eigenval=eigenval)
+        return ttensor
 
 def sub_cluster(
     cluster,

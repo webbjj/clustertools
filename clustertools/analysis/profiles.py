@@ -18,9 +18,11 @@ from galpy.util import bovy_coords
 from ..util.constants import *
 from ..util.recipes import *
 from .operations import *
-from ..util.plots import *
+from ..util.plots import _lplot,_plot
 from ..util.coordinates import sphere_coords
-from .functions import mass_function
+from .functions import mass_function, eta_function
+
+import matplotlib.pyplot as plt
 
 
 def rho_prof(
@@ -86,7 +88,8 @@ def rho_prof(
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
 
     rprof = np.array([])
     pprof = np.array([])
@@ -257,7 +260,9 @@ def m_prof(
     2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre()
+
 
     rprof = []
     mprof = []
@@ -434,7 +439,11 @@ def alpha_prof(
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
+
 
     if mcorr is None:        
         mcorr = np.ones(cluster.ntot)
@@ -563,6 +572,7 @@ def sigv_prof(
     coord=None,
     normalize=True,
     plot=False,
+    **kwargs,
 ):
     """Measure the radial variation in the velocity dispersion
 
@@ -611,7 +621,10 @@ def sigv_prof(
     2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
 
     lrprofn = []
     sigvprof = []
@@ -736,6 +749,7 @@ def beta_prof(
     projected=False,
     normalize=True,
     plot=False,
+    **kwargs,
 ):
     """Measure the anisotropy profile of the cluster
 
@@ -782,7 +796,10 @@ def beta_prof(
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
 
     lrprofn = []
     betaprof = []
@@ -871,7 +888,7 @@ def beta_prof(
 
         _plot(
             lrprofn,
-            sigvprof,
+            betaprof,
             xlabel=r"$\ln(r/r_m)$",
             ylabel=r"$\beta$",
             overplot=overplot,
@@ -900,6 +917,7 @@ def v_prof(
     indx=None,
     projected=False,
     plot=False,
+    **kwargs,
 ):
     """Measure the radial variation in the mean velocity 
 
@@ -944,10 +962,13 @@ def v_prof(
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
 
     lrprofn = []
-    sigvprof = []
+    vprof = []
 
     if projected:
         r = cluster.rpro
@@ -1060,6 +1081,7 @@ def eta_prof(
     indx=None,
     projected=False,
     plot=False,
+    **kwargs,
 ):
     """Measure the radial variation in eta
 
@@ -1113,7 +1135,10 @@ def eta_prof(
     2018 - Written - Webb (UofT)
     """
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
 
     lrprofn = []
     eprof = []
@@ -1173,9 +1198,10 @@ def eta_prof(
             kwmin=kwmin,
             kwmax=kwmax,
             projected=projected,
+            **kwargs,
         )
 
-        if alpha > -100:
+        if eta > -100:
             if projected:
                 lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
             else:
@@ -1291,7 +1317,10 @@ def vcirc_prof(
     """
 
     units0, origin0 = save_cluster(cluster)
-    cluster.to_centre(do_order=True, do_key_params=True)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(do_key_params=True,do_order=True)
+    else:
+        cluster._order_check()
 
     if cluster.units == "nbody":
         grav = 1.0
@@ -1308,14 +1337,10 @@ def vcirc_prof(
     vcprof = np.array([])
 
     if projected:
-        if cluster.rproorder is None:
-            cluster.key_params(do_order=True)
         r = cluster.rpro[cluster.rproorder]
         v = cluster.vpro[cluster.rproorder]
         m = cluster.m[cluster.rproorder]
     else:
-        if cluster.rorder is None:
-            cluster.key_params(do_order=True)
         r = cluster.r[cluster.rorder]
         v = cluster.v[cluster.rorder]
         m = cluster.m[cluster.rorder]

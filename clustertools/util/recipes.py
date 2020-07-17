@@ -65,17 +65,22 @@ def nbinmaker(x, nbin=10, nsum=False):
     for i in range(0, nbin):
         indx = int(float(i) * float(len(x)) / float(nbin))
         x_lower = np.append(x_lower, x[xorder[indx]])
-        indx = int(float(i + 1) * float(len(x)) / float(nbin)) - 1
-        x_upper = np.append(x_upper, x[xorder[indx]])
+
+    x_upper=x_lower[1:]
+    x_upper=np.append(x_upper,np.amax(x))
 
     indx = x_lower != x_upper
     x_lower = x_lower[indx]
     x_upper = x_upper[indx]
 
     for i in range(0, np.sum(indx)):
-        indx = (x >= x_lower[i]) * (x < x_upper[i])
-        x_hist = np.append(x_hist, np.sum(indx))
-        x_sum = np.append(x_sum, np.sum(x[indx]))
+        if i<np.sum(indx)-1:
+            xindx = (x >= x_lower[i]) * (x < x_upper[i])
+        else:
+            xindx = (x >= x_lower[i])
+
+        x_hist = np.append(x_hist, np.sum(xindx))
+        x_sum = np.append(x_sum, np.sum(x[xindx]))
         x_mid = np.append(x_mid, x_sum[i] / x_hist[i])
 
     if nsum:
@@ -133,7 +138,11 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
     x_mid = (x_upper + x_lower) / 2.0
 
     for j in range(0, nbin):
-        indx = (x >= x_lower[j]) * (x < x_upper[j])
+        if i<nbin-1:
+            indx = (x >= x_lower[j]) * (x < x_upper[j])
+        else:
+            indx = (x >= x_lower[j]) * (x <= x_upper[j])
+
         x_hist[j] = len(x[indx])
         x_sum[j] = np.sum(x[indx])
 

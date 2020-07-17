@@ -5,6 +5,7 @@
 __author__ = "Jeremy J Webb"
 __all__ = [
     "load_cluster",
+    "load_cluster_from_Table",
     "advance_cluster",
 ]
 
@@ -34,11 +35,22 @@ def load_cluster(
     **kwargs,
 ):
     """Load a StarCluster snapshot from a generic code output
-       
+
     Parameters
     __________
     ctype : str
-        Type of file being loaded (Currently supports nbody6, nbody6se, gyrfalcon, snaptrim,snapauto, clustertools, snapshot)
+        Type of file being loaded
+        Currently supports:
+
+            - nbody6
+            - nbody6se
+            - gyrfalcon
+            - snaptrim
+            - napauto
+            - clustertools
+            - snapshot
+            - table
+
     particles : particles
         AMUSE particle dataset (default: None)
         or `~astropy.table.Table` instance if `ctype` is "table".

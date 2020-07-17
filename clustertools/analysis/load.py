@@ -5,7 +5,6 @@
 __author__ = "Jeremy J Webb"
 __all__ = [
     "load_cluster",
-    "load_cluster_from_Table",
     "advance_cluster",
 ]
 
@@ -49,11 +48,11 @@ def load_cluster(
             - napauto
             - clustertools
             - snapshot
-            - table
+            - astropy_table
 
     particles : particles
         AMUSE particle dataset (default: None)
-        or `~astropy.table.Table` instance if `ctype` is "table".
+        or `~astropy.table.Table` instance if `ctype` is "astropy_table".
     custom_override : bool
         use a custom function to load data instead of default (default: True)
     units : str
@@ -94,6 +93,10 @@ def load_cluster(
         calculate key parameters (default: True)
     do_rorder : bool
         sort stars in order from closes to the origin to the farthest (default: True)
+    column_mapper : dict
+        see _get_astropy_table 
+    verbose : bool
+        print additional information to screen while loading (default : False)
 
     History
     _______
@@ -154,20 +157,16 @@ def load_cluster(
             advance=False,
             **kwargs,
         )
-    elif ctype.lower() == "table":
-        # have to pop beforehand so can pass kwargs
-        cluster_cls = kwargs.pop("cls", StarCluster)
+    elif ctype.lower() == "astropy_table":
+        column_mapper = kwargs.pop("column_mapper", None)
 
-        # make cluster
-        cluster = _get_from_Table(
+        # Read data from astropy table
+        cluster = _get_astropy_table(
             particles,
-            # column_mapper=column_mapper,  # kwargs
+            column_mapper=column_mapper,
             units=units,
             origin=origin,
-            # do_key_params=do_key_params,  # kwargs
-            # do_order=do_order,  # kwargs
-            # verbose=verbose,  # kwargs
-            cls=cluster_cls,
+            ofile=ofile,
             **kwargs
         )
 
@@ -234,119 +233,6 @@ def load_cluster(
         cluster.key_params(do_order=do_order)
 
     return cluster
-
-
-def load_cluster_from_Table(
-    table,
-    column_mapper: T.Optional[T.Dict[str, str]] = None,
-    units: T.Optional[str] = None,
-    origin: T.Optional[str] = None,
-    do_key_params: bool = False,  # from add_stars
-    do_order: bool = False,  # from add_stars
-    orbit=None,
-    *,
-    verbose: bool = False,
-    cls=StarCluster,
-    # Ffor init
-    **kwargs,  # for init
-):
-    """Create StarCluster from :class:`~astropy.table.Table`.
-
-    Parameters
-    ----------
-    table : `~astropy.table.Table` instance
-    column_mapper: dict, optional
-        Map the ``StarCluster.add_stars`` input to column names in `table`
-        If not None,
-        the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
-        the optional keys are "m", "id".
-
-        If None, then performs a basic search of the table column names,
-        lowercasing all names for fuzzy matching. The search options
-        are different if `units` is "radec" and `origin` is "sky".
-        In this case, the search parameters are, ordered by preference and
-        lowercased:
-
-            - x : "right ascension" or "ra"
-            - y : "declination" or "dec"
-            - z : "distance" or "dist" or "dist"
-            - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
-            - vy : "pm_dec" or "pmdec"
-            - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
-
-    units : str, optional
-        Units of stellar positions and velocties. Options include 'pckms',
-        'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
-        stellar velocities are assumed to be km/s. (default: None)
-    origin : str, optional
-        Origin of coordinate system within which stellar positions and
-        velocities are defined.  Options include 'centre', 'cluster', 'galaxy'
-        and 'sky'. Note that 'centre' corresponds to the systems centre of
-        density or mass (as calculated by clustertools) while 'cluster'
-        corresponds to the orbital position of the cluster's initial centre of
-        mass given 'tphys'. In some cases these two coordinate systems may be
-        the same. (default: None)
-
-    do_key_params: bool, optional
-        call key_params() after adding stars (default: False)
-    do_order: bool, optional
-        order stars by radius when calling key_params() (default: False)
-
-    orbit : class
-        a galpy orbit to be used for the StarCluster's orbital information
-        (default: None)
-
-    Returns
-    -------
-    `cls` instance
-        initialized with particles from `table`.
-
-    Other Parameters
-    ----------------
-    verbose : bool, optional
-        Whether to print the `column_mapper`
-    cls : type, optional
-        The constructor class, default `~clustertools.StarCluster`.
-        Generally this should NOT be changed.
-    initialize : bool, optional, keyword only
-        initialize a galpy orbit after reading in orbital information
-        (default: False)
-    **kwargs
-        Arguments to `cls` initialization.
-        See documentation for options.
-
-    Raises
-    ------
-    ValueError
-        If `table` missing mandatory argument and
-        cannot be found with `column_mapper`
-    KeyError
-        If missing a mandatory key in `column_mapper`.
-    UserWarning
-        If unused items in `column_mapper`.
-
-    """
-    # use load_cluster, which will call `_get_from_Table`
-    cluster = load_cluster(
-        ctype="table",
-        particles=table,
-        units=units,
-        origin=origin,
-        orbit=orbit,
-        # AS KWARGS
-        column_mapper=column_mapper,
-        do_key_params=do_key_params,
-        do_order=do_rorder,
-        verbose=verbose,
-        cls=cls,
-        **kwargs,
-    )
-
-    return cluster
-
-
-# /def
-
 
 def advance_cluster(
     cluster,
@@ -1401,7 +1287,8 @@ def _get_amuse_particles(
         units of input data (default: kpckms)
     origin : str
         origin of input data (default: cluster)
-       
+    ofile : file
+        opened file containing orbital information
     Returns
     -------
     cluster : class
@@ -1477,20 +1364,18 @@ def _get_amuse_particles(
     return cluster
 
 
-def _get_from_Table(
+def _get_astropy_table(
     table,
-    column_mapper: T.Optional[T.Dict[str, str]] = None,
-    units: T.Optional[str] = None,
-    origin: T.Optional[str] = None,
-    do_key_params: bool = False,  # from add_stars
-    do_order: bool = False,  # from add_stars
-    *,
-    verbose: bool = False,
-    cls=StarCluster,
-    # for init
-    **kwargs,  # for init
+    column_mapper = None,
+    units  = None,
+    origin = None,
+    ofile = None,
+    verbose = False,
+    **kwargs,
 ):
-    """Create StarCluster from :class:`~astropy.table.Table`.
+    """Convert astropy table to a StarCluster instance
+    
+    - :class:`~astropy.table.Table`.
 
     Parameters
     ----------
@@ -1513,43 +1398,21 @@ def _get_from_Table(
             - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
             - vy : "pm_dec" or "pmdec"
             - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
-
-    units : str, optional
-        Units of stellar positions and velocties. Options include 'pckms',
-        'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
-        stellar velocities are assumed to be km/s. (default: None)
-    origin : str, optional
-        Origin of coordinate system within which stellar positions and
-        velocities are defined.  Options include 'centre', 'cluster', 'galaxy'
-        and 'sky'. Note that 'centre' corresponds to the systems centre of
-        density or mass (as calculated by clustertools) while 'cluster'
-        corresponds to the orbital position of the cluster's initial centre of
-        mass given 'tphys'. In some cases these two coordinate systems may be
-        the same. (default: None)
-
-    do_key_params: bool, optional
-        call key_params() after adding stars (default: False)
-    do_order: bool, optional
-        order stars by radius when calling key_params() (default: False)
-
-    orbit : class
-        a galpy orbit to be used for the StarCluster's orbital information (default: None)
+    units : str
+        units of input data (default: kpckms)
+    origin : str
+        origin of input data (default: cluster)
+    ofile : file
+        opened file containing orbital information
 
     Returns
     -------
-    `cls` instance
-        initialized with particles from `table`.
+    cluster : class
+        StarCluster
 
     Other Parameters
     ----------------
-    verbose : bool, optional
-        Whether to print the `column_mapper`
-    cls : type, optional
-        The constructor class, default `~clustertools.StarCluster`.
-        Generally this should NOT be changed.
-    **kwargs
-        Arguments to `cls` initalization.
-        See documentation for options.
+    Same as load_cluster
 
     Raises
     ------
@@ -1560,13 +1423,6 @@ def _get_from_Table(
         If missing a mandatory key in `column_mapper`.
 
     """
-    # create new instance of class
-    cluster = cls(
-        units=units,
-        origin=origin,
-        # ntot=0, tphys=0., ctype="snapshot", projected=False,
-        **kwargs,
-    )
 
     cm = column_mapper or {}  # None -> {}
 
@@ -1633,18 +1489,33 @@ def _get_from_Table(
         m = table[cm.pop("m")] if "m" in cm else None
         ID = table[cm.pop("id")] if "id" in cm else None
 
-    cluster.add_stars(
-        x=x,
-        y=y,
-        z=z,
-        vx=vx,
-        vy=vy,
-        vz=vz,
-        m=m,
-        id=ID,
-        do_key_params=do_key_params,
-        do_order=do_order,
+    cluster = StarCluster(
+        len(x), 0., units=units, origin=origin, ctype='table', **kwargs
     )
+
+    cluster.add_stars(x, y, z, vx, vy, vz, m, ID)
+
+    if origin == "galaxy":
+        if ofile == None:
+            cluster.find_centre()
+        else:
+            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+
+            cluster.to_cluster()
+            cluster.find_centre()
+            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_galaxy()
+
+    elif origin == "cluster":
+        if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_key_params", True)
+            cluster.key_params(do_order=do_order)
+
+        if ofile != None:
+            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
     if verbose:
         print(cm)

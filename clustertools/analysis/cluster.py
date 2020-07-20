@@ -9,7 +9,6 @@ __all__ = [
     "sub_cluster",
 ]
 
-import typing as T
 import numpy as np
 from galpy.util import bovy_conversion, bovy_coords
 from textwrap import dedent
@@ -83,107 +82,6 @@ class StarCluster(object):
     2018 - Written - Webb (UofT)
 
     """
-
-    @classmethod
-    def from_Table(
-        cls,
-        table,
-        column_mapper: T.Optional[T.Dict[str, str]] = None,
-        units: T.Optional[str] = None,
-        origin: T.Optional[str] = None,
-        *,
-        do_key_params: bool = False,  # from add_stars
-        do_order: bool = False,  # from add_stars
-        orbit=None,
-        verbose: bool = False,
-        **kwargs,  # for init
-    ):
-        """Create StarCluster from :class:`~astropy.table.Table`.
-
-        Parameters
-        ----------
-        table : `~astropy.table.Table` instance
-        column_mapper: dict, optional
-            Map the ``StarCluster.add_stars`` input to column names in `table`
-            If not None,
-            the mandatory keys are: "x", "y", "z", "vx", "vy", "vz", and
-            the optional keys are "m", "id".
-
-            If None, then performs a basic search of the table column names,
-            lowercasing all names for fuzzy matching. The search options
-            are different if `units` is "radec" and `origin` is "sky".
-            In this case, the search parameters are, ordered by preference and
-            lowercased:
-
-                - x : "right ascension" or "ra"
-                - y : "declination" or "dec"
-                - z : "distance" or "dist" or "dist"
-                - vx : "pm_ra_cosdec" or "pm_ra" or "pmra"
-                - vy : "pm_dec" or "pmdec"
-                - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
-
-        units : str, optional
-            Units of stellar positions and velocties. Options include 'pckms',
-            'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms',
-            stellar velocities are assumed to be km/s. (default: None)
-        origin : str, optional
-            Origin of coordinate system within which stellar positions and
-            velocities are defined.  Options include 'centre', 'cluster',
-            'galaxy' and 'sky'. Note that 'centre' corresponds to the systems
-            centre of density or mass (as calculated by clustertools) while
-            'cluster' corresponds to the orbital position of the cluster's
-            initial centre of mass given 'tphys'. In some cases these two
-            coordinate systems may be the same. (default: None)
-
-        do_key_params: bool, optional, keyword only
-            call key_params() after adding stars (default: False)
-        do_order: bool, optional, keyword only
-            order stars by radius when calling key_params() (default: False)
-
-        orbit : `~galpy.orbit.Orbit` instance, optional, keyword only
-            a galpy orbit to be used for the StarCluster's orbital information
-            (default: None)
-
-        Returns
-        -------
-        `cls` instance
-            initialized with particles from `table`.
-
-        Other Parameters
-        ----------------
-        verbose : bool, optional
-            Whether to print the `column_mapper`
-        **kwargs
-            Arguments to `cls` initalization.
-            See documentation for options.
-
-        Raises
-        ------
-        ValueError
-            If `table` missing mandatory argument and
-            cannot be found with `column_mapper`
-        KeyError
-            If missing a mandatory key in `column_mapper`.
-
-        """
-        from .load import load_cluster_from_Table
-
-        self = load_cluster_from_Table(
-            table,
-            column_mapper=column_mapper,
-            units=units,
-            origin=origin,
-            do_key_params=do_key_params,
-            do_order=do_order,
-            orbit=orbit,
-            verbose=verbose,
-            cls=cls,
-            **kwargs,
-        )
-
-        return self
-
-    # /def
 
     def __init__(
         self,
@@ -1027,6 +925,105 @@ class StarCluster(object):
 
     def to_units(self, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
         to_units(self, units, do_order=do_order, do_key_params=do_key_params, ro=ro, vo=vo)
+
+    def convert_binary_units(self,param,from_units,to_units):
+        """Convert units of binary star parameters
+
+            - This function is a wip
+        
+        Parameters
+        ----------
+
+            cluster : class
+                StarCluster instance
+            param : str
+                list of strings for parameters to be convered (pb,semi,mass)
+            from_units : str
+                list of strings for current parameter units ((days, years, nbody), (pc, su, au, nbody), (Msun,nbody))
+            from_units : str (default: True)
+                list of strings for converted parameter units ((days, years, nbody), (pc, su, au, nbody), (Msun,nbody))
+
+        Returns
+        -------
+
+            None
+
+        History:
+
+           2020 - Written - Webb (UofT)
+        """
+        yrs = (self.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(self.zmbar)
+        days = 365.25 * yrs
+        au = 1.49597870700e13
+        pc = 1296000.0e0/(2.0*np.pi)*au
+        rsun=6.960e10
+        su=pc/rsun*self.rbar
+
+
+        param=np.array(param)
+        from_units=np.array(from_units)
+        tp_units=np.array(to_units)
+
+        for i in range(0,len(param)):
+            p=param[i]
+
+            if p=='pb':
+                #Convert to nbody first
+                if from_units[i]=='days':
+                    self.pb/=days
+                elif from_units[i]=='years':
+                    self.pb/=yrs
+                elif from_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % from_units[i])
+
+                if to_units[i]=='days':
+                    self.pb*=days
+                elif to_units[i]=='years':
+                    self.pb*=yrs
+                elif to_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % from_units[i])
+
+            elif p=='semi':
+                #Convert to nbody first
+                if from_units[i]=='pc':
+                    self.semi/=self.rbar
+                elif from_units[i]=='su':
+                    self.semi/=su
+                elif from_units[i]=='au':
+                    self.semi/=(pc/au)*self.rbar
+                elif from_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % from_units[i])
+
+                if to_units[i]=='pc':
+                    self.semi*=self.rbar
+                elif to_units[i]=='su':
+                    self.semi*=su
+                elif to_units[i]=='au':
+                    self.semi*=(pc/au)*self.rbar
+                elif to_units[i]=='nbody':
+                    pass
+                else:
+                    print('UNIT %s NOT FOUND' % to_units[i])
+
+            elif p=='mass':
+                if from_units[i]=='Msun' or from_units[i]=='msun' :
+                    self.m1/=self.zmbar
+                    self.m2/=self.zmbar
+                elif from_units[i]=='nbody':
+                    pass
+
+                if to_units=='Msun' or to_units[i]=='msun' :
+                    self.m1*=self.zmbar
+                    self.m2*=self.zmbar
+                elif to_units[i]=='nbody':
+                    pass
+
 
     def to_centre(self, do_order=False, do_key_params=False, centre_method=None):
         to_centre(self, do_order=do_order, do_key_params=do_key_params, centre_method=centre_method)

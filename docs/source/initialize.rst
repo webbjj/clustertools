@@ -25,6 +25,8 @@ As mentioned above, ``ctype`` can also be set to ``'nbody6'``, ``'nbody6se'``,``
 
 * When ``ctype='amuse'``, ''particles'' must be given which contains an AMUSE particle set of cluster stars. The default units are ``pckms`` but ``kpckms`` can also be selected. The default coordinate system is ``'galaxy'``, but again this can be set.
 
+* When ``ctype='astropy_table'``, ''particles'' must be given which contains a `~astropy.table.Table` instance of stars.  If necessary, a ``column_mapper`` can be passed.
+
 It should be noted that ``load_cluster`` has an input ``custom_override``. This feature means that when ``ctype='nbody6'`` or ``ctype='nbody6se'``, ``clustertools`` will look for a functions called ``get_nbody6_custom`` or ``get_nbody6_custom`` instead of ``get_nbody6_custom`` or ``get_nbody6_custom``. Hence if one has customized output files for the NBODY6 codes, a custom read function can be written. Otherwise ``ctype='nbody6'`` or ``ctype='nbody6se'`` will assume the public verson of NBODY6 was used to generate the model data. I am working to implement the capability of extracting from NBODY6 and NBODY6++ binary files directly.
 
 .. automodapi:: clustertools.analysis.load

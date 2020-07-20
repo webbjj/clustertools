@@ -18,7 +18,7 @@ __all__ = [
 import numpy as np
 import numba
 import matplotlib.pyplot as plt
-from ..util.plots import *
+from ..util.plots import _plot,_lplot
 
 
 def nbinmaker(x, nbin=10, nsum=False):
@@ -138,7 +138,7 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
     x_mid = (x_upper + x_lower) / 2.0
 
     for j in range(0, nbin):
-        if i<nbin-1:
+        if j<nbin-1:
             indx = (x >= x_lower[j]) * (x < x_upper[j])
         else:
             indx = (x >= x_lower[j]) * (x <= x_upper[j])

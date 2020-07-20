@@ -23,11 +23,11 @@ except:
 
 
 def load_cluster(
-    ctype: str = "snapshot",
+    ctype="snapshot",
     particles=None,
     custom_override=True,
-    units: str = "pckms",
-    origin: str = "cluster",
+    units = "pckms",
+    origin = "cluster",
     ofile=None,
     orbit=None,
     filename=None,
@@ -229,7 +229,7 @@ def load_cluster(
         initialize_orbit(cluster)
 
     if kwargs.get("do_key_params", True):
-        do_order=kwargs.get("do_key_params", True)
+        do_order=kwargs.get("do_order", True)
         cluster.key_params(do_order=do_order)
 
     return cluster
@@ -288,7 +288,7 @@ def advance_cluster(
             )
     elif cluster.ctype == "nbody6":
         if custom_override:
-            cluster = _get_nbody6(
+            cluster = _get_nbody6_custom(
                 cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
             )
         else:
@@ -607,7 +607,7 @@ def _get_gyrfalcon(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
             cluster.to_cluster()
             cluster.find_centre()
             cluster.to_centre(do_key_params=True, do_order=do_order)
@@ -1077,7 +1077,7 @@ def _get_nbody6_custom(out9, out34, advance=False, **kwargs):
         )
 
     if kwargs.get("do_key_params", True):
-        do_order=kwargs.get("do_key_params", True)
+        do_order=kwargs.get("do_order", True)
         # Estimate centre of distribution
         cluster.find_centre()
         cluster.to_centre(do_key_params=True, do_order=do_order)
@@ -1256,7 +1256,7 @@ def _get_snapshot(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
 
             cluster.to_cluster()
             cluster.find_centre()
@@ -1265,7 +1265,7 @@ def _get_snapshot(
 
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
             cluster.key_params(do_order=do_order)
 
         if ofile != None:
@@ -1344,7 +1344,7 @@ def _get_amuse_particles(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
             cluster.to_cluster()
             cluster.find_centre()
             cluster.to_centre(do_key_params=True, do_order=do_order)
@@ -1352,7 +1352,7 @@ def _get_amuse_particles(
 
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
             # Estimate centre of distribution
             cluster.find_centre()
             cluster.to_centre(do_key_params=True, do_order=do_order)
@@ -1374,7 +1374,7 @@ def _get_astropy_table(
     **kwargs,
 ):
     """Convert astropy table to a StarCluster instance
-    
+
     - :class:`~astropy.table.Table`.
 
     Parameters
@@ -1421,7 +1421,9 @@ def _get_astropy_table(
         cannot be found with `column_mapper`
     KeyError
         If missing a mandatory key in `column_mapper`.
-
+    History
+    -------
+    2020 - Written - Starkman (UofT)
     """
 
     cm = column_mapper or {}  # None -> {}
@@ -1502,7 +1504,7 @@ def _get_astropy_table(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
 
             cluster.to_cluster()
             cluster.find_centre()
@@ -1511,7 +1513,7 @@ def _get_astropy_table(
 
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_key_params", True)
+            do_order=kwargs.get("do_order", True)
             cluster.key_params(do_order=do_order)
 
         if ofile != None:

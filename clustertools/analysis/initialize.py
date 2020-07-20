@@ -803,14 +803,15 @@ def _get_cluster(gcname, source="default", mbar=0.3, params=False):
     -------
     2019 - Written - Webb (UofT)
     """
-    ddata = np.loadtxt(
-        "/Users/webbjere/Codes/clustertools/clustertools/data/deBoer2019.dat", str, skiprows=1
+    data_dir=os.path.join(os.path.dirname(__file__), 'data/')
+
+    ddata = np.loadtxt(data_dir+"deBoer2019.dat", str, skiprows=1
     )
     dname = ddata[:, 0]
     dmass = ddata[:, 7].astype(float)
     drad = ddata[:, 5].astype(float)
 
-    hdata = np.loadtxt("/Users/webbjere/Codes/clustertools/clustertools/data/harris2010.dat", str, skiprows=2
+    hdata = np.loadtxt(data_dir+"harris2010.dat", str, skiprows=2
     )
     hname = hdata[:, 0]
     hname2 = hdata[:, 1]

@@ -303,7 +303,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     """
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True)
+        cluster.to_centre(do_key_params=True,do_order=True)
     else:
         cluster._order_check()
 
@@ -321,7 +321,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
 
 
     if rad is None and projected:
-        if not cluster.projected: cluster.key_params(projected=True)
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         rad=cluster.rmpro
     elif rad is None:
         rad=cluster.rm
@@ -347,7 +347,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     # Units of Myr
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return_cluster(cluster, units0, origin0)
+    return_cluster(cluster, units0, origin0,do_order=True)
     return trelax
 
 def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
@@ -378,7 +378,7 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     units0, origin0 = save_cluster(cluster)
 
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True)
+        cluster.to_centre(do_key_params=True,do_order=True)
     else:
         cluster._order_check()
 
@@ -399,7 +399,7 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     lnlambda = np.log(coulomb*ntot)
 
     if projected:
-        if not cluster.projected: cluster.key_params(projected=True)
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         rm=cluster.rmpro
     else:
         rm=cluster.rm
@@ -409,7 +409,7 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     # Units of Myr
     trh*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return_cluster(cluster, units0, origin0)
+    return_cluster(cluster, units0, origin0,do_order=True)
     return trh
 
 
@@ -443,7 +443,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     """
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True)
+        cluster.to_centre(do_key_params=True,do_order=True)
     else:
         cluster._order_check()
 
@@ -462,7 +462,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     mtot=np.sum(cluster.m)
     mbar=np.mean(cluster.m)
     if projected:
-        if not cluster.projected: cluster.key_params(projected=True)
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         rc=cluster.r10pro
         rh=cluster.rmpro
     else:
@@ -471,7 +471,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
 
-    return_cluster(cluster, units0, origin0)
+    return_cluster(cluster, units0, origin0,do_order=True)
     return trc
 
 
@@ -701,7 +701,7 @@ def rlagrange(cluster, nlagrange=10, projected=False):
 
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True)
+        cluster.to_centre(do_key_params=True,do_order=True)
     else:
         cluster._order_check()
 
@@ -709,7 +709,7 @@ def rlagrange(cluster, nlagrange=10, projected=False):
     rn = []
 
     if projected:
-        if not cluster.projected: cluster.key_params(projected=True)
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         rorder = cluster.rproorder
     else:
         rorder = cluster.rorder
@@ -777,7 +777,7 @@ def virial_radius(cluster, method='inverse_distance',
     """
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True)
+        cluster.to_centre(do_key_params=True,do_order=True)
     else:
         cluster._order_check()
 
@@ -941,7 +941,7 @@ def virial_radius_critical_density(
     rhocrit = 3.0 * (H ** 2.0) / (8.0 * np.pi * Grav)  # Msun/pc^3
 
     if projected:
-        if not cluster.projected: cluster.key_params(projected=True)
+        if not cluster.projected: cluster.key_params(do_order=True,projected=True)
         indx - cluster.rproorder
     else:
         indx = cluster.rorder
@@ -1533,7 +1533,7 @@ def rlimiting(
     elif units0 == "nbody":
         rl *= 1000.0 * ro / cluster.rbar
 
-    return_cluster(cluster, units0, origin0, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
     if plot:
 
@@ -1765,6 +1765,6 @@ def _rho_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
 
     return rprof, pprof, nprof

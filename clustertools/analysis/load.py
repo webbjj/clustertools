@@ -225,7 +225,8 @@ def load_cluster(
         initialize_orbit(cluster)
 
     if kwargs.get("do_key_params", True):
-        cluster.key_params()
+        do_order=kwargs.get("do_order", True)
+        cluster.key_params(do_order=do_order)
 
     return cluster
 
@@ -596,9 +597,10 @@ def _get_gyrfalcon(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_order", True)
             cluster.to_cluster()
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True)
+            cluster.to_centre(do_key_params=True, do_order=do_order)
             cluster.to_galaxy()
 
     return cluster
@@ -780,15 +782,17 @@ def _get_snapshot(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_order", True)
 
             cluster.to_cluster()
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True)
+            cluster.to_centre(do_key_params=True, do_order=do_order)
             cluster.to_galaxy()
 
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
-            cluster.key_params()
+            do_order=kwargs.get("do_order", True)
+            cluster.key_params(do_order=do_order)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
@@ -866,16 +870,18 @@ def _get_amuse_particles(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_order", True)
             cluster.to_cluster()
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, )
+            cluster.to_centre(do_key_params=True, do_order=do_order)
             cluster.to_galaxy()
 
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_order", True)
             # Estimate centre of distribution
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, )
+            cluster.to_centre(do_key_params=True, do_order=do_order)
             cluster.to_cluster()
 
         if ofile != None:
@@ -1024,15 +1030,17 @@ def _get_astropy_table(
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
         if kwargs.get("do_key_params", True):
+            do_order=kwargs.get("do_order", True)
 
             cluster.to_cluster()
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, )
+            cluster.to_centre(do_key_params=True, do_order=do_order)
             cluster.to_galaxy()
 
     elif origin == "cluster":
         if kwargs.get("do_key_params", True):
-            cluster.key_params()
+            do_order=kwargs.get("do_order", True)
+            cluster.key_params(do_order=do_order)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)

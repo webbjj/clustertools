@@ -56,7 +56,7 @@ def extrct_out(cluster, fileout, projected=False):
         rn = np.zeros(10)
     else:
         cluster.to_pckms()
-        cluster.to_centre( do_key_params=True)
+        cluster.to_centre(do_order=True, do_key_params=True)
 
         if cluster.nb > 0:
             nb = len(cluster.m2)

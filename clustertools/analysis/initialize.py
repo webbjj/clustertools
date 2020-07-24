@@ -134,7 +134,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             "kpckms",
         )
 
-    cluster.key_params()
+    cluster.key_params(do_order=True)
 
     return cluster
 

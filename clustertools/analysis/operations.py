@@ -248,15 +248,13 @@ def to_nbody(cluster, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params()
 
-def to_radec(cluster, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
+def to_radec(cluster, do_key_params=False, ro=8.0, vo=220.0):
     """Convert to on-sky position, proper motion, and radial velocity of cluster
     
     Parameters
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
     ro : float
@@ -365,17 +363,15 @@ def to_radec(cluster, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
     cluster.rv3d()
 
     if do_key_params:
-        cluster.key_params(do_order=do_order)
+        cluster.key_params()
 
-def from_radec(cluster, do_order=False, do_key_params=False):
+def from_radec(cluster, do_key_params=False):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
     Parameters
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
 
@@ -444,7 +440,7 @@ def from_radec(cluster, do_order=False, do_key_params=False):
     cluster.rv3d()
 
     if do_key_params:
-        cluster.key_params(do_order=do_order)
+        cluster.key_params()
 
 def to_galpy(cluster, do_key_params=False, ro=8.0, vo=220.0):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
@@ -502,7 +498,7 @@ def to_galpy(cluster, do_key_params=False, ro=8.0, vo=220.0):
     if do_key_params:
         cluster.key_params()
 
-def to_units(cluster, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
+def to_units(cluster, units, do_key_params=False, ro=8.0, vo=220.0):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units
 
     Parameters
@@ -511,8 +507,6 @@ def to_units(cluster, units, do_order=False, do_key_params=False, ro=8.0, vo=220
         StarCluster
     units : str
         units to be converted to (nbody,galpy,pckms,kpckms,radec)
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
     ro : float
@@ -540,17 +534,15 @@ def to_units(cluster, units, do_order=False, do_key_params=False, ro=8.0, vo=220
     elif units == "radec":
         origin0 = cluster.origin
         cluster.to_radec(do_key_params=do_key_params)
-        cluster.to_origin(origin0, do_order=do_order, do_key_params=do_key_params)
+        cluster.to_origin(origin0, do_key_params=do_key_params)
 
-def to_centre(cluster, do_order=False, do_key_params=False, centre_method=None):
+def to_centre(cluster, do_key_params=False, centre_method=None):
     """Shift coordinates such that origin is the centre of mass
 
     Parameters
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
     centre_method : str
@@ -582,9 +574,9 @@ def to_centre(cluster, do_order=False, do_key_params=False, centre_method=None):
         cluster.rv3d()
 
     if do_key_params:
-        cluster.key_params(do_order=do_order)
+        cluster.key_params()
 
-def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None):
+def to_cluster(cluster, do_key_params=False, centre_method=None):
     """Shift coordinates to clustercentric reference frame
 
     - When units='radec' and origin='sky', the cluster will be shifted to clustercentric coordinates using either:
@@ -599,8 +591,6 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
     centre_method : str
@@ -688,17 +678,15 @@ def to_cluster(cluster, do_order=False, do_key_params=False, centre_method=None)
 
         cluster.origin = "cluster"
         if do_key_params:
-            cluster.key_params(do_order=do_order)
+            cluster.key_params()
 
-def to_galaxy(cluster, do_order=False, do_key_params=False):
+def to_galaxy(cluster, do_key_params=False):
     """Shift coordinates to galactocentric reference frame
 
     Parameters
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
 
@@ -730,9 +718,9 @@ def to_galaxy(cluster, do_order=False, do_key_params=False):
     cluster.rv3d()
 
     if do_key_params:
-        cluster.key_params(do_order=do_order)
+        cluster.key_params()
 
-def to_sky(cluster, do_order=False, do_key_params=False):
+def to_sky(cluster, do_key_params=False):
     """Calculate on-sky position, proper motion, and radial velocity of cluster
         
     - Also changes units to radec
@@ -741,8 +729,6 @@ def to_sky(cluster, do_order=False, do_key_params=False):
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
 
@@ -756,7 +742,7 @@ def to_sky(cluster, do_order=False, do_key_params=False):
     """
     cluster.to_radec(do_key_params=do_key_params)
 
-def from_sky(cluster, do_order=False, do_key_params=False):
+def from_sky(cluster, do_key_params=False):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
     - Also changes units to kpckms
@@ -765,8 +751,6 @@ def from_sky(cluster, do_order=False, do_key_params=False):
     ----------
     cluster : class
         StarCluster
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
 
@@ -779,9 +763,9 @@ def from_sky(cluster, do_order=False, do_key_params=False):
     2018 - Written - Webb (UofT)
 
     """
-    cluster.from_radec(do_order=do_order, do_key_params=do_key_params)
+    cluster.from_radec(do_key_params=do_key_params)
 
-def to_origin(cluster, origin, do_order=False, do_key_params=False):
+def to_origin(cluster, origin, do_key_params=False):
     """Shift cluster to origin as defined by keyword
 
     Parameters
@@ -790,8 +774,6 @@ def to_origin(cluster, origin, do_order=False, do_key_params=False):
         StarCluster
     origin : str
         origin of coordinate system to be shifted to (centre, cluster, galaxy, sky)
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
 
@@ -805,13 +787,13 @@ def to_origin(cluster, origin, do_order=False, do_key_params=False):
 
     """
     if origin == "centre":
-        cluster.to_centre(do_order=do_order, do_key_params=do_key_params)
+        cluster.to_centre(do_key_params=do_key_params)
     elif origin == "cluster":
-        cluster.to_cluster(do_order=do_order, do_key_params=do_key_params)
+        cluster.to_cluster(do_key_params=do_key_params)
     elif origin == "galaxy":
-        cluster.to_galaxy(do_order=do_order, do_key_params=do_key_params)
+        cluster.to_galaxy(do_key_params=do_key_params)
     elif origin == "sky":
-        cluster.to_sky(do_order=do_order, do_key_params=do_key_params)
+        cluster.to_sky(do_key_params=do_key_params)
 
 
 def save_cluster(cluster):
@@ -834,7 +816,7 @@ def save_cluster(cluster):
     return cluster.units, cluster.origin
 
 
-def return_cluster(cluster, units0, origin0, do_order=False, do_key_params=False):
+def return_cluster(cluster, units0, origin0, do_key_params=False):
     """ return cluster to a specific combination of units and origin
 
     Parameters
@@ -846,8 +828,6 @@ def return_cluster(cluster, units0, origin0, do_order=False, do_key_params=False
         units that StarCluster will be changed to
    origin0 : str
         origin that StarCluster will be changed to
-    do_order : bool
-        sort star by radius after coordinate change (default: False)
     do_key_params : bool
         call key_params to calculate key parameters after unit change (default: False)
 
@@ -862,7 +842,7 @@ def return_cluster(cluster, units0, origin0, do_order=False, do_key_params=False
     if cluster.units != units0:
         cluster.to_units(units0)
     if cluster.origin != origin0:
-        cluster.to_origin(origin0, do_order=do_order, do_key_params=do_key_params)
+        cluster.to_origin(origin0, do_key_params=do_key_params)
 
 def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=False,**kwargs):
     """ Assign new conversions for real mass, size, and velocity to Nbody units
@@ -902,7 +882,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
     units0, origin0 = save_cluster(cluster)
 
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 

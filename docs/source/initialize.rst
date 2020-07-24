@@ -27,7 +27,7 @@ As mentioned above, ``ctype`` can also be set to ``'nbody6'``, ``'nbody6se'``,``
 
 * When ``ctype='astropy_table'``, ''particles'' must be given which contains a `~astropy.table.Table` instance of stars.  If necessary, a ``column_mapper`` can be passed.
 
-It should be noted that ``load_cluster`` has an input ``custom_override``. This feature means that when ``ctype='nbody6'`` or ``ctype='nbody6se'``, ``clustertools`` will look for a functions called ``get_nbody6_custom`` or ``get_nbody6_custom`` instead of ``get_nbody6_custom`` or ``get_nbody6_custom``. Hence if one has customized output files for the NBODY6 codes, a custom read function can be written. Otherwise ``ctype='nbody6'`` or ``ctype='nbody6se'`` will assume the public verson of NBODY6 was used to generate the model data. I am working to implement the capability of extracting from NBODY6 and NBODY6++ binary files directly.
+It should be noted that ``load_cluster`` has an input ``load_function``. This feature allows for a customized load function that returns a ``StarCluster`` to be used instead of one of the default functions within ``clustertools``. For example, if one has customized output files for the NBODY6 codes, a custom read function can be written. An empty ``/custom`` directory has been added to store such functions and have them callable within ``clustertools``. If you believe your ``load_function`` is of use to the general community, please feel free to open a pull request in github and I can add it as an option.
 
 .. automodapi:: clustertools.analysis.load
         :no-inheritance-diagram:

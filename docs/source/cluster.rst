@@ -36,21 +36,21 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
 
 The ``add_stars`` function is the intended way to actually add stars to ``cluster``. Assuming stellar positions (x,y,z) and velocities (vx,vy,vz) have already been read in via a snapshot, one can call:
 
->>> cluster.add_stars(x,y,z,vx,vy,vz,do_key_params=True,do_order=True)
+>>> cluster.add_stars(x,y,z,vx,vy,vz,do_key_params=True)
 
 Using ``add_stars`` as opposed to setting variables like ``cluster.x`` mantually ensures that ``cluster.rv3d`` is automatically called and the three dimensional radius (``cluster.r``) and velocity (``cluster.v``) of each star is calculated. By default, projected radii (``cluster.rpro``) and velocities (``cluster.vpro``) are also calculated assuming the x-y plane is the plane of the sky. However this option can be turned off via ``cluster.projected=False`` or using the keyword ``projected=False`` when initializing the ``StarCluster``.
 
 It is also possible to include stellar masses ``m`` and ids ``id`` if they are known via: 
 
->>> cluster.add_stars(x,y,z,vx,vy,vz,m,id,do_key_params=True,do_order=True)
+>>> cluster.add_stars(x,y,z,vx,vy,vz,m,id,do_key_params=True)
 
 Otherwise, masses will be set to 1 and ids will simply be set to integer values between 1 and the number of stars in the cluster.
 
 Finally, using ``add_stars`` results in ``cluster.ntot`` being calculated. Otherwise it would have to be set manually.
 
-Two other features in ``add_stars`` that are by default set to ``False`` are ``do_order`` and ``do_key_params`` for computational efficiency. Setting ``do_key_params=True`` will cause the total mass ``cluster.mtot``, mean mass ``cluster.mmean``, mean radius ``cluster.meanr``, and maximum radius ``cluster.rmax`` to be calculated. If ``do_order=True``, then stars will be sorted based on their distance from the origin (information stored in ``cluster.rorder``) and the half-mass radius ``rm`` and 10\% Lagrange radius ``r10`` will be calculated as well. Alternatively, one can call:
+One other feature in ``add_stars`` that are by default set to ``False`` is ``do_key_params`` for computational efficiency. Setting ``do_key_params=True`` will cause the total mass ``cluster.mtot``, mean mass ``cluster.mmean``, mean radius ``cluster.meanr``, and maximum radius ``cluster.rmax`` to be calculated. Furthermore, stars will be sorted based on their distance from the origin (information stored in ``cluster.rorder``) and the half-mass radius ``rm`` and 10\% Lagrange radius ``r10`` will be calculated as well. Alternatively, one can call:
 
->>> cluster.key_params(do_order=True)
+>>> cluster.key_params()
 
 at a later point in time. 
 

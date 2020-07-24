@@ -190,7 +190,7 @@ def rho_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     return rprof, pprof, nprof
 
@@ -355,7 +355,7 @@ def m_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     return rprof, mprof, nprof
 
@@ -440,7 +440,7 @@ def alpha_prof(
 
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 
@@ -546,7 +546,7 @@ def alpha_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     if return_error:
         return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, rbinerror
@@ -622,7 +622,7 @@ def sigv_prof(
     """
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 
@@ -712,7 +712,7 @@ def sigv_prof(
 
             sigvprof.append(sigv)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -797,7 +797,7 @@ def beta_prof(
 
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 
@@ -880,7 +880,7 @@ def beta_prof(
 
             betaprof.append(beta)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -963,7 +963,7 @@ def v_prof(
 
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 
@@ -1043,7 +1043,7 @@ def v_prof(
 
             vprof.append(vmean)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -1136,7 +1136,7 @@ def eta_prof(
     """
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 
@@ -1239,7 +1239,7 @@ def eta_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     return lrprofn, eprof, deta, edeta, ydeta, eydeta
 
@@ -1318,7 +1318,7 @@ def vcirc_prof(
 
     units0, origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
+        cluster.to_centre(do_key_params=True)
     else:
         cluster._order_check()
 
@@ -1429,6 +1429,6 @@ def vcirc_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, do_key_params=True)
 
     return rprof, vcprof, rvmax, vmax

@@ -11,9 +11,9 @@ A change of units or coordinate system can be implemented using:
 >>> cluster.to_galaxy()
 >>> cluster.to_kpckms()
 
-It is important to note that the operation ``rv3d`` is called after a change in either units or coordinate system, such that the radii and velocities of each star are updated. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If sorting and re-calculations are preferred, then be sure to set ``do_order=True`` and ``do_key_params=True`` via:
+It is important to note that the operation ``rv3d`` is called after a change in either units or coordinate system, such that the radii and velocities of each star are updated. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If re-calculations are preferred, then be sure to set ``do_key_params=True`` via:
 
->>> cluster.to_galaxy(do_order=True)
+>>> cluster.to_galaxy()
 >>> cluster.to_kpckms(do_key_params=True)
 
 All available operations are listed below.

@@ -784,7 +784,7 @@ class StarCluster(object):
         self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
         self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
 
-    def key_params(self, do_order=False, projected=False):
+    def key_params(self, do_order=True, projected=False):
         """Find key parameters of the cluster 
 
         - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50) are all calculated if necessary information is given
@@ -794,7 +794,7 @@ class StarCluster(object):
         ----------
 
         do_order : bool
-            Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:False)
+            Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:True)
         projected : bool
           use projected values, but do not change self.projected (default: False) 
 
@@ -855,7 +855,7 @@ class StarCluster(object):
                 self.rhpro = 0.0
                 self.rh10pro = 0.0
 
-    def _param_check(self,do_order=True):
+    def _param_check(self, do_order=True):
         """Check to see if key parameters have been calculated
             - run self.key_params() if key parameters have not been calculated
 
@@ -878,7 +878,7 @@ class StarCluster(object):
         """
         if do_order:
             self.order_check()
-        elif self.rm is None:
+        elif self.mtot is None:
             self.key_params(do_order=False)
 
     def _order_check(self):
@@ -905,23 +905,23 @@ class StarCluster(object):
 
     # Directly call from operations.py (see operations.py files for documenation):
 
-    def to_pckms(self, do_key_params=False):
-        to_pckms(self,do_key_params=do_key_params)
+    def to_pckms(self, do_key_params=False, do_order=False):
+        to_pckms(self, do_key_params=do_key_params, do_order=do_order)
 
-    def to_kpckms(self, do_key_params=False, ro=8.0, vo=220.0):
-        to_kpckms(self,do_key_params=do_key_params,ro=ro,vo=vo)
+    def to_kpckms(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
+        to_kpckms(self, do_key_params=do_key_params, do_order=do_order, ro=ro,vo=vo)
 
-    def to_nbody(self, do_key_params=False, ro=8.0, vo=220.0):
-        to_nbody(self, do_key_params=do_key_params, ro=ro, vo=vo)
+    def to_nbody(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
+        to_nbody(self, do_key_params=do_key_params, do_order=do_order, ro=ro, vo=vo)
 
-    def to_radec(self, do_key_params=False, ro=8.0, vo=220.0):
-        to_radec(self, do_key_params=do_key_params, ro=ro, vo=vo)
+    def to_radec(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
+        to_radec(self, do_key_params=do_key_params, do_order=do_order, ro=ro, vo=vo)
 
     def from_radec(self, do_order=False, do_key_params=False):
         from_radec(self, do_order=do_order, do_key_params=do_key_params)
 
-    def to_galpy(self, do_key_params=False, ro=8.0, vo=220.0):
-        to_galpy(self, do_key_params=do_key_params, ro=ro, vo=vo)
+    def to_galpy(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
+        to_galpy(self, do_key_params=do_key_params, do_order=do_order, ro=ro, vo=vo)
 
     def to_units(self, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
         to_units(self, units, do_order=do_order, do_key_params=do_key_params, ro=ro, vo=vo)
@@ -1083,6 +1083,8 @@ class StarCluster(object):
         units0, origin0 = save_cluster(self)
         if origin0 != 'cluster' and origin0 != 'centre':
             self.to_centre(do_key_params=True,do_order=True)
+        else:
+            self._order_check()
 
         self.qv=virialize(self, specific=True, full=True, projected=projected)
 
@@ -1445,8 +1447,8 @@ def sub_cluster(
     reset_nbody_scale=False,
     reset_nbody_mass=False,
     reset_nbody_radii=False,
-    do_order=False,
     do_key_params=False,
+    do_order=False,
     **kwargs
 ):
     """Extract a sub population of stars from a StarCluster

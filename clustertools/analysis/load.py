@@ -25,7 +25,7 @@ except:
 def load_cluster(
     ctype="snapshot",
     particles=None,
-    custom_override=True,
+    load_function=None,
     units = "pckms",
     origin = "cluster",
     ofile=None,
@@ -53,8 +53,8 @@ def load_cluster(
     particles : particles
         AMUSE particle dataset (default: None)
         or `~astropy.table.Table` instance if `ctype` is "astropy_table".
-    custom_override : bool
-        use a custom function to load data instead of default (default: True)
+    load_function : function
+        use a custom function to load data (default : None)
     units : str
         units of input data (default: kpckms)
     origin : str
@@ -108,19 +108,18 @@ def load_cluster(
     if "ofilename" in kwargs and ofile is None:
         ofile = open(wdir + kwargs["ofilename"], "r")
 
-    if ctype == "nbody6se":
+    if load_function is not None:
+        ctype='custom'
+        cluster=load_function(particles=particles,units=units,origin=origin,ofile=file,orbit=orbit,filename=filename,**kwargs)
+
+    elif ctype == "nbody6se":
         # When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
         fort82 = open("%sfort.82" % wdir, "r")
         fort83 = open("%sfort.83" % wdir, "r")
 
-        if custom_override:
-            cluster = _get_nbody6se_custom(
-                fort82, fort83, ofile=ofile, advance=False, **kwargs
-            )
-        else:
-            cluster = _get_nbody6se(
-                fort82, fort83, ofile=ofile, advance=False, **kwargs
-            )
+        cluster = _get_nbody6se(
+            fort82, fort83, ofile=ofile, advance=False, **kwargs
+        )
 
     elif ctype == "nbody6":
         # With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
@@ -130,10 +129,7 @@ def load_cluster(
             out9 = None
         out34 = open("%sOUT34" % wdir, "r")
 
-        if custom_override:
-            cluster = _get_nbody6_custom(out9, out34, advance=False, **kwargs)
-        else:
-            cluster = _get_nbody6(out9, out34, advance=False, **kwargs)
+        cluster = _get_nbody6(out9, out34, advance=False, **kwargs)
 
     elif ctype == "gyrfalcon":
         # Read in snapshot from gyrfalcon.
@@ -236,7 +232,7 @@ def load_cluster(
 
 def advance_cluster(
     cluster,
-    custom_override=True,
+    load_function=None,
     ofile=None,
     orbit=None,
     filename=None,
@@ -252,8 +248,8 @@ def advance_cluster(
     ----------
     cluster - class 
         StarCluster to be advanced
-    custom_override : bool
-        use a custom function to load data instead of default
+    load_function : function
+        use a custom function to load data (default : None)
     ofile : file
         an already opened file containing orbit information (default: None)
     orbit : class
@@ -277,24 +273,18 @@ def advance_cluster(
     advance_kwargs = _get_advanced_kwargs(cluster, **kwargs)
 
     # Continue reading in cluster opened in _get_cluster()
-    if cluster.ctype == "nbody6se":
-        if custom_override:
-            cluster = _get_nbody6se_custom(
-                cluster.bfile, cluster.sfile, ofile=ofile, advance=True, **advance_kwargs
-            )
-        else:
-            cluster = _get_nbody6se(
-                cluster.bfile, cluster.sfile, ofile=ofile, advance=True, **advance_kwargs
-            )
+    if load_function is None:
+        ctype='custom'
+        cluster=load_function(ofile=file,orbit=orbit,filename=filename,advance=True,**kwargs)
+
+    elif cluster.ctype == "nbody6se":
+        cluster = _get_nbody6se(
+            cluster.bfile, cluster.sfile, ofile=ofile, advance=True, **advance_kwargs
+        )
     elif cluster.ctype == "nbody6":
-        if custom_override:
-            cluster = _get_nbody6_custom(
-                cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
-            )
-        else:
-            cluster = _get_nbody6(
-                cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
-            )
+        cluster = _get_nbody6(
+            cluster.bfile, cluster.sfile, advance=True, **advance_kwargs
+        )
 
     elif cluster.ctype == "gyrfalcon":
 
@@ -619,473 +609,9 @@ def _get_nbody6se(fort82, fort83, ofile=None, advance=False, **kwargs):
     print('WORK IN PROGRESS')
     return StarCluster()
 
-def _get_nbody6se_custom(fort82, fort83, ofile=None, advance=False, **kwargs):
-    """Extract a single snapshot from custom versions of fort.82 and fort.83 files output by Nbody6
-       
-       -Called for Nbody6 simulations with stellar evolution
-
-    Parameters
-    ----------
-    fort82 : file
-        opened fort.82 file containing binary star information
-    fort83 : file
-        opened fort.83 file containing single star information
-    ofile : file
-        opened file containing orbital information
-    advance : bool
-        is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
-
-    Returns
-    -------
-    cluster : class
-        StarCluster
-
-    Other Parameters
-    ----------------
-    Same as load_cluster
-
-    History
-    -------
-    2018 - Written - Webb (UofT)
-    """
-
-    line1 = fort83.readline().split()
-    if len(line1) == 0:
-        print("END OF FILE")
-        return StarCluster( 0.0,ctype='nbody6se',**kwargs)
-
-    line2 = fort83.readline().split()
-    line3 = fort83.readline().split()
-    line1b = fort82.readline().split()
-
-    ns = int(line1[0])
-    tphys = float(line1[1])
-    nc = int(line2[0])
-    rc = max(float(line2[1]), 0.01)
-    rbar = float(line2[2])
-    rtide = float(line2[3])
-    xc = float(line2[4])
-    yc = float(line2[5])
-    zc = float(line2[6])
-    zmbar = float(line3[0])
-    vstar = 0.06557 * np.sqrt(zmbar / rbar)
-    rscale = float(line3[2])
-    nb = int(line1b[0])
-    ntot = ns + nb
-
-    nsbnd = 0
-    nbbnd = 0
-    nbnd = 0
-
-    i_d = []
-    id1 = []
-    id2 = []
-    kw = []
-    kw1 = []
-    kw2 = []
-    kcm = []
-    ecc = []
-    pb = []
-    semi = []
-    m1 = []
-    m2 = []
-    m = []
-    logl1 = []
-    logl2 = []
-    logl = []
-    logr1 = []
-    logr2 = []
-    logr = []
-    x = []
-    y = []
-    z = []
-    rxy = []
-    r = []
-    vx = []
-    vy = []
-    vz = []
-    v = []
-    ep = []
-    ep1 = []
-    ep2 = []
-    ospin = []
-    ospin1 = []
-    ospin2 = []
-    kin = []
-    pot = []
-    etot = []
-
-    data = fort82.readline().split()
-
-    while int(data[0]) > 0 and len(data) > 0:
-        id1.append(int(data[0]))
-        id2.append(int(data[1]))
-        i_d.append(id1[-1])
-        kw1.append(int(data[2]))
-        kw2.append(int(data[3]))
-        kw.append(max(kw1[-1], kw2[-1]))
-        kcm.append(float(data[4]))
-        ecc.append(float(data[5]))
-        pb.append(10.0**float(data[6]))
-        semi.append(10.0**float(data[7]))
-        m1.append(float(data[8]) / zmbar)
-        m2.append(float(data[9]) / zmbar)
-        m.append(m1[-1] + m2[-1])
-        logl1.append(float(data[10]))
-        logl2.append(float(data[11]))
-        logl.append(max(logl1[-1], logl2[-1]))
-        logr1.append(float(data[12]))
-        logr2.append(float(data[13]))
-        logr.append(max(logr1, logr2))
-        x.append(float(data[14]))
-        y.append(float(data[15]))
-        z.append(float(data[16]))
-        vx.append(float(data[17]))
-        vy.append(float(data[18]))
-        vz.append(float(data[19]))
-
-        if "bnd" in fort82.name or "esc" in fort82.name:
-            kin.append(float(data[20]))
-            pot.append(float(data[21]))
-            etot.append(float(data[23]))
-        else:
-            kin.append(0.0)
-            pot.append(0.0)
-            etot.append(0.0)
-            ep1.append(float(data[20]))
-            ep2.append(float(data[21]))
-            ospin1.append(float(data[22]))
-            ospin2.append(float(data[23]))
-
-        nbbnd += 1
-        data = fort82.readline().split()
-
-    data = fort83.readline().split()
-    while int(data[0]) > 0 and len(data) > 0:
-        i_d.append(int(data[0]))
-        kw.append(int(data[1]))
-        m.append(float(data[2]) / zmbar)
-        logl.append(float(data[3]))
-        logr.append(float(data[4]))
-        x.append(float(data[5]))
-        y.append(float(data[6]))
-        z.append(float(data[7]))
-        vx.append(float(data[8]))
-        vy.append(float(data[9]))
-        vz.append(float(data[10]))
-
-        if "bnd" in fort83.name or "esc" in fort83.name:
-            kin.append(float(data[11]))
-            pot.append(float(data[12]))
-            etot.append(float(data[14]))
-        else:
-            kin.append(0.0)
-            pot.append(0.0)
-            etot.append(0.0)
-            ep.append(float(data[11]))
-            ospin.append(float(data[12]))
-
-        nsbnd += 1
-        data = fort83.readline().split()
-
-    nbnd = nsbnd + nbbnd
-
-    if nbnd > 0:
-        cluster = StarCluster(
-            nbnd,
-            tphys,
-            units="nbody",
-            origin="cluster",
-            ctype="nbody6se",
-            sfile=fort83,
-            bfile=fort82,
-            **kwargs
-        )
-        cluster.add_nbody6(
-            nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd
-        )
-        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
-        cluster.add_sse(kw, logl, logr, ep, ospin)
-        cluster.add_bse(
-            id1,
-            id2,
-            kw1,
-            kw2,
-            kcm,
-            ecc,
-            pb,
-            semi,
-            m1,
-            m2,
-            logl1,
-            logl2,
-            logr1,
-            logr2,
-            ep1,
-            ep2,
-            ospin1,
-            ospin2,
-        )
-        cluster.add_energies(kin, pot, etot)
-
-        if ofile != None:
-            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
-
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-            # Estimate centre
-            cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
-            cluster.to_cluster()
-
-    else:
-        cluster = StarCluster( tphys, ctype="nbody6se", **kwargs)
-
-    return cluster
-
 def _get_nbody6(out9, out34, advance=False, **kwargs):
     print('WORK IN PROGRESS')
     return StarCluster()
-
-def _get_nbody6_custom(out9, out34, advance=False, **kwargs):
-    """Extract a single snapshot from custom OUT9 and OUT34 output by Nbody6
-
-       - Called for Nbody6 simulations without stellar evolution
-
-    Parameters
-    ----------
-    out9 : file
-        opened OUT34 file containing binary star information
-    out34 : file
-        opened OUT34 file containing single star information
-    ofile : file
-        opened file containing orbital information
-    advance : bool
-        is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
-
-    Returns
-    -------
-    cluster : class
-        StarCluster
-
-    Other Parameters
-    ----------------
-    Same as load_cluster
-
-    History
-    -------
-    2018 - Written - Webb (UofT)
-    """
-
-    line1 = out34.readline().split()
-    if len(line1) == 0:
-        print("END OF FILE")
-        return StarCluster( 0.0, ctype='nbody6',**kwargs)
-
-    line2 = out34.readline().split()
-    line3 = out34.readline().split()
-
-    ns = int(line1[0])
-    tphys = float(line1[1])
-    n_p = int(line1[4])
-    if len(line1) > 11:
-        nb = int(float(line1[11]))
-    else:
-        nb = 0
-
-    if out9 != None:
-        line1b = out9.readline().split()
-        line2b = out9.readline().split()
-        line3b = out9.readline().split()
-
-        if nb != int(line1b[0]):
-            print("ERROR: NUMBER OF BINARIES DO NOT MATCH - ",nb,int(line1b[0]))
-
-    nc = int(line2[0])
-    rc = max(float(line2[1]), 0.01)
-    rbar = float(line2[2])
-    rtide = float(line2[3])
-    xc = float(line2[4])
-    yc = float(line2[5])
-    zc = float(line2[6])
-    zmbar = float(line3[0])
-    vstar = 0.06557 * np.sqrt(zmbar / rbar)
-    rscale = float(line3[2])
-    ntot = ns + nb
-
-    # Orbital Properties
-    xgc = float(line1[5])
-    ygc = float(line1[6])
-    zgc = float(line1[7])
-    vxgc = float(line1[8])
-    vygc = float(line1[9])
-    vzgc = float(line1[10])
-
-    nsbnd = 0
-    nbbnd = 0
-    nbnd = 0
-
-    i_d = []
-    kw = []
-    m = []
-    logl = []
-    logr = []
-    x = []
-    y = []
-    z = []
-    vx = []
-    vy = []
-    vz = []
-    kin = []
-    pot = []
-    etot = []
-
-    if out9 != None:
-
-        yrs = (rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(zmbar)
-        days = 365.25 * yrs
-
-        id1 = []
-        kw1 = []
-        m1 = []
-        logl1 = []
-        logr1 = []
-        id2 = []
-        kw2 = []
-        m2 = []
-        logl2 = []
-        logr2 = []
-        pb = []
-        kcm = []
-        ecc = []
-        semi = []
-
-        for i in range(0, nb):
-            data = out9.readline().split()
-
-            #Ignore massless ghost particles ouput by NBODY6
-            if (float(data[4])+float(data[5])) > 0:
-
-                nbbnd += 1
-
-                ecc.append(float(data[1]))
-                m1.append(float(data[4]) / zmbar)
-                m2.append(float(data[5]) / zmbar)
-                pb.append(float(data[6]) / days)
-                id1.append(int(float(data[7])))
-                id2.append(int(float(data[8])))
-                kw1.append(int(data[9]))
-                kw2.append(int(data[10]))
-                kcm.append(int(data[11]))
-
-                logl1.append(1.0)
-                logl2.append(1.0)
-                logr1.append(1.0)
-                logr2.append(1.0)
-
-                x1 = float(data[12])
-                y1 = float(data[13])
-                z1 = float(data[14])
-                vx1 = float(data[15])
-                vy1 = float(data[16])
-                vz1 = float(data[17])
-                x2 = float(data[18])
-                y2 = float(data[19])
-                z2 = float(data[20])
-                vx2 = float(data[21])
-                vy2 = float(data[22])
-                vz2 = float(data[23])
-
-                ''' It seems binary COM information is included in OUT34
-                x.append((x1 * m1[-1] + x2 * m2[-1]) / (m1[-1] + m2[-1]) + xc)
-                y.append((y1 * m1[-1] + y2 * m2[-1]) / (m1[-1] + m2[-1]) + yc)
-                z.append((z1 * m1[-1] + z2 * m2[-1]) / (m1[-1] + m2[-1]) + zc)
-                vx.append((vx1 * m1[-1] + vx2 * m2[-1]) / (m1[-1] + m2[-1]))
-                vy.append((vy1 * m1[-1] + vy2 * m2[-1]) / (m1[-1] + m2[-1]))
-                vz.append((vz1 * m1[-1] + vz2 * m2[-1]) / (m1[-1] + m2[-1]))
-                m.append(m1[-1] + m2[-1])
-                i_d.append(id1[-1])
-                kw.append(max(kw1[-1], kw2[-1]))
-                logl.append(1.0)
-                logr.append(1.0)
-                
-
-                r1 = np.sqrt((x1 - x[-1]) ** 2.0 + (y1 - y[-1]) ** 2.0 + (z1 - z[-1]) ** 2.0)
-                r2 = np.sqrt((x2 - x[-1]) ** 2.0 + (y2 - y[-1]) ** 2.0 + (z2 - z[-1]) ** 2.0)
-                '''
-                mb=(m1[-1] + m2[-1])
-
-                semi.append((pb[-1]**2.*mb)**(1./3.))
-
-    data = out34.readline().split()
-
-    while int(float(data[0])) >= -999:
-        # IGNORE GHOST PARTICLES
-        if float(data[2]) == 0.0:
-            ns -= 1
-            ntot -= 1
-        else:
-            i_d.append(int(float(data[0])))
-            kw.append(int(data[1]))
-            m.append(float(data[2]))
-            logl.append(float(data[3]))
-            logr.append(float(data[4]))
-            x.append(float(data[5]) + xc)
-            y.append(float(data[6]) + yc)
-            z.append(float(data[7]) + zc)
-            vx.append(float(data[8]))
-            vy.append(float(data[9]))
-            vz.append(float(data[10]))
-
-            if len(data) > 14:
-                kin.append(float(data[13]))
-                pot.append(float(data[14]))
-                etot.append(float(data[15]))
-            else:
-                kin.append(0.0)
-                pot.append(0.0)
-                etot.append(0.0)
-
-            nsbnd += 1
-        data = out34.readline().split()
-
-        if len(data)==0:
-            break
-
-    nbnd = nsbnd + nbbnd
-
-    cluster = StarCluster(
-        nsbnd,
-        tphys,
-        units="nbody",
-        origin="cluster",
-        ctype="nbody6",
-        sfile=out34,
-        bfile=out9,
-        **kwargs
-    )
-    cluster.add_nbody6(
-        nc, rc, rbar, rtide, xc, yc, zc, zmbar, vstar, rscale, nsbnd, nbbnd, n_p
-    )
-    # Add back on the centre of mass which has been substracted off by NBODY6
-    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
-    cluster.add_sse(kw, logl, logr, np.zeros(nbnd), np.zeros(nbnd))
-    cluster.add_energies(kin, pot, etot)
-    if out9 != None:
-        cluster.add_bse(
-            id1, id2, kw1, kw2, kcm, ecc, pb, semi, m1, m2, logl1, logl2, logr1, logr2
-        )
-
-    if kwargs.get("do_key_params", True):
-        do_order=kwargs.get("do_order", True)
-        # Estimate centre of distribution
-        cluster.find_centre()
-        cluster.to_centre(do_key_params=True, do_order=do_order)
-        cluster.to_cluster()
-
-    cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc)
-
-    return cluster
 
 def _get_snapshot(
     filename=None,

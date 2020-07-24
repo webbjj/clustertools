@@ -13,7 +13,7 @@ import numpy as np
 from galpy.util import bovy_conversion, bovy_coords
 from textwrap import dedent
 from galpy.potential import MWPotential2014
-from .orbit import initialize_orbit, calc_actions
+from .orbit import *
 from .functions import *
 from .profiles import *
 from .operations import *
@@ -1340,22 +1340,22 @@ class StarCluster(object):
         self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo)
         return self.orbit
 
-    def initialize_orbits(cluster, ro=8.0, vo=220.0):
+    def initialize_orbits(self, ro=8.0, vo=220.0):
         self.orbits=initialize_orbits(self, ro=ro, vo=vo)
         return self.orbits
 
-    def integrate_orbit(cluster, pot=MWPotential2014, tfinal=12.0, 
+    def integrate_orbit(self, pot=MWPotential2014, tfinal=12.0, 
         nt=1000, ro=8.0, vo=220.0, plot=False):
 
-        self.ts,self.orbit=integrate_orbit(cluster,pot=pot,tfinal=tfinal,
+        self.ts,self.orbit=integrate_orbit(self,pot=pot,tfinal=tfinal,
             nt=nt,ro=ro,vo=vo,plot=plot)
 
         return self.orbit
 
-    def integrate_orbits(cluster, pot=MWPotential2014, tfinal=12.0, 
+    def integrate_orbits(self, pot=MWPotential2014, tfinal=12.0, 
         nt=1000, ro=8.0, vo=220.0, plot=False):
 
-        self.ts,self.orbits=integrate_orbits(cluster,pot=pot,tfinal=tfinal,
+        self.ts,self.orbits=integrate_orbits(self,pot=pot,tfinal=tfinal,
             nt=nt,ro=ro,vo=vo,plot=plot)
 
         return self.orbits
@@ -1372,66 +1372,60 @@ class StarCluster(object):
 
         self.tphys+=dt
 
-    def orbital_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
-        skypath=False,initialize=False,ro=8.0,vo=220.0,plot=False):
+    def orbital_path(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
+        skypath=False,initialize=False,ro=8.0,vo=220.0,plot=False,**kwargs):
 
         if initialize:
-            self.tpath,self.xpath,self.ypath,self.zpath,
-            self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,
-                skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot,**kwargs)
         else:
-            self.tpath,self.xpath,self.ypath,self.zpath,
-            self.vxpath,self.vypath,self.vzpath=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,
-                skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return  self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
     def orbital_path_match(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
-        to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,):
+        to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,**kwargs):
 
         self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,
-        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,)
+        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return self.tstar,self.dprog,self.dpath
 
-    def tail_path(cluster,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
-        ro=8.0,vo=220.0,plot=False):
+    def calc_actions(self, pot=MWPotential2014, ro=8.0, vo=220.0,full=False, **kwargs):
+        if full:
+            JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_actions(self, pot=pot, ro=ro, vo=vo,full=full, **kwargs)
+        else: 
+            JR, Jphi, Jz = calc_actions(self, pot=pot, ro=ro, vo=vo, full=full, **kwargs)
 
-        if initialize:
-            self.tpath,self.xpath,self.ypath,self.zpath,
-            self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,
-                skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot)
+            OR,Ophi,Oz = np.zeros(self.ntot),np.zeros(self.ntot),np.zeros(self.ntot)
+            TR,Tphi,Tz = np.zeros(self.ntot),np.zeros(self.ntot),np.zeros(self.ntot)
+
+
+        self.add_actions(JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz)
+
+        if full:
+            return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
         else:
-            self.tpath,self.xpath,self.ypath,self.zpath,
-            self.vxpath,self.vypath,self.vzpath=orbital_path(cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,
-                skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot)
+            return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+
+    def ttensor(self, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False,t=0.):
+        self.tidal_tensor=ttensor(self, pot=pot, ro=ro, vo=vo, eigenval=eigenval,t=t)
+        return self.tidal_tensor
+
+
+    def tail_path(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
+        ro=8.0,vo=220.0,plot=False,**kwargs):
+
+        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,ro=ro,vo=vo,plot=plot)
 
         return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
     def tail_path_match(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
-        to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,):
+        to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,**kwargs,):
 
-        self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,
+        self.tstar,self.dprog,self.dpath=tail_path_match(self,dt=dt,nt=nt,pot=pot,
         from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,)
 
         return self.tstar,self.dprog,self.dpath
-
-    def get_cluster_orbit(gcname="mwglobularclusters",ro=8.0, vo=220.0):
-        self.orbit=get_cluster_orbit(gcname=gcname,ro=ro, vo=vo)
-
-        return self.orbit
-
-    def calc_actions(self, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
-        JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_actions(
-            self, pot=pot, ro=ro, vo=vo, **kwargs
-        )
-        self.add_actions(JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz)
-
-        return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
-
-    def ttensor(self, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
-        self.ttensor=ttensor(self, pot=pot, ro=ro, vo=vo, eigenval=eigenval)
-        return ttensor
 
 def sub_cluster(
     cluster,

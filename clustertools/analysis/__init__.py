@@ -65,10 +65,12 @@ vcirc_prof=profiles.vcirc_prof
 initialize_orbit=orbit.initialize_orbit
 initialize_orbits=orbit.initialize_orbits
 integrate_orbit=orbit.integrate_orbit
+integrate_orbits=orbit.integrate_orbits
 orbit_interpolate=orbit.orbit_interpolate
 orbital_path=orbit.orbital_path
 orbital_path_match=orbit.orbital_path_match
 calc_actions=orbit.calc_actions
+ttensor=orbit.ttensor
 
 to_tail=tails.to_tail
 tail_path=tails.tail_path

@@ -18,7 +18,7 @@ from .orbit import orbital_path, orbital_path_match
 from .operations import *
 from ..util.recipes import binmaker
 
-from ..util.plots import *
+from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 
 
 def to_tail(cluster):
@@ -78,7 +78,7 @@ def to_tail(cluster):
 
 def tail_path(
     cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, ro=8.0, vo=220.0,
-    plot=False
+    plot=False,**kwargs,
 ):
     """Calculate tail path +/- dt Gyr around the cluster
 
@@ -178,6 +178,7 @@ def tail_path_match(
     ro=8.0,
     vo=220.0,
     plot=False,
+    **kwargs,
 ):
     """Match stars to a position along the tail path of the cluster
 
@@ -304,7 +305,7 @@ def tail_path_match(
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        _scatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
+        _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
 
         if filename != None:
             plt.savefig(filename)

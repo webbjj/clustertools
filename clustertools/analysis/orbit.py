@@ -26,7 +26,7 @@ import numpy as np
 from ..util.recipes import interpolate, binmaker
 from .operations import save_cluster, return_cluster
 from .profiles import rho_prof
-from ..util.plots import *
+from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 
 import astropy.coordinates as coord
 import astropy.units as u
@@ -355,12 +355,12 @@ def orbit_interpolate(
         xc, yc, zc = 0.0, 0.0, 0.0
         vxc, vyc, vzc = 0.0, 0.0, 0.0
     else:
-        xc += dx
-        yc += dy
-        zc += dz
-        vxc += dvx
-        vyc += dvy
-        vzc += dvz
+        xc = dx
+        yc = dy
+        zc = dz
+        vxc = dvx
+        vyc = dvy
+        vzc = dvz
 
     xgc, ygc, zgc = (
         cluster.orbit.x(ts[-1]),
@@ -380,11 +380,11 @@ def orbit_interpolate(
         xt, yt, zt = cluster.x[tindx], cluster.y[tindx], cluster.z[tindx]
         vxt, vyt, vzt = cluster.vx[tindx], cluster.vy[tindx], cluster.vz[tindx]
 
-        R, phi, z = bovy_coords.rect_to_cyl(x, y, z)
-        vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
+        Rt, phit, zt = bovy_coords.rect_to_cyl(xt, yt, zt)
+        vRt, vTt, vzt = bovy_coords.rect_to_cyl_vec(vxt, vyt, vzt, xt, yt, zt)
 
-        vxvv = np.column_stack([R, vR, vT, z, vz, phi])
-        otail = Orbit(vxvv, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
+        vxvvt = np.column_stack([Rt, vRt, vTt, zt, vzt, phit])
+        otail = Orbit(vxvvt, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
 
         cluster.to_kpckms()
 
@@ -414,7 +414,8 @@ def orbital_path(
     initialize=False,
     ro=8.0,
     vo=220.0,
-    plot=False
+    plot=False,
+    **kwargs,
 ):
     """Calculate the cluster's orbital path
 
@@ -544,7 +545,7 @@ def orbital_path(
         if plot:
             filename = kwargs.pop("filename", None)
             overplot = kwargs.pop("overplot", False)
-            starplot(cluster,coord='xy',overplot=overplot)
+            starplot(cluster,coords='xy',overplot=overplot)
             _lplot(x,y,overplot=True)
 
             if filename != None:
@@ -566,6 +567,7 @@ def orbital_path_match(
     ro=8.0,
     vo=220.0,
     plot=False,
+    **kwargs,
 ):
     """Match stars to a position along the orbital path of the cluster
 
@@ -715,7 +717,7 @@ def orbital_path_match(
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        _scatter(dprog,dpath,xlabel="Dprog",ylabel="Dpath",overplot=overplot)
+        _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
 
         if filename != None:
             plt.savefig(filename)
@@ -724,7 +726,7 @@ def orbital_path_match(
 
     return np.array(tstar), np.array(dprog), np.array(dpath)
 
-def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
+def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, full=False, **kwargs):
     """Calculate action angle values for each star
 
     - This is a simple wrapper for calculating actions from an Orbit in galpy (Bovy 2015)
@@ -740,15 +742,18 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
         galpy distance scale (Default: 8.)
     vo : float
         galpy velocity scale (Default: 220.)
-
+    full : bool
+        return orbital frequencies and periods (default : False)
     Returns
     -------
     JR,Jphi,Jz : float
         orbit actions
-    OR,Ophi,Oz : float
-        orbital frequencies
-    TR,Tphi,Tz : float
-        orbital periods
+
+    if full:
+        OR,Ophi,Oz : float
+            orbital frequencies
+        TR,Tphi,Tz : float
+            orbital periods
 
     Other Parameters
     ----------------
@@ -773,16 +778,20 @@ def calc_actions(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, **kwargs):
     JR = os.jr(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
     Jphi = os.jp(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
     Jz = os.jz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
-    OR = os.Or(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
-    Ophi = os.Op(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
-    Oz = os.Oz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
-    TR = os.Tr(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
-    Tphi = os.Tp(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
-    Tz = os.Tz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+    if full:
+        OR = os.Or(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        Ophi = os.Op(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        Oz = os.Oz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        TR = os.Tr(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        Tphi = os.Tp(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        Tz = os.Tz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
 
-    return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+        return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+    else:
+        return JR, Jphi, Jz
 
-def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
+
+def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False, t=0.):
     """Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
     
     - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
@@ -799,6 +808,8 @@ def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
         galpy velocity scale (Default: 220.)
     eigenval : bool
         return eigenvalues if true (default; False)
+    time : float
+        time to evaluate tidal tensor. Necessary if tidal field is time dependent (default: 0.)
 
     Returns
     -------
@@ -811,7 +822,8 @@ def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False):
     o = initialize_orbit(cluster, ro, vo)
     R=o.R()
     z=o.z()
+    phi=o.phi()
 
-    tij=potential.ttensor(R/ro,z/ro,eigenval=eigenval)
+    tij=potential.ttensor(pot,R/ro,z/ro,phi=phi,t=t/bovy_conversion.time_in_Gyr(ro=ro, vo=vo),eigenval=eigenval)
 
     return tij

@@ -27,6 +27,8 @@ Guide
 
    observations.rst
 
+   binaries.rst
+
 Example Notebooks
 -----------------
 
@@ -35,8 +37,10 @@ Example Notebooks
 
    notebooks/loading_and_advancing.ipynb
    notebooks/setup.ipynb
+   notebooks/operations.ipynb
    notebooks/functions.ipynb
    notebooks/profiles.ipynb
+   notebooks/orbits_and_tails.ipynb
 
 Planned Future Additions
 ----------------------------------
@@ -72,7 +76,7 @@ Bovy J., 2015, ApJS, 216, 29
 
 Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
 
-de Boer, T. J. L.,  Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 and
+de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 and
 
 Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
 
@@ -84,7 +88,9 @@ Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, d
 
 Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
 
-Spitzer, L. 1987,  Dynamical evolution of globular clusters
+Spitzer, L. 1987, Dynamical evolution of globular clusters
+
+van de Ven, G. 2005, PhD Thesis, Leiden University, https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract
 
 Vasiliev E., 2019, MNRAS, 484,2832
 

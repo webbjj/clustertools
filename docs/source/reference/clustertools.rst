@@ -12,4 +12,5 @@ Subpackages
 .. toctree::
 
    clustertools.analysis
+   clustertools.custom
    clustertools.util

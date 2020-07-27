@@ -42,9 +42,10 @@ def to_tail(cluster):
     2018 - Written - Webb (UofT)
 
     """
-    units0, origin0 = cluster.units, cluster.origin
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    if origin0 != 'cluster' and origin0 != 'centre':
+        cluster.to_centre(sortstars=False)
 
-    cluster.to_centre()
 
     v_vec = np.array([cluster.vxgc, cluster.vygc, cluster.vzgc])
     new_v_vec = np.array([1.0, 0.0, 0.0])
@@ -72,7 +73,7 @@ def to_tail(cluster):
         cluster.vx * rot[:, 0, 2] + cluster.vy * rot[:, 1, 2] + cluster.vz * rot[:, 2, 2]
     )
 
-    cluster.to_origin(origin0)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
@@ -115,8 +116,8 @@ def tail_path(
     2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
     """
 
-    units0, origin0 = save_cluster(cluster)
-    cluster.to_galaxy()
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
 
     to, xo, yo, zo, vxo, vyo, vzo, o = orbital_path(
@@ -156,13 +157,13 @@ def tail_path(
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        starplot(cluster,coord='xy',overplot=overplot)
+        starplot(cluster,coords='xy',overplot=overplot)
         _lplot(xtail,ytail,overplot=True)
 
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
 
@@ -218,8 +219,8 @@ def tail_path_match(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0 = save_cluster(cluster)
-    cluster.to_galaxy()
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
 
     ts, x, y, z, vx, vy, vz = tail_path(
@@ -310,6 +311,6 @@ def tail_path_match(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return np.array(tstar), np.array(dprog), np.array(dpath)

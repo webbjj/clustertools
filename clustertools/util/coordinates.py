@@ -138,10 +138,10 @@ def sky_coords(cluster):
     -------
     2018 - Written - Webb (UofT)
     """
-    origin0 = cluster.origin
+    cluster.save_cluster()
 
     if origin0 != "galaxy":
-        cluster.to_galaxy()
+        cluster.to_galaxy(starsort=False)
 
     x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
         cluster.x, cluster.y, cluster.z, Xsun=8.0, Zsun=0.025
@@ -163,9 +163,6 @@ def sky_coords(cluster):
     ).T
     pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
 
-    if origin0 == "centre":
-        cluster.to_centre()
-    elif origin0 == "cluster":
-        cluster.to_cluster()
+    cluster.return_cluster()
 
     return ra, dec, d0, pmra, pmdec, vr0

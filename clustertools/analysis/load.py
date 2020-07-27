@@ -14,6 +14,7 @@ import os
 from .cluster import StarCluster
 from .operations import *
 from .orbit import initialize_orbit
+from ..custom import custom_loaders
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
@@ -89,9 +90,7 @@ def load_cluster(
         initialize a galpy orbit after reading in orbital information (default: False)
     projected : bool
         calculate projected values as well as 3D values (Default: True)
-    do_key_params : bool
-        calculate key parameters (default: True)
-    do_rorder : bool
+    sortstars : bool
         sort stars in order from closes to the origin to the farthest (default: True)
     column_mapper : dict
         see _get_astropy_table 
@@ -113,23 +112,30 @@ def load_cluster(
         cluster=load_function(particles=particles,units=units,origin=origin,ofile=file,orbit=orbit,filename=filename,**kwargs)
 
     elif ctype == "nbody6se":
-        # When stellar evolution is turned on, read in fort.82 and fort.83 and if possible gc_orbit.dat
-        fort82 = open("%sfort.82" % wdir, "r")
-        fort83 = open("%sfort.83" % wdir, "r")
 
-        cluster = _get_nbody6se(
-            fort82, fort83, ofile=ofile, advance=False, **kwargs
-        )
+        try:
+            # When stellar evolution is turned on, read in fort.82 and fort.83
+            fort82 = open("%sfort.82" % wdir, "r")
+            fort83 = open("%sfort.83" % wdir, "r")
+
+            cluster = _get_nbody6se(
+                fort82, fort83, ofile=ofile, advance=False, **kwargs
+            )
+        except:
+            cluster=custom_loaders._get_nbody6se_custom(ofile=None, advance=False, **kwargs)
 
     elif ctype == "nbody6":
-        # With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
-        if os.path.isfile("%sOUT9" % wdir):
-            out9 = open("%sOUT9" % wdir, "r")
-        else:
-            out9 = None
-        out34 = open("%sOUT34" % wdir, "r")
+        try:
+            # With stellar evolution turned off, read in OUT9 and OUT34. Orbit data already in OUT34
+            if os.path.isfile("%sOUT9" % wdir):
+                out9 = open("%sOUT9" % wdir, "r")
+            else:
+                out9 = None
+            out34 = open("%sOUT34" % wdir, "r")
 
-        cluster = _get_nbody6(out9, out34, advance=False, **kwargs)
+            cluster = _get_nbody6(out9, out34, advance=False, **kwargs)
+        except:
+            cluster=custom_loaders._get_nbody6se_custom(ofile=None, advance=False, **kwargs)
 
     elif ctype == "gyrfalcon":
         # Read in snapshot from gyrfalcon.
@@ -215,18 +221,14 @@ def load_cluster(
                 orbit.vz(t) / 220.0,
             )
 
-        units0, origin0 = save_cluster(cluster)
+        units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
 
-        cluster.to_cluster()
+        cluster.to_cluster(sortstars=False)
         cluster.find_centre()
 
-        return_cluster(cluster, units0, origin0)
+        return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
     elif initialize:
         initialize_orbit(cluster)
-
-    if kwargs.get("do_key_params", True):
-        do_order=kwargs.get("do_order", True)
-        cluster.key_params(do_order=do_order)
 
     return cluster
 
@@ -273,9 +275,9 @@ def advance_cluster(
     advance_kwargs = _get_advanced_kwargs(cluster, **kwargs)
 
     # Continue reading in cluster opened in _get_cluster()
-    if load_function is None:
+    if load_function is not None:
         ctype='custom'
-        cluster=load_function(ofile=file,orbit=orbit,filename=filename,advance=True,**kwargs)
+        cluster=load_function(ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
 
     elif cluster.ctype == "nbody6se":
         cluster = _get_nbody6se(
@@ -361,8 +363,6 @@ def advance_cluster(
                 orbit.vz(t),
             )
 
-        cluster.key_params()
-
     return cluster
 
 
@@ -398,6 +398,10 @@ def _get_advanced_kwargs(cluster, **kwargs):
 
     projected = kwargs.get("projected", cluster.projected)
 
+    analyze = kwargs.get("analyze", True)
+    sortstars = kwargs.get("sortstars", True)
+
+
     return {
         "nsnap": nsnap,
         "delimiter": delimiter,
@@ -408,14 +412,14 @@ def _get_advanced_kwargs(cluster, **kwargs):
         "snapdir": snapdir,
         "skiprows": skiprows,
         "projected": projected,
+        "analyze": analyze,
+        "sortstars": sortstars,
     }  # ,"sfile":sfile,"bfile":bfile}
 
 
 def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
     """ Read in cluster oribit from an ascii file and apply it to StarCluster
     -Columns assumed to be time,x,y,z,vx,vy,vz.
-    -Note I have hardcoded specific columns for a filename called gc_orbit.dat. where gc_orbit.dat 
-    comes from running 'grep 'CLUSTER ORBIT' logfile > gc_orbit.dat' on the standard Nbody6 logfile
 
     cluster - class 
         StarCluster to be advanced
@@ -452,37 +456,17 @@ def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
     else:
         data = ofile.readline().split()
 
-    if "gc_orbit.dat" in ofile.name:
-        # Saved orbit from doing a grep of NBODY6 or NBODY6++ logfile
 
-        if len(data) == 18:
-            xgc = float(data[9])
-            ygc = float(data[10])
-            zgc = float(data[11])
-            vxgc = float(data[12])
-            vygc = float(data[13])
-            vzgc = float(data[14])
-        else:
-            xgc = float(data[8])
-            ygc = float(data[9])
-            zgc = float(data[10])
-            vxgc = float(data[11])
-            vygc = float(data[12])
-            vzgc = float(data[13])
-    else:
-        tphys = float(data[0])
-        xgc = float(data[1])
-        ygc = float(data[2])
-        zgc = float(data[3])
-        vxgc = float(data[4])
-        vygc = float(data[5])
-        vzgc = float(data[6])
+    tphys = float(data[0])
+    xgc = float(data[1])
+    ygc = float(data[2])
+    zgc = float(data[3])
+    vxgc = float(data[4])
+    vygc = float(data[5])
+    vzgc = float(data[6])
 
-        if cluster.tphys == 0.0:
-            cluster.tphys = tphys
-
-    if ounits == None and "gc_orbit.dat" in ofile.name:
-        ounits = "kpckms"
+    if cluster.tphys == 0.0:
+        cluster.tphys = tphys
 
     cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc, ounits)
 
@@ -589,18 +573,19 @@ def _get_gyrfalcon(
 
     if ntot > 0:
 
-        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
 
         if ofile == None:
             cluster.find_centre()
         else:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-            cluster.to_cluster()
+
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.to_cluster(sortstars=False)
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_centre(sortstars=sortstars)
             cluster.to_galaxy()
 
     return cluster
@@ -772,7 +757,7 @@ def _get_snapshot(
     cluster = StarCluster(
         nbnd, tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
-    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
     cluster.kw = kw
 
     if origin == "galaxy":
@@ -781,18 +766,17 @@ def _get_snapshot(
         else:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-
-            cluster.to_cluster()
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.to_cluster(sortstars=False)
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_centre(sortstars=sortstars)
             cluster.to_galaxy()
 
-    elif origin == "cluster":
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-            cluster.key_params(do_order=do_order)
+    elif origin == "cluster" or origin=='centre':
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.analyze(sortstars=sortstars)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
@@ -861,7 +845,7 @@ def _get_amuse_particles(
         print("PLEASE SPECIFY UNITS")
         return 0
 
-    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d, do_key_params=True)
+    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d, sortstars=False)
 
     if origin == "galaxy":
         if ofile == None:
@@ -869,20 +853,17 @@ def _get_amuse_particles(
         else:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-            cluster.to_cluster()
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.to_cluster(sortstars=False)
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_centre(sortstars=sortstars)
             cluster.to_galaxy()
 
-    elif origin == "cluster":
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-            # Estimate centre of distribution
-            cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
-            cluster.to_cluster()
+    elif origin == "cluster" or origin=='centre':
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.analyze(sortstars=sortstars)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
@@ -1021,7 +1002,7 @@ def _get_astropy_table(
         len(x), 0., units=units, origin=origin, ctype='table', **kwargs
     )
 
-    cluster.add_stars(x, y, z, vx, vy, vz, m, ID)
+    cluster.add_stars(x, y, z, vx, vy, vz, m, ID, sortstars=False)
 
     if origin == "galaxy":
         if ofile == None:
@@ -1029,18 +1010,17 @@ def _get_astropy_table(
         else:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-
-            cluster.to_cluster()
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.to_cluster(sortstars=False)
             cluster.find_centre()
-            cluster.to_centre(do_key_params=True, do_order=do_order)
+            cluster.to_centre(sortstars=sortstars)
             cluster.to_galaxy()
 
-    elif origin == "cluster":
-        if kwargs.get("do_key_params", True):
-            do_order=kwargs.get("do_order", True)
-            cluster.key_params(do_order=do_order)
+    elif origin == "cluster" or origin=='centre':
+        if kwargs.get("analyze", True):
+            sortstars=kwargs.get("sortstars", True)
+            cluster.analyze(sortstars=sortstars)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)

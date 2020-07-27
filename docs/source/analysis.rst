@@ -11,10 +11,9 @@ A change of units or coordinate system can be implemented using:
 >>> cluster.to_galaxy()
 >>> cluster.to_kpckms()
 
-It is important to note that the operation ``rv3d`` is called after a change in either units or coordinate system, such that the radii and velocities of each star are updated. By default, for computational efficiency, stars are not sorted again in the new coordinate system and key parameters are not re-calculated. If sorting and re-calculations are preferred, then be sure to set ``do_order=True`` and ``do_key_params=True`` via:
+It is important to note that the operation ``analyze`` is called after a change in either units or coordinate system, such that the properties of the cluster are updated. While resorting won't occur during a unit change, if resorting is not required when performing a coordinate change use ``sortstars=False``. 
 
->>> cluster.to_galaxy(do_order=True)
->>> cluster.to_kpckms(do_key_params=True)
+>>> cluster.to_galaxy(sortstars=False)
 
 All available operations are listed below.
 
@@ -26,17 +25,21 @@ All available operations are listed below.
 Functions
 ---------
 
-A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. When functions are called internally (``StarCluster.function_name()``), changes are made to variables within ``StarCluster`` and the calculated value is returned. In some cases one may wish to call a function externally (``function_name(StarCluster)``) to return additional information or to avoid making changes to ``StarCluster`` . For example, a cluster's mass function can be called internally via:
+A long list of functions exist within ``clustertools`` that can be called to measure a speciic property of the ``StarCluster``. When functions are called internally (``StarCluster.function_name()``), changes are made to variables within ``StarCluster`` and the calculated value is returned. In some cases one may wish to call a function externally (``function_name(StarCluster)``) to return additional information or to avoid making changes to ``StarCluster`` . For example, a cluster's half-mass relaxation time can be called internally via:
 
->>> cluster.mass_function()
+>>> cluster.half_mass_relaxation_time()
 
-where the variable cluster.alpha now represents the power-law slope of the cluster's mass functino. Alternatively, the cluster's mass function can be called externally via:
+where the variable ``cluster.trh`` now represents the half-mass relaxation time. Alternatively, the cluster's half-mass relaxation time can be called externally via:
 
 >>> trh=half_mass_relaxation_time(cluster)
 
 When called externally, cluster.trh is not set.
 
 Some functions, including ``mass_function`` and ``eta_function`` can be applied to only a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster's half-mass radius one can call:
+
+>> cluster.mass_function(mmin=0.1,mmax=0.8,rmin=0.,rmax=cluster.rm)
+
+Note that, due to the internal call, the slope of the mass function will be returned and set to ``cluster.alpha``. If additional information is required, like the actual mass function bins ``m_mean``, the number of stars in each bin ``m_hist``, the mass function dM/dN ``dm``, and slope of the mass function and its error ``alpha``, ``ealpha``, and finally the y-intercept and error of the linear fit to the mass function in logspace ``yalpha``,``eyalpha`` the function can be called externally:
 
 >>> m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(cluster,
         mmin=0.1,mmax=0.8,rmin=0.,rmax=cluster.rm)
@@ -77,7 +80,11 @@ A common measurement to make when analysing star clusters is to determine how a 
 
 >>> rprof, pprof, nprof= rho_prof(cluster)
 
-where the radial bins ``rprof``, the density in each radial bin ``pprof``, and the number of stars in each bin ``nprof`` will be returned. 
+where the radial bins ``rprof``, the density in each radial bin ``pprof``, and the number of stars in each bin ``nprof`` will be returned. It is also possible to normalize the radial bins of a profile using ``normalize=True`` by the half-mass radius or the projected half-mass radius if ``projected=True`` via:
+
+>>> rprof, pprof, nprof= rho_prof(cluster,normalize=True)
+
+Note, by default. ``noramlize=True`` when measuring the radial variation in the mass function or the degree of energy equipartition as per the definintion of ``delta_alpha`` and ``delta_eta``.
 
 One feature that is available for all profiles is the ability to plot the profile using ``plot=True``. For example, calling
 
@@ -87,7 +94,7 @@ returns the below figure
 
 .. image:: /images/rho_prof.png
 
-Some editing can be done to the plot via key word arguments (see PLOTTING for information regarding making figures with ``clustertools``)
+Some editing can be done to the plot via key word arguments (see :ref:`Utilities <utilities>` for information regarding making figures with ``clustertools``)
 
 All profiles can also just be measured for a select subpopulation of stars based on mass (``mmin``,``mmax``), radius (``rmin``,``rmax``), velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
@@ -117,7 +124,7 @@ or
 >> ts,o=integrate_orbit(cluster,tfinal=12)
 
 
-``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits(``, however this feature is likely only of interest for tail stars that are no longer bound to the cluster as orbit integration does not account for the cluster's potential.
+``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits(``, however this feature is likely only of interest for tail stars that are no longer bound to the cluster as orbit integration does not account for the cluster's potential. 
 
 It may also be helpful to have the cluster's orbital path within +/- dt, especially if looking at escaped stars. Arrays for the cluster's past and future coordinates can be generated via:
 
@@ -132,6 +139,13 @@ Stars can also be matched to a point along the orbital path, where each stars di
 >>> tstar,dprog,dpath = orbit_path_match(cluster,dt=0.1,plot=True)
 
 Since ``plot=True``, a figure showing ``dpath`` vs ``dprog`` is returned.
+
+
+Finally,cClusters can be interpolated to past or future points in time. To interpolate a cluster 1 Gyr forward in time use:
+
+>> cluster.orbit_interpolate(1.0,do_tails=True,rmax=0.1)
+
+By default, all stars are simply shifted so the cluster is centred on its new galactocentric position. If one wishes to identify tail stars that have their own orbits interpolated, set ``do_tails=True`` as above and provide a criteria for what defines a tail star. In the above example, any star beyond 0.1 ``cluster.units`` is a tail star. Other criteria include velocity, energy, kwtype, or a custom boolean array (similar to defining subsets for profiles as disussed above).
 
 A complete list of all functions related to a cluster's orbit can be found below.
 

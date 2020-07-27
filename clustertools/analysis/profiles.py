@@ -18,6 +18,7 @@ from galpy.util import bovy_coords
 from ..util.constants import *
 from ..util.recipes import *
 from .operations import *
+from .operations import _get_grav
 from ..util.plots import _lplot,_plot
 from ..util.coordinates import sphere_coords
 from .functions import mass_function, eta_function
@@ -40,6 +41,7 @@ def rho_prof(
     kwmax=15,
     indx=None,
     projected=False,
+    normalize=False,
     plot=False,
     **kwargs
 ):
@@ -65,6 +67,8 @@ def rho_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the density profile (default: False)
 
@@ -87,9 +91,11 @@ def rho_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     rprof = np.array([])
     pprof = np.array([])
@@ -190,7 +196,7 @@ def rho_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return rprof, pprof, nprof
 
@@ -210,6 +216,7 @@ def m_prof(
     kwmax=15,
     indx=None,
     projected=False,
+    normalize=False,
     cumulative=False,
     plot=False,
     **kwargs
@@ -236,6 +243,8 @@ def m_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
     cumalitive : bool
         determine the cumulative mass profile instead (default: False)
     plot : bool 
@@ -259,11 +268,12 @@ def m_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre()
-
-
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
+        
     rprof = []
     mprof = []
     nprof = []
@@ -355,7 +365,7 @@ def m_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return rprof, mprof, nprof
 
@@ -375,6 +385,7 @@ def alpha_prof(
     kwmax=1,
     indx=None,
     projected=False,
+    normalize=True,
     mcorr=None,
     plot=False,
     **kwargs
@@ -406,6 +417,8 @@ def alpha_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: True)
     mcorr : bool
         completeness correction for masses (default: None)
     plot : bool 
@@ -438,11 +451,11 @@ def alpha_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
-    else:
-        cluster._order_check()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
 
     if mcorr is None:        
@@ -509,10 +522,16 @@ def alpha_prof(
             rbinerror[i]=1.
 
         if alpha > -100:
-            if projected:
-                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            if normalize:
+                if projected:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+                else:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
             else:
-                lrprofn.append(np.log(r_mean[i] / cluster.rm))
+                if projected:
+                    lrprofn.append(np.log(r_mean[i]))
+                else:
+                    lrprofn.append(np.log(r_mean[i]))
 
             aprof.append(alpha)
 
@@ -530,11 +549,16 @@ def alpha_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
         _plot(
             lrprofn,
             aprof,
             xlabel=r"$\ln(r/r_m)$",
-            ylabel=r"$\alpha$",
+            ylabel=xlabel,
             overplot=overplot,
             **kwargs
         )
@@ -546,7 +570,7 @@ def alpha_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if return_error:
         return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, rbinerror
@@ -570,7 +594,7 @@ def sigv_prof(
     indx=None,
     projected=False,
     coord=None,
-    normalize=True,
+    normalize=False,
     plot=False,
     **kwargs,
 ):
@@ -600,7 +624,7 @@ def sigv_prof(
         choose what coordinate the velocity dispersion profile is to be returned in (default None returns (sigx**2.+sigy**2.+sigz**2.)^1/2).
         Alternatively can ask for 'r', 'phi', or 'theta' for spherical coordinate velocity dispersions.
     normalize : bool
-        normalize radial bins by cluster's half-mass radius (default: true)
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the velocity disperions profile (default: False)
 
@@ -620,11 +644,11 @@ def sigv_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
-    else:
-        cluster._order_check()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     lrprofn = []
     sigvprof = []
@@ -712,16 +736,21 @@ def sigv_prof(
 
             sigvprof.append(sigv)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
         _plot(
             lrprofn,
             sigvprof,
-            xlabel=r"$\ln(r/r_m)$",
+            xlabel=xlabel,
             ylabel=r"$\sigma_v$",
             overplot=overplot,
             **kwargs
@@ -747,7 +776,7 @@ def beta_prof(
     kwmax=None,
     indx=None,
     projected=False,
-    normalize=True,
+    normalize=False,
     plot=False,
     **kwargs,
 ):
@@ -774,7 +803,7 @@ def beta_prof(
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
-        normalize radial bins by cluster's half-mass radius (default: true)
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the density profile (default: False)
 
@@ -794,12 +823,11 @@ def beta_prof(
     -------
     2020 - Written - Webb (UofT)
     """
-
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
-    else:
-        cluster._order_check()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     lrprofn = []
     betaprof = []
@@ -880,16 +908,21 @@ def beta_prof(
 
             betaprof.append(beta)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
         _plot(
             lrprofn,
             betaprof,
-            xlabel=r"$\ln(r/r_m)$",
+            xlabel=xlabel,
             ylabel=r"$\beta$",
             overplot=overplot,
             **kwargs
@@ -916,6 +949,7 @@ def v_prof(
     kwmax=15,
     indx=None,
     projected=False,
+    normalize=False,
     plot=False,
     **kwargs,
 ):
@@ -941,6 +975,8 @@ def v_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the velocity disperions profile (default: False)
 
@@ -960,12 +996,11 @@ def v_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
-    else:
-        cluster._order_check()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     lrprofn = []
     vprof = []
@@ -1036,23 +1071,34 @@ def v_prof(
 
             vmean = np.sqrt(vrmean ** 2.0 + vtmean ** 2.0 + vpmean ** 2.0)
 
-            if projected:
-                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            if normalize:
+                if projected:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+                else:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
             else:
-                lrprofn.append(np.log(r_mean[i] / cluster.rm))
+                if projected:
+                    lrprofn.append(np.log(r_mean[i]))
+                else:
+                    lrprofn.append(np.log(r_mean[i]))
 
             vprof.append(vmean)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
         _plot(
             lrprofn,
             vprof,
-            xlabel=r"$\ln(r/r_m)$",
+            xlabel=xlabel,
             ylabel=r"$<v>$",
             overplot=overplot,
             **kwargs
@@ -1080,6 +1126,7 @@ def eta_prof(
     kwmax=1,
     indx=None,
     projected=False,
+    normalize=True,
     plot=False,
     **kwargs,
 ):
@@ -1107,6 +1154,8 @@ def eta_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: True)
     plot : bool 
         plot the alpha profile (default: False)
 
@@ -1134,11 +1183,11 @@ def eta_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
-    else:
-        cluster._order_check()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     lrprofn = []
     eprof = []
@@ -1202,10 +1251,16 @@ def eta_prof(
         )
 
         if eta > -100:
-            if projected:
-                lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+            if normalize:
+                if projected:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+                else:
+                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
             else:
-                lrprofn.append(np.log(r_mean[i] / cluster.rm))
+                if projected:
+                    lrprofn.append(np.log(r_mean[i]))
+                else:
+                    lrprofn.append(np.log(r_mean[i]))
 
             eprof.append(eta)
 
@@ -1223,10 +1278,15 @@ def eta_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
         _plot(
             lrprofn,
             eprof,
-            xlabel=r"$\ln(r/r_m)$",
+            xlabel=xlabel,
             ylabel=r"$\eta$",
             overplot=overplot,
             **kwargs
@@ -1239,7 +1299,7 @@ def eta_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return lrprofn, eprof, deta, edeta, ydeta, eydeta
 
@@ -1258,6 +1318,7 @@ def vcirc_prof(
     kwmax=15,
     indx=None,
     projected=False,
+    normalize=False,
     plot=False,
     **kwargs
 ):
@@ -1292,6 +1353,8 @@ def vcirc_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the alpha profile (default: False)
 
@@ -1315,23 +1378,13 @@ def vcirc_prof(
     -------
     2019 - Written - Webb (UofT)
     """
-
-    units0, origin0 = save_cluster(cluster)
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(do_key_params=True,do_order=True)
-    else:
-        cluster._order_check()
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
-    if cluster.units == "nbody":
-        grav = 1.0
-    elif cluster.units == "pckms":
-        # G has units of pc (km/s)^2 / Msun
-        grav = 4.302e-3
-    elif cluster.units == "kpckms":
-        # G has units of kpc (km/s)^2 / Msun
-        grav = 4.302e-6
-    else:
-        grav = 1.0
+    grav=_get_grav(cluster)
 
     rprof = np.array([])
     vcprof = np.array([])
@@ -1390,6 +1443,12 @@ def vcirc_prof(
     rprof = r
     vcprof = vcirc
 
+    if normalize:
+        if projected:
+            rprof/=cluster.rmpro
+        else:
+            rprof/=cluster.rm
+
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
@@ -1412,6 +1471,11 @@ def vcirc_prof(
             xunits = ""
             yunits = ""
 
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
         x, y = rprof, vcprof
         _lplot(
             x,
@@ -1429,6 +1493,6 @@ def vcirc_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, do_order=True, do_key_params=True)
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return rprof, vcprof, rvmax, vmax

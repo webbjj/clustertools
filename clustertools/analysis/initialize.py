@@ -33,7 +33,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
 
     Bovy J., 2015, ApJS, 216, 29
     Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
-    de Boer, T. J. L.,  Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906
+    de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906
     Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
     Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487
     King I. R., 1966, AJ, 71, 64
@@ -134,7 +134,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             "kpckms",
         )
 
-    cluster.key_params(do_order=True)
+    cluster.analyze(sortstars=True)
 
     return cluster
 
@@ -214,7 +214,6 @@ def _get_limepy(g=1, **kwargs):
 
     )
     cluster.find_centre()
-    cluster.key_params()
 
     return cluster
 
@@ -296,7 +295,6 @@ def _get_spes(**kwargs):
         np.linspace(1, N, N, dtype=int),
     )
     cluster.find_centre()
-    cluster.key_params()
 
     return cluster
 
@@ -1016,7 +1014,6 @@ def _get_galpy(pot,**kwargs):
         m,
     )
     cluster.find_centre()
-    cluster.key_params()
 
     return cluster
 

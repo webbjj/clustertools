@@ -18,6 +18,7 @@ StarCluster
       ~StarCluster.add_rotation
       ~StarCluster.add_sse
       ~StarCluster.add_stars
+      ~StarCluster.analyze
       ~StarCluster.calc_actions
       ~StarCluster.closest_star
       ~StarCluster.convert_binary_units
@@ -27,13 +28,12 @@ StarCluster
       ~StarCluster.find_centre
       ~StarCluster.find_centre_of_density
       ~StarCluster.find_centre_of_mass
-      ~StarCluster.get_cluster_orbit
+      ~StarCluster.from_sky
       ~StarCluster.half_mass_relaxation_time
       ~StarCluster.initialize_orbit
       ~StarCluster.initialize_orbits
       ~StarCluster.integrate_orbit
       ~StarCluster.integrate_orbits
-      ~StarCluster.key_params
       ~StarCluster.mass_function
       ~StarCluster.orbit_interpolate
       ~StarCluster.orbital_path
@@ -44,8 +44,8 @@ StarCluster
       ~StarCluster.rlagrange
       ~StarCluster.rlimiting
       ~StarCluster.rtidal
-      ~StarCluster.rv3d
       ~StarCluster.save_cluster
+      ~StarCluster.sortstars
       ~StarCluster.tail_path
       ~StarCluster.tail_path_match
       ~StarCluster.to_centre
@@ -74,6 +74,7 @@ StarCluster
    .. automethod:: add_rotation
    .. automethod:: add_sse
    .. automethod:: add_stars
+   .. automethod:: analyze
    .. automethod:: calc_actions
    .. automethod:: closest_star
    .. automethod:: convert_binary_units
@@ -83,13 +84,12 @@ StarCluster
    .. automethod:: find_centre
    .. automethod:: find_centre_of_density
    .. automethod:: find_centre_of_mass
-   .. automethod:: get_cluster_orbit
+   .. automethod:: from_sky
    .. automethod:: half_mass_relaxation_time
    .. automethod:: initialize_orbit
    .. automethod:: initialize_orbits
    .. automethod:: integrate_orbit
    .. automethod:: integrate_orbits
-   .. automethod:: key_params
    .. automethod:: mass_function
    .. automethod:: orbit_interpolate
    .. automethod:: orbital_path
@@ -100,8 +100,8 @@ StarCluster
    .. automethod:: rlagrange
    .. automethod:: rlimiting
    .. automethod:: rtidal
-   .. automethod:: rv3d
    .. automethod:: save_cluster
+   .. automethod:: sortstars
    .. automethod:: tail_path
    .. automethod:: tail_path_match
    .. automethod:: to_centre

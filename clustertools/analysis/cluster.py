@@ -246,6 +246,7 @@ class StarCluster(object):
 
         #3D and projected order of stars with respect to origin
         self.rorder = None
+        self.rorder_origin = None
         self.rproorder = None
 
         # Additional variables for operation and function calls
@@ -257,7 +258,7 @@ class StarCluster(object):
         self.eta = None
 
     def add_stars(
-        self, x, y, z, vx, vy, vz,m=None,id=None,do_key_params=False, do_order=False
+        self, x, y, z, vx, vy, vz,m=None,id=None, sortstars=False
     ):
         """Add stars to StarCluster.
 
@@ -273,10 +274,8 @@ class StarCluster(object):
             stellar mass
         id: int 
             star id
-        do_key_params: bool
-            call key_params() after adding stars (default: False)
-        do_order: bool
-            order stars by radius when calling key_params() (default: False)
+        sortstars: bool
+            order stars by radius (default: False)
 
         Notes
         -----
@@ -383,10 +382,7 @@ class StarCluster(object):
 
         self.kw = np.append(self.kw, np.zeros(len(self.id)))
 
-        self.rv3d()
-
-        if do_key_params:
-            self.key_params(do_order=do_order)
+        self.analyze()
 
         self.ntot = nmax
 
@@ -760,13 +756,15 @@ class StarCluster(object):
         self.OR, self.Ophi, self.Oz = OR, Ophi, Oz
         self.TR, self.Tphi, self.Tz = TR, Tphi, Tz
 
-    def rv3d(self):
-        """ Calculate 3D and projected positions and velocities
+    def analyze(self, sortstars = True):
+        """ Calculate properties related to mass, radius, and velocity
 
         Parameters
         ----------
-
-        None
+        sortstars : bool
+            sort star by radius after coordinate change (default: True)
+        projected : bool
+            sort projected radii as well, but do not change self.projected (default: False) 
 
         Returns
         ----------
@@ -784,42 +782,17 @@ class StarCluster(object):
         self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
         self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
 
-    def key_params(self, do_order=True, projected=False):
-        """Find key parameters of the cluster 
-
-        - total mass, total luminosity, 10% largrange radius (r10), half-mass radius (r50),10 % lagrage radius (with respect to luminosity - rh10), half-light radius (rh50) are all calculated if necessary information is given
-        - r10, r50, rh10, and rh50 also calculated in projection
-
-        Parameters
-        ----------
-
-        do_order : bool
-            Perform the time consuming task of ordering stars based on radius to find r10,r50, etc. (default:True)
-        projected : bool
-          use projected values, but do not change self.projected (default: False) 
-
-        Returns
-        ----------
-
-        None
-
-        History
-        ----------
-
-        2018 - Written - Webb (UofT)
-
-        """
-
         self.mtot = np.sum(self.m)
         self.mmean = np.mean(self.m)
+
         self.rmean = np.mean(self.r)
         self.rmax = np.max(self.r)
+        self.rpromean = np.mean(self.rpro)
+        self.rpromax = np.max(self.rpro)
 
-        # Radially order the stars to find half-mass radius
-        if do_order:
-            self.rorder = np.argsort(self.r)
-            if self.projected or projected:
-                self.rproorder = np.argsort(self.rpro)
+        if sortstars: self.sortstars()
+
+        # Find half-mass radius
 
         if self.rorder is not None:
             msum = np.cumsum(self.m[self.rorder])
@@ -834,9 +807,7 @@ class StarCluster(object):
             self.rmpro = self.rpro[self.rproorder[indx][0]]
             indx = msum >= 0.1 * self.mtot
             self.r10pro = self.rpro[self.rproorder[indx][0]]
-        else:
-            self.rmpro = 0.0
-            self.r10pro = 0.0
+
 
         if len(self.logl) > 0 and self.rorder is not None:
             lsum = np.cumsum(self.lum[self.rorder])
@@ -855,35 +826,8 @@ class StarCluster(object):
                 self.rhpro = 0.0
                 self.rh10pro = 0.0
 
-    def _param_check(self, do_order=True):
-        """Check to see if key parameters have been calculated
-            - run self.key_params() if key parameters have not been calculated
-
-        Parameters
-        ----------
-
-        do_order : bool
-            Also check to see if time consuming task of ordering stars based on radius has been done (default:False)
-
-        Returns
-        ----------
-
-        None
-
-        History
-        ----------
-
-        2020 - Written - Webb (UofT)
-
-        """
-        if do_order:
-            self.order_check()
-        elif self.mtot is None:
-            self.key_params(do_order=False)
-
-    def _order_check(self):
-        """Check to see if stars have been sorted by radius
-            - run self.key_params() if key parameters have not been calculated
+    def sortstars(self):
+        """sort stars based on radius 
 
         Parameters
         ----------
@@ -897,164 +841,73 @@ class StarCluster(object):
         History
         ----------
 
-        2020 - Written - Webb (UofT)
+        2018 - Written - Webb (UofT)
 
         """
-        if self.rorder is None:
-            self.key_params(do_order=True)
+        if self. rorder is None or self.rorder_origin!=self.origin:
+
+            self.rorder = np.argsort(self.r)
+            self.rorder_origin=self.origin
+
+        if self. rproorder is None or self.rorder_origin!=self.origin:
+            self.rproorder = np.argsort(self.rpro)
 
     # Directly call from operations.py (see operations.py files for documenation):
 
-    def to_pckms(self, do_key_params=False, do_order=False):
-        to_pckms(self, do_key_params=do_key_params, do_order=do_order)
+    def to_pckms(self):
+        to_pckms(self)
 
-    def to_kpckms(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
-        to_kpckms(self, do_key_params=do_key_params, do_order=do_order, ro=ro,vo=vo)
+    def to_kpckms(self, ro=8.0, vo=220.0):
+        to_kpckms(self, ro=ro,vo=vo)
 
-    def to_nbody(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
-        to_nbody(self, do_key_params=do_key_params, do_order=do_order, ro=ro, vo=vo)
+    def to_nbody(self, ro=8.0, vo=220.0):
+        to_nbody(self, ro=ro, vo=vo)
 
-    def to_radec(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
-        to_radec(self, do_key_params=do_key_params, do_order=do_order, ro=ro, vo=vo)
+    def to_radec(self, sortstars=False, ro=8.0, vo=220.0):
+        to_radec(self, sortstars=sortstars, ro=ro, vo=vo)
 
-    def from_radec(self, do_order=False, do_key_params=False):
-        from_radec(self, do_order=do_order, do_key_params=do_key_params)
+    def to_galpy(self, ro=8.0, vo=220.0):
+        to_galpy(self, ro=ro, vo=vo)
 
-    def to_galpy(self, do_key_params=False, do_order=False, ro=8.0, vo=220.0):
-        to_galpy(self, do_key_params=do_key_params, do_order=do_order, ro=ro, vo=vo)
-
-    def to_units(self, units, do_order=False, do_key_params=False, ro=8.0, vo=220.0):
-        to_units(self, units, do_order=do_order, do_key_params=do_key_params, ro=ro, vo=vo)
+    def to_units(self, units, ro=8.0, vo=220.0):
+        to_units(self, units=units, ro=ro, vo=vo)
 
     def convert_binary_units(self,param,from_units,to_units):
-        """Convert units of binary star parameters
+        convert_binary_units(self,param=param,from_units=from_units,to_units=to_units)
 
-            - This function is a wip
-        
-        Parameters
-        ----------
+    def to_centre(self, sortstars=True, centre_method=None):
+        to_centre(self, sortstars=sortstars, centre_method=centre_method)
 
-            cluster : class
-                StarCluster instance
-            param : str
-                list of strings for parameters to be convered (pb,semi,mass)
-            from_units : str
-                list of strings for current parameter units ((days, years, nbody), (pc, su, au, nbody), (Msun,nbody))
-            from_units : str (default: True)
-                list of strings for converted parameter units ((days, years, nbody), (pc, su, au, nbody), (Msun,nbody))
+    def to_cluster(self, sortstars=True, centre_method=None):
+        to_cluster(self, sortstars=sortstars, centre_method=centre_method)
 
-        Returns
-        -------
+    def to_galaxy(self, sortstars=True):
+        to_galaxy(self, sortstars=sortstars)
 
-            None
+    def to_sky(self, sortstars=True):
+        to_sky(self, sortstars=sortstars)
 
-        History:
-
-           2020 - Written - Webb (UofT)
-        """
-        yrs = (self.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(self.zmbar)
-        days = 365.25 * yrs
-        au = 1.49597870700e13
-        pc = 1296000.0e0/(2.0*np.pi)*au
-        rsun=6.960e10
-        su=pc/rsun*self.rbar
-
-
-        param=np.array(param)
-        from_units=np.array(from_units)
-        tp_units=np.array(to_units)
-
-        for i in range(0,len(param)):
-            p=param[i]
-
-            if p=='pb':
-                #Convert to nbody first
-                if from_units[i]=='days':
-                    self.pb/=days
-                elif from_units[i]=='years':
-                    self.pb/=yrs
-                elif from_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % from_units[i])
-
-                if to_units[i]=='days':
-                    self.pb*=days
-                elif to_units[i]=='years':
-                    self.pb*=yrs
-                elif to_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % from_units[i])
-
-            elif p=='semi':
-                #Convert to nbody first
-                if from_units[i]=='pc':
-                    self.semi/=self.rbar
-                elif from_units[i]=='su':
-                    self.semi/=su
-                elif from_units[i]=='au':
-                    self.semi/=(pc/au)*self.rbar
-                elif from_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % from_units[i])
-
-                if to_units[i]=='pc':
-                    self.semi*=self.rbar
-                elif to_units[i]=='su':
-                    self.semi*=su
-                elif to_units[i]=='au':
-                    self.semi*=(pc/au)*self.rbar
-                elif to_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % to_units[i])
-
-            elif p=='mass':
-                if from_units[i]=='Msun' or from_units[i]=='msun' :
-                    self.m1/=self.zmbar
-                    self.m2/=self.zmbar
-                elif from_units[i]=='nbody':
-                    pass
-
-                if to_units=='Msun' or to_units[i]=='msun' :
-                    self.m1*=self.zmbar
-                    self.m2*=self.zmbar
-                elif to_units[i]=='nbody':
-                    pass
-
-
-    def to_centre(self, do_order=False, do_key_params=False, centre_method=None):
-        to_centre(self, do_order=do_order, do_key_params=do_key_params, centre_method=centre_method)
-
-    def to_cluster(self, do_order=False, do_key_params=False, centre_method=None):
-        to_cluster(self, do_order=do_order, do_key_params=do_key_params, centre_method=centre_method)
-
-    def to_galaxy(self, do_order=False, do_key_params=False):
-        to_galaxy(self, do_order=do_order, do_key_params=do_key_params)
-
-    def to_sky(self, do_order=False, do_key_params=False):
-        to_sky(self, do_order=do_order, do_key_params=do_key_params)
-
-    def from_sky(self, do_order=False, do_key_params=False):
-        from_sky(self, do_order=do_order, do_key_params=do_key_params)
+    def from_sky(self, sortstars=True):
+        from_sky(self, sortstars=sortstars)
 
     def to_tail(self, plot=False):
         self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail=to_tail(self, plot=plot)
         self.r_tail = np.sqrt(self.x_tail ** 2.0 + self.y_tail ** 2.0 + self.z_tail ** 2.0)
         self.v_tail = np.sqrt(self.vx_tail ** 2.0 + self.vy_tail ** 2.0 + self.vz_tail ** 2.0)
 
-    def to_origin(self, origin, do_order=False, do_key_params=False):
-        to_origin(self, origin, do_order=do_order, do_key_params=do_key_params)
+    def to_origin(self, origin, sortstars=True):
+        to_origin(self, origin, sortstars=sortstars)
 
     def save_cluster(self):
-        self.units0,self.origin0=save_cluster(self)
+        self.units0,self.origin0, self.rorder0, self.rorder_origin0=save_cluster(self)
 
-    def return_cluster(self, units0=None, origin0=None, do_order=False, do_key_params=False):
-        if units0==None: units0=self.units0
-        if origin0==None: origin0=self.origin0
-        return_cluster(self, units0, origin0, do_order=do_order, do_key_params=do_key_params)
+    def return_cluster(self, units0=None, origin0=None, rorder0=None, rorder_origin0=None):
+        if units0 is None: units0=self.units0
+        if origin0 is None: origin0=self.origin0
+        if rorder0 is None: rorder0=self.rorder0
+        if rorder_origin0 is None: rorder_origin0=self.rorder_origin0
+
+        return_cluster(self, units0, origin0, rorder0, rorder_origin0)
 
     def reset_nbody_scale(self, mass=True, radii=True, rvirial=False, projected=None, **kwargs):
         if projected==None:
@@ -1065,34 +918,25 @@ class StarCluster(object):
 
     def add_rotation(self, qrot):
 
-        units0, origin0 = save_cluster(self)
-        if origin0 != 'cluster' and origin0 != 'centre':
-            self.to_centre(do_key_params=True,do_order=True)
-
         self.x,self.y,self.z,self.vx,self.vy,self.vz=add_rotation(self, qrot)
-
         self.qrot=qrot
 
-        return_cluster(self, units0, origin0)
-
-
     def virialize(self, specific=True, full=True, projected=None):
+
         if projected==None:
             projected=self.projected
 
-        units0, origin0 = save_cluster(self)
-        if origin0 != 'cluster' and origin0 != 'centre':
-            self.to_centre(do_key_params=True,do_order=True)
-        else:
-            self._order_check()
-
         self.qv=virialize(self, specific=True, full=True, projected=projected)
+
+        self.save_cluster()
+        if self.origin0 != 'cluster' and self.origin0 != 'centre':
+            self.to_centre(sortstars=False)
 
         self.vx *= self.qv
         self.vy *= self.qv
         self.vz *= self.qv
 
-        return_cluster(self, units0, origin0)
+        self.return_cluster()
 
     # Directly call from functions.py (see functions.py files for documenation):
 
@@ -1443,12 +1287,11 @@ def sub_cluster(
     kwmax=15,
     indx=[None],
     projected=False,
+    sortstars=False,
     reset_centre=False,
     reset_nbody_scale=False,
     reset_nbody_mass=False,
     reset_nbody_radii=False,
-    do_key_params=False,
-    do_order=False,
     **kwargs
 ):
     """Extract a sub population of stars from a StarCluster
@@ -1457,31 +1300,33 @@ def sub_cluster(
 
     Parameters
     ----------
-   rmin/rmax : float
+    rmin/rmax : float
         minimum and maximum stellar radii
-   mmin/mmax : float
+    mmin/mmax : float
         minimum and maximum stellar mass
-   vmin/vmax : float
+    vmin/vmax : float
         minimum and maximum stellar velocity
-   emin/emax : float
+    emin/emax : float
         minimum and maximum stellar energy
-   kwmin/kwmax : int
+    kwmin/kwmax : int
         minimum and maximum stellar type (kw)
-   indx : bool
+    indx : bool
         user defined boolean array from which to extract the subset
-   projected : bool 
+    projected : bool 
         use projected values and constraints (default:False)
-   reset_centre : bool
+    sortstars : bool
+        sort star by radius after coordinate change (default: False)
+    reset_centre : bool
         re-calculate cluster centre after extraction (default:False)
-   reset_nbody_scale : bool
+    reset_nbody_scale : bool
         reset nbody scaling factors (default:False)
-   reset_nbody_mass : bool 
+    reset_nbody_mass : bool 
         find new nbody scaling mass (default:False)
-   reset_nbody_radii : bool
+    reset_nbody_radii : bool
         find new nbody scaling radius (default:False)
-   reset_rvirial : bool
+    reset_rvirial : bool
         use virial radius to find nbody scaling radius (default: True)
-   reset_projected : bool 
+    reset_projected : bool 
         use projected radii to find nbody scaling radius (default: False)
 
     Returns
@@ -1493,8 +1338,7 @@ def sub_cluster(
     2018 - Written - Webb (UofT)
 
     """
-    units0, origin0 = cluster.units, cluster.origin
-    cluster.to_centre()
+    cluster.save_cluster()
 
     if projected:
         r = cluster.rpro
@@ -1556,6 +1400,7 @@ def sub_cluster(
             cluster.vz[indx],
             cluster.m[indx],
             cluster.id[indx],
+            sortstars=False,
         )
 
         if len(cluster.ra)==len(cluster.x):
@@ -1658,21 +1503,14 @@ def sub_cluster(
 
         if reset_nbody_scale or reset_nbody_mass or reset_nbody_radii:
             subcluster.to_pckms()
-            subcluster.key_params(do_order=True)
+            subcluster.analyze()
 
             subcluster.reset_nbody_scale(mass=reset_nbody_mass,radius=reset_nbody_radii,rvirial=reset_rvirial,projected=reset_projected,**kwargs)
 
     else:
         subcluster = StarCluster(cluster.tphys)
 
-    cluster.to_origin(origin0)
-    cluster.to_units(units0)
-
     if subcluster.ntot > 0:
-        subcluster.to_origin(origin0)
-        subcluster.to_units(units0)
-
-    if do_key_params:
-        subcluster.key_params(do_order=do_order)
+        subcluster.analyze()
 
     return subcluster

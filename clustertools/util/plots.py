@@ -408,6 +408,7 @@ def _hist2d(
     nbin=10,
     xlabel="",
     ylabel="",
+    clabel="",
     title="",
     xlim=None,
     ylim=None,
@@ -437,6 +438,8 @@ def _hist2d(
       Y-axis limits (list)
     filename : str
       filename to save figure to
+    clabel : str
+       label for colorbar
 
     Returns
     -------
@@ -464,7 +467,7 @@ def _hist2d(
     plt.ylabel(ylabel)
 
     plt.title(title)
-    plt.colorbar()
+    plt.colorbar(label=clabel)
 
     if filename != None:
         plt.savefig(filename)

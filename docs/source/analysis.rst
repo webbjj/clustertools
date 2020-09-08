@@ -88,11 +88,11 @@ Note, by default. ``noramlize=True`` when measuring the radial variation in the 
 
 One feature that is available for all profiles is the ability to plot the profile using ``plot=True``. For example, calling
 
->>> rprof, pprof, nprof= rho_prof(cluster,plot=True)
+>>> lrprofn, sigvprof= sigv_prof(cluster,plot=True)
 
 returns the below figure
 
-.. image:: /images/rho_prof.png
+.. image:: /images/sigvprof.png
 
 Some editing can be done to the plot via key word arguments (see :ref:`Utilities <utilities>` for information regarding making figures with ``clustertools``)
 
@@ -132,7 +132,7 @@ It may also be helpful to have the cluster's orbital path within +/- dt, especia
 
 Since ``plot=True`` and dt=0.1, a figure showing all stars in the simulation as well as the orbital path +/- 0.1 Gyr in time is returned.
 
-.. image:: /images/rlplot_log.png
+.. image:: /images/opath.png
 
 Stars can also be matched to a point along the orbital path, where each stars distance from the path and distance along the path to the progenitor is calculated. This function effectively creates a convenient frame of reference for studying escaped stars.
 
@@ -167,11 +167,11 @@ Secondly, since stars that escape the cluster do so with velocities slightly lar
 
 >>> t, x, y, z, vx, vy, vz = tail_path(cluster,dt=0.1,plot=True)
 
-.. image:: /images/rlplot_log.png
+.. image:: /images/tail_path.png
 
 >>> tstar,dprog,dpath = tail_path_match(cluster,dt=0.1,plot=True)
 
-.. image:: /images/rlplot_log.png
+.. image:: /images/tail_path_match.png
 
 A complete list of all functions related to a cluster's orbit can be found below.
 

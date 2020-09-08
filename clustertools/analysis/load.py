@@ -109,7 +109,7 @@ def load_cluster(
 
     if load_function is not None:
         ctype='custom'
-        cluster=load_function(particles=particles,units=units,origin=origin,ofile=file,orbit=orbit,filename=filename,**kwargs)
+        cluster=load_function(particles=particles,units=units,origin=origin,ofile=ofile,orbit=orbit,filename=filename,**kwargs)
 
     elif ctype == "nbody6se":
 

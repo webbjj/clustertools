@@ -22,6 +22,7 @@ from galpy.actionAngle import actionAngleStaeckel
 from galpy.actionAngle.actionAngleIsochroneApprox import actionAngleIsochroneApprox
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from ..util.recipes import interpolate, binmaker
 from .operations import save_cluster, return_cluster

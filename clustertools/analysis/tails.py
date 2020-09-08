@@ -13,6 +13,7 @@ from galpy import potential
 from galpy.potential import MWPotential2014
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from .orbit import orbital_path, orbital_path_match
 from .operations import *

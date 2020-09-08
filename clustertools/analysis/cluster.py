@@ -52,6 +52,8 @@ class StarCluster(object):
         name of file containing single star data
     bfile : str
         name of file contain binary star data
+    tfile : str
+        name of file contain tail star data
     ofilename : str
         orbit filename if ofile is not given
     ounits : str
@@ -118,6 +120,8 @@ class StarCluster(object):
         self.skiprows = kwargs.get("skiprows", 0)
         self.sfile = kwargs.get("sfile", "")
         self.bfile = kwargs.get("bfile", "")
+        self.tfile = kwargs.get("tfile", "")
+
         self.centre_method = kwargs.get("centre_method", None)
 
         # Total Number of Stars + Binaries in the cluster
@@ -756,7 +760,7 @@ class StarCluster(object):
         self.OR, self.Ophi, self.Oz = OR, Ophi, Oz
         self.TR, self.Tphi, self.Tz = TR, Tphi, Tz
 
-    def analyze(self, sortstars = True):
+    def analyze(self, sortstars = True, projected = True):
         """ Calculate properties related to mass, radius, and velocity
 
         Parameters
@@ -764,17 +768,16 @@ class StarCluster(object):
         sortstars : bool
             sort star by radius after coordinate change (default: True)
         projected : bool
-            sort projected radii as well, but do not change self.projected (default: False) 
+            sort projected radii as well, but do not change self.projected (default: True) 
 
         Returns
         ----------
-
         None
 
         History
         ----------
 
-       2019 - Written - Webb (UofT)
+        2019 - Written - Webb (UofT)
         """
 
         self.r = np.sqrt(self.x ** 2.0 + self.y ** 2.0 + self.z ** 2.0)
@@ -790,7 +793,7 @@ class StarCluster(object):
         self.rpromean = np.mean(self.rpro)
         self.rpromax = np.max(self.rpro)
 
-        if sortstars: self.sortstars()
+        if sortstars: self.sortstars(projected=projected)
 
         # Find half-mass radius
 
@@ -826,12 +829,59 @@ class StarCluster(object):
                 self.rhpro = 0.0
                 self.rh10pro = 0.0
 
-    def sortstars(self):
+    def analyse(self, sortstars = True, projected=True):
+        """call analyze with alternative spelling
+
+        Parameters
+        ----------
+        sortstars : bool
+            sort star by radius after coordinate change (default: True)
+        projected : bool
+            sort projected radii as well, but do not change self.projected (default: True) 
+
+        Returns
+        ----------
+
+        None
+
+        History
+        ----------
+
+        2020 - Written - Webb (UofT)
+        """
+        analyze(self, sortstars = sortstars, projected=projected)
+
+    def key_params(self, do_order=True, projected=True):
+        """call analyze with key_params for backwards compatibility
+
+        Parameters
+        ----------
+        do_order : bool
+            sort star by radius after coordinate change (default: True)
+        projected : bool
+            sort projected radii as well, but do not change self.projected (default: True) 
+
+        Returns
+        ----------
+
+        None
+
+        History
+        ----------
+
+        2020 - Written - Webb (UofT)
+        """
+
+        analyze(self,sortstars=do_order, projected=projected)
+
+
+    def sortstars(self, projected=True):
         """sort stars based on radius 
 
         Parameters
         ----------
-        None
+        projected : bool
+            sort projected radii as well, but do not change self.projected (default: True) 
 
         Returns
         ----------
@@ -849,7 +899,7 @@ class StarCluster(object):
             self.rorder = np.argsort(self.r)
             self.rorder_origin=self.origin
 
-        if self. rproorder is None or self.rorder_origin!=self.origin:
+        if (self. rproorder is None or self.rorder_origin!=self.origin) and (projected or self.projected):
             self.rproorder = np.argsort(self.rpro)
 
     # Directly call from operations.py (see operations.py files for documenation):
@@ -1261,7 +1311,7 @@ class StarCluster(object):
     def tail_path(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
         ro=8.0,vo=220.0,plot=False,**kwargs):
 
-        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,ro=ro,vo=vo,plot=plot)
+        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
@@ -1269,7 +1319,7 @@ class StarCluster(object):
         to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,**kwargs,):
 
         self.tstar,self.dprog,self.dpath=tail_path_match(self,dt=dt,nt=nt,pot=pot,
-        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,)
+        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return self.tstar,self.dprog,self.dpath
 

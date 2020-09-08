@@ -14,7 +14,7 @@ import os
 from .cluster import StarCluster
 from .operations import *
 from .orbit import initialize_orbit
-from ..custom import custom_loaders
+#from ..custom import custom_loaders
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:

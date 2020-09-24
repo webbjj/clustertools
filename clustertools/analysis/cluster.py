@@ -49,9 +49,13 @@ class StarCluster(object):
     Other Parameters
     ----------------
     sfile : str
-        name of file containing single star data
+        file containing single star data
     bfile : str
-        name of file contain binary star data
+        file contain binary star data
+    ssefile : str
+        file containing single star evolution data
+    bsefile : str
+        file contain binary star evolution data
     tfile : str
         name of file contain tail star data
     ofilename : str
@@ -118,9 +122,10 @@ class StarCluster(object):
         self.snapend = kwargs.get("snapend", ".dat")
         self.snapdir = kwargs.get("snapdir", "")
         self.skiprows = kwargs.get("skiprows", 0)
-        self.sfile = kwargs.get("sfile", "")
-        self.bfile = kwargs.get("bfile", "")
-        self.tfile = kwargs.get("tfile", "")
+        self.sfile = kwargs.get("sfile", None)
+        self.bfile = kwargs.get("bfile", None)
+        self.ssefile = kwargs.get("ssefile", None)
+        self.bsefile = kwargs.get("bsefile", None)
 
         self.centre_method = kwargs.get("centre_method", None)
 
@@ -142,8 +147,8 @@ class StarCluster(object):
         # variables for add_nbody
         self.zmbar = 1.0
         self.rbar = 1.0
-        self.vstar = 1.0
-        self.tstar = 1.0
+        self.vbar = 1.0
+        self.tbar = 1.0
 
 
         # variables for centre of cluster
@@ -198,7 +203,9 @@ class StarCluster(object):
         # Mass scaling parameter
         self.zmbar = 1.
         # Velocity scaling parameter
-        self.vstar = 1.
+        self.vbar = 1.
+        # Time scaling parameter
+        self.tbar = 1.
         # Scale radius of cluster
         self.rscale = 1.
         # Number of single stars
@@ -440,9 +447,9 @@ class StarCluster(object):
                     xgc *= self.rbar * 1000.0
                     ygc *= self.rbar * 1000.0
                     zgc *= self.rbar * 1000.0
-                    vxgc *= self.vstar
-                    vygc *= self.vstar
-                    vzgc *= self.vstar
+                    vxgc *= self.vbar
+                    vygc *= self.vbar
+                    vzgc *= self.vbar
                 elif ounits == "galpy":
                     xgc *= ro
                     ygc *= ro
@@ -465,9 +472,9 @@ class StarCluster(object):
                 xgc *= 1000.0 / self.rbar
                 ygc *= 1000.0 / self.rbar
                 zgc *= 1000.0 / self.rbar
-                vxgc /= self.vstar
-                vygc /= self.vstar
-                vzgc /= self.vstar
+                vxgc /= self.vbar
+                vygc /= self.vbar
+                vzgc /= self.vbar
             elif self.units == "galpy":
                 xgc /= ro
                 ygc /= ro
@@ -505,7 +512,7 @@ class StarCluster(object):
         yc=0.0,
         zc=0.0,
         zmbar=1.0,
-        vstar=1.0,
+        vbar=1.0,
         rscale=1.0,
         ns=0.0,
         nb=0.0,
@@ -530,7 +537,7 @@ class StarCluster(object):
             position of cluster centre (default:0)
         zmbar : float
             scaling factor between NBODY units and Msun (default:1.)
-        vstar : float
+        vbar : float
             scaling factor between NBODY units and km/s (default:1.)
         rscale : float
             the scale radius of data (default:1.)
@@ -564,7 +571,9 @@ class StarCluster(object):
         # Mass scaling parameter
         self.zmbar = zmbar
         # Velocity scaling parameter
-        self.vstar = vstar
+        self.vbar = vbar
+        # Time scaling parameter
+        self.tbar = self.rbar/self.vbar
         # Scale radius of cluster
         self.rscale = rscale
         # Number of single stars
@@ -574,7 +583,7 @@ class StarCluster(object):
         # Number of particles (from NBODY6 when tidal tail is being integrated)
         self.np = np
 
-    def add_sse(self, kw, logl, logr, ep, ospin):
+    def add_sse(self, kw, logl, logr, ep = None, ospin = None):
         """Add stellar evolution information to stars
         
         - parameters are common output variables in NBODY6
@@ -602,13 +611,15 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        self.kw = np.asarray(kw)
-        self.logl = np.asarray(logl)
-        self.logr = np.asarray(logr)
+        self.kw = np.array(kw)
+        self.logl = np.array(logl)
+        self.logr = np.array(logr)
         self.lum = 10.0 ** self.logl
         self.ltot = np.sum(self.lum)
-        self.ep = np.asarray(ep)
-        self.ospin = np.asarray(ospin)
+
+        if ep is not None:
+            self.ep = np.asarray(ep)
+            self.ospin = np.asarray(ospin)
 
     def add_bse(
         self,
@@ -686,6 +697,7 @@ class StarCluster(object):
         self.logl2 = np.asarray(logl2)
         self.logr1 = np.asarray(logr1)
         self.logr2 = np.asarray(logr2)
+
         if ep1 is not None:
             self.ep1 = np.asarray(ep1)
             self.ep2 = np.asarray(ep2)
@@ -963,7 +975,7 @@ class StarCluster(object):
         if projected==None:
             projected=self.projected
 
-        self.zmbar,self.rbar,self.vstar,self.tstar=reset_nbody_scale(self, mass=mass, radii=radii, 
+        self.zmbar,self.rbar,self.vbar,self.tbar=reset_nbody_scale(self, mass=mass, radii=radii, 
             rvirial=rvirial,projected=projected,**kwargs)
 
     def add_rotation(self, qrot):
@@ -1469,8 +1481,8 @@ def sub_cluster(
 
         subcluster.zmbar = cluster.zmbar
         subcluster.rbar = cluster.rbar
-        subcluster.vstar = cluster.vstar
-        subcluster.tstar = cluster.tstar
+        subcluster.vbar = cluster.vbar
+        subcluster.tbar = cluster.tstar
         subcluster.projected = cluster.projected
         subcluster.centre_method = cluster.centre_method
 

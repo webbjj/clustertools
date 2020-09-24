@@ -1315,6 +1315,7 @@ def rtidal(
     rtiterate=0,
     rtconverge=0.9,
     rgc=None,
+    zgc=None,
     ro=8.0,
     vo=220.0,
     verbose=False,
@@ -1340,6 +1341,8 @@ def rtidal(
         criteria for tidal radius convergence within iterations (default 0.9)
     rgc : float
         Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
+    zgc : float
+        For non-spherically symmetric potentials, manually set distance in kpc above disk at which the tidal radius is to be evaluated. When set, rgc becomes radius in cylindrical coordinates (default: None)
     ro : float
         GALPY radius scaling parameter
     vo : float
@@ -1367,9 +1370,12 @@ def rtidal(
 
     if rgc != None:
         R = rgc / ro
-        z = 0.0
     else:
         R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
+
+    if zgc !=None:
+        z = zgc/ ro
+    else:
         z = cluster.zgc
 
     # Calculate rtide

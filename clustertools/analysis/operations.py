@@ -48,31 +48,35 @@ def to_pckms(cluster):
         cluster.to_kpckms()
 
     if cluster.units == "nbody":
+        cluster.tphys *= cluster.tbar
         cluster.m *= cluster.zmbar
         cluster.x *= cluster.rbar
         cluster.y *= cluster.rbar
         cluster.z *= cluster.rbar
-        cluster.vx *= cluster.vstar
-        cluster.vy *= cluster.vstar
-        cluster.vz *= cluster.vstar
+        cluster.vx *= cluster.vbar
+        cluster.vy *= cluster.vbar
+        cluster.vz *= cluster.vbar
 
         cluster.xc *= cluster.rbar
         cluster.yc *= cluster.rbar
         cluster.zc *= cluster.rbar
-        cluster.vxc *= cluster.vstar
-        cluster.vyc *= cluster.vstar
-        cluster.vzc *= cluster.vstar
+        cluster.vxc *= cluster.vbar
+        cluster.vyc *= cluster.vbar
+        cluster.vzc *= cluster.vbar
 
         cluster.xgc *= cluster.rbar
         cluster.ygc *= cluster.rbar
         cluster.zgc *= cluster.rbar
-        cluster.vxgc *= cluster.vstar
-        cluster.vygc *= cluster.vstar
-        cluster.vzgc *= cluster.vstar
+        cluster.vxgc *= cluster.vbar
+        cluster.vygc *= cluster.vbar
+        cluster.vzgc *= cluster.vbar
 
         cluster.units = "pckms"
 
     elif cluster.units == "kpckms":
+
+        cluster.tphys *= 1000.0
+
         cluster.x *= 1000.0
         cluster.y *= 1000.0
         cluster.z *= 1000.0
@@ -114,6 +118,7 @@ def to_kpckms(cluster, ro=8.0, vo=220.0):
         from_radec(cluster)
 
     if cluster.units == "galpy":
+        cluster.tphys *= bovy_conversion.time_in_Gyr(ro=ro,vo=vo)
         cluster.m *= bovy_conversion.mass_in_msol(ro=ro, vo=vo)
         cluster.x *= ro
         cluster.y *= ro
@@ -139,31 +144,35 @@ def to_kpckms(cluster, ro=8.0, vo=220.0):
         cluster.units = "kpckms"
 
     elif cluster.units == "nbody":
+        cluster.tphys *= cluster.tbar * 1000.0
         cluster.m *= cluster.zmbar
         cluster.x *= cluster.rbar / 1000.0
         cluster.y *= cluster.rbar / 1000.0
         cluster.z *= cluster.rbar / 1000.0
-        cluster.vx *= cluster.vstar
-        cluster.vy *= cluster.vstar
-        cluster.vz *= cluster.vstar
+        cluster.vx *= cluster.vbar
+        cluster.vy *= cluster.vbar
+        cluster.vz *= cluster.vbar
 
         cluster.xc *= cluster.rbar / 1000.0
         cluster.yc *= cluster.rbar / 1000.0
         cluster.zc *= cluster.rbar / 1000.0
-        cluster.vxc *= cluster.vstar
-        cluster.vyc *= cluster.vstar
-        cluster.vzc *= cluster.vstar
+        cluster.vxc *= cluster.vbar
+        cluster.vyc *= cluster.vbar
+        cluster.vzc *= cluster.vbar
 
         cluster.xgc *= cluster.rbar / 1000.0
         cluster.ygc *= cluster.rbar / 1000.0
         cluster.zgc *= cluster.rbar / 1000.0
-        cluster.vxgc *= cluster.vstar
-        cluster.vygc *= cluster.vstar
-        cluster.vzgc *= cluster.vstar
+        cluster.vxgc *= cluster.vbar
+        cluster.vygc *= cluster.vbar
+        cluster.vzgc *= cluster.vbar
 
         cluster.units = "kpckms"
 
     elif cluster.units == "pckms":
+
+        cluster.tphys /= 1000.0
+
         cluster.x /= 1000.0
         cluster.y /= 1000.0
         cluster.z /= 1000.0
@@ -183,7 +192,7 @@ def to_kpckms(cluster, ro=8.0, vo=220.0):
 def to_nbody(cluster, ro=8.0, vo=220.0):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
        
-    - requires that cluster.zmbar, cluster.rbar, cluster.vstar are set (defaults are 1)
+    - requires that cluster.zmbar, cluster.rbar, cluster.vbar are set (defaults are 1)
 
     Parameters
     ----------
@@ -207,27 +216,28 @@ def to_nbody(cluster, ro=8.0, vo=220.0):
         cluster.to_pckms()
 
     if cluster.units == "pckms":
+        cluster.tphys /= cluster.tbar
         cluster.m /= cluster.zmbar
         cluster.x /= cluster.rbar
         cluster.y /= cluster.rbar
         cluster.z /= cluster.rbar
-        cluster.vx /= cluster.vstar
-        cluster.vy /= cluster.vstar
-        cluster.vz /= cluster.vstar
+        cluster.vx /= cluster.vbar
+        cluster.vy /= cluster.vbar
+        cluster.vz /= cluster.vbar
 
         cluster.xc /= cluster.rbar
         cluster.yc /= cluster.rbar
         cluster.zc /= cluster.rbar
-        cluster.vxc /= cluster.vstar
-        cluster.vyc /= cluster.vstar
-        cluster.vzc /= cluster.vstar
+        cluster.vxc /= cluster.vbar
+        cluster.vyc /= cluster.vbar
+        cluster.vzc /= cluster.vbar
 
         cluster.xgc /= cluster.rbar
         cluster.ygc /= cluster.rbar
         cluster.zgc /= cluster.rbar
-        cluster.vxgc /= cluster.vstar
-        cluster.vygc /= cluster.vstar
-        cluster.vzgc /= cluster.vstar
+        cluster.vxgc /= cluster.vbar
+        cluster.vygc /= cluster.vbar
+        cluster.vzgc /= cluster.vbar
 
         cluster.units = "nbody"
 
@@ -442,6 +452,7 @@ def to_galpy(cluster, ro=8.0, vo=220.0):
         cluster.to_kpckms()
 
     if cluster.units == "kpckms":
+        cluster.tphys /= bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
         cluster.m = cluster.m / bovy_conversion.mass_in_msol(ro=ro, vo=vo)
         cluster.x /= ro
         cluster.y /= ro
@@ -941,9 +952,9 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
         mass conversion
     rbar : float
         radius conversion
-    vstar : float
+    vbar : float
         velocity conversion
-    tstar : float
+    tbar : float
         time conversion
 
     History:
@@ -983,12 +994,12 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
     else:
         rbar = cluster.rbar
 
-    vstar = 0.06557 * np.sqrt(zmbar / rbar)
-    tstar = rbar / vstar
+    vbar = 0.06557 * np.sqrt(zmbar / rbar)
+    tbar = rbar / vbar
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
-    return zmbar,rbar,vstar,tstar
+    return zmbar,rbar,vbar,tstar
 
 def virialize(cluster, specific=True, full=True, projected=False):
     """ Adjust stellar velocities so cluster is in virial equilibrium

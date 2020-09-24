@@ -239,9 +239,11 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
             indx = (x >= x_lower[i]) * (x < x_upper[i])
             x_hist = np.append(x_hist, np.sum(indx))
 
-    lx_mean = np.log10(x_mean)
     dx = x_hist / (x_upper - x_lower)
-    ldx = np.log10(dx)
+    indx=dx>0
+
+    lx_mean = np.log10(x_mean[indx])
+    ldx = np.log10(dx[indx])
 
     (alpha, yalpha), V = np.polyfit(lx_mean, ldx, 1, cov=True)
     ealpha = np.sqrt(V[0][0])
@@ -249,11 +251,13 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
 
     if plot:
             filename = kwargs.get("filename", None)
-            _plot(x_mean, np.log10(dx), xlabel="x", ylabel="LOG(dN/dx)", **kwargs)
+            _plot(x_mean[indx], np.log10(dx[indx]), xlabel="x", ylabel="LOG(dN/dx)", **kwargs)
             xfit = np.linspace(np.min(x_mean), np.max(x_mean), nx)
             dxfit = 10.0 ** (alpha * np.log10(xfit) + yalpha)
+            kwargs.pop("overplot",None)
+
             _lplot(
-                xfit, np.log10(dxfit), overplot=True, label=(r"$\alpha$ = %f" % alpha)
+                xfit, np.log10(dxfit), overplot=True, label=(r"$\alpha$ = %f" % alpha), **kwargs
             )
 
             plt.legend()
@@ -261,7 +265,7 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
             if filename != None:
                 plt.savefig(filename)
 
-    return x_mean, x_hist, dx, alpha, ealpha, yalpha, eyalpha
+    return x_mean[indx], x_hist[indx], dx[indx], alpha, ealpha, yalpha, eyalpha
 
 def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
     """Find histogram data using nx bins

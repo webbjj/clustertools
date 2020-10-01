@@ -18,6 +18,7 @@ StarCluster
       ~StarCluster.add_rotation
       ~StarCluster.add_sse
       ~StarCluster.add_stars
+      ~StarCluster.analyse
       ~StarCluster.analyze
       ~StarCluster.calc_actions
       ~StarCluster.closest_star
@@ -34,7 +35,9 @@ StarCluster
       ~StarCluster.initialize_orbits
       ~StarCluster.integrate_orbit
       ~StarCluster.integrate_orbits
+      ~StarCluster.key_params
       ~StarCluster.mass_function
+      ~StarCluster.meq_function
       ~StarCluster.orbit_interpolate
       ~StarCluster.orbital_path
       ~StarCluster.orbital_path_match
@@ -74,6 +77,7 @@ StarCluster
    .. automethod:: add_rotation
    .. automethod:: add_sse
    .. automethod:: add_stars
+   .. automethod:: analyse
    .. automethod:: analyze
    .. automethod:: calc_actions
    .. automethod:: closest_star
@@ -90,7 +94,9 @@ StarCluster
    .. automethod:: initialize_orbits
    .. automethod:: integrate_orbit
    .. automethod:: integrate_orbits
+   .. automethod:: key_params
    .. automethod:: mass_function
+   .. automethod:: meq_function
    .. automethod:: orbit_interpolate
    .. automethod:: orbital_path
    .. automethod:: orbital_path_match

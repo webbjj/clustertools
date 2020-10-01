@@ -1128,6 +1128,7 @@ def eta_prof(
     projected=False,
     normalize=True,
     plot=False,
+    meq=False,
     **kwargs,
 ):
     """Measure the radial variation in eta
@@ -1235,6 +1236,7 @@ def eta_prof(
     r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
 
     for i in range(0, len(r_mean)):
+
         m_mean, sigvm, eta, eeta, yeta, eyeta = eta_function(
             cluster,
             mmin=mmin,
@@ -1247,6 +1249,7 @@ def eta_prof(
             kwmin=kwmin,
             kwmax=kwmax,
             projected=projected,
+            meq=meq,
             **kwargs,
         )
 
@@ -1283,17 +1286,26 @@ def eta_prof(
         else:
             xlabel=r"$\ln(r)$"
 
+        if meq:
+            ylabel=r"$m_{eq}$"
+        else:
+            ylabel=r"$\eta$"
+
+
         _plot(
             lrprofn,
             eprof,
             xlabel=xlabel,
-            ylabel=r"$\eta$",
+            ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
         rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
         efit = deta * rfit + ydeta
-        _lplot(rfit, efit, overplot=True, label=(r"d$\eta$ = %f" % deta))
+        if meq:
+            _lplot(rfit, efit, overplot=True, label=(r"d$m_{eq}$ = %f" % deta))
+        else:
+            _lplot(rfit, efit, overplot=True, label=(r"d$\eta$ = %f" % deta))
         plt.legend()
 
         if filename != None:
@@ -1302,6 +1314,106 @@ def eta_prof(
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return lrprofn, eprof, deta, edeta, ydeta, eydeta
+
+def meq_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    normalize=True,
+    plot=False,
+    meq=False,
+    **kwargs,
+):
+    """Measure the radial variation in meq
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    nmass : int
+        number of mass bins (default: 10)
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: True)
+    plot : bool 
+        plot the alpha profile (default: False)
+
+    Returns
+    -------
+    lrprofn : float
+        natural log of each radius bin (normalized by half-mass radius)
+    eprof : float
+        slope of the sigma_v-mass function
+    deta : float
+        radial variation in eta calculated as deta = d(eta)/d(ln(r/rm)
+    edeta : float
+        error in deta
+    ydeta : float
+        y-intercept in fit to eta vs ln(r/rm)
+    eydeta : float
+        error in ydeta
+
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
+
+    History
+    -------
+    2020 - Written - Webb (UofT)
+    """
+
+    lrprofn, meqprof, dmeq, edmeq, ydmeq, eymeq=eta_prof(
+        cluster,
+        mmin=mmin,
+        mmax=mmax,
+        nmass=nmass,
+        rmin=rmin,
+        rmax=rmax,
+        nrad=nrad,
+        vmin=vmin,
+        vmax=vmax,
+        emin=emin,
+        emax=emax,
+        kwmin=kwmin,
+        kwmax=kwmax,
+        indx=indx,
+        projected=projected,
+        normalize=normalize,
+        plot=plot,
+        meq=True,
+        **kwargs,
+    )
+
+    return lrprofn, meqprof, dmeq, edmeq, ydmeq, eymeq
+ 
 
 def vcirc_prof(
     cluster,

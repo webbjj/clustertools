@@ -490,7 +490,7 @@ def orbital_path(
         if cluster.units == "pckms":
             t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
         elif cluster.units == "nbody":
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tstar
+            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
         elif cluster.units == "galpy":
             t = ts
         else:
@@ -530,7 +530,7 @@ def orbital_path(
             vx /= cluster.vstar
             vy /= cluster.vstar
             vz /= cluster.vstar
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tstar
+            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
 
         elif cluster.units == "galpy":
             x /= ro

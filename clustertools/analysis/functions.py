@@ -21,6 +21,7 @@ __all__ = [
     "virial_radius_critical_density",
     "mass_function",
     "eta_function",
+    "meq_function",
     "rtidal",
     "rlimiting",
 ]
@@ -30,6 +31,7 @@ import numba
 from galpy.util import bovy_coords, bovy_conversion
 from galpy import potential
 from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
+from scipy.optimize import curve_fit
 
 from ..util.constants import *
 from ..util.recipes import *
@@ -1174,6 +1176,7 @@ def eta_function(
     indx=None,
     projected=False,
     plot=False,
+    meq=False,
     **kwargs
 ):
     """
@@ -1281,7 +1284,11 @@ def eta_function(
             sigvm.append(np.std(v[mindx]))
             lsigvm.append(np.log10(sigvm[-1]))
 
-        (eta, yeta), V = np.polyfit(lm_mean, lsigvm, 1, cov=True)
+        if meq:
+            (eta, yeta), V=curve_fit(meq_func,10.0**np.array(lm_mean),10.0**np.array(lsigvm),bounds=([np.amin(cluster.m),0.],[np.amax(cluster.m),np.inf]))
+        else:
+            (eta, yeta), V = np.polyfit(lm_mean, lsigvm, 1, cov=True)
+
         eeta = np.sqrt(V[0][0])
         eyeta = np.sqrt(V[1][1])
 
@@ -1289,8 +1296,14 @@ def eta_function(
             filename = kwargs.get("filename", None)
             _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$\sigma_v$", **kwargs)
             mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
-            sigfit = 10.0 ** (eta * np.log10(mfit) + yeta)
-            _lplot(mfit, np.log10(sigfit), overplot=True, label=(r"$\eta$ = %f" % eta))
+
+            if meq:
+                sigfit=meq_func(mfit,eta,yeta)
+                _lplot(mfit, np.log10(sigfit), overplot=True, label=(r"$m_{eq}$ = %f" % eta))
+            else:
+                sigfit = 10.0 ** (eta * np.log10(mfit) + yeta)
+                _lplot(mfit, np.log10(sigfit), overplot=True, label=(r"$\eta$ = %f" % eta))
+
             plt.legend()
 
             if filename != None:
@@ -1302,12 +1315,126 @@ def eta_function(
         return (
             np.zeros(nmass),
             np.zeros(nmass),
-            np.zeros(nmass),
             -1000.0,
             -1000.0,
             -1000.0,
             -1000.0,
         )
+
+def meq_func(m,meq,sigma0):
+    sigma_eq=sigma0*np.exp(-0.5)
+    if isinstance(m,float):
+        if m<=meq:
+            sigma=sigma0*np.exp(-0.5*m/meq)
+        else:
+            sigma=sigma_eq*((m/meq)**(-0.5))
+    else:
+        indx=m<=meq
+        sigma=np.zeros(len(m))
+        sigma[indx]=sigma0*np.exp(-0.5*m[indx]/meq)
+        indx=m>meq
+
+        sigma[indx]=sigma_eq*((m[indx]/meq)**(-0.5))
+
+    return sigma
+
+def meq_function(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    plot=False,
+    **kwargs
+):
+    """
+    NAME: Find meq from velocity dispersion versus mass
+    
+    - mass bins are set up so that there are an equal number of stars in each bin
+    - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
+      versus mass is fit with the following:
+      sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
+              = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    mmin/mmax : float
+        specific mass range
+    nmass : 
+        number of mass bins used to calculate alpha
+    rmin/rmax : 
+        specific radial range
+    vmin/vmax : float
+        specific velocity range
+    emin/emax : float
+        specific energy range
+    kwmin/kwmax : int
+        specific stellar evolution type range
+    indx : bool 
+        specific subset of stars
+    projected : bool 
+        use projected values (default: False)
+    plot : bool 
+        plot the mass function
+
+    Returns
+    -------
+    m_mean : float
+        mean mass in each bin
+    sigvm : float
+        velocity dispersion of stars in each bin
+    meq : float
+        Bianchini fit to sigvm vs m
+    emeq : float
+        error in Bianchini fit to sigvm vs m
+    sigma0 : float
+        Bianchini fit to sigvm vs m
+    esigma0 : float
+        error in Bianchini fit to sigvm vs m
+
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
+
+    History
+    -------
+    2020
+    """
+
+    m_mean, sigvm, meq, emq, sigma0, esigma0 = eta_function(cluster,
+            mmin=mmin,
+            mmax=mmax,
+            nmass=nmass,
+            rmin=rmin,
+            rmax=rmax,
+            vmin=vmin,
+            vmax=vmax,
+            emin=emin,
+            emax=emax,
+            kwmin=kwmin,
+            kwmax=kwmax,
+            indx=indx,
+            projected=projected,
+            plot=plot,
+            meq=True,
+            **kwargs
+        )
+
+    return m_mean, sigvm, meq, emq, sigma0, esigma0
+
+
 
 def rtidal(
     cluster,

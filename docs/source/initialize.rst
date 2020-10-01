@@ -17,9 +17,7 @@ Where I have an ascii file named ``00000.dat`` with columns of mass (Msun), posi
 
 As mentioned above, ``ctype`` can also be set to ``'nbody6'``, ``'nbody6se'``,``'gyrfalcon'``, or ``'amuse'``. For ``ctype!='snapshot'``, several important things happen behind the scenes. 
 
-* (WIP) When ``ctype='nbody6'``, OUT34 and OUT9 are read into ``clustertools``, the ``cluster.units`` is set to ``nbody`` and ``cluster.origin`` is set to ``'cluster'``. All additional information provided in OUT34 and OUT9, on top of stellar masses, positions, velocities, and ids are saved as individual variables that can be called. Hence it is possible to convert between units and coordinate systems.
-
-* (WIP) When ``ctype='nbody6se'``, fort.82 and fort.83 are read into ``clustertools``, the ``cluster.units`` is set to ``nbody`` and ``cluster.origin`` is set to ``'cluster'``. All additional information provided in OUT34 and OUT9, on top of stellar masses, positions, velocities, and ids are saved as individual variables that can be called. Hence it is possible to convert between units and coordinate systems.
+*When ``ctype='nbody6'``, OUT33, OUT9 are read into ``clustertools``, the ``cluster.units`` is set to ``nbody`` and ``cluster.origin`` is set to ``'cluster'``. If your simulations includes stellar evolution, fort.82 and fort.83 will also be read. All additional information provided, on top of stellar masses, positions, velocities, and ids are saved as individual variables that can be called. Hence it is possible to convert between units and coordinate systems.
 
 * When ``ctype='gyrfalcon'``, the key word argument ``filename`` must also be given so ``clustertools`` knows what file to open and begin reading. The data is assumed to be in Walter Dehnen units (kpc, kpc/Gyr, Msun/222288.47). The first snapshot will read in and WDunits will be convereted to kpckms. The coordinate system will be set to ``'galaxy'``.
 
@@ -27,7 +25,7 @@ As mentioned above, ``ctype`` can also be set to ``'nbody6'``, ``'nbody6se'``,``
 
 * When ``ctype='astropy_table'``, ''particles'' must be given which contains a `~astropy.table.Table` instance of stars.  If necessary, a ``column_mapper`` can be passed.
 
-It should be noted that ``load_cluster`` has an input ``load_function``. This feature allows for a custom load function to be passed to ``load_cluster``. I have created a /custom directory to store custom load functions and easily import them.
+It should be noted that ``load_cluster`` has an input ``load_function``. This feature allows for a custom load function to be passed to ``load_cluster``. I have created a /custom directory to store custom load functions and easily import them. A sample file named ``custom_loaders.py``demonstrates two load_functions that I used to read in customized NBODY6 output files.
 
 
 .. automodapi:: clustertools.analysis.load

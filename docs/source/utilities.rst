@@ -21,6 +21,8 @@ There exists several built in tools for creating standardized output files.
         :no-main-docstr:
         :no-heading:
 
+It is of course possible to include custom output functions, which for simplicity could be put in the custom folder which is imported. As an example I have included ``custom_outputs.py`` that demonstrates several output functions that I frequently use.
+
 Coordinates
 -----------
 

@@ -25,6 +25,7 @@ virial_radius_inverse_distance=functions.virial_radius_inverse_distance
 virial_radius_critical_density=functions.virial_radius_critical_density
 mass_function=functions.mass_function
 eta_function=functions.eta_function
+meq_function=functions.meq_function
 rtidal=functions.rtidal
 rlimiting=functions.rlimiting
 
@@ -60,6 +61,7 @@ sigv_prof=profiles.sigv_prof
 beta_prof=profiles.beta_prof
 v_prof=profiles.v_prof
 eta_prof=profiles.eta_prof
+meq_prof=profiles.meq_prof
 vcirc_prof=profiles.vcirc_prof
 
 initialize_orbit=orbit.initialize_orbit

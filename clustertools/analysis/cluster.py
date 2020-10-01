@@ -1181,6 +1181,7 @@ class StarCluster(object):
         emax=None,
         kwmin=0,
         kwmax=1,
+        indx=None,
         projected=False,
         plot=False,
         **kwargs
@@ -1202,13 +1203,59 @@ class StarCluster(object):
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            indx=indx,
             projected=projected,
             plot=plot,
             **kwargs
         )
+
         self.eta = eta
 
         return self.eta
+
+    def meq_function(
+        self,
+        mmin=None,
+        mmax=None,
+        nmass=10,
+        rmin=None,
+        rmax=None,
+        vmin=None,
+        vmax=None,
+        emin=None,
+        emax=None,
+        kwmin=0,
+        kwmax=1,
+        indx=None,
+        projected=False,
+        plot=False,
+        **kwargs
+    ):
+
+        self.mmin=mmin
+        self.mmax=mmax
+
+        m_mean, sigvm, meq, emeq, sigma0, esigma0 = meq_function(
+            self,
+            mmin=mmin,
+            mmax=mmax,
+            nmass=nmass,
+            rmin=rmin,
+            rmax=rmax,
+            vmin=vmin,
+            vmax=vmax,
+            emin=emin,
+            emax=emax,
+            kwmin=kwmin,
+            kwmax=kwmax,
+            indx=indx,
+            projected=projected,
+            plot=plot,
+            **kwargs
+        )
+        self.meq = meq
+
+        return self.meq
 
     # Directly call from orbit.py (see orbit,py files for documentation):
 
@@ -1482,7 +1529,7 @@ def sub_cluster(
         subcluster.zmbar = cluster.zmbar
         subcluster.rbar = cluster.rbar
         subcluster.vbar = cluster.vbar
-        subcluster.tbar = cluster.tstar
+        subcluster.tbar = cluster.tbar
         subcluster.projected = cluster.projected
         subcluster.centre_method = cluster.centre_method
 

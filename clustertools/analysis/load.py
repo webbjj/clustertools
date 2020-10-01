@@ -197,7 +197,7 @@ def load_cluster(
                 orbit.vz(t),
             )
         elif cluster.units == "nbody":
-            t = (cluster.tphys * cluster.tstar / 1000.0) / bovy_conversion.time_in_Gyr(
+            t = (cluster.tphys * cluster.tbar / 1000.0) / bovy_conversion.time_in_Gyr(
                 ro=8.0, vo=220.0
             )
             cluster.add_orbit(
@@ -343,7 +343,7 @@ def advance_cluster(
                 )
             elif cluster.units == "nbody":
                 t = (
-                    cluster.tphys * cluster.tstar / 1000.0
+                    cluster.tphys * cluster.tbar / 1000.0
                 ) / bovy_conversion.time_in_Gyr(ro=8.0, vo=220.0)
             elif cluster.units == "galpy":
                 t = cluster.tphys

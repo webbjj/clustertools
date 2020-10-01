@@ -26,6 +26,12 @@ __all__ = [
 import numpy as np
 from galpy.util import bovy_coords,bovy_conversion,_rotate_to_arbitrary_vector
 from copy import copy
+try:
+    import numba
+    full_default=True
+except:
+    full_default=False
+    pass
 
 def to_pckms(cluster):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
@@ -1001,7 +1007,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
 
     return zmbar,rbar,vbar,tstar
 
-def virialize(cluster, specific=True, full=True, projected=False):
+def virialize(cluster, specific=True, full=full_default, projected=False):
     """ Adjust stellar velocities so cluster is in virial equilibrium
 
     Parameters
@@ -1011,7 +1017,7 @@ def virialize(cluster, specific=True, full=True, projected=False):
     specific : bool
         find specific energies (default: True)
     full: bool
-        do full array of stars at once with numba (default: True)
+        do full array of stars at once with numba (default: full_default)
     projected : bool
         use projected values when calculating energies (default: False)
 

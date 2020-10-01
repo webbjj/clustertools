@@ -27,13 +27,7 @@ __all__ = [
 ]
 
 import numpy as np
-try:
-    import numba
-    full_default=True
-except:
-    full_default=False
-    pass
-
+import numba
 from galpy.util import bovy_coords, bovy_conversion
 from galpy import potential
 from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
@@ -458,7 +452,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     return trc
 
 
-def energies(cluster, specific=True, i_d=None, full=full_default, projected=False, parallel=False):
+def energies(cluster, specific=True, i_d=None, full=True, projected=False, parallel=False):
     """Calculate kinetic and potential energy of every star
 
     Parameters
@@ -470,7 +464,7 @@ def energies(cluster, specific=True, i_d=None, full=full_default, projected=Fals
     i_d : int
       if given, find energies for a specific star only (default: None)
     full : bool
-      calculate distance of full array of stars at once with numbra (default: full_default)
+      calculate distance of full array of stars at once with numbra (default: True)
     parallel : bool
       calculate distances in parallel (default: False)
 
@@ -702,7 +696,7 @@ def rlagrange(cluster, nlagrange=10, projected=False):
     return rn
 
 def virial_radius(cluster, method='inverse_distance',
-    full=full_default,
+    full=True,
     H=70.0,
     Om=0.3,
     overdens=200.0,
@@ -729,7 +723,7 @@ def virial_radius(cluster, method='inverse_distance',
     Other Parameters
     ----------------
     full : bool
-        Use Numba to calculate average inverse distance between stars (default:full_default)
+        Use Numba to calculate average inverse distance between stars (default:True)
     H : float
         Hubble constant
     Om : float
@@ -757,7 +751,7 @@ def virial_radius(cluster, method='inverse_distance',
 
     return rv
 
-def virial_radius_inverse_distance(cluster, projected=False, full=full_default):
+def virial_radius_inverse_distance(cluster, projected=False, full=True):
     """ Calculate virial radius of the cluster 
     - Virial radius is defined as the inverse of the average inverse distance between particles, weighted by their masses
     -- Definition taken from AMUSE (www.amusecode.org)
@@ -770,7 +764,7 @@ def virial_radius_inverse_distance(cluster, projected=False, full=full_default):
     projected : bool
         calculate projected virial radius (default: False)
     full : bool
-        Use Numba to calculate average inverse distance between stars (default:full_default)
+        Use Numba to calculate average inverse distance between stars (default:True)
 
     Returns
     -------

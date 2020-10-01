@@ -17,11 +17,11 @@ Requirements
 * galpy (https://docs.galpy.org/en/v1.6.0/)
 * matplotlib
 * numpy
-* numba
 * scipy
 * astropy
 
 Optional:
 
+* numba
 * limepy (https://readthedocs.org/projects/limepy/)
 * AMUSE (https://amuse.readthedocs.io/en/latest/)

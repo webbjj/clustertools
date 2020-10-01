@@ -16,7 +16,13 @@ __all__ = [
 ]
 
 import numpy as np
-import numba
+try:
+    import numba
+    full_default=True
+except:
+    full_default=False
+    pass
+    
 import matplotlib.pyplot as plt
 from ..util.plots import _plot,_lplot
 

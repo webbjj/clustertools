@@ -13,5 +13,5 @@ setuptools.setup(
     long_description_content_type='text/markdown',
     license='MIT',
     packages=["clustertools","clustertools/analysis","clustertools/util"],
-    install_requires=['numpy>=1.7','scipy','galpy','seaborn']
+    install_requires=['numpy>=1.7','scipy','galpy','seaborn','numba'],
     )

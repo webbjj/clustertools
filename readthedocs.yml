@@ -9,6 +9,4 @@ python:
     - method: setuptools
       path: .
     - requirements: docs/requirements.txt
-
-python:
    use_system_site_packages: true

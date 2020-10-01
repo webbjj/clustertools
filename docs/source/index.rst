@@ -1,4 +1,4 @@
-``clustertools (Documentation in Progress)``
+``clustertools``
 ================
 
 ``clustertools`` is a Python package with tools for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able use or to act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
@@ -45,19 +45,13 @@ Example Notebooks
 Planned Future Additions
 ----------------------------------
 
-* Calculate meq and c_k from Biancinni et al.
-
-* Caclulate tdiss from Baumgardt and Makino 2003
+* Calculate c_k from Biancinni et al.
 
 * Allow for the use of astropy units
 
-* Ability to read NBODY6 binary files as opposed to forcing them to be in ascii format.
-
-* Customizable loading of NBODY6 files to reflect the many customized versions of NBODY6 outthere (including NBODY6tt, NBODY6DF, and NBODY6++)
-
 * Be able to initialize orbits and clusters based on Holger Baumgardt's Galactic Globular Clusters Database (https://people.smp.uq.edu.au/HolgerBaumgardt/globular/)
 
-* Incorporate other methods for estimating a cluster's dynamical age (A+, Blue Stragglers) (REF)
+* Incorporate other methods for estimating a cluster's dynamical age (A+, Blue Stragglers)
 
 * More analysis features for binary stars
 
@@ -65,12 +59,12 @@ Planned Future Additions
 
 * More analysis features that are comparable to standard techniques used by observers
 
-* Incorporation of a fast evolution code like in order to predict a clusters forward evolution
-
 References
 -----------------
 
 Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
+
+Bianchini, P. et al. 2016, MNRAS, 458, 3644
 
 Bovy J., 2015, ApJS, 216, 29
 

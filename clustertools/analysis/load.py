@@ -85,6 +85,14 @@ def load_cluster(
         choice of delimiter when reading ascii/csv files (Default: ',')
     wdir : str
         working directory of snapshots if not current directory
+    snapdir : str
+        directory of snapshot (Default: './')
+    snapbase : str
+        base for snapshot filename (Default: '')
+    snapend : str
+        end for snapshot filename (Default: '')
+    skiprows : int
+        number of rows to skip when reading in snapshot (Default: 0)
     initialize : bool
         initialize a galpy orbit after reading in orbital information (default: False)
     projected : bool

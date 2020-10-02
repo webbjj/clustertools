@@ -1257,6 +1257,44 @@ class StarCluster(object):
 
         return self.meq
 
+    def ckin(
+        self,
+        mmin=None,
+        mmax=None,
+        nmass=10,
+        rmin=None,
+        rmax=None,
+        vmin=None,
+        vmax=None,
+        emin=None,
+        emax=None,
+        kwmin=0,
+        kwmax=1,
+        indx=None,
+        projected=False,
+    ):
+
+        c_k = ckin(
+            self,
+            mmin=mmin,
+            mmax=mmax,
+            nmass=nmass,
+            rmin=rmin,
+            rmax=rmax,
+            vmin=vmin,
+            vmax=vmax,
+            emin=emin,
+            emax=emax,
+            kwmin=kwmin,
+            kwmax=kwmax,
+            indx=indx,
+            projected=projected,
+        )
+
+        self.ck=c_k
+
+        return self.ck
+
     # Directly call from orbit.py (see orbit,py files for documentation):
 
     def rtidal(self, pot=MWPotential2014, rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, verbose=False):

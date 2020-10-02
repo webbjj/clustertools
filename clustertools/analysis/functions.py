@@ -22,6 +22,7 @@ __all__ = [
     "mass_function",
     "eta_function",
     "meq_function",
+    "ckin",
     "rtidal",
     "rlimiting",
 ]
@@ -1434,7 +1435,107 @@ def meq_function(
 
     return m_mean, sigvm, meq, emq, sigma0, esigma0
 
+def ckin(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    **kwargs,
+):
+    """
+    NAME: Find the kinematic concentration parameter ck
+    
+    - see Bianchini et al. 2018, MNRAS, 475, 96
 
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    mmin/mmax : float
+        specific mass range
+    nmass : 
+        number of mass bins used to calculate alpha
+    rmin/rmax : 
+        specific radial range
+    vmin/vmax : float
+        specific velocity range
+    emin/emax : float
+        specific energy range
+    kwmin/kwmax : int
+        specific stellar evolution type range
+    indx : bool 
+        specific subset of stars
+    projected : bool 
+        use projected values (default: False)
+
+    Returns
+    -------
+    ck : float
+        kinematic concentration
+
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
+
+    History
+    -------
+    2020
+    """
+
+    rn=rlagrange(cluster, nlagrange=10, projected=projected)
+
+    m_mean50, sigvm50, meq50, emq50, sigma050, esigma050 = eta_function(cluster,
+            mmin=mmin,
+            mmax=mmax,
+            nmass=nmass,
+            rmin=rn[3],
+            rmax=rn[5],
+            vmin=vmin,
+            vmax=vmax,
+            emin=emin,
+            emax=emax,
+            kwmin=kwmin,
+            kwmax=kwmax,
+            indx=indx,
+            projected=projected,
+            plot=False,
+            meq=True,
+            **kwargs,
+        )
+
+    m_mean, sigvm, meq, emq, sigma0, esigma0 = eta_function(cluster,
+            mmin=mmin,
+            mmax=mmax,
+            nmass=nmass,
+            rmin=0.,
+            rmax=rn[4],
+            vmin=vmin,
+            vmax=vmax,
+            emin=emin,
+            emax=emax,
+            kwmin=kwmin,
+            kwmax=kwmax,
+            indx=indx,
+            projected=projected,
+            plot=False,
+            meq=True,
+            **kwargs,
+        )
+
+    ck=meq/meq50
+
+    return ck
 
 def rtidal(
     cluster,

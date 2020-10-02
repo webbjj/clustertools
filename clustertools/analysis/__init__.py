@@ -26,6 +26,7 @@ virial_radius_critical_density=functions.virial_radius_critical_density
 mass_function=functions.mass_function
 eta_function=functions.eta_function
 meq_function=functions.meq_function
+ckin=functions.ckin
 rtidal=functions.rtidal
 rlimiting=functions.rlimiting
 

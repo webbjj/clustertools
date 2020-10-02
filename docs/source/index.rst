@@ -1,8 +1,8 @@
 ``clustertools``
 ================
 
-``clustertools`` is a Python package with tools for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able use or to act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
-<https://docs.galpy.org/en/v1.6.0/index.html>`_, and measuring common cluster properties like its mass function, density profile, velocity dispersion profile (among others). 
+``clustertools`` is a Python package with tools for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able to use or act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
+<https://docs.galpy.org/en/v1.6.0/index.html>`_), and measuring common cluster properties like its mass function, density profile, and velocity dispersion profile (among others). 
 
 The package contains methods for loading data from commonly used N-body codes (NBODY6, GYRFALCON, AMUSE) and generic snapshots. With the help of `limepy
 <https://limepy.readthedocs.io/en/latest/>`_, it is also possible to generate cluster datasets from a distribution function for immediate analysis.
@@ -45,8 +45,6 @@ Example Notebooks
 Planned Future Additions
 ----------------------------------
 
-* Calculate c_k from Biancinni et al.
-
 * Allow for the use of astropy units
 
 * Be able to initialize orbits and clusters based on Holger Baumgardt's Galactic Globular Clusters Database (https://people.smp.uq.edu.au/HolgerBaumgardt/globular/)
@@ -65,6 +63,8 @@ References
 Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
 
 Bianchini, P. et al. 2016, MNRAS, 458, 3644
+
+Bianchini et al. 2018, MNRAS, 475, 96
 
 Bovy J., 2015, ApJS, 216, 29
 

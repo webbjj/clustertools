@@ -19,9 +19,9 @@ Requirements
 * numpy
 * scipy
 * astropy
+* numba
 
 Optional:
 
-* numba
 * limepy (https://readthedocs.org/projects/limepy/)
 * AMUSE (https://amuse.readthedocs.io/en/latest/)

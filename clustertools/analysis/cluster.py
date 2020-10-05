@@ -792,6 +792,9 @@ class StarCluster(object):
         2019 - Written - Webb (UofT)
         """
 
+        self.analyze_units=self.units
+        self.analyze_origin=self.origin
+
         self.r = np.sqrt(self.x ** 2.0 + self.y ** 2.0 + self.z ** 2.0)
         self.rpro = np.sqrt(self.x ** 2.0 + self.y ** 2.0)
         self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
@@ -913,6 +916,92 @@ class StarCluster(object):
 
         if (self. rproorder is None or self.rorder_origin!=self.origin) and (projected or self.projected):
             self.rproorder = np.argsort(self.rpro)
+
+    # Directly call parameters from analyze:
+
+    def r(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.r
+
+    def rpro(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rpro
+
+    def v(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.v
+
+    def vpro(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.vpro
+
+    def mtot(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.mtot
+
+    def mmean(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.mmean
+
+    def rmean(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rmean
+
+    def rmax(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rmax
+
+    def rpromean(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rpromean
+
+    def rpromax(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rpromax
+
+    def rorder(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rorder
+
+    def rm(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rm
+
+    def r10(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.r10
+
+    def rh(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rh
+
+    def rh10(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rh10
+
+    def rproorder(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rproorder
+
+    def rmpro(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rmpro
+
+    def r10pro(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.r10pro
+
+    def rhpro(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rhpro
+
+    def rh10pro(self,sortstars=True,projected=False):
+        _analysis_check(self,sortstars=sortstars,projected=projected)
+        return self.rh10pro
+
+    def _analysis_check(self,sortstars=True,projected=False):
+        if self.units!=self.analyze_units or self.analyze_units!=self.units:
+            self.analyze(sortstars=sortstars,projected=projected)
 
     # Directly call from operations.py (see operations.py files for documenation):
 

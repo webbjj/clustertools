@@ -201,7 +201,7 @@ def fortout(
     return 0
 
 
-def gyrout(cluster, filename="init.nemo.dat"):
+def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
     """Output a snapshot in gyrfalcon/NEMO format
 
     - Note that units are converted to Walter Dehnen units (WDunits in GYRFALCON)
@@ -212,7 +212,13 @@ def gyrout(cluster, filename="init.nemo.dat"):
         StarCluster
     filename : str
         name of file to be written to (default: 'init.nemo.dat')
-   
+    eps : array
+        values for softening length of individual particles (default : None)
+    epsunits : str
+        units for softening lengths (default: cluster.units)
+    ro : float
+        galpy spaital scaling parameter, in case epsunits=='gal[y' (default: 8.)
+
     Returns
     -------
     None
@@ -229,20 +235,52 @@ def gyrout(cluster, filename="init.nemo.dat"):
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
 
-    np.savetxt(
-        filename,
-        np.column_stack(
-            [
-                cluster.m / mcon,
-                cluster.x,
-                cluster.y,
-                cluster.z,
-                cluster.vx / vcon,
-                cluster.vy / vcon,
-                cluster.vz / vcon,
-            ]
-        ),
-    )
+    if eps is not None:
+
+        if epsunits is None:
+            epsunits=units0
+
+        if epsunits=='pckms':
+            eps/=1000.0
+        elif epsunits=='nbody':
+            eps*=(cluster.rbar/1000.0)
+        elif epsunits=='galpy':
+            eps*=ro
+
+        np.savetxt(
+                filename,
+                np.column_stack(
+                    [
+                        cluster.m / mcon,
+                        cluster.x,
+                        cluster.y,
+                        cluster.z,
+                        cluster.vx / vcon,
+                        cluster.vy / vcon,
+                        cluster.vz / vcon,
+                        eps,
+                    ]
+                ),
+            )
+
+
+    else:
+
+
+        np.savetxt(
+            filename,
+            np.column_stack(
+                [
+                    cluster.m / mcon,
+                    cluster.x,
+                    cluster.y,
+                    cluster.z,
+                    cluster.vx / vcon,
+                    cluster.vy / vcon,
+                    cluster.vz / vcon,
+                ]
+            ),
+        )
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 

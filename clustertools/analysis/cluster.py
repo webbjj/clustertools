@@ -130,7 +130,7 @@ class StarCluster(object):
         self.centre_method = kwargs.get("centre_method", None)
 
         # Total Number of Stars + Binaries in the cluster
-        self.ntot = 0
+        self.ntot = ntot
         self.nb = 0
 
         # variables for add_stars

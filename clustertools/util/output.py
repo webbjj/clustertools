@@ -240,7 +240,7 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
         if epsunits is None:
             epsunits=units0
 
-        if epsunits=='pckms':
+        if epsunits=='pckms' or epsunits=='pc':
             eps/=1000.0
         elif epsunits=='nbody':
             eps*=(cluster.rbar/1000.0)

@@ -544,7 +544,6 @@ def _get_gyrfalcon(
             tphys = float(data[2]) * 1000.0
 
     cluster = StarCluster(
-        ntot,
         tphys,
         units=units,
         origin=origin,
@@ -632,7 +631,6 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
     
         ntot,alist,x,y,z,vx,vy,vz,m,i_d=_get_nbody6_out3(out3,**kwargs)
         cluster = StarCluster(
-            ntot,
             alist[0],
             units="nbody",
             origin="cluster",
@@ -1045,10 +1043,8 @@ def _get_snapshot(
     else:
         kw = np.zeros(len(x))
 
-    nbnd = len(m)
-
     cluster = StarCluster(
-        nbnd, tphys, units=units, origin=origin, ctype=ctype, **kwargs
+        tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
     cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
     cluster.kw = kw
@@ -1107,7 +1103,6 @@ def _get_amuse_particles(
     """
 
     cluster = StarCluster(
-        len(particles),
         tphys=0.0,
         units=units,
         origin=origin,
@@ -1292,7 +1287,7 @@ def _get_astropy_table(
         ID = table[cm.pop("id")] if "id" in cm else None
 
     cluster = StarCluster(
-        len(x), 0., units=units, origin=origin, ctype='table', **kwargs
+        0., units=units, origin=origin, ctype='table', **kwargs
     )
 
     cluster.add_stars(x, y, z, vx, vy, vz, m, ID, sortstars=False)

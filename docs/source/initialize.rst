@@ -56,6 +56,11 @@ The usefullness of ``advance_cluster`` function is perhaps best illustrated in t
 >>>     m.append(cluster.mtot)
 >>>     cluster=advance_cluster(cluster)
 
+Plotting mass as a function of time would then return:
+
+.. image:: /images/mevolve.png
+
+
 .. automodapi:: clustertools.analysis.load
         :no-inheritance-diagram:
         :no-main-docstr:

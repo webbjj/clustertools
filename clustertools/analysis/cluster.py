@@ -91,7 +91,6 @@ class StarCluster(object):
 
     def __init__(
         self,
-        ntot=0,
         tphys=0.0,
         units=None,
         origin=None,
@@ -130,7 +129,7 @@ class StarCluster(object):
         self.centre_method = kwargs.get("centre_method", None)
 
         # Total Number of Stars + Binaries in the cluster
-        self.ntot = ntot
+        self.ntot = 0
         self.nb = 0
 
         # variables for add_stars
@@ -216,36 +215,36 @@ class StarCluster(object):
         self.np = 0
 
         # variables for add_sse (stellar evolution information)
-        self.logl = np.asarray([])
-        self.logr = np.asarray([])
-        self.lum = np.asarray([])
-        self.ep = np.asarray([])
-        self.ospin = np.asarray([])
+        self.logl = np.array([])
+        self.logr = np.array([])
+        self.lum = np.array([])
+        self.ep = np.array([])
+        self.ospin = np.array([])
 
         # variables for add_bse (binary star evolution information)
-        self.id1 = np.asarray([])
-        self.id2 = np.asarray([])
-        self.kw1 = np.asarray([])
-        self.kw2 = np.asarray([])
-        self.kcm = np.asarray([])
-        self.ecc = np.asarray([])
-        self.pb = np.asarray([])
-        self.semi = np.asarray([])
-        self.m1 = np.asarray([])
-        self.m2 = np.asarray([])
-        self.logl1 = np.asarray([])
-        self.logl2 = np.asarray([])
-        self.logr1 = np.asarray([])
-        self.logr2 = np.asarray([])
-        self.ep1 = np.asarray([])
-        self.ep2 = np.asarray([])
-        self.ospin1 = np.asarray([])
-        self.ospin2 = np.asarray([])
+        self.id1 = np.array([])
+        self.id2 = np.array([])
+        self.kw1 = np.array([])
+        self.kw2 = np.array([])
+        self.kcm = np.array([])
+        self.ecc = np.array([])
+        self.pb = np.array([])
+        self.semi = np.array([])
+        self.m1 = np.array([])
+        self.m2 = np.array([])
+        self.logl1 = np.array([])
+        self.logl2 = np.array([])
+        self.logr1 = np.array([])
+        self.logr2 = np.array([])
+        self.ep1 = np.array([])
+        self.ep2 = np.array([])
+        self.ospin1 = np.array([])
+        self.ospin2 = np.array([])
 
         # variables of energies
-        self.kin = np.asarray([])
-        self.pot = np.asarray([])
-        self.etot = np.asarray([])
+        self.kin = np.array([])
+        self.pot = np.array([])
+        self.etot = np.array([])
 
         # Lagrange Radii,10% lagrage radius, half-mass radius, limiting radius, tidal radius, and virial radius
         self.rn = None
@@ -295,22 +294,22 @@ class StarCluster(object):
             - 2018 - Written - Webb (UofT)
 
         """
-        self.x = np.append(self.x, np.asarray(x))
-        self.y = np.append(self.y, np.asarray(y))
-        self.z = np.append(self.z, np.asarray(z))
-        self.vx = np.append(self.vx, np.asarray(vx))
-        self.vy = np.append(self.vy, np.asarray(vy))
-        self.vz = np.append(self.vz, np.asarray(vz))
+        self.x = np.append(self.x, np.array(x))
+        self.y = np.append(self.y, np.array(y))
+        self.z = np.append(self.z, np.array(z))
+        self.vx = np.append(self.vx, np.array(vx))
+        self.vy = np.append(self.vy, np.array(vy))
+        self.vz = np.append(self.vz, np.array(vz))
 
         if m is None:
-            m = np.ones(len(self.x),float)
+            m = np.ones(len(x),float)
  
-        self.m = np.append(self.m, np.asarray(m))
+        self.m = np.append(self.m, np.array(m))
 
         if id is None:
-            id = np.linspace(0, len(self.x) - 1, len(self.x), dtype=int)
+            id = np.linspace(0, len(x) - 1, len(x), dtype=int)
 
-        self.id = np.append(self.id, np.asarray(id))
+        self.id = np.append(self.id, np.array(id))
 
         # Check lengths
 
@@ -339,6 +338,7 @@ class StarCluster(object):
                 len(self.vz),
             ]
         )
+
         if nmax != nmin:
             if len(self.id) == 1:
                 self.id = np.linspace(0, nmax - 1, nmax, dtype=int)
@@ -381,15 +381,15 @@ class StarCluster(object):
                 length_error=True
 
         if length_error:
-            print('ONE OR MORE INPUT ARRAY HAS INCORRECT LENGTH')
+            print('ONE OR MORE INPUT ARRAY HAS INCORRECT LENGTH: ',nmin,nmax)
 
         if self.units == "radec" and self.origin == "sky":
-            self.ra = copy(self.x)
-            self.dec = copy(self.y)
-            self.dist = copy(self.z)
-            self.pmra = copy(self.vx)
-            self.pmdec = copy(self.vy)
-            self.vlos = copy(self.vz)
+            self.ra = np.append(self.ra, np.array(x))
+            self.dec = np.append(self.dec, np.array(y))
+            self.dist = np.append(self.dist, np.array(z))
+            self.pmra = np.append(self.pmra, np.array(vx))
+            self.pmdec = np.append(self.pmdec, np.array(vy))
+            self.vlos = np.append(self.vlos, np.array(vz))
 
         self.kw = np.append(self.kw, np.zeros(len(self.id)))
 
@@ -407,6 +407,7 @@ class StarCluster(object):
         vzgc,
         ounits=None,
         initialize=False,
+        from_centre=False,
         ro=8.0,
         vo=220.0,
     ):
@@ -424,6 +425,8 @@ class StarCluster(object):
             to match self.units
         initialize: bool
             Initialize a galpy orbit for self.orbit (default: False)
+        from_centre : bool
+            genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
         ro: float
             galpy position scaling parameter (default: 8.)
         vo: float
@@ -444,9 +447,9 @@ class StarCluster(object):
             # First convert to kpckms
             if ounits != "kpckms":
                 if ounits == "nbody":
-                    xgc *= self.rbar * 1000.0
-                    ygc *= self.rbar * 1000.0
-                    zgc *= self.rbar * 1000.0
+                    xgc *= self.rbar / 1000.0
+                    ygc *= self.rbar / 1000.0
+                    zgc *= self.rbar / 1000.0
                     vxgc *= self.vbar
                     vygc *= self.vbar
                     vzgc *= self.vbar
@@ -500,7 +503,7 @@ class StarCluster(object):
             self.vlos_gc = vzgc
 
         if initialize:
-            initialize_orbit(self, from_centre=False)
+            self.initialize_orbit(from_centre=from_centre)
 
     def add_nbody6(
         self,
@@ -618,8 +621,8 @@ class StarCluster(object):
         self.ltot = np.sum(self.lum)
 
         if ep is not None:
-            self.ep = np.asarray(ep)
-            self.ospin = np.asarray(ospin)
+            self.ep = np.array(ep)
+            self.ospin = np.array(ospin)
 
     def add_bse(
         self,
@@ -683,26 +686,26 @@ class StarCluster(object):
 
         2018 - Written - Webb (UofT)
         """
-        self.id1 = np.asarray(id1)
-        self.id2 = np.asarray(id2)
-        self.kw1 = np.asarray(kw1)
-        self.kw2 = np.asarray(kw2)
-        self.kcm = np.asarray(kcm)
-        self.ecc = np.asarray(ecc)
-        self.pb = np.asarray(pb)
-        self.semi = np.asarray(semi)
-        self.m1 = np.asarray(m1)
-        self.m2 = np.asarray(m2)
-        self.logl1 = np.asarray(logl1)
-        self.logl2 = np.asarray(logl2)
-        self.logr1 = np.asarray(logr1)
-        self.logr2 = np.asarray(logr2)
+        self.id1 = np.array(id1)
+        self.id2 = np.array(id2)
+        self.kw1 = np.array(kw1)
+        self.kw2 = np.array(kw2)
+        self.kcm = np.array(kcm)
+        self.ecc = np.array(ecc)
+        self.pb = np.array(pb)
+        self.semi = np.array(semi)
+        self.m1 = np.array(m1)
+        self.m2 = np.array(m2)
+        self.logl1 = np.array(logl1)
+        self.logl2 = np.array(logl2)
+        self.logr1 = np.array(logr1)
+        self.logr2 = np.array(logr2)
 
         if ep1 is not None:
-            self.ep1 = np.asarray(ep1)
-            self.ep2 = np.asarray(ep2)
-            self.ospin1 = np.asarray(ospin1)
-            self.ospin2 = np.asarray(ospin2)
+            self.ep1 = np.array(ep1)
+            self.ep2 = np.array(ep2)
+            self.ospin1 = np.array(ospin1)
+            self.ospin2 = np.array(ospin2)
 
         self.eb=0.5*self.m1*self.m2/self.semi
 
@@ -735,7 +738,7 @@ class StarCluster(object):
         self.kin = np.array(kin)
         self.pot = np.array(pot)
 
-        if etot==None:
+        if etot is None:
             self.etot=self.kin+self.pot 
         else:
             self.etot = np.array(etot)
@@ -748,7 +751,7 @@ class StarCluster(object):
         else:
             self.qvir = self.ektot / self.ptot
 
-    def add_actions(self, JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz):
+    def add_actions(self, JR, Jphi, Jz, OR=None, Ophi=None, Oz=None, TR=None, Tphi=None, Tz=None):
         """ Add action values to the cluster instance
 
         Parameters
@@ -909,12 +912,12 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        if self. rorder is None or self.rorder_origin!=self.origin:
+        if self. rorder is None or self.rorder_origin!=self.origin or len(self.r)!=len(self.rorder):
 
             self.rorder = np.argsort(self.r)
             self.rorder_origin=self.origin
 
-        if (self. rproorder is None or self.rorder_origin!=self.origin) and (projected or self.projected):
+        if (self. rproorder is None or self.rorder_origin!=self.origin or len(self.rpro)!=len(self.rproorder)) and (projected or self.projected):
             self.rproorder = np.argsort(self.rpro)
 
     # Directly call parameters from analyze:
@@ -1607,6 +1610,8 @@ def sub_cluster(
 
     if None in indx:
         indx = cluster.id > -1
+
+    print(np.sum(eindx),np.sum(indx),len(r),len(v),len(cluster.m),np.sum(cluster.kw>=kwmin),np.sum(cluster.kw<=kwmin))
 
     indx *= (
         (r >= rmin)

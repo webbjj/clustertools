@@ -110,7 +110,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             g = kwargs.pop("g", 2)
             cluster = _get_limepy(g=g, **kwargs)
         elif ctype=='galpy':
-            cluster=get_galpy(pot,**kwargs)
+            cluster=_get_galpy(pot,**kwargs)
         else:
             source = kwargs.pop("source", "default")
             mbar = kwargs.pop("mbar", 0.4)
@@ -119,6 +119,8 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
         source = kwargs.pop("source", "default")
         mbar = kwargs.pop("mbar", 0.4)
         cluster = _get_cluster(ctype, source, mbar)
+
+    cluster.ctype=ctype
 
     # Add galpy orbit if given
     if orbit != None:
@@ -201,7 +203,6 @@ def _get_limepy(g=1, **kwargs):
     ldata = sample(lmodel, N=N)
 
     cluster = StarCluster(units=units, origin="cluster")
-    cluster.ctype = "limepy"
     cluster.add_stars(
         ldata.x,
         ldata.y,

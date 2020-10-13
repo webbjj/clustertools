@@ -18,6 +18,7 @@ from .orbit import initialize_orbit
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
     import amuse.units.units as u
+    from amuse.io import read_set_from_file
 except:
     pass
 
@@ -149,6 +150,10 @@ def load_cluster(
         cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", advance=False, **kwargs)
 
     elif ctype=='amuse':
+        if filename is not None:
+            filetype=kwargs.pop("filetype","hdf5")
+            particles = read_set_from_file(filename, filetype)
+
         cluster = _get_amuse_particles(particles, units=units, origin=origin, ofile=ofile, **kwargs)
 
     elif ctype == "snapshot":

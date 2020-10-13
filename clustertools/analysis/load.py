@@ -149,7 +149,7 @@ def load_cluster(
         cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", advance=False, **kwargs)
 
     elif ctype=='amuse':
-        cluster=get_amuse_particles(particles, units=units, origin=origin, ofile=ofile, **kwargs)
+        cluster = _get_amuse_particles(particles, units=units, origin=origin, ofile=ofile, **kwargs)
 
     elif ctype == "snapshot":
         # Read in standard generic snapshot

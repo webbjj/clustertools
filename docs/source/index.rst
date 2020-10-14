@@ -42,6 +42,16 @@ Example Notebooks
    notebooks/profiles.ipynb
    notebooks/orbits_and_tails.ipynb
 
+Acknowledging clustertools
+--------------------------
+
+If you use ``clustertools`` in a publiclication, please cite the following digital object identifier (DOI):
+
+.. image:: https://zenodo.org/badge/272233602.svg
+   :target: https://zenodo.org/badge/latestdoi/272233602
+
+and link to ``https://github.com/webbjj/clustertools``. 
+
 Planned Future Additions
 ----------------------------------
 

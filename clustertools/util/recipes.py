@@ -306,7 +306,7 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
 
     return x_mean,x_hist
 
-def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False):
+def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False, x_lower=None, x_mean=None,x_upper=None):
     """ Calculate mean profile of parameter y that depends on x
 
     Parameters
@@ -321,6 +321,8 @@ def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False):
       for fixed size arrays, set step size to 'linear' or 'log'
     median : bool
       find median instead of mean (Default: False)
+    x_lower,x_mean,x_upper : float
+      preset lower limit, mean value, and upper limit bins
 
     Returns
     -------
@@ -336,10 +338,17 @@ def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False):
     2018 - Written - Webb (UofT)
 
     """
-    if bintype == "num":
-        x_lower, x_mid, x_upper, x_hist = nbinmaker(x, nbin)
+    if x_lower is None:
+        if bintype == "num":
+            x_lower, x_mid, x_upper, x_hist = nbinmaker(x, nbin)
+        else:
+            x_lower, x_mid, x_upper, x_hist = binmaker(x, nbin, steptype=steptype)
     else:
-        x_lower, x_mid, x_upper, x_hist = binmaker(x, nbin, steptype=steptype)
+        x_mid=x_mean
+        x_hist=np.array([])
+        for i in range(0, len(x_lower)):
+            indx = (x >= x_lower[i]) * (x < x_upper[i])
+            x_hist = np.append(x_hist, np.sum(indx))
 
     y_bin = []
     y_sig = []

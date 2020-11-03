@@ -21,7 +21,6 @@ def kwtypes():
     2019 - Written - Webb (UofT)
     """
     print(
-        dedent(
             """\
         *       Stellar evolution types
         *       ***********************
@@ -64,5 +63,4 @@ def kwtypes():
 
 
         """
-        )
     )

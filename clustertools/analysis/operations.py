@@ -1005,7 +1005,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
-    return zmbar,rbar,vbar,tstar
+    return zmbar,rbar,vbar,tbar
 
 def virialize(cluster, specific=True, full=full_default, projected=False):
     """ Adjust stellar velocities so cluster is in virial equilibrium

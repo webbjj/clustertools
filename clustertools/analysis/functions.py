@@ -1546,7 +1546,10 @@ def rtidal(
     zgc=None,
     ro=8.0,
     vo=220.0,
+    from_centre=False,
+    plot=False,
     verbose=False,
+    **kwargs,
 ):
     """Calculate tidal radius of the cluster
     - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
@@ -1575,6 +1578,10 @@ def rtidal(
         GALPY radius scaling parameter
     vo : float
         GALPY velocity scaling parameter
+    from_centre : bool
+        calculate tidal radius based on location of cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    plot : bool
+        plot the x and y coordinates of stars and mark the tidal radius of the cluster (default: False)
     verbose : bool
         Print information about iterative calculation of rt
 
@@ -1582,6 +1589,11 @@ def rtidal(
     -------
     rt : float
         tidal radius
+
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
 
     History
     -------
@@ -1599,12 +1611,18 @@ def rtidal(
     if rgc != None:
         R = rgc / ro
     else:
-        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
+        if from_centre:
+            R = np.sqrt((cluster.xgc+cluster.xc) ** 2.0 + (cluster.ygc+cluster.yc) ** 2.0)
+        else:
+            R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
 
     if zgc !=None:
         z = zgc/ ro
     else:
-        z = cluster.zgc
+        if from_centre:
+            z = cluster.zgc+cluster.zc
+        else:
+            z = cluster.zgc
 
     # Calculate rtide
     rt = rtide(pot, R, z, M=np.sum(cluster.m),use_physical=False)
@@ -1617,8 +1635,13 @@ def rtidal(
 
         rtnew = rtide(pot, R, z, M=msum,use_physical=False)
 
+        if rtnew == 0.:
+            print('RT DID NOT CONVERGE')
+            rt=0.
+            break
+
         if verbose:
-            print(rt, rtnew, rtnew / rt, msum / np.sum(cluster.m))
+            print(rt, rtnew, rt/rtnew, msum / np.sum(cluster.m))
 
         if rtnew / rt >= rtconverge:
             break
@@ -1645,6 +1668,58 @@ def rtidal(
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
+    if plot:
+
+        if cluster.units == "nbody":
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+        elif cluster.units == "pckms":
+            xunits = " (pc)"
+            yunits = " (pc)"
+
+        elif cluster.units == "kpckms":
+            xunits = " (kpc)"
+            yunits = " (kpc)"
+        elif cluster.units == "galpy":
+            xunits = " (GALPY)"
+            yunits = " (GALPY)"
+        else:
+            xunits = ""
+            yunits = ""
+
+
+        _plot(
+            cluster.x,
+            cluster.y,
+            xlabel=r"$x %s$" % xunits,
+            ylabel=r"$y %s$" % yunits,
+            title="Time = %f" % cluster.tphys,
+            log=False,
+            overplot=False,
+            filename=None,
+            **kwargs,
+        )
+
+        x=np.linspace(-rt,rt,100)
+        y=np.sqrt(rt**2.-x**2.)
+
+        x=np.append(x,x)
+        y=np.append(y,-y)
+
+        if origin0=='galaxy':
+            if from_centre:
+                x+=(cluster.xgc+cluster.xc)
+                y+=(cluster.ygc+cluster.yc)
+            else:
+                x+=cluster.xgc
+                y+=cluster.ygc
+        elif origin0=='cluster' and from_centre:
+            x+=cluster.xc
+            y+=cluster.yc
+
+        _lplot(x,y,overplot=True,linestyle='--',color='k')
+
+
     return rt
 
 
@@ -1652,11 +1727,13 @@ def rlimiting(
     cluster,
     pot=MWPotential2014,
     rgc=None,
+    zgc=None,
     ro=8.0,
     vo=220.0,
     nrad=20,
     projected=False,
     plot=False,
+    from_centre=False,
     **kwargs
 ):
     """Calculate limiting radius of the cluster
@@ -1673,6 +1750,8 @@ def rlimiting(
         GALPY potential used to calculate actions
     rgc : 
         Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
+    zgc : float
+        For non-spherically symmetric potentials, manually set distance in kpc above disk at which the tidal radius is to be evaluated. When set, rgc becomes radius in cylindrical coordinates (default: None)
     ro : float
         GALPY radius scaling parameter
     vo : float
@@ -1683,7 +1762,9 @@ def rlimiting(
         use projected values (default: False)
     plot : bool
         plot the density profile and mark the limiting radius of the cluster (default: False)
-
+    from_centre : bool
+        calculate tidal radius based on location of cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    verbose : bool
     Returns
     -------
         rl : float
@@ -1705,13 +1786,21 @@ def rlimiting(
 
     cluster.to_galpy()
 
-
     if rgc != None:
         R = rgc / ro
-        z = 0.0
     else:
-        R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
-        z = cluster.zgc
+        if from_centre:
+            R = np.sqrt((cluster.xgc+cluster.xc) ** 2.0 + (cluster.ygc+cluster.yc) ** 2.0)
+        else:
+            R = np.sqrt(cluster.xgc ** 2.0 + cluster.ygc ** 2.0)
+
+    if zgc !=None:
+        z = zgc/ ro
+    else:
+        if from_centre:
+            z = cluster.zgc+cluster.zc
+        else:
+            z = cluster.zgc
 
     # Calculate local density:
     rho_local = potential.evaluateDensities(

@@ -58,8 +58,12 @@ class StarCluster(object):
         file contain binary star evolution data
     tfile : str
         name of file contain tail star data
+    ofile : str
+        orbit file
     ofilename : str
         orbit filename if ofile is not given
+    orbit : str
+        galpy orbit instance
     ounits : str
         {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
     nsnap : int
@@ -125,6 +129,9 @@ class StarCluster(object):
         self.bfile = kwargs.get("bfile", None)
         self.ssefile = kwargs.get("ssefile", None)
         self.bsefile = kwargs.get("bsefile", None)
+        self.ofile = kwargs.get("ofile", None)
+        self.ofilename = kwargs.get("ofilename", None)
+        self.orbit = kwargs.get("orbit", None)
 
         self.centre_method = kwargs.get("centre_method", None)
 
@@ -1389,8 +1396,8 @@ class StarCluster(object):
 
     # Directly call from orbit.py (see orbit,py files for documentation):
 
-    def rtidal(self, pot=MWPotential2014, rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, verbose=False):
-        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, ro=ro, vo=vo, verbose=verbose)
+    def rtidal(self, pot=MWPotential2014, rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, from_centre=False, plot=False, verbose=False, **kwargs):
+        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, ro=ro, vo=vo, from_centre=from_centre, plot=plot, verbose=verbose, **kwargs)
 
         return self.rt
 
@@ -1403,6 +1410,7 @@ class StarCluster(object):
         nrad=20,
         projected=False,
         plot=False,
+        from_centre=False,
         verbose=False,
         **kwargs
     ):
@@ -1415,6 +1423,7 @@ class StarCluster(object):
             nrad=nrad,
             projected=projected,
             plot=plot,
+            from_centre=from_centre,
             verbose=verbose,
             **kwargs
         )
@@ -1526,11 +1535,13 @@ def sub_cluster(
     kwmax=15,
     indx=[None],
     projected=False,
-    sortstars=False,
+    sortstars=True,
     reset_centre=False,
     reset_nbody_scale=False,
     reset_nbody_mass=False,
     reset_nbody_radii=False,
+    reset_rvirial=False,
+    reset_projected=False,
     **kwargs
 ):
     """Extract a sub population of stars from a StarCluster
@@ -1553,8 +1564,8 @@ def sub_cluster(
         user defined boolean array from which to extract the subset
     projected : bool 
         use projected values and constraints (default:False)
-    sortstars : bool
-        sort star by radius after coordinate change (default: False)
+    sortstars: bool
+        order stars by radius (default: True)
     reset_centre : bool
         re-calculate cluster centre after extraction (default:False)
     reset_nbody_scale : bool
@@ -1611,8 +1622,6 @@ def sub_cluster(
     if None in indx:
         indx = cluster.id > -1
 
-    print(np.sum(eindx),np.sum(indx),len(r),len(v),len(cluster.m),np.sum(cluster.kw>=kwmin),np.sum(cluster.kw<=kwmin))
-
     indx *= (
         (r >= rmin)
         * (r <= rmax)
@@ -1641,7 +1650,7 @@ def sub_cluster(
             cluster.vz[indx],
             cluster.m[indx],
             cluster.id[indx],
-            sortstars=False,
+            sortstars=sortstars,
         )
 
         if len(cluster.ra)==len(cluster.x):
@@ -1666,35 +1675,64 @@ def sub_cluster(
         subcluster.centre_method = cluster.centre_method
 
         if len(cluster.logl) > 0:
-            subcluster.add_sse(
-                cluster.kw[indx],
-                cluster.logl[indx],
-                cluster.logr[indx],
-                cluster.ep[indx],
-                cluster.ospin[indx],
-            )
+            if cluster.ep is not None and cluster.ospin is not None:
+                subcluster.add_sse(
+                    cluster.kw[indx],
+                    cluster.logl[indx],
+                    cluster.logr[indx],
+                    cluster.ep[indx],
+                    cluster.ospin[indx],
+                )
+            else:
+                subcluster.add_sse(
+                        cluster.kw[indx],
+                        cluster.logl[indx],
+                        cluster.logr[indx],
+                    )
+
         if len(cluster.id2) > 0:
             bindx = np.in1d(cluster.id1, cluster.id[indx])
-            subcluster.add_bse(
-                cluster.id1[bindx],
-                cluster.id2[bindx],
-                cluster.kw1[bindx],
-                cluster.kw2[bindx],
-                cluster.kcm[bindx],
-                cluster.ecc[bindx],
-                cluster.pb[bindx],
-                cluster.semi[bindx],
-                cluster.m1[bindx],
-                cluster.m2[bindx],
-                cluster.logl1[bindx],
-                cluster.logl2[bindx],
-                cluster.logr1[bindx],
-                cluster.logr2[bindx],
-                cluster.ep1[bindx],
-                cluster.ep2[bindx],
-                cluster.ospin1[bindx],
-                cluster.ospin2[bindx],
-            )
+
+            if cluster.ep1 is not None and cluster.ospin1 is not None:
+
+                subcluster.add_bse(
+                    cluster.id1[bindx],
+                    cluster.id2[bindx],
+                    cluster.kw1[bindx],
+                    cluster.kw2[bindx],
+                    cluster.kcm[bindx],
+                    cluster.ecc[bindx],
+                    cluster.pb[bindx],
+                    cluster.semi[bindx],
+                    cluster.m1[bindx],
+                    cluster.m2[bindx],
+                    cluster.logl1[bindx],
+                    cluster.logl2[bindx],
+                    cluster.logr1[bindx],
+                    cluster.logr2[bindx],
+                    cluster.ep1[bindx],
+                    cluster.ep2[bindx],
+                    cluster.ospin1[bindx],
+                    cluster.ospin2[bindx],
+                )
+            else:
+                subcluster.add_bse(
+                    cluster.id1[bindx],
+                    cluster.id2[bindx],
+                    cluster.kw1[bindx],
+                    cluster.kw2[bindx],
+                    cluster.kcm[bindx],
+                    cluster.ecc[bindx],
+                    cluster.pb[bindx],
+                    cluster.semi[bindx],
+                    cluster.m1[bindx],
+                    cluster.m2[bindx],
+                    cluster.logl1[bindx],
+                    cluster.logl2[bindx],
+                    cluster.logr1[bindx],
+                    cluster.logr2[bindx],
+                )
+
         if len(cluster.etot) > 0:
             subcluster.add_energies(
                 cluster.kin[indx], cluster.pot[indx],
@@ -1742,16 +1780,19 @@ def sub_cluster(
                 cluster.vlos_gc,
             )
 
-        if reset_nbody_scale or reset_nbody_mass or reset_nbody_radii:
+        if reset_nbody_scale:
             subcluster.to_pckms()
             subcluster.analyze()
-
+            subcluster.reset_nbody_scale(mass=True,radius=True,rvirial=reset_rvirial,projected=reset_projected,**kwargs)
+        elif reset_nbody_mass or reset_nbody_radii:
+            subcluster.to_pckms()
+            subcluster.analyze()
             subcluster.reset_nbody_scale(mass=reset_nbody_mass,radius=reset_nbody_radii,rvirial=reset_rvirial,projected=reset_projected,**kwargs)
 
     else:
         subcluster = StarCluster(cluster.tphys)
 
     if subcluster.ntot > 0:
-        subcluster.analyze()
+        subcluster.analyze(sortstars=sortstars)
 
     return subcluster

@@ -1018,7 +1018,7 @@ def _get_galpy(pot,**kwargs):
 
     return cluster
 
-def _sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian'):
+def _sample_galpy_potential(pot,n,rmin,rmax,nres=100,ro=8.,vo=220.,coordinates='cartesian'):
     """Generate positions and velocities from galpy potentail
 
     Parameters
@@ -1030,7 +1030,10 @@ def _sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian
     rmin : float
         minimum stellar radius (default: 0.01)
     rmax : float
-        maximnum stellar radius (default: 100.)
+        maximum stellar radius (default: 100.)
+    nres : int
+        resolution of radius array between rmin/rmax, where 
+        high resolution minimizes dependence on interpolation (default: 100)
     ro : float
         galpy distance scaling parameter
     vo : float
@@ -1048,7 +1051,7 @@ def _sample_galpy_potential(pot,n,rmin,rmax,ro=8.,vo=220.,coordinates='cartesian
     2020 - Written - Webb (UofT)
     """
     ran=np.random.rand(n)
-    rad=np.linspace(rmin,rmax,n)
+    rad=np.linspace(rmin,rmax,nres)
     
     try:
         menc=pot.mass(rad/ro,z=0,t=0,forceint=False)
@@ -1117,3 +1120,4 @@ def _get_cluster_orbit(gcname,ro=8.0, vo=220.0):
 
     """
     return Orbit.from_name(gcname,ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
+

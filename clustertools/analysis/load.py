@@ -25,13 +25,13 @@ except:
 
 def load_cluster(
     ctype="snapshot",
-    particles=None,
-    load_function=None,
     units = "pckms",
     origin = "cluster",
     ofile=None,
     orbit=None,
     filename=None,
+    particles=None,
+    load_function=None,
     **kwargs,
 ):
     """Load a StarCluster snapshot from a generic code output
@@ -51,11 +51,6 @@ def load_cluster(
             - snapshot
             - astropy_table
 
-    particles : particles
-        AMUSE particle dataset (default: None)
-        or `~astropy.table.Table` instance if `ctype` is "astropy_table".
-    load_function : function
-        use a custom function to load data (default : None)
     units : str
         units of input data (default: kpckms)
     origin : str
@@ -66,6 +61,11 @@ def load_cluster(
         a galpy orbit to be used for the StarCluster's orbital information (default: None)
     filename : str 
         name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)
+    particles : particles
+        AMUSE particle dataset (default: None)
+        or `~astropy.table.Table` instance if `ctype` is "astropy_table".
+    load_function : function
+        use a custom function to load data (default : None)
 
     Returns
     -------
@@ -117,7 +117,12 @@ def load_cluster(
 
     if load_function is not None:
         ctype='custom'
-        cluster=load_function(particles=particles,units=units,origin=origin,ofile=ofile,orbit=orbit,filename=filename,**kwargs)
+        if particles is not None:
+            cluster=load_function(ctype=ctype,units=units,origin=origin,ofile=ofile,orbit=orbit,particles=particles,**kwargs)
+        elif filename is not None:
+            cluster=load_function(ctype=ctype,units=units,origin=origin,ofile=ofile,orbit=orbit,filename=filename,**kwargs)
+        else:
+            cluster=load_function(ctype=ctype,units=units,origin=origin,ofile=ofile,orbit=orbit,**kwargs)
 
     elif ctype == "nbody6":
 
@@ -288,7 +293,10 @@ def advance_cluster(
     # Continue reading in cluster opened in _get_cluster()
     if load_function is not None:
         ctype='custom'
-        cluster=load_function(ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
+        if filename is not None:
+            cluster=load_function(ctype=ctype,units=cluster.units,origin=cluster.origin,ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
+        else:
+            cluster=load_function(ctype=ctype,units=cluster.units,origin=cluster.origin,ofile=ofile,orbit=orbit,advance=True,**kwargs)
 
 
     elif cluster.ctype == "nbody6":

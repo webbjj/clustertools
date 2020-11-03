@@ -286,6 +286,8 @@ def test_sortstars():
 
 def test_subcluster():
 	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster.find_centre()
+	cluster.reset_nbody_scale()
 
 	subcluster=ctools.sub_cluster(cluster,rmax=cluster.rm)
 
@@ -303,10 +305,79 @@ def test_subcluster():
 	assert subcluster.vygc == cluster.vygc
 	assert subcluster.vzgc == cluster.vzgc
 
+	#Assert centre of mass is unchanged
+	assert subcluster.xc == cluster.xc
+	assert subcluster.yc == cluster.yc
+	assert subcluster.zc == cluster.zc
+	assert subcluster.vxc == cluster.vxc
+	assert subcluster.vyc == cluster.vyc
+	assert subcluster.vzc == cluster.vzc
+
 	#Assert subset of stars is correct
 	assert subcluster.ntot == cluster.ntot/2
 	assert np.amin(subcluster.r) == np.amin(cluster.r)
+	assert subcluster.r[subcluster.rorder[0]] == cluster.r[cluster.rorder[0]]
+	assert subcluster.rpro[subcluster.rproorder[0]] == cluster.rpro[cluster.rproorder[0]]
 
-	#Test all cuts, test ra_dec, kw, mass, id, nbody6 (non-default)
-	#test sse, bse, energies, centre, reset_centre, nbodyscale, analyze
+	kin=np.random.rand(cluster.ntot)
+	pot=np.random.rand(cluster.ntot)
+	cluster.add_energies(kin,pot)
+	cluster.m=np.random.rand(cluster.ntot)
+	cluster.kw=np.random.rand(cluster.ntot)
+
+	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm)
+	assert np.amin(subcluster.r) == np.amin(cluster.r[cluster.r>=cluster.rm])
+
+	subcluster=ctools.sub_cluster(cluster,vmin=np.mean(cluster.v))
+	assert subcluster.ntot == np.sum(cluster.v >= np.mean(cluster.v))
+
+	subcluster=ctools.sub_cluster(cluster,vmax=np.mean(cluster.v))
+	assert subcluster.ntot == np.sum(cluster.v <= np.mean(cluster.v))
+
+	subcluster=ctools.sub_cluster(cluster,emin=np.mean(cluster.etot))
+	assert subcluster.ntot == np.sum(cluster.etot >= np.mean(cluster.etot))
+
+	subcluster=ctools.sub_cluster(cluster,emax=np.mean(cluster.etot))
+	assert subcluster.ntot == np.sum(cluster.etot <= np.mean(cluster.etot))
+
+	subcluster=ctools.sub_cluster(cluster,mmin=np.mean(cluster.m))
+	assert subcluster.ntot == np.sum(cluster.m >= np.mean(cluster.m))
+
+	subcluster=ctools.sub_cluster(cluster,mmax=np.mean(cluster.m))
+	assert subcluster.ntot == np.sum(cluster.m <= np.mean(cluster.m))
+
+	subcluster=ctools.sub_cluster(cluster,kwmin=np.mean(cluster.kw))
+	assert subcluster.ntot == np.sum(cluster.kw >= np.mean(cluster.kw))
+
+	subcluster=ctools.sub_cluster(cluster,kwmax=np.mean(cluster.kw))
+	assert subcluster.ntot == np.sum(cluster.kw <= np.mean(cluster.kw))
+
+	indx=np.append(np.ones(int(cluster.ntot/2),dtype=bool),np.zeros(int(cluster.ntot/2),dtype=bool))
+	subcluster=ctools.sub_cluster(cluster,indx=indx)
+	assert subcluster.ntot == cluster.ntot/2
+
+	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm, projected=True)
+	assert np.amin(subcluster.r) == np.amin(cluster.r[cluster.rpro>=cluster.rm])
+
+	subcluster=ctools.sub_cluster(cluster,vmin=np.mean(cluster.v),projected=True)
+	assert subcluster.ntot == np.sum(cluster.vpro >= np.mean(cluster.v))
+
+	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm,reset_nbody_scale=True,reset_centre=True)
+
+	print(np.sum(subcluster.m),subcluster.mtot,np.sum(cluster.m[cluster.r>=cluster.rm]))
+
+	assert subcluster.zmbar == np.sum(subcluster.m)
+	assert subcluster.rbar != cluster.rbar
+	assert subcluster.vbar != cluster.vbar
+	assert subcluster.tbar != cluster.tbar
+
+	assert subcluster.xc != cluster.xc
+	assert subcluster.yc != cluster.yc
+	assert subcluster.zc != cluster.zc
+	assert subcluster.vxc != cluster.vxc
+	assert subcluster.vyc != cluster.vyc
+	assert subcluster.vzc != cluster.vzc
+
+	# test ra_dec, indx cut, add_nbody6 (non-default)
+	#test add_sse, add_bse, add_energies, centre of cluster?, reset_centre, analyze
 

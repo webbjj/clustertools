@@ -325,6 +325,7 @@ def test_subcluster():
 	cluster.m=np.random.rand(cluster.ntot)
 	cluster.kw=np.random.rand(cluster.ntot)
 
+	#Assert different cuts are working
 	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm)
 	assert np.amin(subcluster.r) == np.amin(cluster.r[cluster.r>=cluster.rm])
 
@@ -356,12 +357,14 @@ def test_subcluster():
 	subcluster=ctools.sub_cluster(cluster,indx=indx)
 	assert subcluster.ntot == cluster.ntot/2
 
+	#Assert projected cuts are working
 	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm, projected=True)
 	assert np.amin(subcluster.r) == np.amin(cluster.r[cluster.rpro>=cluster.rm])
 
 	subcluster=ctools.sub_cluster(cluster,vmin=np.mean(cluster.v),projected=True)
 	assert subcluster.ntot == np.sum(cluster.vpro >= np.mean(cluster.v))
 
+	#Assert that Nbody conversion can be rescaled and centre recalculated
 	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm,reset_nbody_scale=True,reset_centre=True)
 
 	print(np.sum(subcluster.m),subcluster.mtot,np.sum(cluster.m[cluster.r>=cluster.rm]))
@@ -378,6 +381,6 @@ def test_subcluster():
 	assert subcluster.vyc != cluster.vyc
 	assert subcluster.vzc != cluster.vzc
 
-	# test ra_dec, indx cut, add_nbody6 (non-default)
-	#test add_sse, add_bse, add_energies, centre of cluster?, reset_centre, analyze
+	# test ra_dec, parameters in add_nbody6 with non-default
+	#test add_sse, add_bse, add_energies, analyze
 

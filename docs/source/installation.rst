@@ -7,7 +7,12 @@ To install ``clustertools``, simply clone the GitrHub repository and install via
 >>> cd clustertools
 >>> python setup.py install
 
-At the moment it is not possible to install via ``pip``, however this feature is coming soon. 
+It has recently become possible to install ``clustertools`` using pip:
+
+>>> pip install clustertools
+
+however please note this has not been thoroughly tested.
+
 
 Requirements
 ------------

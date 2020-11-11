@@ -142,3 +142,4 @@ cython_debug/
 
 #custom script
 /clustertools/custom/custom_loaders.py
+/clustertools/custom/custom_outputs.py

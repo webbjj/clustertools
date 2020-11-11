@@ -927,7 +927,7 @@ class StarCluster(object):
         if (self. rproorder is None or self.rorder_origin!=self.origin or len(self.rpro)!=len(self.rproorder)) and (projected or self.projected):
             self.rproorder = np.argsort(self.rpro)
 
-    # Directly call parameters from analyze:
+    """ Directly call parameters from analyze:
 
     def r(self,sortstars=True,projected=False):
         _analysis_check(self,sortstars=sortstars,projected=projected)
@@ -1009,6 +1009,8 @@ class StarCluster(object):
         _analysis_check(self,sortstars=sortstars,projected=projected)
         return self.rh10pro
 
+    """
+    
     def _analysis_check(self,sortstars=True,projected=False):
         if self.units!=self.analyze_units or self.analyze_units!=self.units:
             self.analyze(sortstars=sortstars,projected=projected)

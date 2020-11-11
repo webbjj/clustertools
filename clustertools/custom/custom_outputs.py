@@ -14,7 +14,7 @@ import numpy as np
 from galpy.util import bovy_conversion
 
 
-from .coordinates import sky_coords
+from ..util.coordinates import sky_coords
 from ..analysis.functions import *
 from ..analysis.profiles import *
 from ..analysis.operations import *

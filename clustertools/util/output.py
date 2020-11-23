@@ -217,7 +217,7 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
     epsunits : str
         units for softening lengths (default: cluster.units)
     ro : float
-        galpy spaital scaling parameter, in case epsunits=='gal[y' (default: 8.)
+        galpy spaital scaling parameter, in case epsunits=='galpy' (default: 8.)
 
     Returns
     -------

@@ -354,7 +354,7 @@ def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False, x_l
     y_sig = []
     x_bin = []
 
-    for i in range(0, nbin):
+    for i in range(0, len(x_lower)):
         indx = (x >= x_lower[i]) * (x < x_upper[i])
 
         if True in indx:

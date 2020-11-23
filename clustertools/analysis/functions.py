@@ -55,6 +55,7 @@ def find_centre(
     nsphere=100,
     density=True,
     rmin=0.1,
+    rmax=None,
     nmax=100,
     ro=8.0,
     vo=220.0,
@@ -82,6 +83,8 @@ def find_centre(
         use Yohai Meiron's centre of density calculator instead (default: True)
     rmin : float
         minimum radius to start looking for stars
+    rmax : float
+        maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
     nmax : int
         maximum number of iterations to find centre
     ro,vo - For converting to and from galpy units (Default: 8., 220.)
@@ -111,6 +114,7 @@ def find_centre(
             vzstart=vzstart,
             indx=indx,
             rmin=rmin,
+            rmax=rmax,
             nmax=nmax,
         )
     else:
@@ -157,6 +161,7 @@ def find_centre_of_density(
     vzstart=0.0,
     indx=None,
     rmin=0.1,
+    rmax=None,
     nmax=100,
 ):
     """Find cluster's centre of density
@@ -176,6 +181,8 @@ def find_centre_of_density(
         subset of stars to perform centre of density calculation on (default: None)
     rmin : float
         minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
+    rmax : float
+        maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
     nmax : float
         maximum number of iterations (default:100)
 
@@ -200,7 +207,11 @@ def find_centre_of_density(
     vz = cluster.vz[indx] - vzstart
 
     r = np.sqrt(x ** 2.0 + y ** 2.0 + z ** 2.0)
-    rlim = np.amax(r)
+
+    if rmax is None:
+        rlim = np.amax(r)
+    else:
+        rlim=rmax
 
     xdc, ydc, zdc = xstart, ystart, zstart
     vxdc, vydc, vzdc = vxstart, vystart, vzstart

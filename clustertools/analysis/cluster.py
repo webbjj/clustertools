@@ -1010,7 +1010,7 @@ class StarCluster(object):
         return self.rh10pro
 
     """
-    
+
     def _analysis_check(self,sortstars=True,projected=False):
         if self.units!=self.analyze_units or self.analyze_units!=self.units:
             self.analyze(sortstars=sortstars,projected=projected)
@@ -1116,26 +1116,44 @@ class StarCluster(object):
         nsphere=100,
         density=True,
         rmin=0.1,
+        rmax=None,
         nmax=100,
         ro=8.0,
         vo=220.0,
     ):
 
-        self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre(self,xstart=xstart,
+        xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             nsigma=nsigma,nsphere=nsphere,density=density,
-            rmin=rmin,nmax=nmax,ro=ro,vo=vo)
+            rmin=rmin,rmax=rmax,nmax=nmax,ro=ro,vo=vo)
 
-        if self.origin == "galaxy" or self.origin=='sky':
-            self.xgc, self.ygc, self.zgc = self.xc, self.yc, self.zc
-            self.vxgc, self.vygc, self.vzgc = self.vxc, self.vyc, self.vzc
+        if self.origin=='cluster':
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
 
-            self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-            self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0      
-
-            return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-        else:
             return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+
+        elif self.origin == "galaxy" or self.origin=='sky':
+
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.):
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+     
+            else:
+                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+
+
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+        else:
+            print('No Cluster Variables Set')
+            return xc,yc,zc,vxc,vyc,vzc
 
     def find_centre_of_density(
         self,
@@ -1147,20 +1165,73 @@ class StarCluster(object):
         vzstart=0.0,
         indx=None,
         rmin=0.1,
+        rmax=None,
         nmax=100,
         ro=8.0,
         vo=220.0,
     ):
-        self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre_of_density(self,xstart=xstart,
+        xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-            rmin=rmin,nmax=nmax,ro=ro,vo=vo)
+            rmin=rmin,rmax=rma,nmax=nmax,ro=ro,vo=vo)
 
-        return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+        if self.origin=='cluster':
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+
+            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+
+        elif self.origin == "galaxy" or self.origin=='sky':
+
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.):
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+     
+            else:
+                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+
+
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+        else:
+            print('No Cluster Variables Set')
+            return xc,yc,zc,vxc,vyc,vzc
 
     def find_centre_of_mass(self):
-        self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc=find_centre_of_mass(self)
+        xc,yc,zc,vxc,vyc,vzc=find_centre_of_mass(self)
 
-        return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+        if self.origin=='cluster':
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+
+            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+
+        elif self.origin == "galaxy" or self.origin=='sky':
+
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.):
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+     
+            else:
+                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+
+
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+        else:
+            print('No Cluster Variables Set')
+            return xc,yc,zc,vxc,vyc,vzc
 
     def relaxation_time(self, rad=None, coulomb=0.4, projected=None,method='spitzer'):
 

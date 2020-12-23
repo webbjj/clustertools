@@ -286,6 +286,8 @@ def test_sortstars():
 
 def test_subcluster():
 	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster.to_radec()
+	cluster.to_cluster(sortstars=True)
 	cluster.find_centre()
 	cluster.reset_nbody_scale()
 
@@ -317,7 +319,6 @@ def test_subcluster():
 	assert subcluster.ntot == cluster.ntot/2
 	assert np.amin(subcluster.r) == np.amin(cluster.r)
 	assert subcluster.r[subcluster.rorder[0]] == cluster.r[cluster.rorder[0]]
-	assert subcluster.rpro[subcluster.rproorder[0]] == cluster.rpro[cluster.rproorder[0]]
 
 	kin=np.random.rand(cluster.ntot)
 	pot=np.random.rand(cluster.ntot)
@@ -370,6 +371,7 @@ def test_subcluster():
 	print(np.sum(subcluster.m),subcluster.mtot,np.sum(cluster.m[cluster.r>=cluster.rm]))
 
 	assert subcluster.zmbar == np.sum(subcluster.m)
+
 	assert subcluster.rbar != cluster.rbar
 	assert subcluster.vbar != cluster.vbar
 	assert subcluster.tbar != cluster.tbar
@@ -381,6 +383,41 @@ def test_subcluster():
 	assert subcluster.vyc != cluster.vyc
 	assert subcluster.vzc != cluster.vzc
 
-	# test ra_dec, parameters in add_nbody6 with non-default
-	#test add_sse, add_bse, add_energies, analyze
+	#Test radec are properly transferred
+	indx=cluster.r < cluster.rm
+	subcluster=ctools.sub_cluster(cluster,indx=indx)
+
+	np.testing.assert_array_equal(subcluster.ra,cluster.ra[indx])
+	np.testing.assert_array_equal(subcluster.dec,cluster.dec[indx])
+	np.testing.assert_array_equal(subcluster.dist,cluster.dist[indx])
+	np.testing.assert_array_equal(subcluster.pmra,cluster.pmra[indx])
+	np.testing.assert_array_equal(subcluster.pmdec,cluster.pmdec[indx])
+	np.testing.assert_array_equal(subcluster.vlos,cluster.vlos[indx])
+
+	assert subcluster.ra_gc==cluster.ra_gc
+	assert subcluster.dec_gc==cluster.dec_gc
+	assert subcluster.dist_gc==cluster.dist_gc
+	assert subcluster.pmra_gc==cluster.pmra_gc
+	assert subcluster.pmdec_gc==cluster.pmdec_gc
+	assert subcluster.vlos_gc==cluster.vlos_gc
+
+	cluster.add_nbody6(nc=100,rc=cluster.r10,rbar=2.,rtide=100.,xc=cluster.xc, yc=cluster.yc,zc=cluster.zc,zmbar=cluster.mtot,vbar=5.,rscale=2.,ns=cluster.ntot,nb=2,np=1.)
+	subcluster=ctools.sub_cluster(cluster,indx=indx)
+
+	assert subcluster.nc==cluster.nc
+	assert subcluster.rc==cluster.rc
+	assert subcluster.rbar==cluster.rbar
+	assert subcluster.rtide==cluster.rtide
+	assert subcluster.xc==cluster.xc
+	assert subcluster.yc==cluster.yc
+	assert subcluster.zc==cluster.zc
+	assert subcluster.zmbar==cluster.zmbar
+	assert subcluster.vbar==cluster.vbar
+	assert subcluster.rscale==cluster.rscale
+	assert subcluster.ns==cluster.ns
+	assert subcluster.nb==cluster.nb
+	assert subcluster.np==cluster.np
+
+	# test parameters in add_nbody6 with non-default
+	#test add_sse, add_bse, analyze
 

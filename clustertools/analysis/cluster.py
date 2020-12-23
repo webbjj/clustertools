@@ -630,6 +630,9 @@ class StarCluster(object):
         if ep is not None:
             self.ep = np.array(ep)
             self.ospin = np.array(ospin)
+        else:
+            self.ep = ep
+            self.ospin = ospin
 
     def add_bse(
         self,
@@ -1740,10 +1743,15 @@ def sub_cluster(
 
         subcluster.kw = cluster.kw[indx]
 
-        subcluster.zmbar = cluster.zmbar
-        subcluster.rbar = cluster.rbar
-        subcluster.vbar = cluster.vbar
-        subcluster.tbar = cluster.tbar
+        subcluster.add_nbody6(cluster.nc,cluster.rc,cluster.rbar,
+            cluster.rtide,cluster.xc,cluster.yc,cluster.zc,
+            cluster.zmbar,cluster.vbar,cluster.rscale,
+            cluster.ns,cluster.nb,cluster.np)
+
+        #subcluster.zmbar = cluster.zmbar
+        #subcluster.rbar = cluster.rbar
+        #subcluster.vbar = cluster.vbar
+        #subcluster.tbar = cluster.tbar
         subcluster.projected = cluster.projected
         subcluster.centre_method = cluster.centre_method
 

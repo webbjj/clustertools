@@ -350,8 +350,9 @@ def advance_cluster(
         if os.path.exists(wdir):
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
-                ctype=cluster.ctype, ofile=ofile, wdir=wdir, **advance_kwargs
+                ctype=cluster.ctype,units=cluster.units,origin=cluster.origin, ofile=ofile, orbit=orbit, filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
             )
+
 
     if cluster.ntot != 0.0:
 
@@ -416,6 +417,8 @@ def _get_advanced_kwargs(cluster, **kwargs):
     analyze = kwargs.get("analyze", True)
     sortstars = kwargs.get("sortstars", True)
 
+    otime = kwargs.get("otime", False)
+
     return {
         "nsnap": nsnap,
         "delimiter": delimiter,
@@ -453,6 +456,8 @@ def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
         if nsnap is provided, read line # nsnap from the orbit file
     ounits : str
         if units are not the same as StarCluster units, provide them and they will be converted
+    otime : bool
+        use time in orbit file to set tphys (default:False)
 
     Same as load_cluster
 
@@ -462,6 +467,8 @@ def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
     """
     nsnap = int(kwargs.get("nsnap", cluster.nsnap))
     ounits = kwargs.get("ounits", None)
+    otime = kwargs.get("otime", False)
+
 
     # Read in orbital information from orbit
     if nsnap != 0 and not advance:
@@ -479,7 +486,9 @@ def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
     vygc = float(data[5])
     vzgc = float(data[6])
 
-    if cluster.tphys == 0.0:
+    print(cluster.tphys,otime)
+
+    if cluster.tphys == 0.0 or otime:
         cluster.tphys = tphys
 
     cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc, ounits)

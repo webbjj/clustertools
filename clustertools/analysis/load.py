@@ -350,7 +350,7 @@ def advance_cluster(
         if os.path.exists(wdir):
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
-                ctype=cluster.ctype,units=cluster.units,origin=cluster.origin, ofile=ofile, orbit=orbit, filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
+                ctype=cluster.ctype,units=cluster.units,origin=cluster.origin, orbit=orbit, filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
             )
 
 

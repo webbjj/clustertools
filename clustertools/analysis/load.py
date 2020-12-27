@@ -294,9 +294,9 @@ def advance_cluster(
     if load_function is not None:
         ctype='custom'
         if filename is not None:
-            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**advance_kwargs)
         else:
-            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**kwargs)
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**advance_kwargs)
 
 
     elif cluster.ctype == "nbody6":
@@ -331,7 +331,7 @@ def advance_cluster(
             **advance_kwargs
         )
     else:
-        cluster = StarCuster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init)
+        cluster = StarCuster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs)
 
     # Check for restart
     if cluster.ntot == 0.0:

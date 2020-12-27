@@ -344,13 +344,15 @@ def advance_cluster(
 
         try:
             ofilename = ofile.name
+            ofile=None
         except:
             ofile = None
+            ofilename = None
 
         if os.path.exists(wdir):
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
-                ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit, ofilename=ofilename,filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
+                ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs
             )
 
 

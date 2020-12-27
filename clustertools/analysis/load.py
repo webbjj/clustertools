@@ -350,7 +350,7 @@ def advance_cluster(
         if os.path.exists(wdir):
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
-                ctype=cluster.ctype,units=cluster.units,origin=cluster.origin, orbit=orbit, filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
+                ctype=cluster.ctype,units=cluster.units,origin=cluster.origin, orbit=orbit, ofilename=wdir+ofilename,filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
             )
 
 
@@ -358,7 +358,7 @@ def advance_cluster(
 
         # Add galpy orbit if given
         if orbit != None:
-            cluster.orbit - orbit
+            cluster.orbit = orbit
             if cluster.units == "pckms" or cluster.units == "kpckms":
                 t = (cluster.tphys / 1000.0) / bovy_conversion.time_in_Gyr(
                     ro=8.0, vo=220.0

@@ -830,7 +830,12 @@ def _get_cluster(gcname, source="default", mbar=0.3, params=False):
         gcname in hname or gcname in hname2
     ):
         cluster = _get_harris_cluster(hdata, gcname, mbar)
-
+    else:
+        print('No match: ',source,gcname, gcname in dname, gcname in hname, gcname in hname2)
+        print(dname)
+        print(hname)
+        print(hname2)
+        
     return cluster
 
 def _get_deBoer_cluster(data, gcname, mbar=0.4):

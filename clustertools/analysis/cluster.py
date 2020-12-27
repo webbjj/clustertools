@@ -109,6 +109,8 @@ class StarCluster(object):
         # Units and origin
         self.units = units
         self.origin = origin
+        self.units_init=units
+        self.origin_init=origin
 
         # Cluster Simulation Type
         self.ctype = ctype
@@ -1748,10 +1750,6 @@ def sub_cluster(
             cluster.zmbar,cluster.vbar,cluster.rscale,
             cluster.ns,cluster.nb,cluster.np)
 
-        #subcluster.zmbar = cluster.zmbar
-        #subcluster.rbar = cluster.rbar
-        #subcluster.vbar = cluster.vbar
-        #subcluster.tbar = cluster.tbar
         subcluster.projected = cluster.projected
         subcluster.centre_method = cluster.centre_method
 

@@ -294,9 +294,9 @@ def advance_cluster(
     if load_function is not None:
         ctype='custom'
         if filename is not None:
-            cluster=load_function(ctype=ctype,units=cluster.units,origin=cluster.origin,ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
         else:
-            cluster=load_function(ctype=ctype,units=cluster.units,origin=cluster.origin,ofile=ofile,orbit=orbit,advance=True,**kwargs)
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**kwargs)
 
 
     elif cluster.ctype == "nbody6":
@@ -324,14 +324,14 @@ def advance_cluster(
             filename=filename,
             col_names=col_names,
             col_nums=col_nums,
-            units=cluster.units,
-            origin=cluster.origin,
+            units=cluster.units_init,
+            origin=cluster.origin_init,
             ofile=ofile,
             advance=True,
             **advance_kwargs
         )
     else:
-        cluster = StarCuster(ctype=cluster.ctype)
+        cluster = StarCuster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init)
 
     # Check for restart
     if cluster.ntot == 0.0:
@@ -350,7 +350,7 @@ def advance_cluster(
         if os.path.exists(wdir):
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
-                ctype=cluster.ctype,units=cluster.units,origin=cluster.origin, orbit=orbit, ofilename=wdir+ofilename,filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
+                ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init orbit=orbit, ofilename=ofilename,filename=filename,load_function=load_function,wdir=wdir, **advance_kwargs
             )
 
 

@@ -294,9 +294,9 @@ def advance_cluster(
     if load_function is not None:
         ctype='custom'
         if filename is not None:
-            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**kwargs)
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**advance_kwargs,**kwargs)
         else:
-            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**kwargs)
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**advance_kwargs,**kwargs)
 
 
     elif cluster.ctype == "nbody6":
@@ -405,21 +405,21 @@ def _get_advanced_kwargs(cluster, **kwargs):
     2018 - Written - Webb (UofT)
     """
 
-    nsnap = np.maximum(int(kwargs.get("nsnap", 0)), cluster.nsnap) + 1
-    delimiter = kwargs.get("delimiter", cluster.delimiter)
-    wdir = kwargs.get("wdir", cluster.wdir)
-    nzfill = int(kwargs.get("nzfill", cluster.nzfill))
-    snapbase = kwargs.get("snapbase", cluster.snapbase)
-    snapend = kwargs.get("snapend", cluster.snapend)
-    snapdir = kwargs.get("snapdir", cluster.snapdir)
-    skiprows = kwargs.get("skiprows", cluster.skiprows)
+    nsnap = np.maximum(int(kwargs.pop("nsnap", 0)), cluster.nsnap) + 1
+    delimiter = kwargs.pop("delimiter", cluster.delimiter)
+    wdir = kwargs.pop("wdir", cluster.wdir)
+    nzfill = int(kwargs.pop("nzfill", cluster.nzfill))
+    snapbase = kwargs.pop("snapbase", cluster.snapbase)
+    snapend = kwargs.pop("snapend", cluster.snapend)
+    snapdir = kwargs.pop("snapdir", cluster.snapdir)
+    skiprows = kwargs.pop("skiprows", cluster.skiprows)
 
-    projected = kwargs.get("projected", cluster.projected)
+    projected = kwargs.pop("projected", cluster.projected)
 
-    analyze = kwargs.get("analyze", True)
-    sortstars = kwargs.get("sortstars", True)
+    analyze = kwargs.pop("analyze", True)
+    sortstars = kwargs.pop("sortstars", True)
 
-    otime = kwargs.get("otime", False)
+    otime = kwargs.pop("otime", False)
 
     return {
         "nsnap": nsnap,

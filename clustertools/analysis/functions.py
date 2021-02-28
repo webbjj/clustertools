@@ -285,7 +285,7 @@ def find_centre_of_mass(cluster):
     vyc = np.sum(cluster.m * cluster.vy) / np.sum(cluster.m)
     vzc = np.sum(cluster.m * cluster.vz) / np.sum(cluster.m)
 
-    return xdc, ydc, zdc,vxdc, vydc, vzdc
+    return xc, yc, zc,vxc, vyc, vzc
 
 
 def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spitzer'):
@@ -593,6 +593,7 @@ def _potential_energy(cluster):
     for i in range(len(cluster) - 1):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
+            if r==0: print(i,j,r)
             m2 = cluster[i, 3] * cluster[j, 3]
             pot[i] += -m2 / r
             pot[j] += -m2 / r

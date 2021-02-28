@@ -1770,7 +1770,10 @@ def sub_cluster(
                     )
 
         if len(cluster.id2) > 0:
-            bindx = np.in1d(cluster.id1, cluster.id[indx])
+            bindx1 = np.in1d(cluster.id1, cluster.id[indx])
+            bindx2 = np.in1d(cluster.id2, cluster.id[indx])
+            bindx=np.logical_or(bindx1,bindx2)
+
 
             if cluster.ep1 is not None and cluster.ospin1 is not None:
 

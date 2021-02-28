@@ -410,7 +410,7 @@ def test_subcluster():
 	assert subcluster.rtide==cluster.rtide
 	assert subcluster.xc==cluster.xc
 	assert subcluster.yc==cluster.yc
-	assert subcluster.zc==cluster.zc
+	assert subcluster.zc==cluster. zc
 	assert subcluster.zmbar==cluster.zmbar
 	assert subcluster.vbar==cluster.vbar
 	assert subcluster.rscale==cluster.rscale
@@ -418,6 +418,72 @@ def test_subcluster():
 	assert subcluster.nb==cluster.nb
 	assert subcluster.np==cluster.np
 
-	# test parameters in add_nbody6 with non-default
-	#test add_sse, add_bse, analyze
+	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster.to_cluster(sortstars=True)
+
+	kw=np.random.randint(0,10,cluster.ntot)
+	logl=np.random.rand(cluster.ntot)
+	logr=np.random.rand(cluster.ntot)
+	ep=np.random.rand(cluster.ntot)
+	ospin=np.random.rand(cluster.ntot)
+
+	cluster.add_sse(kw,logl,logr,ep,ospin)
+	btot=100
+	#Manually set ids
+	id1=2*np.linspace(1,btot,btot,dtype=int)-1
+	id2=2*np.linspace(1,btot,btot,dtype=int)
+
+	cluster.id=np.append(id1,np.linspace(2*btot+1,len(kw),len(kw)-btot,dtype=int))
+
+	kw1=np.random.randint(0,10,btot)
+	kw2=np.random.randint(0,10,btot)
+	kcm=np.random.randint(0,10,btot)
+	ecc=np.random.rand(btot)
+	pb=np.random.rand(btot)
+	semi=np.random.rand(btot)
+	m1=np.random.rand(btot)
+	m2=np.random.rand(btot)
+	logl1=np.random.rand(btot)
+	logl2=np.random.rand(btot)
+	logr1=np.random.rand(btot)
+	logr2=np.random.rand(btot)
+	ep1=np.random.rand(btot)
+	ep2=np.random.rand(btot)
+	ospin1=np.random.rand(btot)
+	ospin2=np.random.rand(btot)
+
+	cluster.add_bse(id1,id2,kw1,kw2,kcm,ecc,pb,semi,m1,m2,logl1,logl2,
+		logr1,logr2,ep1,ep2,ospin1,ospin2)
+
+	indx=cluster.r<=cluster.rm
+	bindx=cluster.r[0:btot] <=cluster.rm 
+
+	subcluster=ctools.sub_cluster(cluster,rmax=cluster.rm)
+
+	print(np.sum(indx),np.sum(bindx),subcluster.ntot,len(subcluster.id1))
+
+	np.testing.assert_array_equal(subcluster.kw,cluster.kw[indx])
+	np.testing.assert_array_equal(subcluster.logl,cluster.logl[indx])
+	np.testing.assert_array_equal(subcluster.logr,cluster.logr[indx])
+	np.testing.assert_array_equal(subcluster.ep,cluster.ep[indx])
+	np.testing.assert_array_equal(subcluster.ospin,cluster.ospin[indx])
+	np.testing.assert_array_equal(subcluster.id1,cluster.id1[bindx])
+	np.testing.assert_array_equal(subcluster.id2,cluster.id2[bindx])
+	np.testing.assert_array_equal(subcluster.kw1,cluster.kw1[bindx])
+	np.testing.assert_array_equal(subcluster.kw2,cluster.kw2[bindx])
+	np.testing.assert_array_equal(subcluster.kcm,cluster.kcm[bindx])
+	np.testing.assert_array_equal(subcluster.ecc,cluster.ecc[bindx])
+	np.testing.assert_array_equal(subcluster.pb,cluster.pb[bindx])
+	np.testing.assert_array_equal(subcluster.semi,cluster.semi[bindx])
+	np.testing.assert_array_equal(subcluster.m1,cluster.m1[bindx])
+	np.testing.assert_array_equal(subcluster.m2,cluster.m2[bindx])
+	np.testing.assert_array_equal(subcluster.logl1,cluster.logl1[bindx])
+	np.testing.assert_array_equal(subcluster.logl2,cluster.logl2[bindx])
+	np.testing.assert_array_equal(subcluster.logr1,cluster.logr1[bindx])
+	np.testing.assert_array_equal(subcluster.logr2,cluster.logr2[bindx])
+	np.testing.assert_array_equal(subcluster.ep1,cluster.ep1[bindx])
+	np.testing.assert_array_equal(subcluster.ep2,cluster.ep2[bindx])
+	np.testing.assert_array_equal(subcluster.ospin1,cluster.ospin1[bindx])
+	np.testing.assert_array_equal(subcluster.ospin2,cluster.ospin2[bindx])
+
 

@@ -554,13 +554,13 @@ def _get_gyrfalcon(
 
     for j in range(0, skiprows):
         data = filein.readline().split()
-        if "#" not in data:
-            over_head = True
-            print("OVER HEAD")
-            break
         if len(data) == 0:
             print("END OF FILE")
             return StarCluster(0.0,ctype="gyrfalcon",**kwargs)
+        elif "#" not in data:
+            over_head = True
+            print("OVER HEAD")
+            break
         if any("Ntot" in dat for dat in data):
             sntot = data[2]
             ntot = int(sntot[:-1])

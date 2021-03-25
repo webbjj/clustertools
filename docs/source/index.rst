@@ -52,9 +52,9 @@ If you use ``clustertools`` in a publiclication, please cite the following digit
 
 and link to ``https://github.com/webbjj/clustertools``. 
 
-If you perform any analysis related to a cluster's orbit and the external tidal field, please cite ``galpy`` (Bovy 2015). 
+If you perform any analysis related to a cluster's orbit and the external tidal field, please cite ``galpy`` (Bovy 2015).
 
-If you use the ``setup_cluster`` command, please cite ``limepy`` (Gieles & Zocchi 2015) unless ``ctype='galpy'``, as ``setup_cluster`` uses ``limepy`` to initialize a ``StarCluster`` from a lowered isothermal distribution function. If you use ``setup_cluster`` to initialize a specific Galactic globular cluster, please cite either de Boer et al. (2019) or Harris (1999, 2010 Edition) depending on the cluster and your choice for the keyword argument ``source``.
+If you use the ``setup_cluster`` command, please cite ``limepy`` (Gieles & Zocchi 2015) unless ``ctype='galpy'``, as ``setup_cluster`` uses ``limepy`` to initialize a ``StarCluster`` from a lowered isothermal distribution function. If you use ``setup_cluster`` to initialize a specific Galactic globular cluster, please cite either de Boer et al. (2019) or Harris (1999, 2010 Edition) depending on the cluster and your choice for the keyword argument ``source``. If you make use of the cluster's orbit, please cite Vasiliev (2019) as orbital properties are taken from that paper.
 
 Planned Future Additions
 ----------------------------------

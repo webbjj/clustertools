@@ -114,11 +114,11 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
         else:
             source = kwargs.pop("source", "default")
             mbar = kwargs.pop("mbar", 0.4)
-            cluster = _get_cluster(ctype, source, mbar)
+            cluster = _get_cluster(ctype, source, mbar, **kwargs)
     else:
         source = kwargs.pop("source", "default")
         mbar = kwargs.pop("mbar", 0.4)
-        cluster = _get_cluster(ctype, source, mbar)
+        cluster = _get_cluster(ctype, source, mbar, **kwargs)
 
     cluster.ctype=ctype
 
@@ -141,7 +141,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     return cluster
 
 
-def _get_limepy(g=1, **kwargs):
+def _get_limepy(g=1,**kwargs):
     """Get an Nbody realization of a LIMEPY model cluster
 
     Parameters
@@ -196,10 +196,13 @@ def _get_limepy(g=1, **kwargs):
             lmodel = limepy(phi0, g, M=M, ro=1.0, project=project)
     else:
         units = "nbody"
+        M=1.
         lmodel = limepy(phi0, g, G=1, M=1, rv=1, project=project)
 
-    N = int(kwargs.get("N", 1000))
+    mbar = kwargs.get("mbar", 0.4)
+    N = int(kwargs.get("N", M/mbar))
 
+    print('N = ',N)
     ldata = sample(lmodel, N=N)
 
     cluster = StarCluster(units=units, origin="cluster")
@@ -277,9 +280,11 @@ def _get_spes(**kwargs):
             smodel = spes(phi0, B=B, eta=eta, fpe=fpe, M=M, ro=1.0, project=project)
     else:
         units = "nbody"
+        M=1
         smodel = spes(phi0, B=B, eta=eta, fpe=fpe, G=1, M=1, rv=1, project=project)
 
-    N = int(kwargs.get("N", 1000))
+    mbar = kwargs.get("mbar", 0.4)
+    N = int(kwargs.get("N", M/mbar))
 
     sdata = sample(smodel, N=N)
 
@@ -768,7 +773,7 @@ def w0_to_c(w0):
     return c_to_w0(w0, invert=True)
 
 
-def _get_cluster(gcname, source="default", mbar=0.3, params=False):
+def _get_cluster(gcname, source="default", mbar=0.4, params=False, **kwargs):
     """Generate a StarCluster based on a Galactic Globular Cluster
 
     By default, the functio looks for the best LIMEPY model fit to the cluster from de Boer et al. 2019. Since
@@ -825,11 +830,11 @@ def _get_cluster(gcname, source="default", mbar=0.3, params=False):
     if (
         source == "default" or "deboer" in source or "deBoer" in source
     ) and gcname in dname:
-        cluster = _get_deBoer_cluster(ddata, gcname, mbar)
+        cluster = _get_deBoer_cluster(ddata, gcname, mbar, **kwargs)
     elif (source == "default" or "harris" in source or "Harris" in source) and (
         gcname in hname or gcname in hname2
     ):
-        cluster = _get_harris_cluster(hdata, gcname, mbar)
+        cluster = _get_harris_cluster(hdata, gcname, mbar, **kwargs)
     else:
         print('No match: ',source,gcname, gcname in dname, gcname in hname, gcname in hname2)
         print(dname)
@@ -838,7 +843,7 @@ def _get_cluster(gcname, source="default", mbar=0.3, params=False):
         
     return cluster
 
-def _get_deBoer_cluster(data, gcname, mbar=0.4):
+def _get_deBoer_cluster(data, gcname, mbar=0.4, **kwargs):
     """Generate a StarCluster instance based on a measurements of Galactic Globular Clusters by de Boer et al. 2019
        --> Cluster is also assigned an orbit based on Vasiliev 2019
 
@@ -877,7 +882,7 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4):
         rt_pe = data[i_d, 15].astype(float)
         M_pe = data[i_d, 17].astype(float)
         fpe = 10.0 ** data[i_d, 19].astype(float)
-        N = M_pe / mbar
+        N = int(kwargs.get("N", M_pe / mbar))
         cluster = _get_spes(
             phi0=W_pe, B=B_pe, eta=eta_pe, fpe=fpe, M=M_pe, rt=rt_pe, N=N
         )
@@ -909,7 +914,7 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4):
     return cluster
 
 
-def _get_harris_cluster(data, gcname, mbar=0.4):
+def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
     """Generate a StarCluster instance based on the Harris 1996 (2010 Edition) catalogue of Galactic Globular Clusters 
        --> Cluster is also assigned an orbit based on Vasiliev 2019
 
@@ -944,7 +949,8 @@ def _get_harris_cluster(data, gcname, mbar=0.4):
     rl = data[i_d, 5].astype(float)
     c = np.log10(rl / rc)
     w0 = c_to_w0(c)
-    N = mgc / mbar
+    N = int(kwargs.get("N", mgc / mbar))
+
     cluster = _get_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
     cluster.orbit = _get_cluster_orbit(gcname)
 

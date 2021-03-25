@@ -334,9 +334,9 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
         vel=cluster.v
 
     if projected:
-        rindx=cluster.rpro < rad
+        rindx=cluster.rpro <= rad
     else:
-        rindx=cluster.r < rad
+        rindx=cluster.r <= rad
         
     ntot=np.sum(rindx)
     mbar=np.mean(cluster.m[rindx])
@@ -448,7 +448,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     cluster.to_pckms()
     grav=_get_grav(cluster)
 
-    lnlambda=np.log(0.4*cluster.ntot)
+    lnlambda=np.log(coulomb*cluster.ntot)
     mtot=np.sum(cluster.m)
     mbar=np.mean(cluster.m)
     if projected:
@@ -692,17 +692,19 @@ def rlagrange(cluster, nlagrange=10, projected=False):
 
     if projected:
         rorder = cluster.rproorder
+        r=cluster.rpro
     else:
         rorder = cluster.rorder
+        r=cluster.r
 
     msum = np.cumsum(cluster.m[rorder])
 
     for i in range(1, nlagrange):
         indx = msum >= np.sum(cluster.m) * float(i) / float(nlagrange)
-        rn.append(cluster.r[rorder[indx][0]])
+        rn.append(r[rorder[indx][0]])
 
     while len(rn) != nlagrange:
-        rn.append(np.max(cluster.r))
+        rn.append(np.max(r))
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 

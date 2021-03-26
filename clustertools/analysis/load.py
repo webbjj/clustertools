@@ -297,7 +297,8 @@ def advance_cluster(
     if load_function is not None:
         ctype='custom'
         if filename is not None:
-vi         else:
+            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**advance_kwargs,**kwargs)
+        else:
             cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**advance_kwargs,**kwargs)
 
 

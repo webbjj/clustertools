@@ -192,6 +192,9 @@ def load_cluster(
         print("NO CTYPE GIVEN")
         return 0
 
+    if ofile is not None:
+        cluster.ofilename=ofile.name.split('/')[-1]
+
     # Add galpy orbit if given
     if orbit is not None:
         cluster.orbit = orbit
@@ -294,8 +297,7 @@ def advance_cluster(
     if load_function is not None:
         ctype='custom'
         if filename is not None:
-            cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,filename=filename,advance=True,**advance_kwargs,**kwargs)
-        else:
+vi         else:
             cluster=load_function(ctype=ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,orbit=orbit,advance=True,**advance_kwargs,**kwargs)
 
 
@@ -343,7 +345,7 @@ def advance_cluster(
             wdir = "./cont/"
 
         try:
-            ofilename = ofile.name
+            ofilename = ofile.name.split('/')[-1]
             ofile=None
         except:
             ofile = None

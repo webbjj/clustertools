@@ -1709,7 +1709,6 @@ def rtidal(
             ylabel=r"$y %s$" % yunits,
             title="Time = %f" % cluster.tphys,
             log=False,
-            overplot=False,
             filename=None,
             **kwargs,
         )

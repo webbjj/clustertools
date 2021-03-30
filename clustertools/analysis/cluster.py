@@ -259,6 +259,9 @@ class StarCluster(object):
         self.rn = None
         self.r10 = None
         self.rm = None
+        self.rmpro = None
+        self.rh = None
+        self.rhpro = None
         self.rl = None
         self.rt = None
         self.rv = None

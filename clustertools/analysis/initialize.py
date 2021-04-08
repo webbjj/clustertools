@@ -189,6 +189,9 @@ def _get_limepy(g=1,**kwargs):
         elif "rh" in kwargs:
             rh = float(kwargs.get("rh"))
             lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
+        elif "rm" in kwargs:
+            rh = float(kwargs.get("rm"))
+            lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
         elif "ro" in kwargs:
             ro = float(kwargs.get("ro"))
             lmodel = limepy(phi0, g, M=M, ro=ro, project=project)

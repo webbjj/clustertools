@@ -104,7 +104,10 @@ def load_cluster(
         see _get_astropy_table 
     verbose : bool
         print additional information to screen while loading (default : False)
-
+    give : str
+        set what parameters are read in from gyrfalcon (default: 'mxv')
+        Currently only accepts 'mxvpqael' as an alternative.
+        
     History
     _______
     2018 - Written - Webb (UofT)
@@ -517,6 +520,13 @@ def _get_gyrfalcon(
     advance : bool
         is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
 
+    kwargs
+    ------
+
+    give : str
+        set what parameters are read in from gyrfalcon (default: 'mxv')
+        Currently only accepts 'mxvpqael' as an alternative.
+
     Returns
     -------
     cluster : class
@@ -541,6 +551,7 @@ def _get_gyrfalcon(
 
     # Default **kwargs
     skiprows = kwargs.pop("skiprows", 13)
+    give = kwargs.get('give','mxv')
 
     i_d = []
     m = []
@@ -550,6 +561,14 @@ def _get_gyrfalcon(
     vx = []
     vy = []
     vz = []
+
+    if give == 'mxvpqael':
+        gyrpot=[]
+        gyrq=[]
+        gyracc=[]
+        gyreps=[]
+        gyrlev=[]
+
 
     over_head = False
     ntot = 0
@@ -598,6 +617,15 @@ def _get_gyrfalcon(
         vy.append(float(data[5]) * vcon)
         vz.append(float(data[6]) * vcon)
 
+
+        if give == 'mxvpqael':
+            gyrpot.append(float(data[7]))
+            gyrq.append(float(data[8]))
+            gyracc.append(float(data[9]))
+            gyreps.append(float(data[10]))
+            gyrlev.append(float(data[11]))
+
+
     if ntot > 0:
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
@@ -614,6 +642,13 @@ def _get_gyrfalcon(
             cluster.find_centre()
             cluster.to_centre(sortstars=sortstars)
             cluster.to_galaxy()
+
+        if give == 'mxvpqael':
+            self.gyrpot=np.array(gyrpot)
+            self.gyrq=np.array(gyrq)
+            self.gyracc=np.array(gyracc)
+            self.gyreps=np.array(gyreps)
+            self.gyrlev=np.array(gyrlev)
 
     return cluster
 

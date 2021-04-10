@@ -86,7 +86,10 @@ class StarCluster(object):
         set to True if this a snapshot that has been advanced to from an initial one? (default: False)
     centre_method: str
         {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in radec (Default: None)
-
+    give : str
+        set what parameters are read in from gyrfalcon (default: 'mxv')
+        Currently only accepts 'mxvpqael' as an alternative.
+        
     History
     -------
     2018 - Written - Webb (UofT)
@@ -134,6 +137,7 @@ class StarCluster(object):
         self.ofile = kwargs.get("ofile", None)
         self.ofilename = kwargs.get("ofilename", None)
         self.orbit = kwargs.get("orbit", None)
+        self.give=kwargs.get('give','mxv')
 
         self.centre_method = kwargs.get("centre_method", None)
 
@@ -278,6 +282,14 @@ class StarCluster(object):
         self.qv = None
         self.alpha = None
         self.eta = None
+
+        #For use with extended gyrfalcon output
+        if self.give == 'mxvpqael':
+            self.gyrpot=np.array([])
+            self.gyrq=np.array([])
+            self.gyracc=np.array([])
+            self.gyreps=np.array([])
+            self.gyrlev=np.array([])
 
     def add_stars(
         self, x, y, z, vx, vy, vz,m=None,id=None, sortstars=False

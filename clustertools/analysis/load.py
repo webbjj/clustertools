@@ -107,7 +107,7 @@ def load_cluster(
     give : str
         set what parameters are read in from gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
-        
+
     History
     _______
     2018 - Written - Webb (UofT)
@@ -568,6 +568,9 @@ def _get_gyrfalcon(
         gyracc=[]
         gyreps=[]
         gyrlev=[]
+    elif give =='mxve':
+        gyreps=[]
+
 
 
     over_head = False
@@ -624,6 +627,9 @@ def _get_gyrfalcon(
             gyracc.append(float(data[9]))
             gyreps.append(float(data[10]))
             gyrlev.append(float(data[11]))
+        elif give== 'mxve':
+            gyreps.append(float(data[7]))
+
 
 
     if ntot > 0:
@@ -644,11 +650,13 @@ def _get_gyrfalcon(
             cluster.to_galaxy()
 
         if give == 'mxvpqael':
-            self.gyrpot=np.array(gyrpot)
-            self.gyrq=np.array(gyrq)
-            self.gyracc=np.array(gyracc)
-            self.gyreps=np.array(gyreps)
-            self.gyrlev=np.array(gyrlev)
+            cluster.gyrpot=np.array(gyrpot)
+            cluster.gyrq=np.array(gyrq)
+            cluster.gyracc=np.array(gyracc)
+            cluster.eps=np.array(gyreps)
+            cluster.gyrlev=np.array(gyrlev)
+        elif give== 'mxve':
+            cluster.eps=np.array(gyreps)
 
     return cluster
 

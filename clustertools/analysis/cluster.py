@@ -89,7 +89,7 @@ class StarCluster(object):
     give : str
         set what parameters are read in from gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
-        
+
     History
     -------
     2018 - Written - Webb (UofT)
@@ -290,6 +290,9 @@ class StarCluster(object):
             self.gyracc=np.array([])
             self.gyreps=np.array([])
             self.gyrlev=np.array([])
+        elif self.give =='mxve':
+            self.gyreps=np.array([])
+
 
     def add_stars(
         self, x, y, z, vx, vy, vz,m=None,id=None, sortstars=False

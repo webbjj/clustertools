@@ -427,6 +427,8 @@ def _get_advanced_kwargs(cluster, **kwargs):
 
     otime = kwargs.pop("otime", False)
 
+    give = kwargs.pop('give','mxv')
+
     return {
         "nsnap": nsnap,
         "delimiter": delimiter,
@@ -439,6 +441,8 @@ def _get_advanced_kwargs(cluster, **kwargs):
         "projected": projected,
         "analyze": analyze,
         "sortstars": sortstars,
+        "otime": otime,
+        "give" : give,
     }  # ,"sfile":sfile,"bfile":bfile}
 
 

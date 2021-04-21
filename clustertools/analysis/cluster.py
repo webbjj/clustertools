@@ -288,10 +288,10 @@ class StarCluster(object):
             self.gyrpot=np.array([])
             self.gyrq=np.array([])
             self.gyracc=np.array([])
-            self.gyreps=np.array([])
+            self.eps=np.array([])
             self.gyrlev=np.array([])
         elif self.give =='mxve':
-            self.gyreps=np.array([])
+            self.eps=np.array([])
 
 
     def add_stars(
@@ -1143,7 +1143,10 @@ class StarCluster(object):
         nmax=100,
         ro=8.0,
         vo=220.0,
+        reset_centre=False
     ):
+        #re-calculate cluster centre after extraction (default:False)
+
 
         xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
@@ -1159,7 +1162,7 @@ class StarCluster(object):
 
         elif self.origin == "galaxy" or self.origin=='sky':
 
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.):
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
                 self.xgc, self.ygc, self.zgc = xc,yc,zc
                 self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
                 self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
@@ -1192,7 +1195,10 @@ class StarCluster(object):
         nmax=100,
         ro=8.0,
         vo=220.0,
+        reset_centre=False
     ):
+        #re-calculate cluster centre after extraction (default:False)
+
         xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             rmin=rmin,rmax=rma,nmax=nmax,ro=ro,vo=vo)
@@ -1206,7 +1212,7 @@ class StarCluster(object):
 
         elif self.origin == "galaxy" or self.origin=='sky':
 
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.):
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
                 self.xgc, self.ygc, self.zgc = xc,yc,zc
                 self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
                 self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
@@ -1225,7 +1231,9 @@ class StarCluster(object):
             print('No Cluster Variables Set')
             return xc,yc,zc,vxc,vyc,vzc
 
-    def find_centre_of_mass(self):
+    def find_centre_of_mass(self,reset_centre=False):
+        #re-calculate cluster centre after extraction (default:False)
+
         xc,yc,zc,vxc,vyc,vzc=find_centre_of_mass(self)
 
         if self.origin=='cluster':
@@ -1237,7 +1245,7 @@ class StarCluster(object):
 
         elif self.origin == "galaxy" or self.origin=='sky':
 
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.):
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
                 self.xgc, self.ygc, self.zgc = xc,yc,zc
                 self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
                 self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
@@ -1838,20 +1846,32 @@ def sub_cluster(
                 cluster.kin[indx], cluster.pot[indx],
             )
 
+        if cluster.give == 'mxvpqael':
+            subcluster.give=cluster.give
+            subcluster.gyrpot=cluster.gyrpot[indx]
+            subcluster.gyrq=cluster.gyrq[indx]
+            subcluster.gyracc=cluster.gyracc[indx]
+            subcluster.eps=cluster.eps[indx]
+            subcluster.gyrlev=cluster.gyrlev[indx]
+        elif cluster.give =='mxve':
+            subcluster.give=cluster.give
+            subcluster.eps=cluster.eps[indx]
+
+
         if reset_centre:
             subcluster.add_orbit(
-                cluster.xgc + cluster.xc,
-                cluster.ygc + cluster.yc,
-                cluster.zgc + cluster.zc,
-                cluster.vxgc + cluster.vxc,
-                cluster.vygc + cluster.vyc,
-                cluster.vzgc + cluster.vzc,
+                cluster.xgc,
+                cluster.ygc,
+                cluster.zgc,
+                cluster.vxgc,
+                cluster.vygc,
+                cluster.vzgc,
             )
-            subcluster.xc, subcluster.yc, subcluster.zc = 0.0, 0.0, 0.0
-            subcluster.vxc, subcluster.vyc, subcluster.vzc = 0.0, 0.0, 0.0
-            subcluster.xc, subcluster.yc, subcluster.zc, subcluster.vxc, subcluster.vyc, subcluster.vzc = subcluster.find_centre(
-                0.0, 0.0, 0.0
-            )
+
+            if cluster.origin=='centre' or cluster.origin=='cluster':
+                subcluster.find_centre(0.0, 0.0, 0.0, reset_centre=reset_centre)
+            else:
+                subcluster.find_centre(reset_centre=reset_centre)
 
         else:
             subcluster.add_orbit(

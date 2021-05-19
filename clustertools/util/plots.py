@@ -9,13 +9,13 @@ __all__ = [
 
 import matplotlib.pyplot as plt
 import numpy as np
-from galpy.util import bovy_plot
+import galpy.util.plot import gplot
 import seaborn as sns
 import os
 from scipy.ndimage import gaussian_filter
 import matplotlib.colors as colors
 
-bovy_plot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
+gplot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
 current_palette = sns.color_palette()
 
 def _scatter(

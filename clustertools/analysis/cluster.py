@@ -10,7 +10,7 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_conversion, bovy_coords
+from galpy.util import conversion, coords
 from textwrap import dedent
 from galpy.potential import MWPotential2014
 from .orbit import *
@@ -448,6 +448,11 @@ class StarCluster(object):
         self.analyze()
 
         self.ntot = nmax
+
+        if m0 is not None:
+            self.m0=m0
+        else:
+            self.m0=np.zeros(self.ntot)
 
     def add_orbit(
         self,
@@ -1589,7 +1594,7 @@ class StarCluster(object):
         self.x,self.y,self.z,self.vx,self.vy,self.vz=orbit_interpolate(self,dt,pot=pot,from_centre=from_centre,
             do_tails=do_tails,rmin=rmin,rmax=rmax,emin=emin,emax=emax,ro=ro,vo=vo)
 
-        tint=dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+        tint=dt / conversion.time_in_Gyr(ro=ro, vo=vo)
 
         self.add_orbit(self.orbit.x(tint),self.orbit.y(tint),self.orbit.z(tint),self.orbit.vx(tint),self.orbit.vy(tint),self.orbit.vz(tint),ounits='kpckms')
 

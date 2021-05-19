@@ -155,6 +155,7 @@ class StarCluster(object):
         self.vy = np.array([])
         self.vz = np.array([])
         self.kw = np.array([])
+        self.m0 = np.array([])
 
         # variables for add_nbody
         self.zmbar = 1.0
@@ -171,14 +172,32 @@ class StarCluster(object):
         self.vyc = 0.0
         self.vzc = 0.0
 
-        # variables for orbital position and kinematics
-        self.xgc = 0.0
-        self.ygc = 0.0
-        self.zgc = 0.0
-        self.vxgc = 0.0
-        self.vygc = 0.0
-        self.vzgc = 0.0
+        # variable for galpy orbit
+        self.orbit = kwargs.get("orbit",None)
+        self.orbits= None
 
+        # variables for orbital position and kinematics
+        if self.orbit is None:
+            self.xgc = 0.0
+            self.ygc = 0.0
+            self.zgc = 0.0
+            self.vxgc = 0.0
+            self.vygc = 0.0
+            self.vzgc = 0.0
+        elif units=='radec':
+            self.xgc = self.orbit.ra()
+            self.ygc = self.orbit.dec()
+            self.zgc = self.orbit.dist()
+            self.vxgc = self.orbit.pmra()
+            self.vygc = self.orbit.pmdec()
+            self.vzgc = self.orbit.vlos()   
+        else:
+            self.xgc = self.orbit.x()
+            self.ygc = self.orbit.y()
+            self.zgc = self.orbit.z()
+            self.vxgc = self.orbit.vx()
+            self.vygc = self.orbit.vy()
+            self.vzgc = self.orbit.vz()
 
         # variable for cluster's on-sky coordinates
         self.ra = np.array([])
@@ -188,16 +207,20 @@ class StarCluster(object):
         self.pmdec = np.array([])
         self.vlos = np.array([])
 
-        self.ra_gc = 0.0
-        self.dec_gc = 0.0
-        self.dist_gc = 0.0
-        self.pmra_gc = 0.0
-        self.pmdec_gc = 0.0
-        self.vlos_gc = 0.0
-
-        # variable for galpy orbit
-        self.orbit = None
-        self.orbits= None
+        if self.orbit is None:
+            self.ra_gc = 0.0
+            self.dec_gc = 0.0
+            self.dist_gc = 0.0
+            self.pmra_gc = 0.0
+            self.pmdec_gc = 0.0
+            self.vlos_gc = 0.0
+        else:
+            self.ra_gc = self.orbit.ra()
+            self.dec_gc = self.orbit.dec()
+            self.dist_gc = self.orbit.dist()
+            self.pmra_gc = self.orbit.pmra()
+            self.pmdec_gc = self.orbit.pmdec()
+            self.vlos_gc = self.orbit.vlos()           
 
         # variables for add_nbody6
         # Number of stars in the core
@@ -295,7 +318,7 @@ class StarCluster(object):
 
 
     def add_stars(
-        self, x, y, z, vx, vy, vz,m=None,id=None, sortstars=False
+        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,sortstars=False
     ):
         """Add stars to StarCluster.
 
@@ -311,6 +334,8 @@ class StarCluster(object):
             stellar mass
         id: int 
             star id
+        m0: float int
+            initial stellar mass
         sortstars: bool
             order stars by radius (default: False)
 
@@ -1610,10 +1635,10 @@ class StarCluster(object):
         return self.tidal_tensor
 
 
-    def tail_path(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
+    def tail_path(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,skypath=False,
         ro=8.0,vo=220.0,plot=False,**kwargs):
 
-        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,ro=ro,vo=vo,plot=plot,**kwargs)
+        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
@@ -1641,7 +1666,7 @@ def sub_cluster(
     projected=False,
     sortstars=True,
     reset_centre=False,
-    reset_nbody_scale=False,
+    reset_nbody=False,
     reset_nbody_mass=False,
     reset_nbody_radii=False,
     reset_rvirial=False,
@@ -1672,7 +1697,7 @@ def sub_cluster(
         order stars by radius (default: True)
     reset_centre : bool
         re-calculate cluster centre after extraction (default:False)
-    reset_nbody_scale : bool
+    reset_nbody : bool
         reset nbody scaling factors (default:False)
     reset_nbody_mass : bool 
         find new nbody scaling mass (default:False)
@@ -1900,7 +1925,7 @@ def sub_cluster(
                 cluster.vlos_gc,
             )
 
-        if reset_nbody_scale:
+        if reset_nbody:
             subcluster.to_pckms()
             subcluster.analyze()
             subcluster.reset_nbody_scale(mass=True,radius=True,rvirial=reset_rvirial,projected=reset_projected,**kwargs)

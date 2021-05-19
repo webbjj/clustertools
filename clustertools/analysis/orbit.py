@@ -432,7 +432,7 @@ def orbital_path(
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
-    sky_path : bool
+    skypath : bool
         return sky coordinates instead of cartesian coordinates (default: False)
     initialize : bool
         Initialize and return Orbit (default: False)

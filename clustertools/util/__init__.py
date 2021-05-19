@@ -13,6 +13,7 @@ cart_to_sphere=coordinates.cart_to_sphere
 cyl_coords=coordinates.cyl_coords
 cart_to_cyl=coordinates.cart_to_cyl
 sky_coords=coordinates.sky_coords
+cart_to_sky=coordinates.cart_to_sky
 
 snapout=output.snapout
 fortout=output.fortout

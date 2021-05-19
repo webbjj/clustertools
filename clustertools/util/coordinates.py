@@ -12,7 +12,8 @@ __all__ = [
     "cart_to_sphere",
     "cyl_coords",
     "cart_to_cyl",
-    "sky_coords"
+    "sky_coords",
+    "cart_to_sky"
 ]
 
 import numpy as np
@@ -164,5 +165,45 @@ def sky_coords(cluster):
     pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
 
     cluster.return_cluster()
+
+    return ra, dec, d0, pmra, pmdec, vr0
+
+def cart_to_sky(x,y,z,vx,vy,vz):
+    """Convert cartesian coordinates to sky coordinates
+
+    Parameters
+    ----------
+    x,y,z,vx,vy,vz : float
+      positions and velocities in cartesian coordinates
+
+    Returns
+    -------
+    ra,dec,d0,pmra,pmdec,vr0 : float
+      on-sky positions and velocities 
+      
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+
+    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
+        x, y, z, Xsun=8.0, Zsun=0.025
+    ).T
+    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
+        vx,
+        vy,
+        vz,
+        Xsun=8.0,
+        Zsun=0.025,
+        vsun=[-11.1, 244.0, 7.25],
+    ).T
+
+    l0, b0, d0 = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
+    ra, dec = bovy_coords.lb_to_radec(l0, b0, degree=True).T
+
+    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
+        vx0, vy0, vz0, l0, b0, d0, degree=True
+    ).T
+    pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
 
     return ra, dec, d0, pmra, pmdec, vr0

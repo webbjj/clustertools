@@ -14,5 +14,5 @@ setuptools.setup(
     license='MIT',
     packages=["clustertools","clustertools/analysis","clustertools/util","clustertools/custom"],
     setup_requires=['numpy>=1.8','scipy'],
-    install_requires=['galpy','seaborn','numba==0.48.0','llvmlite==0.31.0'],
+    install_requires=['galpy','seaborn','numba','llvmlite'],
     )

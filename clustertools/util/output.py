@@ -141,11 +141,50 @@ def snapout(cluster, filename, energies=False, radec=False):
 
     return 0
 
+def sseout(cluster, filename):
+    """Output simple stellar evolution information in clustertools format
+        - clustertools column format is initial mass, kw type, current mass, epoch and ospin
+        masses are in solar masses, epoch and spin are in Nbody6 units
+       
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    filenamw : str
+        name of file to be written to
+
+    Returns
+    -------
+    None
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.to_pckms()
+
+    np.savetxt(
+        filename,
+        np.column_stack(
+            [
+                cluster.m0,
+                cluster.kw,
+                cluster.m,
+                cluster.ep,
+                cluster.ospin,
+            ]
+        ),
+    )
+
+    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
 def fortout(
     cluster,
     filename="fort.10",
-    reset_nbody_scale=False,
+    sse=False,
+    sse_filename='fort.12',
+    reset_nbody=False,
     reset_nbody_mass=True,
     reset_nbody_radii=True,
 ):
@@ -157,7 +196,11 @@ def fortout(
         StarCluster
     filename : str
         name of file to be written to (default: 'fort.10')
-    reset_nbody_scale : bool
+    sse : bool
+        include file containing stellar evolution information
+    sse_filename : str
+        name of stellar evolution file to be written to (default: 'fort.12')
+    reset_nbody : bool
         reset nbody scaling parameters (default: False)
     reset_nbody_mass : bool
         reset nbody mass scaling parameter (default: False)
@@ -176,13 +219,13 @@ def fortout(
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     cluster.to_centre(sortstars=False)
 
-    if reset_nbody_scale:
+    if reset_nbody:
         reset_nbody_scale(cluster, mass=reset_nbody_mass, radii=reset_nbody_radii)
 
     cluster.to_nbody()
 
     np.savetxt(
-        filename,
+        cluster.wdir+filename,
         np.column_stack(
             [
                 cluster.m,
@@ -195,6 +238,22 @@ def fortout(
             ]
         ),
     )
+
+    cluster.to_pckms()
+
+    if sse:
+        np.savetxt(
+            cluster.wdir+sse_filename,
+            np.column_stack(
+                [
+                    cluster.m0,
+                    cluster.kw,
+                    cluster.m,
+                    cluster.ep,
+                    cluster.ospin
+                ]
+            ),
+        )       
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 

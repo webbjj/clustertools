@@ -491,7 +491,7 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
     """
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(sortstars=False)
+        cluster.to_cluster(sortstars=False)
 
     grav=_get_grav(cluster)
 

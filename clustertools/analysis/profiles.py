@@ -386,6 +386,7 @@ def alpha_prof(
     indx=None,
     projected=False,
     normalize=True,
+    aerror=False,
     mcorr=None,
     plot=False,
     **kwargs
@@ -419,6 +420,8 @@ def alpha_prof(
         use projected values and constraints (default:False)
     normalize : bool
         normalize radial bins by cluster's half-mass radius (default: True)
+    aerror : bool
+        return error in alpha calculations (default:True)
     mcorr : bool
         completeness correction for masses (default: None)
     plot : bool 
@@ -466,6 +469,7 @@ def alpha_prof(
 
     lrprofn = []
     aprof = []
+    eaprof= []
 
     if projected:
         r = cluster.rpro
@@ -534,6 +538,7 @@ def alpha_prof(
                     lrprofn.append(np.log(r_mean[i]))
 
             aprof.append(alpha)
+            eaprof.append(ealpha)
 
     if len(lrprofn) > 3:
         (dalpha, ydalpha), V = np.polyfit(lrprofn, aprof, 1, cov=True)
@@ -558,7 +563,7 @@ def alpha_prof(
             lrprofn,
             aprof,
             xlabel=r"$\ln(r/r_m)$",
-            ylabel=xlabel,
+            ylabel=r"$\alpha$",
             overplot=overplot,
             **kwargs
         )
@@ -572,8 +577,8 @@ def alpha_prof(
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
-    if return_error:
-        return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, rbinerror
+    if aerror:
+        return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, eaprof
     else:
         return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha
 

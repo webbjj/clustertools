@@ -18,6 +18,7 @@ import matplotlib.pyplot as plt
 from .orbit import orbital_path, orbital_path_match
 from .operations import *
 from ..util.recipes import binmaker
+from ..util.coordinates import cart_to_sky
 
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 
@@ -79,7 +80,7 @@ def to_tail(cluster):
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
 def tail_path(
-    cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, ro=8.0, vo=220.0,
+    cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, skypath=False, ro=8.0, vo=220.0,
     plot=False,**kwargs,
 ):
     """Calculate tail path +/- dt Gyr around the cluster
@@ -96,6 +97,8 @@ def tail_path(
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    skypath : bool
+        return sky coordinates instead of cartesian coordinates (default: False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
@@ -166,7 +169,11 @@ def tail_path(
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
-    return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
+    if skypath:
+        ratail,dectail,disttail,pmratail,pmdectail,vlostail=cart_to_sky(xtail, ytail, ztail, vxtail, vytail, vztail)
+        return ttail,ratail,dectail,disttail,pmratail,pmdectail,vlostail
+    else:
+        return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
 
 
 def tail_path_match(

@@ -770,7 +770,7 @@ def to_galaxy(cluster, sortstars=True):
     """
     if cluster.units!='galaxy':
         if cluster.units == "radec" and cluster.origin == "sky":
-            cluster.from_radec(sortstars=False)
+            from_radec(cluster)
 
         elif cluster.origin != "galaxy":
             if cluster.origin == "centre":

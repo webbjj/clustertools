@@ -16,6 +16,7 @@ sky_coords=coordinates.sky_coords
 cart_to_sky=coordinates.cart_to_sky
 
 snapout=output.snapout
+ssepout=output.ssepout
 fortout=output.fortout
 gyrout=output.gyrout
 

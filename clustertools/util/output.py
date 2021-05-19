@@ -4,6 +4,8 @@
 __author__ = "Jeremy J Webb"
 __all__ = [
     "snapout",
+    "ssepout",
+
     "fortout",
     "gyrout",
 ]

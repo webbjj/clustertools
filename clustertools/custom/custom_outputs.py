@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_conversion
+from galpy.util import conversion
 
 
 from ..util.coordinates import sky_coords
@@ -91,10 +91,8 @@ def extrct_out(cluster, fileout, projected=False):
     if cluster.rt is not None:
         fileout.write("%f " % cluster.rt)
 
-    try:
+    if cluster.rvmax is not None and cluster.vmax is not None:
         fileout.write("%f %f " % (cluster.rvmax, cluster.vmax))
-    except:
-        pass
 
     fileout.write("\n")
 

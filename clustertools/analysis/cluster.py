@@ -305,6 +305,8 @@ class StarCluster(object):
         self.qv = None
         self.alpha = None
         self.eta = None
+        self.rvmax = None
+        self.vmax = None
 
         #For use with extended gyrfalcon output
         if self.give == 'mxvpqael':
@@ -362,7 +364,7 @@ class StarCluster(object):
             id = np.linspace(0, len(x) - 1, len(x), dtype=int)
 
         self.id = np.append(self.id, np.array(id))
-
+        self.id = self.id.astype(int)
         # Check lengths
 
         length_error=False

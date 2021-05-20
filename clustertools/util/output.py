@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_conversion
+from galpy.util import conversion
 
 
 from .coordinates import sky_coords
@@ -176,7 +176,7 @@ def sseout(cluster, filename):
                 cluster.ep,
                 cluster.ospin,
             ]
-        ),
+        ),fmt=('%f %i %f %f %f')
     )
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
@@ -243,6 +243,8 @@ def fortout(
 
     cluster.to_pckms()
 
+    print('DEBUG: ',cluster.kw,cluster.kw.astype(int))
+
     if sse:
         np.savetxt(
             cluster.wdir+sse_filename,
@@ -254,7 +256,7 @@ def fortout(
                     cluster.ep,
                     cluster.ospin
                 ]
-            ),
+            ),fmt=('%f %i %f %f %f'),
         )       
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
@@ -289,7 +291,7 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
     2019 - Written - Webb (UofT)
 
     """
-    vcon = 220.0 / bovy_conversion.velocity_in_kpcGyr(220.0, 8.0)
+    vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
     mcon = 222288.4543021174
 
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)

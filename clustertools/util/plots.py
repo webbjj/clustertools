@@ -9,7 +9,10 @@ __all__ = [
 
 import matplotlib.pyplot as plt
 import numpy as np
-import galpy.util.plot as gplot
+try:
+    import galpy.util.plot as gplot
+except:
+    import galpy.util.bovy_plot as gplot
 import seaborn as sns
 import os
 from scipy.ndimage import gaussian_filter

@@ -18,7 +18,11 @@ import os
 from scipy.ndimage import gaussian_filter
 import matplotlib.colors as colors
 
-gplot.start_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
+try:
+    gplot.start_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
+except:
+    gplot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
+
 current_palette = sns.color_palette()
 
 def _scatter(

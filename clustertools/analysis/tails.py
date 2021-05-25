@@ -8,7 +8,7 @@ __all__ = [
     "tail_path_match",
 ]
 
-from galpy.util import bovy_conversion,_rotate_to_arbitrary_vector
+from galpy.util import conversion,_rotate_to_arbitrary_vector
 from galpy import potential
 from galpy.potential import MWPotential2014
 
@@ -181,7 +181,7 @@ def tail_path_match(
     dt=0.1,
     nt=100,
     pot=MWPotential2014,
-    tail_path=None,
+    path=None,
     from_centre=False,
     to_path=False,
     do_full=False,
@@ -202,7 +202,7 @@ def tail_path_match(
         number of timesteps
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
-    tail_path : array
+    path : array
         array of (t,x,y,x,vx,vy,vz) corresponding to the tail path. If none path is calculated (default: None)
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
@@ -233,13 +233,14 @@ def tail_path_match(
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
-
-    if tail_path is None:
+ 
+    if path is None:
+        print('DEBUG: ',cluster,dt,nt,pot,from_centre,ro,vo)
         ts, x, y, z, vx, vy, vz = tail_path(
             cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, ro=ro, vo=vo
         )
     else:
-        ts,x,y,z,vx,vy,vz=tail_path
+        ts,x,y,z,vx,vy,vz=path
 
     pindx = np.argmin(np.fabs(ts))
 
@@ -256,7 +257,7 @@ def tail_path_match(
 
     indx = np.argmin(dr, axis=1)
     dpath = np.amin(dr, axis=1)
-    tstar = ts[indx]  # *bovy_conversion.time_in_Gyr(ro=ro,vo=vo)
+    tstar = ts[indx]  # *conversion.time_in_Gyr(ro=ro,vo=vo)
 
     dxo = x[1:] - x[0:-1]
     dyo = y[1:] - y[0:-1]

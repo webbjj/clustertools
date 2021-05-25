@@ -29,7 +29,7 @@ __all__ = [
 
 import numpy as np
 import numba
-from galpy.util import bovy_coords, bovy_conversion
+from galpy.util import coords, conversion
 from galpy import potential
 from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
 from scipy.optimize import curve_fit
@@ -1818,7 +1818,7 @@ def rlimiting(
     # Calculate local density:
     rho_local = potential.evaluateDensities(
         pot, R, z, ro=ro, vo=vo, use_physical=False
-    ) / bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+    ) / conversion.dens_in_msolpc3(ro=ro, vo=vo)
 
     rprof, pprof, nprof = _rho_prof(cluster, nrad=nrad, projected=projected)
 
@@ -1850,12 +1850,12 @@ def rlimiting(
         if cluster.units == "nbody":
             rprof *= ro * 1000.0 / cluster.rbar
             pprof *= (
-                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                conversion.dens_in_msolpc3(ro=ro, vo=vo)
                 * (cluster.rbar ** 3.0)
                 / cluster.zmbar
             )
             rho_local *= (
-                bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                conversion.dens_in_msolpc3(ro=ro, vo=vo)
                 * (cluster.rbar ** 3.0)
                 / cluster.zmbar
             )
@@ -1863,8 +1863,8 @@ def rlimiting(
             yunits = " (NBODY)"
         elif cluster.units == "pckms":
             rprof *= ro * 1000.0
-            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo)
+            pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+            rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
             xunits = " (pc)"
             if projected:
                 yunits = " Msun/pc^2"
@@ -1872,8 +1872,8 @@ def rlimiting(
                 yunits = " Msun/pc^3"
         elif cluster.units == "kpckms":
             rprof *= ro
-            pprof *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-            rho_local *= bovy_conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+            pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+            rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
 
             xunits = " (kpc)"
             if projected:

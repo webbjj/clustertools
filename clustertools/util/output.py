@@ -11,8 +11,10 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import conversion
-
+try:
+    from galpy.util import conversion
+except:
+    import galpy.util.bovy_conversion as conversion
 
 from .coordinates import sky_coords
 from ..analysis.functions import *

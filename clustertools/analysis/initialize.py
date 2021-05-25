@@ -10,7 +10,13 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_conversion,bovy_coords
+
+try:
+    from galpy.util import coords,conversion
+except:
+    import galpy.util.bovy_coords as coords
+    import galpy.util.bovy_conversion as conversion
+
 from galpy import potential
 from galpy.orbit import Orbit
 import os
@@ -125,7 +131,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     # Add galpy orbit if given
     if orbit != None:
         cluster.orbit = orbit
-        t = (cluster.tphys / 1000.0) / bovy_conversion.time_in_Gyr(ro=8.0, vo=220.0)
+        t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=8.0, vo=220.0)
         cluster.add_orbit(
             orbit.x(t),
             orbit.y(t),
@@ -1073,7 +1079,7 @@ def _sample_galpy_potential(pot,n,rmin,rmax,nres=100,ro=8.,vo=220.,coordinates='
         vc= potential.vcirc(pot,rad/ro,phi=0,t=0.,ro=ro,vo=vo,use_physical=False)
         menc=vc**2.*(rad/ro)
 
-    menc*=bovy_conversion.mass_in_msol(ro=ro,vo=vo)       
+    menc*=conversion.mass_in_msol(ro=ro,vo=vo)       
     
     r=np.interp(ran, menc/menc[-1], rad)
     phi=2.0*np.pi*np.random.rand(n)
@@ -1105,8 +1111,8 @@ def _sample_galpy_potential(pot,n,rmin,rmax,nres=100,ro=8.,vo=220.,coordinates='
         vx,vy,vz=vr,vphi,vtheta
         
     elif coordinates=='cylindrical':
-        x,y,z=bovy_coords.rect_to_cyl(x,y,z)
-        vx,vy,vz=bovy_coords.rect_to_cyl_vec(vx,vy,vz,x,y,z,True)
+        x,y,z=coords.rect_to_cyl(x,y,z)
+        vx,vy,vz=coords.rect_to_cyl_vec(vx,vy,vz,x,y,z,True)
     
     return x,y,z,vx,vy,vz
 

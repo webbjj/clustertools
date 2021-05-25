@@ -15,7 +15,14 @@ __all__ = [
 ]
 
 from galpy.orbit import Orbit
-from galpy.util import bovy_coords, bovy_conversion
+
+try:
+    from galpy.util import coords,conversion
+except:
+    import galpy.util.bovy_coords as coords
+    import galpy.util.bovy_conversion as conversion
+
+
 from galpy import potential
 from galpy.potential import MWPotential2014
 from galpy.actionAngle import actionAngleStaeckel
@@ -89,8 +96,8 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
             x, y, z = cluster.xgc, cluster.ygc, cluster.zgc
             vx, vy, vz = cluster.vxgc, cluster.vygc, cluster.vzgc
 
-        R, phi, z = bovy_coords.rect_to_cyl(x, y, z)
-        vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
+        R, phi, z = coords.rect_to_cyl(x, y, z)
+        vR, vT, vz = coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
         o = Orbit(
             [R, vR, vT, z, vz, phi], ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25]
         )
@@ -129,8 +136,8 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0):
     x, y, z = cluster.x, cluster.y, cluster.z
     vx, vy, vz = cluster.vx, cluster.vy, cluster.vz
 
-    R, phi, z = bovy_coords.rect_to_cyl(x, y, z)
-    vR, vT, vz = bovy_coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
+    R, phi, z = coords.rect_to_cyl(x, y, z)
+    vR, vT, vz = coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
 
     vxvv = np.column_stack([R, vR, vT, z, vz, phi])
     os = Orbit(vxvv, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
@@ -174,7 +181,7 @@ def integrate_orbit(
        2018 - Written - Webb (UofT)
     """
     o = initialize_orbit(cluster)
-    ts = np.linspace(0, tfinal / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+    ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
     o.integrate(ts, pot)
 
     if plot:
@@ -216,7 +223,7 @@ def integrate_orbits(
        2018 - Written - Webb (UofT)
     """
     os = initialize_orbits(cluster)
-    ts = np.linspace(0, tfinal / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+    ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
     os.integrate(ts, pot)
 
     if plot:
@@ -321,7 +328,7 @@ def orbit_interpolate(
     if cluster.orbit is None:
         cluster.orbit = initialize_orbit(cluster, from_centre)
 
-    ts = np.linspace(0, dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), 10)
+    ts = np.linspace(0, dt / conversion.time_in_Gyr(ro=ro, vo=vo), 10)
 
     cluster.orbit.integrate(ts, pot)
 
@@ -381,15 +388,15 @@ def orbit_interpolate(
         xt, yt, zt = cluster.x[tindx], cluster.y[tindx], cluster.z[tindx]
         vxt, vyt, vzt = cluster.vx[tindx], cluster.vy[tindx], cluster.vz[tindx]
 
-        Rt, phit, zt = bovy_coords.rect_to_cyl(xt, yt, zt)
-        vRt, vTt, vzt = bovy_coords.rect_to_cyl_vec(vxt, vyt, vzt, xt, yt, zt)
+        Rt, phit, zt = coords.rect_to_cyl(xt, yt, zt)
+        vRt, vTt, vzt = coords.rect_to_cyl_vec(vxt, vyt, vzt, xt, yt, zt)
 
         vxvvt = np.column_stack([Rt, vRt, vTt, zt, vzt, phit])
         otail = Orbit(vxvvt, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
 
         cluster.to_kpckms()
 
-        ts = np.linspace(0, dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), 10)
+        ts = np.linspace(0, dt / conversion.time_in_Gyr(ro=ro, vo=vo), 10)
 
         otail.integrate(ts, pot)
 
@@ -459,11 +466,11 @@ def orbital_path(
     """
     o = initialize_orbit(cluster, from_centre=from_centre)
 
-    ts = np.linspace(0, -1.0 * dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+    ts = np.linspace(0, -1.0 * dt / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
     o.integrate(ts, pot)
 
-    R, phi, z = bovy_coords.rect_to_cyl(o.x(ts[-1]), o.y(ts[-1]), o.z(ts[-1]))
-    vR, vT, vz = bovy_coords.rect_to_cyl_vec(
+    R, phi, z = coords.rect_to_cyl(o.x(ts[-1]), o.y(ts[-1]), o.z(ts[-1]))
+    vR, vT, vz = coords.rect_to_cyl_vec(
         o.vx(ts[-1]), o.vy(ts[-1]), o.vz(ts[-1]), o.x(ts[-1]), o.y(ts[-1]), o.z(ts[-1])
     )
     o = Orbit(
@@ -473,8 +480,8 @@ def orbital_path(
         solarmotion=[-11.1, 24.0, 7.25],
     )
     ts = np.linspace(
-        -1.0 * dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo),
-        dt / bovy_conversion.time_in_Gyr(ro=ro, vo=vo),
+        -1.0 * dt / conversion.time_in_Gyr(ro=ro, vo=vo),
+        dt / conversion.time_in_Gyr(ro=ro, vo=vo),
         nt,
     )
     o.integrate(ts, pot)
@@ -488,13 +495,13 @@ def orbital_path(
         vlos = np.array(o.vlos(ts))
 
         if cluster.units == "pckms":
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
         elif cluster.units == "nbody":
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
         elif cluster.units == "galpy":
             t = ts
         else:
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
 
         if plot:
             filename = kwargs.pop("filename", None)
@@ -522,7 +529,7 @@ def orbital_path(
             x *= 1000.0
             y *= 1000.0
             z *= 1000.0
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
         elif cluster.units == "nbody":
             x *= 1000.0 / cluster.rbar
             y *= 1000.0 / cluster.rbar
@@ -530,7 +537,7 @@ def orbital_path(
             vx /= cluster.vstar
             vy /= cluster.vstar
             vz /= cluster.vstar
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
 
         elif cluster.units == "galpy":
             x /= ro
@@ -541,7 +548,7 @@ def orbital_path(
             vz /= vo
             t = ts
         else:
-            t = ts * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
 
         if plot:
             filename = kwargs.pop("filename", None)
@@ -624,7 +631,7 @@ def orbital_path_match(
         vo=vo,
     )
 
-    ts = t / bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+    ts = t / conversion.time_in_Gyr(ro=ro, vo=vo)
 
     x = o.x(ts)
     y = o.y(ts)
@@ -647,7 +654,7 @@ def orbital_path_match(
     dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
 
     indx = np.argmin(dr, axis=1)
-    tstar = ts[indx] * bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
+    tstar = ts[indx] * conversion.time_in_Gyr(ro=ro, vo=vo)
     dpath = np.amin(dr, axis=1)
 
     dxo = x[1:] - x[0:-1]
@@ -825,6 +832,6 @@ def ttensor(cluster, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False, t=0.
     z=o.z()
     phi=o.phi()
 
-    tij=potential.ttensor(pot,R/ro,z/ro,phi=phi,t=t/bovy_conversion.time_in_Gyr(ro=ro, vo=vo),eigenval=eigenval)
+    tij=potential.ttensor(pot,R/ro,z/ro,phi=phi,t=t/conversion.time_in_Gyr(ro=ro, vo=vo),eigenval=eigenval)
 
     return tij

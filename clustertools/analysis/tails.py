@@ -8,7 +8,12 @@ __all__ = [
     "tail_path_match",
 ]
 
-from galpy.util import conversion,_rotate_to_arbitrary_vector
+try:
+    from galpy.util import conversion
+except:
+    import galpy.util.bovy_conversion as conversion
+
+from galpy.util import _rotate_to_arbitrary_vector
 from galpy import potential
 from galpy.potential import MWPotential2014
 

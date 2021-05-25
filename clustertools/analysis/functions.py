@@ -29,7 +29,11 @@ __all__ = [
 
 import numpy as np
 import numba
-from galpy.util import coords, conversion
+try:
+    from galpy.util import coords,conversion
+except:
+    import galpy.util.bovy_coords as coords
+    import galpy.util.bovy_conversion as conversion
 from galpy import potential
 from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
 from scipy.optimize import curve_fit

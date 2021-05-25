@@ -9,7 +9,11 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_conversion
+try:
+    from galpy.util import conversion
+except:
+    import galpy.util.bovy_conversion as conversion
+
 import os, struct
 from .cluster import StarCluster
 from .operations import *
@@ -202,7 +206,7 @@ def load_cluster(
     if orbit is not None:
         cluster.orbit = orbit
         if cluster.units == "pckms":
-            t = (cluster.tphys / 1000.0) / bovy_conversion.time_in_Gyr(ro=8.0, vo=220.0)
+            t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=8.0, vo=220.0)
             cluster.add_orbit(
                 orbit.x(t) * 1000.0,
                 orbit.y(t) * 1000.0,
@@ -221,7 +225,7 @@ def load_cluster(
                 orbit.vz(t),
             )
         elif cluster.units == "nbody":
-            t = (cluster.tphys * cluster.tbar / 1000.0) / bovy_conversion.time_in_Gyr(
+            t = (cluster.tphys * cluster.tbar / 1000.0) / conversion.time_in_Gyr(
                 ro=8.0, vo=220.0
             )
             cluster.add_orbit(
@@ -368,13 +372,13 @@ def advance_cluster(
         if orbit != None:
             cluster.orbit = orbit
             if cluster.units == "pckms" or cluster.units == "kpckms":
-                t = (cluster.tphys / 1000.0) / bovy_conversion.time_in_Gyr(
+                t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(
                     ro=8.0, vo=220.0
                 )
             elif cluster.units == "nbody":
                 t = (
                     cluster.tphys * cluster.tbar / 1000.0
-                ) / bovy_conversion.time_in_Gyr(ro=8.0, vo=220.0)
+                ) / conversion.time_in_Gyr(ro=8.0, vo=220.0)
             elif cluster.units == "galpy":
                 t = cluster.tphys
 
@@ -546,7 +550,7 @@ def _get_gyrfalcon(
     """
 
     if units == "WDunits":
-        vcon = 220.0 / bovy_conversion.velocity_in_kpcGyr(220.0, 8.0)
+        vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
         mcon = 222288.4543021174
         units = "kpckms"
     else:
@@ -1023,7 +1027,7 @@ def _get_snapshot(
     skiprows = kwargs.get("skiprows", 0)
 
     if units == "WDunits":
-        vcon = 220.0 / bovy_conversion.velocity_in_kpcGyr(220.0, 8.0)
+        vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
         mcon = 222288.4543021174
         units = "kpckms"
     else:

@@ -13,7 +13,11 @@ __all__ = [
     "vcirc_prof",
 ]
 import numpy as np
-from galpy.util import bovy_coords
+
+try:
+    from galpy.util import coords
+except:
+    import galpy.util.bovy_coords as coords
 
 from ..util.constants import *
 from ..util.recipes import *
@@ -700,8 +704,8 @@ def sigv_prof(
 
     # Convert to cylindrical or spherical coordinates:
     if projected:
-        r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vtheta, vz = coords.rect_to_cyl_vec(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
     else:
@@ -879,8 +883,8 @@ def beta_prof(
 
     # Convert to cylindrical or spherical coordinates:
     if projected:
-        r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vtheta, vz = coords.rect_to_cyl_vec(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
     else:
@@ -1052,8 +1056,8 @@ def v_prof(
 
     # Convert to cylindrical or spherical coordinates:
     if projected:
-        r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vtheta, vz = coords.rect_to_cyl_vec(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
     else:

@@ -24,7 +24,13 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_coords,bovy_conversion,_rotate_to_arbitrary_vector
+from galpy.util import _rotate_to_arbitrary_vector
+try:
+    from galpy.util import coords,conversion
+except:
+    import galpy.util.bovy_coords as coords
+    import galpy.util.bovy_conversion as conversion
+    
 from copy import copy
 try:
     import numba
@@ -124,8 +130,8 @@ def to_kpckms(cluster, ro=8.0, vo=220.0):
         from_radec(cluster)
 
     if cluster.units == "galpy":
-        cluster.tphys *= bovy_conversion.time_in_Gyr(ro=ro,vo=vo)
-        cluster.m *= bovy_conversion.mass_in_msol(ro=ro, vo=vo)
+        cluster.tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
+        cluster.m *= conversion.mass_in_msol(ro=ro, vo=vo)
         cluster.x *= ro
         cluster.y *= ro
         cluster.z *= ro
@@ -277,13 +283,13 @@ def to_radec(cluster, sortstars=True, ro=8.0, vo=220.0):
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
 
-    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
+    x0, y0, z0 = coords.galcenrect_to_XYZ(
         cluster.x, cluster.y, cluster.z, Xsun=8.0, Zsun=0.025
     ).T
 
     cluster.dist = np.sqrt(x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0)
 
-    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
+    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
         cluster.vx,
         cluster.vy,
         cluster.vz,
@@ -296,20 +302,20 @@ def to_radec(cluster, sortstars=True, ro=8.0, vo=220.0):
         x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0
     )
 
-    l0, b0, cluster.dist = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
-    cluster.ra, cluster.dec = bovy_coords.lb_to_radec(l0, b0, degree=True).T
+    l0, b0, cluster.dist = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
+    cluster.ra, cluster.dec = coords.lb_to_radec(l0, b0, degree=True).T
 
-    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
+    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
         vx0, vy0, vz0, l0, b0, cluster.dist, degree=True
     ).T
-    cluster.pmra, cluster.pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(
+    cluster.pmra, cluster.pmdec = coords.pmllpmbb_to_pmrapmdec(
         pmll0, pmbb0, l0, b0, degree=True
     ).T
 
-    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
+    x0, y0, z0 = coords.galcenrect_to_XYZ(
         cluster.xgc, cluster.ygc, cluster.zgc, Xsun=8.0, Zsun=0.025
     )
-    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
+    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
         cluster.vxgc,
         cluster.vygc,
         cluster.vzgc,
@@ -322,13 +328,13 @@ def to_radec(cluster, sortstars=True, ro=8.0, vo=220.0):
         x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0
     )
 
-    l0, b0, cluster.dist_gc = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True)
-    cluster.ra_gc, cluster.dec_gc = bovy_coords.lb_to_radec(l0, b0, degree=True)
+    l0, b0, cluster.dist_gc = coords.XYZ_to_lbd(x0, y0, z0, degree=True)
+    cluster.ra_gc, cluster.dec_gc = coords.lb_to_radec(l0, b0, degree=True)
 
-    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
+    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
         vx0, vy0, vz0, l0, b0, cluster.dist_gc, degree=True
     )
-    cluster.pmra_gc, cluster.pmdec_gc = bovy_coords.pmllpmbb_to_pmrapmdec(
+    cluster.pmra_gc, cluster.pmdec_gc = coords.pmllpmbb_to_pmrapmdec(
         pmll0, pmbb0, l0, b0, degree=True
     )
 
@@ -372,19 +378,19 @@ def from_radec(cluster):
 
         origin0 = cluster.origin
 
-        l, b = bovy_coords.radec_to_lb(cluster.ra, cluster.dec, degree=True).T
-        x0, y0, z0 = bovy_coords.lbd_to_XYZ(l, b, cluster.dist, degree=True).T
-        cluster.x, cluster.y, cluster.z = bovy_coords.XYZ_to_galcenrect(
+        l, b = coords.radec_to_lb(cluster.ra, cluster.dec, degree=True).T
+        x0, y0, z0 = coords.lbd_to_XYZ(l, b, cluster.dist, degree=True).T
+        cluster.x, cluster.y, cluster.z = coords.XYZ_to_galcenrect(
             x0, y0, z0, Xsun=8.0, Zsun=0.025
         ).T
 
-        pml, pmb = bovy_coords.pmrapmdec_to_pmllpmbb(
+        pml, pmb = coords.pmrapmdec_to_pmllpmbb(
             cluster.pmra, cluster.pmdec, cluster.ra, cluster.dec, degree=True
         ).T
-        vx0, vy0, vz0 = bovy_coords.vrpmllpmbb_to_vxvyvz(
+        vx0, vy0, vz0 = coords.vrpmllpmbb_to_vxvyvz(
             cluster.vlos, pml, pmb, l, b, cluster.dist, degree=True
         ).T
-        cluster.vx, cluster.vy, cluster.vz = bovy_coords.vxvyvz_to_galcenrect(
+        cluster.vx, cluster.vy, cluster.vz = coords.vxvyvz_to_galcenrect(
             vx0,
             vy0,
             vz0,
@@ -394,21 +400,21 @@ def from_radec(cluster):
             _extra_rot=True,
         ).T
 
-        l_gc, b_gc = bovy_coords.radec_to_lb(cluster.ra_gc, cluster.dec_gc, degree=True)
-        x0_gc, y0_gc, z0_gc = bovy_coords.lbd_to_XYZ(
+        l_gc, b_gc = coords.radec_to_lb(cluster.ra_gc, cluster.dec_gc, degree=True)
+        x0_gc, y0_gc, z0_gc = coords.lbd_to_XYZ(
             l_gc, b_gc, cluster.dist_gc, degree=True
         )
-        cluster.xgc, cluster.ygc, cluster.zgc = bovy_coords.XYZ_to_galcenrect(
+        cluster.xgc, cluster.ygc, cluster.zgc = coords.XYZ_to_galcenrect(
             x0_gc, y0_gc, z0_gc, Xsun=8.0, Zsun=0.025
         )
 
-        pml_gc, pmb_gc = bovy_coords.pmrapmdec_to_pmllpmbb(
+        pml_gc, pmb_gc = coords.pmrapmdec_to_pmllpmbb(
             cluster.pmra_gc, cluster.pmdec_gc, cluster.ra_gc, cluster.dec_gc, degree=True
         )
-        vx0_gc, vy0_gc, vz0_gc = bovy_coords.vrpmllpmbb_to_vxvyvz(
+        vx0_gc, vy0_gc, vz0_gc = coords.vrpmllpmbb_to_vxvyvz(
             cluster.vlos_gc, pml_gc, pmb_gc, l_gc, b_gc, cluster.dist_gc, degree=True
         )
-        cluster.vx_gc, cluster.vy_gc, cluster.vz_gc = bovy_coords.vxvyvz_to_galcenrect(
+        cluster.vx_gc, cluster.vy_gc, cluster.vz_gc = coords.vxvyvz_to_galcenrect(
             vx0_gc,
             vy0_gc,
             vz0_gc,
@@ -446,8 +452,8 @@ def to_galpy(cluster, ro=8.0, vo=220.0):
         cluster.to_kpckms()
 
     if cluster.units == "kpckms":
-        cluster.tphys /= bovy_conversion.time_in_Gyr(ro=ro, vo=vo)
-        cluster.m = cluster.m / bovy_conversion.mass_in_msol(ro=ro, vo=vo)
+        cluster.tphys /= conversion.time_in_Gyr(ro=ro, vo=vo)
+        cluster.m = cluster.m / conversion.mass_in_msol(ro=ro, vo=vo)
         cluster.x /= ro
         cluster.y /= ro
         cluster.z /= ro
@@ -1057,8 +1063,8 @@ def add_rotation(cluster, qrot):
     if origin0 != 'cluster' and origin0 != 'centre':
         cluster.to_centre()
 
-    r, theta, z = bovy_coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-    vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+    r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+    vr, vtheta, vz = coords.rect_to_cyl_vec(
         cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
     )
 
@@ -1066,8 +1072,8 @@ def add_rotation(cluster, qrot):
     rindx = np.random.rand(cluster.ntot) < qrot
 
     vtheta[indx * rindx] = np.sqrt(vtheta[indx * rindx] * vtheta[indx * rindx])
-    x,y,z = bovy_coords.cyl_to_rect(r, theta, z)
-    vx,vy,vz = bovy_coords.cyl_to_rect_vec(
+    x,y,z = coords.cyl_to_rect(r, theta, z)
+    vx,vy,vz = coords.cyl_to_rect_vec(
         vr, vtheta, vz, theta
     )
 

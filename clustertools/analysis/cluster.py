@@ -10,7 +10,11 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import conversion, coords
+try:
+    from galpy.util import coords,conversion
+except:
+    import galpy.util.bovy_coords as coords
+    import galpy.util.bovy_conversion as conversion
 from textwrap import dedent
 from galpy.potential import MWPotential2014
 from .orbit import *

@@ -344,7 +344,7 @@ def advance_cluster(
             **advance_kwargs
         )
     else:
-        cluster = StarCuster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs)
+        cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs)
 
     # Check for restart
     if cluster.ntot == 0.0:

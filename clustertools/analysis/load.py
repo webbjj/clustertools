@@ -117,6 +117,9 @@ def load_cluster(
     2018 - Written - Webb (UofT)
     """
     wdir = kwargs.get("wdir", "./")
+    if wdir[-1] != '/':
+        wdir+='/'
+
     initialize = kwargs.get("initialize", False)
 
     if "ofilename" in kwargs and ofile is None:

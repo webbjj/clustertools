@@ -533,10 +533,10 @@ def orbital_path(
         elif cluster.units == "nbody":
             x *= 1000.0 / cluster.rbar
             y *= 1000.0 / cluster.rbar
-            z *= 1000.0 / luster.rbar
-            vx /= cluster.vstar
-            vy /= cluster.vstar
-            vz /= cluster.vstar
+            z *= 1000.0 / cluster.rbar
+            vx /= cluster.vbar
+            vy /= cluster.vbar
+            vz /= cluster.vbar
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
 
         elif cluster.units == "galpy":

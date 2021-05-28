@@ -235,9 +235,9 @@ def load_cluster(
                 orbit.x(t) * 1000.0 / cluster.rbar,
                 orbit.y(t) * 1000.0 / cluster.rbar,
                 orbit.z(t) * 1000.0 / cluster.rbar,
-                orbit.vx(t) / cluster.vstar,
-                orbit.vy(t) / cluster.vstar,
-                orbit.vz(t) / cluster.vstar,
+                orbit.vx(t) / cluster.vbar,
+                orbit.vy(t) / cluster.vbar,
+                orbit.vz(t) / cluster.vbar,
             )
         elif cluster.units == "galpy":
             t = cluster.tphys

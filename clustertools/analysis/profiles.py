@@ -189,8 +189,8 @@ def rho_prof(
         _lplot(
             x,
             y,
-            xlabel=r"$R %s$" % xunits,
-            ylabel=r"$\rho %s$" % yunits,
+            xlabel=r"$R \ %s$" % xunits,
+            ylabel=r"$\rho \ %s$" % yunits,
             title="Time = %f" % cluster.tphys,
             log=True,
             overplot=overplot,
@@ -1601,8 +1601,8 @@ def vcirc_prof(
         _lplot(
             x,
             y,
-            xlabel=r"$R %s$" % xunits,
-            ylabel=r"$vc %s $" % yunits,
+            xlabel=r"$R \ %s$" % xunits,
+            ylabel=r"$v_c \ %s $" % yunits,
             title="Time = %f" % cluster.tphys,
             log=True,
             overplot=overplot,

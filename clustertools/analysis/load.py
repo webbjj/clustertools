@@ -556,9 +556,11 @@ def _get_gyrfalcon(
         vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
         mcon = 222288.4543021174
         units = "kpckms"
+        units0 = "WDunits"
     else:
         vcon = 1.0
         mcon = 1.0
+        units0 = units
 
     # Default **kwargs
     skiprows = kwargs.pop("skiprows", 13)
@@ -668,6 +670,9 @@ def _get_gyrfalcon(
             cluster.gyrlev=np.array(gyrlev)
         elif give== 'mxve':
             cluster.eps=np.array(gyreps)
+
+        if units0=='WDunits': cluster.units_init='WDunits'
+
 
     return cluster
 
@@ -1033,9 +1038,11 @@ def _get_snapshot(
         vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
         mcon = 222288.4543021174
         units = "kpckms"
+        units0 = "WDunits"
     else:
         vcon = 1.0
         mcon = 1.0
+        units0 = units
 
     if filename != None:
         if os.path.isfile("%s%s%s" % (wdir, snapdir, filename)):
@@ -1151,6 +1158,8 @@ def _get_snapshot(
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
+
+    if units0=='WDunits': cluster.units_init='WDunits'
 
     return cluster
 

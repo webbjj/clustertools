@@ -1103,8 +1103,7 @@ def _get_nbody6pp_conf3(f,**kwargs):
     try:
         start_header_block_size = struct.unpack('i',f.read(4))[0]
     except:
-        print('FAIL')
-        return 0,np.zeros(20),0,0,0,0,0,0,0,0
+        return 0,np.zeros(20),0,0,0,0,0,0,0,0,0,0,0
         
     ntot = struct.unpack('i',f.read(4))[0] 
     model = struct.unpack('i',f.read(4))[0] 

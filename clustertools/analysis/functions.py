@@ -20,6 +20,7 @@ __all__ = [
     "virial_radius_inverse_distance",
     "virial_radius_critical_density",
     "mass_function",
+    "tapered_mass_function",
     "eta_function",
     "meq_function",
     "ckin",
@@ -1178,6 +1179,182 @@ def mass_function(
             -1000.0,
             -1000.0,
         )
+
+def tapered_mass_function(
+    cluster,
+    mmin=None,
+    mmax=None,
+    nmass=10,
+    rmin=None,
+    rmax=None,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=1,
+    indx=None,
+    projected=False,
+    mcorr=None,
+    plot=False,
+    **kwargs
+):
+    """Find a tapered mass function over a given mass range
+
+    - mass bins are set up so that there are an equal number of stars in each bin
+    - functional form of the tapered mass function is taken from De Marchi, Paresce & Portegies Zwart 2010
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    mmin/mmax : float
+        specific mass range
+    nmass : 
+        number of mass bins used to calculate alpha
+    rmin/rmax : 
+        specific radial range
+    vmin/vmax : float
+        specific velocity range
+    emin/emax : float
+        specific energy range
+    kwmin/kwmax : int
+        specific stellar evolution type range
+    indx : bool 
+        specific subset of stars
+    projected : bool 
+        use projected values (default: False)
+    mcorr : float
+        completeness correction for masses
+    plot : bool 
+        plot the mass function
+
+    Returns
+    -------
+    m_mean : float
+        mean mass in each bin
+    m_hist : float
+        number of stars in each bin
+    dm : float
+        dN/dm of each bin
+    alpha : float
+        power-law slope of the mass function (dN/dm ~ m^alpha)
+    ealpha : float
+        error in alpha
+    yalpha : float
+        y-intercept of fit to log(dN/dm) vs log(m)
+    eyalpha : float
+        error in yalpha
+
+    Other Parameters
+    ----------------
+    kwargs : str
+        key words for plotting
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
+
+    if indx is None:
+        indx = cluster.id > -1
+
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m < mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+        * (cluster.kw >= kwmin)
+        * (cluster.kw <= kwmax)
+    )
+
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    if mcorr is None: mcorr=np.ones(cluster.ntot)
+
+    if np.sum(indx) >= nmass:
+
+        m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
+
+        m_corr_hist = np.zeros(len(m_hist))
+        for i in range(0, len(m_hist)):
+            mindx = (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i]) * indx
+            m_hist[i]=np.sum(mindx)
+            m_corr_hist[i] = np.sum(1.0 / mcorr[mindx])
+
+        mbinerror = m_hist / m_corr_hist
+
+        lm_mean = np.log10(m_mean)
+        dm = m_corr_hist / (m_upper - m_lower)
+        ldm = np.log10(dm)
+
+        #(A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm),bounds=([0.,np.inf],[0,np.inf],[np.amin(cluster.m),np.amax(cluster.m)],[0.,np.inf]))
+        (A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm) ,bounds=([0.,-1.*np.inf,np.amin(cluster.m),-1.*np.inf],[np.inf,np.inf,np.amax(cluster.m),np.inf]))
+
+        eA = np.sqrt(V[0][0])
+        ealpha = np.sqrt(V[1][1])
+        emc = np.sqrt(V[2][2])
+        ebeta = np.sqrt(V[3][3])
+
+        if plot:
+            filename = kwargs.get("filename", None)
+            _plot(m_mean, np.log10(dm), xlabel="M", ylabel="LOG(dN/dM)",**kwargs)
+            mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
+
+            dmfit = tpl_func(mfit,A,alpha,mc,beta)
+
+            _lplot(
+                mfit, np.log10(dmfit), overplot=True, label=(r"$\alpha = %f, mc = %f, \beta = %f$" % (alpha,mc,beta)),
+            )
+
+            plt.legend()
+
+            if filename != None:
+                plt.savefig(filename)
+
+        return m_mean, m_hist, dm, A, eA, alpha, ealpha, mc, emc, beta, ebeta
+    else:
+        print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
+        return (
+            np.zeros(nmass),
+            np.zeros(nmass),
+            np.zeros(nmass),
+            -1000.0,
+            -1000.0,
+            -1000.0,
+            -1000.0,
+        )
+
+
+def tpl_func(m,A,alpha,mc,beta):
+
+    dm=A*(m**alpha)*(1.0-np.exp(-1.*(m/mc)**beta))
+
+    return dm
 
 def eta_function(
     cluster,

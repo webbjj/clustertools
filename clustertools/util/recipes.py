@@ -7,6 +7,7 @@ __all__ = [
     "binmaker",
     "power_law_distribution_function",
     "dx_function",
+    "tapered_dx_function",
     "x_hist",
     "mean_prof",
     "smooth",
@@ -18,6 +19,7 @@ __all__ = [
 import numpy as np
 import numba
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 from ..util.plots import _plot,_lplot
 
 
@@ -266,6 +268,90 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
                 plt.savefig(filename)
 
     return x_mean[indx], x_hist[indx], dx[indx], alpha, ealpha, yalpha, eyalpha
+
+def tapered_dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None, plot=False, **kwargs):
+    """Find distribution function using nx bins
+
+    Parameters
+    ----------
+    x : float
+      input arrayå
+    nx : int
+      number of bins (default : 10)
+    bintype : str
+      bin with equal number of stars per bin (num) or evenly in x (fix) (default: num)
+    x_lower,x_mean,x_upper : float
+      preset lower limit, mean value, and upper limit bins
+
+    Returns
+    -------
+    x_mean : float
+      mean value in each bin
+    x_hist : float
+      number of stars in each bin
+    dx : float
+      number of stars in each bin divided by width of bin
+    alpha : float
+      power law slope fit to dx vs x_mean
+    ealpha : float
+      error in alpha
+    yalpha : float
+      y-intercept of fit to log(dx) vs lod(x_mean)
+    eyalpha : float
+      error in yalpha
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+    if x_lower is None:
+        if bintype == "num":
+            x_lower, x_mean, x_upper, x_hist = nbinmaker(x, nx)
+        else:
+            x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
+    else:
+        x_hist=np.array([])
+        for i in range(0, len(x_lower)):
+            indx = (x >= x_lower[i]) * (x < x_upper[i])
+            x_hist = np.append(x_hist, np.sum(indx))
+
+    dx = x_hist / (x_upper - x_lower)
+    indx=dx>0
+
+    lx_mean = np.log10(x_mean[indx])
+    ldx = np.log10(dx[indx])
+
+    (A, alpha, xc, beta), V=curve_fit(tapered_func,10.0**np.array(lx_mean),10.0**np.array(ldx) ,bounds=([0.,-1.*np.inf,np.amin(x),-1.*np.inf],[np.inf,np.inf,np.amax(x),np.inf]))
+
+    eA = np.sqrt(V[0][0])
+    ealpha = np.sqrt(V[1][1])
+    exc = np.sqrt(V[2][2])
+    ebeta = np.sqrt(V[3][3])
+
+    if plot:
+            filename = kwargs.get("filename", None)
+            _plot(x_mean[indx], np.log10(dx[indx]), xlabel="x", ylabel="LOG(dN/dx)", **kwargs)
+            xfit = np.linspace(np.min(x_mean), np.max(x_mean), nx)
+            dxfit = tapered_func(xfit,A,alpha,xc,beta)
+
+            kwargs.pop("overplot",None)
+
+            _lplot(
+                xfit, np.log10(dxfit), overplot=True, label=(r"$\alpha$ = %f" % alpha), **kwargs
+            )
+
+            plt.legend()
+
+            if filename != None:
+                plt.savefig(filename)
+
+    return x_mean[indx], x_hist[indx], dx[indx], A, eA, alpha, ealpha, xc, exc, beta, ebeta
+
+def tapered_func(x,A,alpha,xc,beta):
+
+    dx=A*(x**alpha)*(1.0-np.exp(-1.*(x/xc)**beta))
+
+    return dx
 
 def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
     """Find histogram data using nx bins

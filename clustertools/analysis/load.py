@@ -48,6 +48,7 @@ def load_cluster(
 
             - nbody6
             - nbody6se
+            - nbody6pp
             - gyrfalcon
             - snaptrim
             - napauto
@@ -158,6 +159,28 @@ def load_cluster(
             fort83=None
 
         cluster = _get_nbody6(out3, out33, fort82=fort82, fort83=fort83, ofile=ofile, advance=False, **kwargs)
+
+    elif ctype == "nbody6pp":
+
+        nsnap = kwargs.get("nsnap", 0)
+
+        if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+            conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+        else:
+            conf3=None
+
+        if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
+            bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
+        else:
+            bev82=None
+
+        if os.path.isfile("%ssev.3_%s" % (wdir,str(nsnap))):
+            sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
+        else:
+            sev83=None
+
+        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False, **kwargs)
+
 
     elif ctype == "gyrfalcon":
         # Read in snapshot from gyrfalcon.
@@ -303,6 +326,10 @@ def advance_cluster(
     """
     advance_kwargs = _get_advanced_kwargs(cluster, **kwargs)
 
+    wdir = advance_kwargs.get("wdir", "./")
+    if wdir[-1] != '/':
+        wdir+='/'
+
     # Continue reading in cluster opened in _get_cluster()
     if load_function is not None:
         ctype='custom'
@@ -313,6 +340,32 @@ def advance_cluster(
 
 
     elif cluster.ctype == "nbody6":
+        cluster = _get_nbody6(
+            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
+        )
+
+    elif cluster.ctype == "nbody6pp":
+        nsnap = advance_kwargs.get("nsnap") + 1
+
+        if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+            conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+        else:
+            conf3=None
+
+        if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
+            bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
+        else:
+            bev82=None
+
+        if os.path.isfile("%ssev.3_%s" % (wdir,str(nsnap))):
+            sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
+        else:
+            sev83=None
+
+        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True, **advance_kwargs)
+
+    elif cluster.ctype == 'nbody6':
+
         cluster = _get_nbody6(
             cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
         )
@@ -972,6 +1025,234 @@ def _get_nbody6se(fort82, fort83, **kwargs):
 
     else:
         data=fort82.readline().split()
+
+    return i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
+
+def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kwargs):
+    """Extract a single snapshot from NBODY6++ output
+
+       - Called for Nbody6 simulations with or without stellar evolution
+
+    Parameters
+    ----------
+    conf3 : file
+        opened conf3 file
+    bev82 : file
+        opened bev82 file containing BSE data (default: None)
+    sev83 : file
+        opened sev83 file containing SSE data (default: None)
+    ofile : file
+        opened file containing orbital information
+    advance : bool
+        is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
+
+    Returns
+    -------
+    cluster : class
+        StarCluster
+
+    Other Parameters
+    ----------------
+    Same as load_cluster
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+    
+    initialize = kwargs.get("initialize", False)
+    nsnap = kwargs.get("nsnap", 0)
+
+    ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,**kwargs)
+    cluster = StarCluster(
+        alist[0],
+        units="nbody",
+        origin="cluster",
+        ctype="nbody6pp",
+        sfile=conf3,
+        nsnap=nsnap,
+    )
+
+    if ntot > 0:
+        cluster.add_nbody6(
+        alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
+    )
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+
+        v=np.sqrt(vx**2.+vy**2.+vz**2.)
+        ek=0.5*m*v**2.
+        cluster.add_energies(ek,pot)
+
+    if bev82 is not None and sev83 is not None:
+        i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,**kwargs)
+        cluster.add_sse(kw,zl1,r1)
+        cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
+    
+    if kwargs.get("analyze", True) and cluster.ntot>0:
+        sortstars=kwargs.get("sortstars", True)
+        cluster.analyze(sortstars=sortstars)
+
+        if ofile != None:
+            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+            
+    return cluster
+
+def _get_nbody6pp_conf3(f,**kwargs): 
+
+    #Read in header
+    try:
+        start_header_block_size = struct.unpack('i',f.read(4))[0]
+    except:
+        print('FAIL')
+        return 0,np.zeros(20),0,0,0,0,0,0,0,0
+        
+    ntot = struct.unpack('i',f.read(4))[0] 
+    model = struct.unpack('i',f.read(4))[0] 
+    nrun = struct.unpack('i',f.read(4))[0]
+    nk = struct.unpack('i',f.read(4))[0]
+             
+    end_header_block_size = struct.unpack('i',f.read(4))[0]
+    
+    if start_header_block_size != end_header_block_size:
+        print('Error reading CONF3')
+        return -1
+
+    if ntot > 0:
+
+        # Read in stellar data
+        start_data_block_size = struct.unpack('i',f.read(4))[0] #begin data block size
+
+        #Read in alist array from NBODY6
+        alist = []
+        for i in range(nk):
+            alist.append(struct.unpack('f',f.read(4))[0]) #Sverre's 'as'
+
+        #Read in masses, positions, velocities, and id's
+        m=np.array([])
+        rhos=np.array([])
+        xns=np.array([])
+        x,y,z=np.array([]),np.array([]),np.array([])
+        vx,vy,vz=np.array([]),np.array([]),np.array([])
+        phi=np.array([])
+        i_d=np.array([])
+     
+        for i in range(ntot):
+            m=np.append(m,struct.unpack('f',f.read(4))[0])
+
+        for i in range(ntot):
+            rhos=np.append(rhos,struct.unpack('f',f.read(4))[0])
+            
+        for i in range(ntot):
+            xns=np.append(xns,struct.unpack('f',f.read(4))[0])
+
+        for i in range(ntot):           
+            x=np.append(x,struct.unpack('f',f.read(4))[0])
+            y=np.append(y,struct.unpack('f',f.read(4))[0])
+            z=np.append(z,struct.unpack('f',f.read(4))[0]) 
+
+        for i in range(ntot):           
+            vx=np.append(vx,struct.unpack('f',f.read(4))[0])
+            vy=np.append(vy,struct.unpack('f',f.read(4))[0])
+            vz=np.append(vz,struct.unpack('f',f.read(4))[0]) 
+
+        for i in range(ntot):
+            phi=np.append(phi,struct.unpack('i',f.read(4))[0])            
+
+        for i in range(ntot):
+            i_d=np.append(i_d,struct.unpack('i',f.read(4))[0])
+
+        end_data_block_size = struct.unpack('i',f.read(4))[0] #begin data block size
+        
+        if start_data_block_size != end_data_block_size:
+            print('Error reading CONF3')
+            return -1
+
+        return ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,phi
+    else:
+        return 0,np.zeros(20),0,0,0,0,0,0,0,0,0,0,0
+
+def _get_nbody6pp_ev(bev, sev, **kwargs):
+
+    header=sev.readline().split()
+    ntot,tphys=int(header[0]),float(header[1])
+    
+    i_d=np.array([])
+    kw=np.array([])
+    ri=np.array([])
+    m1=np.array([])
+    zl1=np.array([])
+    r1=np.array([])
+    te=np.array([])
+
+    for i in range(0,ntot):
+        data=sev.readline().split()
+
+        i_d=np.append(i_d,int(data[2]))
+        kw=np.append(kw,int(data[3]))
+        ri=np.append(ri,float(data[4]))
+        m1=np.append(m1,float(data[5]))
+
+        if data[6]=='NaN':
+            zl1=np.append(zl1,0.)
+            r1=np.append(r1,0.)
+            te=np.append(te,0.)
+        else:
+            zl1=np.append(zl1,float(data[6]))
+            r1=np.append(r1,float(data[7]))
+            te=np.append(te,float(data[8]))        
+  
+    header=bev.readline().split()
+    nb,tphys=int(header[0]),float(header[1])
+
+    i_d1=np.array([])
+    i_d2=np.array([])
+    kw1=np.array([])
+    kw2=np.array([])
+    kwb=np.array([])
+    rib=np.array([])
+    ecc=np.array([])
+    pb=np.array([])
+    semi=np.array([])
+    m1b=np.array([])
+    m2b=np.array([])
+    zl1b=np.array([])
+    zl2b=np.array([])
+    r1b=np.array([])
+    r2b=np.array([])
+    te1=np.array([])
+    te2=np.array([])
+
+    if nb>0:
+
+        for i in range(0,nb):
+            data=bev.readline().split()
+
+            i_d1=np.append(i_d1,int(data[3]))
+            i_d2=np.append(i_d2,int(data[4]))
+            kw1=np.append(kw1,int(data[5]))
+            kw2=np.append(kw2,int(data[6]))
+            kwb=np.append(kwb,int(data[7]))
+            rib=np.append(rib,float(data[8]))
+            ecc=np.append(ecc,float(data[9]))
+            pb=np.append(pb,float(data[10]))
+            semi=np.append(semi,float(data[11]))
+            m1b=np.append(m1b,float(data[12]))
+            m2b=np.append(m2b,float(data[13]))
+
+            if data[14]=='NaN':
+                zl1b=np.append(zl1b,0.)
+                zl2b=np.append(zl2b,0.)
+                r1b=np.append(r1b,0.)
+                r2b=np.append(r2b,0.)
+                te1=np.append(te1,0.)
+                te2=np.append(te2,0.)
+            else:
+                zl1b=np.append(zl1b,float(data[14]))
+                zl2b=np.append(zl2b,float(data[15]))
+                r1b=np.append(r1b,float(data[16]))
+                r2b=np.append(r2b,float(data[17]))
+                te1=np.append(te1,float(data[18]))
+                te2=np.append(te2,float(ata[19]))
 
     return i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
 

@@ -32,6 +32,8 @@ nbinmaker=recipes.nbinmaker
 binmaker=recipes.binmaker
 power_law_distribution_function=recipes.power_law_distribution_function
 dx_function=recipes.dx_function
+tapered_dx_function=recipes.tapered_dx_function
+
 x_hist=recipes.x_hist
 mean_prof=recipes.mean_prof
 smooth=recipes.smooth

@@ -570,11 +570,13 @@ def orbital_path_match(
     nt=100,
     pot=MWPotential2014,
     from_centre=False,
+    skypath=False,
     to_path=False,
     do_full=False,
     ro=8.0,
     vo=220.0,
     plot=False,
+    projected=False,
     **kwargs,
 ):
     """Match stars to a position along the orbital path of the cluster
@@ -591,6 +593,9 @@ def orbital_path_match(
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    skypath : bool
+        return sky coordinates instead of cartesian coordinates (default: False)
+        if True, projected is set to True
     to_path : bool
         measure distance to the path itself instead of distance to central point along the path (default: False)
     do_full : bool
@@ -601,6 +606,8 @@ def orbital_path_match(
         galpy velocity scale (Default: 220.)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
+    projected : bool
+        match to projected orbital path, which means matching just x and y coordinates or Ra and Dec coordinates (not z, or dist) (default:False)
 
     Returns
     -------
@@ -626,6 +633,7 @@ def orbital_path_match(
         nt=nt,
         pot=pot,
         from_centre=from_centre,
+        skypath=skypath,
         initialize=True,
         ro=ro,
         vo=vo,
@@ -633,25 +641,40 @@ def orbital_path_match(
 
     ts = t / conversion.time_in_Gyr(ro=ro, vo=vo)
 
-    x = o.x(ts)
-    y = o.y(ts)
-    z = o.z(ts)
-    vx = o.vx(ts)
-    vy = o.vy(ts)
-    vz = o.vz(ts)
+    if skypath:
+        x = o.ra(ts)
+        y = o.dec(ts)
+        z = o.dist(ts)
+        vx = o.pmra(ts)
+        vy = o.pmdec(ts)
+        vz = o.vlos(ts)
+
+        cluster.to_sky()
+        projected=True
+    else:
+        x = o.x(ts)
+        y = o.y(ts)
+        z = o.z(ts)
+        vx = o.vx(ts)
+        vy = o.vy(ts)
+        vz = o.vz(ts)
 
     pindx = np.argmin(np.fabs(ts))
 
-    dx = np.tile(np.array(o.x(ts)), cluster.ntot).reshape(
+    dx = np.tile(np.array(x), cluster.ntot).reshape(
         cluster.ntot, len(ts)
     ) - np.repeat(cluster.x, len(ts)).reshape(cluster.ntot, len(ts))
-    dy = np.tile(np.array(o.y(ts)), cluster.ntot).reshape(
+    dy = np.tile(np.array(y), cluster.ntot).reshape(
         cluster.ntot, len(ts)
     ) - np.repeat(cluster.y, len(ts)).reshape(cluster.ntot, len(ts))
-    dz = np.tile(np.array(o.z(ts)), cluster.ntot).reshape(
+    dz = np.tile(np.array(z), cluster.ntot).reshape(
         cluster.ntot, len(ts)
     ) - np.repeat(cluster.z, len(ts)).reshape(cluster.ntot, len(ts))
-    dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+
+    if projected:
+        dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+    else:
+        dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
 
     indx = np.argmin(dr, axis=1)
     tstar = ts[indx] * conversion.time_in_Gyr(ro=ro, vo=vo)
@@ -669,7 +692,11 @@ def orbital_path_match(
     dprogy = np.insert(dprogy, 0, 0.0)
     dprogz = np.insert(dprogz, 0, 0.0)
 
-    dprogr = np.sqrt(dprogx ** 2.0 + dprogy ** 2.0 + dprogz ** 2.0)
+    if projected:
+        dprogr = np.sqrt(dprogx ** 2.0 + dprogy ** 2.0)
+    else:
+        dprogr = np.sqrt(dprogx ** 2.0 + dprogy ** 2.0 + dprogz ** 2.0)
+
     dprog = dprogr[indx] - dprogr[pindx]
 
     # Find distance to path instead of to central point
@@ -681,46 +708,74 @@ def orbital_path_match(
         if do_full:
             # Typically it is too expensive to calculate dpath all at once, but will allow option via do_full
 
-            ovec = np.column_stack([dxo, dyo, dzo])
-            mag_ovec = np.sqrt(dxo ** 2.0 + dyo ** 2.0 + dzo ** 2.0)
-            svec = np.column_stack([dx[:, indx], dy[:, indx], dz[:, indx]])
-            mag_svec = dr[:, indx]
-            theta = np.arccos(np.dot(ovec[indx], svec) / (mag_ovec[indx] * mag_svec))
-            dpath = mag_svec * np.sin(theta)
+            if projected:
+                ovec = np.column_stack([dxo, dyo])
+                mag_ovec = np.sqrt(dxo ** 2.0 + dyo ** 2.0)
+                svec = np.column_stack([dx[:, indx], dy[:, indx]])
+                mag_svec = dr[:, indx]
+                theta = np.arccos(np.dot(ovec[indx], svec) / (mag_ovec[indx] * mag_svec))
+                dpath = mag_svec * np.sin(theta)
+            else:
+                ovec = np.column_stack([dxo, dyo, dzo])
+                mag_ovec = np.sqrt(dxo ** 2.0 + dyo ** 2.0 + dzo ** 2.0)
+                svec = np.column_stack([dx[:, indx], dy[:, indx], dz[:, indx]])
+                mag_svec = dr[:, indx]
+                theta = np.arccos(np.dot(ovec[indx], svec) / (mag_ovec[indx] * mag_svec))
+                dpath = mag_svec * np.sin(theta)
         else:
             # Need to optimize this via numba
             dpath = np.array([])
-            for i in range(0, cluster.ntot):
-                ovec = [dxo[indx[i]], dyo[indx[i]], dzo[indx[i]]]
-                mag_ovec = np.sqrt(
-                    dxo[indx[i]] ** 2.0 + dyo[indx[i]] ** 2.0 + dzo[indx[i]] ** 2.0
-                )
+            if projected:
+                for i in range(0, cluster.ntot):
+                        ovec = [dxo[indx[i]], dyo[indx[i]]]
+                        mag_ovec = np.sqrt(
+                            dxo[indx[i]] ** 2.0 + dyo[indx[i]] ** 2.0)
 
-                svec = [dx[i, indx[i]], dy[i, indx[i]], dz[i, indx[i]]]
-                mag_svec = dr[i, indx[i]]
+                        svec = [dx[i, indx[i]], dy[i, indx[i]]]
+                        mag_svec = dr[i, indx[i]]
 
-                theta = np.arccos(
-                    (ovec[0] * svec[0] + ovec[1] * svec[1] + ovec[2] * svec[2])
-                    / (mag_ovec * mag_svec)
-                )
-                dpath = np.append(dpath, mag_svec * np.sin(theta))
+                        theta = np.arccos(
+                            (ovec[0] * svec[0] + ovec[1] * svec[1])
+                            / (mag_ovec * mag_svec)
+                        )
+                        dpath = np.append(dpath, mag_svec * np.sin(theta))
+
+            else:
+                for i in range(0, cluster.ntot):
+                    ovec = [dxo[indx[i]], dyo[indx[i]], dzo[indx[i]]]
+                    mag_ovec = np.sqrt(
+                        dxo[indx[i]] ** 2.0 + dyo[indx[i]] ** 2.0 + dzo[indx[i]] ** 2.0
+                    )
+
+                    svec = [dx[i, indx[i]], dy[i, indx[i]], dz[i, indx[i]]]
+                    mag_svec = dr[i, indx[i]]
+
+                    theta = np.arccos(
+                        (ovec[0] * svec[0] + ovec[1] * svec[1] + ovec[2] * svec[2])
+                        / (mag_ovec * mag_svec)
+                    )
+                    dpath = np.append(dpath, mag_svec * np.sin(theta))
 
     # Assign negative to stars with position vectors in opposite direction as local angular momentum vector
-    rgc = np.column_stack([o.x(ts[indx]), o.y(ts[indx]), o.z(ts[indx])])
-    vgc = np.column_stack([o.vx(ts[indx]), o.vy(ts[indx]), o.vz(ts[indx])])
-    lz = np.cross(rgc, vgc)
+    if not projected:
+        rgc = np.column_stack([o.x(ts[indx]), o.y(ts[indx]), o.z(ts[indx])])
+        vgc = np.column_stack([o.vx(ts[indx]), o.vy(ts[indx]), o.vz(ts[indx])])
+        lz = np.cross(rgc, vgc)
 
-    rstar = np.column_stack(
-        [
-            cluster.x - o.x(ts[indx]),
-            cluster.y - o.y(ts[indx]),
-            cluster.z - o.z(ts[indx]),
-        ]
-    )
+        rstar = np.column_stack(
+            [
+                cluster.x - o.x(ts[indx]),
+                cluster.y - o.y(ts[indx]),
+                cluster.z - o.z(ts[indx]),
+            ]
+        )
 
-    ldot = np.sum(rstar * lz, axis=1)
+        ldot = np.sum(rstar * lz, axis=1)
 
-    dpath[ldot < 0] *= -1.0
+        dpath[ldot < 0] *= -1.0
+    else:
+        yindx = np.argmin(np.fabs(dy),axis=1)
+        dpath*=np.sign(dy[np.arange(0,len(dy)),yindx])
 
     if plot:
         filename = kwargs.pop("filename", None)

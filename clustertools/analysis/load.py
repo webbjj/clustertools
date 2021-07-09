@@ -1078,7 +1078,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
     )
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
-	cluster.rhos=rhos
+        cluster.rhos=rhos
 
         v=np.sqrt(vx**2.+vy**2.+vz**2.)
         ek=0.5*m*v**2.

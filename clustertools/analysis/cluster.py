@@ -161,8 +161,8 @@ class StarCluster(object):
         self.kw = np.array([])
         self.m0 = np.array([])
 
-	#If using Nbodypp
-	self.rhos=np.array([])
+        #If using Nbodypp
+        self.rhos=np.array([])
 
         # variables for add_nbody
         self.zmbar = 1.0

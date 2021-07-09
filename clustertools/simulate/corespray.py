@@ -3,6 +3,8 @@ from galpy.potential import MWPotential2014
 from galpy.util import bovy_conversion,bovy_plot
 import numpy as np
 
+import matplotlib.pyplot as plt
+
 from ..util.recipes import *
 from ..util.coordinates import *
 
@@ -29,7 +31,7 @@ class corespray(object):
 		#mmin,mmax - minimum and maximum mass in the core (MSun)
 		#alpha - slope of core mass function
 
-		to=bovy_conversion.time_in_Gyr(ro=ro,vo=vo)
+		to=bovy_conversion.time_in_Gyr(ro=ro,vo=vo)*1000.
 
 		self.gcname=gcname
 		self.o = Orbit.from_name(gcname, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])		
@@ -50,12 +52,16 @@ class corespray(object):
 		self.ro,self.vo=ro,vo
 
 
-	def sample(self,tstart=-1000.,tend=0.,rate=1.,nstar=None,npeak=5.):
-
+	def sample(self,tstart=-1000.,tend=0.,rate=1.,nstar=None,npeak=5.,verbose=False):
+		#tstart - initial time when sampling begins (Myr)
+		#tend - final time when sampling ends (Myr)
+		#rate - ejection rate (default 1 per Myr)
+		#nstar - if set, nstar stars will be ejected randomly between start and tend
+		#npeak - when sampling vs, sampling range will be from 0 to npeak*vpeak, where vpeak is the peak in the distribution 
 
 		grav=4.302e-3 #pc/Msun (km/s)^2
 
-		to=bovy_conversion.time_in_Gyr(ro=self.ro,vo=self.vo)
+		to=bovy_conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.0
 
 		self.tstart=tstart
 		self.tend=tend
@@ -73,21 +79,21 @@ class corespray(object):
 			self.tesc=tstart+np.random.rand(nstar)*(tend-tstart)
 
 		if tstart<tend:
-			ts=np.linspace(self.tend/(to*1000.0),self.tstart/(to*1000.0),1000)
+			ts=np.linspace(self.tend/to,self.tstart/to,1000)
 			self.o.integrate(ts,self.pot)
 		else:
-			ts=np.linspace(self.tstart/(to*1000.0),self.tend/(to*1000.0),1000)
-			self.o.integrate(ts,self.pot)
+			print('FORWARD INTEGRATION HAS NOT YET BEEN IMPLEMENTED')
+			return -1
 	    
 	    #Generate positions and new velocities for escaped stars with velocity dispersions of 100/root(3), based on
 	    #gcname's position 1 Gyr ago
-		self.xe=self.o.x(self.tesc/(to*1000.0))
-		self.ye=self.o.y(self.tesc/(to*1000.0))
-		self.ze=self.o.z(self.tesc/(to*1000.0))
+		self.xe=self.o.x(self.tesc/to)
+		self.ye=self.o.y(self.tesc/to)
+		self.ze=self.o.z(self.tesc/to)
 
-		self.vxe=self.o.vx(self.tesc/(to*1000.0))
-		self.vye=self.o.vy(self.tesc/(to*1000.0))
-		self.vze=self.o.vz(self.tesc/(to*1000.0))
+		self.vxe=self.o.vx(self.tesc/to)
+		self.vye=self.o.vy(self.tesc/to)
+		self.vze=self.o.vz(self.tesc/to)
 	    
 		self.vescape=np.array([])
 
@@ -126,6 +132,8 @@ class corespray(object):
 				    self.vze[nescape]+=vs*(vzs/vstar)
 
 				    nescape+=1
+
+				if verbose: print('DEBUG: ',nescape,prob,vs,self.vesc0)
 		
 
 		#Need to do an orbit for each star
@@ -143,7 +151,7 @@ class corespray(object):
 		#Get each stars orbit at time=tend
 		Re0, phie0, ze0, vRe0, vTe0, vze0=np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([])
 		for i in range(0,len(os)):
-			t0=tend-self.tesc[i]
+			t0=(tend-self.tesc[i])/to
 
 			Re0=np.append(Re0,os[i].R(t0))
 			phie0=np.append(phie0,os[i].phi(t0))
@@ -240,6 +248,29 @@ class corespray(object):
 	        return x
 	    else:      
 	        return np.array(x)
+
+	def animate(self,nsnap=100,xlim=10,ylim=10):
+
+		to=bovy_conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.0
+		ts=np.linspace(self.tend/to,self.tstart/to,nsnap)
+
+
+		for i in range(0,len(ts)):
+			plt.plot(self.o.x(ts[i]),o.y(ts[i]),'o')
+
+			escindx=self.tesc/to<ts[i]
+
+			for j in range(0,np.sum(escindx)):
+				plt.plot(self.os[escindx][j].x(ts[i]/to),self.os[escindx][j].y(ts[i]/to),'k.')
+
+			plt.xlabel('X (kpc)')
+			plt.ylabel('Y (kpc)')
+			plt.xlim(-xlim,xlim)
+			plt.ylim(-ylim,ylim)
+
+			plt.savefig('%s.png' % str(i).zfill(5))
+			plt.close()
+
 
 
 

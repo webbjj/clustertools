@@ -21,7 +21,6 @@ from ..analysis.functions import *
 from ..analysis.profiles import *
 from ..analysis.operations import *
 
-
 def snapout(cluster, filename, energies=False, radec=False):
     """Output a snapshot in clustertools format
         - clustertools column format is mass,x,y,z,vx,vy,vz,id,kwtype where

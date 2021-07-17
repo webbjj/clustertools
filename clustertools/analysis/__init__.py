@@ -10,6 +10,7 @@ from . import tails
 # Functions
 #
 sub_cluster=cluster.sub_cluster
+overlap_cluster=cluster.overlap_cluster
 
 find_centre=functions.find_centre
 find_centre_of_density=functions.find_centre_of_density

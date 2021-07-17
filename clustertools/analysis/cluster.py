@@ -7,6 +7,7 @@ __author__ = "Jeremy J Webb"
 __all__ = [
     "StarCluster",
     "sub_cluster",
+    "overlap_cluster",
 ]
 
 import numpy as np
@@ -24,6 +25,7 @@ from .operations import *
 from .operations import from_radec
 from .tails import *
 from copy import copy
+from galpy.orbit import Orbit
 
 class StarCluster(object):
     """ A class that represents a star cluster population that ooperations and functions can be performed on
@@ -229,6 +231,9 @@ class StarCluster(object):
             self.pmdec_gc = self.orbit.pmdec()
             self.vlos_gc = self.orbit.vlos()           
 
+        self.orbit=None
+        self.orbits=None
+
         # variables for add_nbody6
         # Number of stars in the core
         self.nc = 0
@@ -408,37 +413,37 @@ class StarCluster(object):
 
             if len(self.m) == 1:
                 self.m = np.ones(nmax) * self.m[0]
-            elif len(self.m <nmax):
+            elif len(self.m) <nmax:
                 length_error=True
 
             if len(self.x) == 1:
-                self.x = np.ones(nmax) * self.x[0]
-            elif len(self.x <nmax):
+                self.x = np.ones(nmax) * self.xgc
+            elif len(self.x) <nmax:
                 length_error=True
 
             if len(self.y) == 1:
-                self.y = np.ones(nmax) * self.y[0]
-            elif len(self.y <nmax):
+                self.y = np.ones(nmax) * self.ygc
+            elif len(self.y) <nmax:
                 length_error=True
 
             if len(self.z) == 1:
-                self.z = np.ones(nmax) * self.z[0]
-            elif len(self.z <nmax):
+                self.z = np.ones(nmax) * self.zgc
+            elif len(self.z) <nmax:
                 length_error=True
 
             if len(self.vx) == 1:
-                self.vx = np.ones(nmax) * self.vx[0]
-            elif len(self.vx <nmax):
+                self.vx = np.ones(nmax) * self.vxgc
+            elif len(self.vx) <nmax:
                 length_error=True
 
             if len(self.vy) == 1:
-                self.vy = np.ones(nmax) * self.vy[0]
-            elif len(self.vy <nmax):
+                self.vy = np.ones(nmax) * self.vygc
+            elif len(self.vy) <nmax:
                 length_error=True
 
             if len(self.vz) == 1:
-                self.vz = np.ones(nmax) * self.vz[0]
-            elif len(self.vz <nmax):
+                self.vz = np.ones(nmax) * self.vzgc
+            elif len(self.vz) <nmax:
                 length_error=True
 
         if length_error:
@@ -531,6 +536,15 @@ class StarCluster(object):
                     ygc /= 1000.0
                     zgc /= 1000.0
 
+                elif ounits == 'radec':
+                    o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,solarmotion=[-11.1, 24.0, 7.25])
+                    xgc=o.x()
+                    ygc=o.y()
+                    zgc=o.z()
+                    vxgc=o.vx()
+                    vygc=o.vy()
+                    vzgc=o.vz()
+
                 ounits = "kpckms"
 
             if self.units == "pckms":
@@ -567,6 +581,21 @@ class StarCluster(object):
             self.pmra_gc = vxgc
             self.pmdec_gc = vygc
             self.vlos_gc = vzgc
+
+            #Add on orbital parameters for missing data
+            if self.origin == 'sky':
+                if self.ra == np.zeros(len(self.ra)):
+                    self.ra += self.ra_gc
+                if self.dec == np.zeros(len(self.dec)):
+                    self.dec += self.dec_gc
+                if self.dist == np.zeros(len(self.dist)):
+                    self.dist += self.dist_gc
+                if self.pmra == np.zeros(len(self.pmra)):
+                    self.pmra += self.pmra_gc
+                if self.pmdec == np.zeros(len(self.pmdec)):
+                    self.pmdec += self.pmdec_gc
+                if self.vlos == np.zeros(len(self.vlos)):
+                    self.vlos += self.vlos_gc
 
         if initialize:
             self.initialize_orbit(from_centre=from_centre)
@@ -1399,8 +1428,8 @@ class StarCluster(object):
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
-            indx=None,
-            mcorr=None,
+            indx=indx,
+            mcorr=mcorr,
             projected=projected,
             plot=plot,
             title="GLOBAL",
@@ -1642,7 +1671,7 @@ class StarCluster(object):
         if full:
             return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
         else:
-            return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+            return JR, Jphi, Jz
 
     def ttensor(self, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False,t=0.):
         self.tidal_tensor=ttensor(self, pot=pot, ro=ro, vo=vo, eigenval=eigenval,t=t)
@@ -1955,3 +1984,57 @@ def sub_cluster(
         subcluster.analyze(sortstars=sortstars)
 
     return subcluster
+
+def overlap_cluster(cluster1,cluster2,tol=0.1,projected=False,return_cluster=True):
+    """Extract a sub population of stars from cluster1 that spatially overlaps with cluster2
+
+    Parameters
+    ----------
+    cluster1 : StarCluster
+        cluster from which stars are to be extracted
+    cluster2 : StarCluster
+        cluster from which overlap region is defined
+    tol: float
+        tolerance parameter for how much regions need to overlap (default: 0.1)
+    projected : bool 
+        use projected values and constraints (default:False)
+    return_cluster: bool
+        returns a sub_cluster if True, otherwise return the boolean array (default:True)
+
+    Returns
+    -------
+    StarCluster
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+
+    """
+    indx=np.zeros(cluster1.ntot,dtype=bool)
+    drmin=np.zeros(cluster1.ntot)
+
+    for i in range(0,cluster1.ntot):
+        dx=cluster1.x[i]-cluster2.x
+        dy=cluster1.y[i]-cluster2.y
+
+        if not projected:
+            dz=cluster1.z[i]-cluster2.z
+            dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+        else:
+            dr=np.sqrt(dx**2.+dy**2.)
+
+        drmin[i]=np.amin(dr)
+        if np.amin(dr) < tol:
+            indx[i]=True
+
+    if return_cluster:
+        return sub_cluster(cluster1,indx=indx)
+    else:
+        return indx
+
+
+
+
+
+
+

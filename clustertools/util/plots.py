@@ -644,6 +644,8 @@ def starplot(
                 units = "(kpc)"
             elif cluster.units == "galpy":
                 units = "(GALPY)"
+            elif cluster.units == 'radec':
+                units = "(degree)"
             else:
                 units = ""
 
@@ -687,6 +689,8 @@ def starplot(
             units = "(kpc)"
         elif cluster.units == "galpy":
             units = "(GALPY)"
+        elif cluster.units == 'radec':
+            units = "(degree)"
         else:
             units = ""
 
@@ -694,12 +698,12 @@ def starplot(
 
         plt.plot(cluster.x, cluster.z, ".", alpha=alpha, **kwargs)
 
-        if cluster.origin == "galaxy":
+        if cluster.origin == "galaxy" and do_centre:
             plt.plot(cluster.xgc, cluster.zgc, "o", label="Center")
             plt.plot(
                 cluster.xgc + cluster.xc, cluster.zgc + cluster.zc, "o", label="COM"
             )
-        elif cluster.origin != "centre":
+        elif cluster.origin != "centre" and do_centre:
             plt.plot(cluster.xc, cluster.zc, "o", label="COM")
 
         if xlim != None:
@@ -714,12 +718,12 @@ def starplot(
 
         plt.plot(cluster.x, cluster.y, ".", alpha=alpha, **kwargs)
 
-        if cluster.origin == "galaxy":
+        if cluster.origin == "galaxy" and do_centre:
             plt.plot(cluster.xgc, cluster.ygc, "o", label="Center")
             plt.plot(
                 cluster.xgc + cluster.xc, cluster.ygc + cluster.yc, "o", label="COM"
             )
-        elif cluster.origin != "centre":
+        elif cluster.origin != "centre" and do_centre:
             plt.plot(cluster.xc, cluster.yc, "o", label="COM")
 
         if xlim != None:

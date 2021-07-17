@@ -163,11 +163,19 @@ def tail_path(
             vytail = np.append(vytail, np.mean(cluster.vy[indx]))
             vztail = np.append(vztail, np.mean(cluster.vz[indx]))
 
+    if skypath:
+        ratail,dectail,disttail,pmratail,pmdectail,vlostail=cart_to_sky(xtail, ytail, ztail, vxtail, vytail, vztail)
+
+
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        starplot(cluster,coords='xy',overplot=overplot)
-        _lplot(xtail,ytail,overplot=True)
+        if skypath:
+            skyplot(cluster,coords='radec',overplot=overplot)
+            _lplot(ratail,dectail,overplot=True)
+        else:
+            starplot(cluster,coords='xy',overplot=overplot)
+            _lplot(xtail,ytail,overplot=True)
 
         if filename != None:
             plt.savefig(filename)
@@ -175,7 +183,6 @@ def tail_path(
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if skypath:
-        ratail,dectail,disttail,pmratail,pmdectail,vlostail=cart_to_sky(xtail, ytail, ztail, vxtail, vytail, vztail)
         return ttail,ratail,dectail,disttail,pmratail,pmdectail,vlostail
     else:
         return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
@@ -377,7 +384,10 @@ def tail_path_match(
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
+        if skypath:
+            _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (degree)$",ylabel=r"$ \rm D_{path} (degree)$",overplot=overplot)
+        else:
+            _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
 
         if filename != None:
             plt.savefig(filename)

@@ -1384,39 +1384,75 @@ def _get_snapshot(
         print(cluster.ntot)
         return cluster
 
-    mindx = np.argwhere(col_names == "m")[0][0]
-    m = data[:, col_nums[mindx]] * mcon
+    if "m" in col_names:
+        mindx = np.argwhere(col_names == "m")[0][0]
+        m = data[:, col_nums[mindx]] * mcon
+    else:
+        m=1.
 
-    xindx = np.argwhere(col_names == "x")[0][0]
-    x = data[:, col_nums[xindx]]
-    yindx = np.argwhere(col_names == "y")[0][0]
-    y = data[:, col_nums[yindx]]
-    zindx = np.argwhere(col_names == "z")[0][0]
-    z = data[:, col_nums[zindx]]
-    vxindx = np.argwhere(col_names == "vx")[0][0]
-    vx = data[:, col_nums[vxindx]] * vcon
-    vyindx = np.argwhere(col_names == "vy")[0][0]
-    vy = data[:, col_nums[vyindx]] * vcon
-    vzindx = np.argwhere(col_names == "vz")[0][0]
-    vz = data[:, col_nums[vzindx]] * vcon
+    if "x" in col_names:
+        xindx = np.argwhere(col_names == "x")[0][0]
+        x = data[:, col_nums[xindx]]
+    else:
+        x=0.
+
+    if "y" in col_names:
+        yindx = np.argwhere(col_names == "y")[0][0]
+        y = data[:, col_nums[yindx]]
+    else:
+        y=0.
+
+    if "z" in col_names:
+        zindx = np.argwhere(col_names == "z")[0][0]
+        z = data[:, col_nums[zindx]]
+    else:
+        z=0.
+
+    if "vx" in col_names:
+        vxindx = np.argwhere(col_names == "vx")[0][0]
+        vx = data[:, col_nums[vxindx]] * vcon
+    else:
+        vx=0.
+
+    if "vy" in col_names:
+        vyindx = np.argwhere(col_names == "vy")[0][0]
+        vy = data[:, col_nums[vyindx]] * vcon
+    else:
+        vy=0.
+
+    if "vz" in col_names:
+        vzindx = np.argwhere(col_names == "vz")[0][0]
+        vz = data[:, col_nums[vzindx]] * vcon
+    else:
+        vz=0.
 
     if "id" in col_names:
         idindx = np.argwhere(col_names == "id")[0][0]
         i_d = data[:, col_nums[idindx]]
+        idindx=True
     else:
-        i_d = np.linspace(0, len(x), len(x)) + 1
+        idindx=False
 
     if "kw" in col_names:
         kwindx = np.argwhere(col_names == "kw")[0][0]
         kw = data[:, col_nums[kwindx]]
+        kwindx=True
     else:
-        kw = np.zeros(len(x))
+        kwindx=False
+
+
 
     cluster = StarCluster(
         tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
-    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
-    cluster.kw = kw
+
+    if idindx:
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
+    else:
+        cluster.add_stars(x, y, z, vx, vy, vz, m,sortstars=False)
+
+    if kwindx: 
+        cluster.kw = kw
 
     if origin == "galaxy":
         if ofile == None:

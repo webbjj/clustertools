@@ -390,6 +390,8 @@ def alpha_prof(
     indx=None,
     projected=False,
     normalize=True,
+    r_lower=None,
+    r_upper=None,
     aerror=False,
     mcorr=None,
     plot=False,
@@ -424,6 +426,10 @@ def alpha_prof(
         use projected values and constraints (default:False)
     normalize : bool
         normalize radial bins by cluster's half-mass radius (default: True)
+    r_lower : float
+        lower limits to radial bins
+    r_upper : float
+        upper limits to radial bins
     aerror : bool
         return error in alpha calculations (default:True)
     mcorr : bool
@@ -515,12 +521,23 @@ def alpha_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if r_lower is None:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    else:
+        r_mean=np.zeros(len(r_lower))
+        r_hist=np.zeros(len(r_lower))
+
+        for i in range(0,len(r_lower)):
+            rindx=(r[indx] >= r_lower[i]) * (r[indx]<r_upper[i])
+            r_mean[i]=np.mean(r[rindx])
+            r_hist[i]=np.sum(rindx)
+
 
     rbinerror=np.zeros(len(r_mean))
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+
 
         if return_error:
             m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
@@ -566,7 +583,7 @@ def alpha_prof(
         _plot(
             lrprofn,
             aprof,
-            xlabel=r"$\ln(r/r_m)$",
+            xlabel=xlabel,
             ylabel=r"$\alpha$",
             overplot=overplot,
             **kwargs

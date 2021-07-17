@@ -17,8 +17,10 @@ __all__ = [
 ]
 
 import numpy as np
-from galpy.util import bovy_coords
-
+try:
+    from galpy.util import coords
+except:
+    import galpy.util.bovy_coords as coords
 
 def sphere_coords(cluster):
     """Get the spherical coordinates of every star in the cluster
@@ -116,8 +118,8 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
     -------
     2018 - Written - Webb (UofT)
     """
-    r, theta, z = bovy_coords.rect_to_cyl(x, y, z)
-    vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
+    r, theta, z = coords.rect_to_cyl(x, y, z)
+    vr, vtheta, vz = coords.rect_to_cyl_vec(
         vx, vy, vz, x, y, z
     )
     return r, theta, z, vr, vtheta, vz
@@ -144,10 +146,10 @@ def sky_coords(cluster):
     if origin0 != "galaxy":
         cluster.to_galaxy(starsort=False)
 
-    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
+    x0, y0, z0 = coords.galcenrect_to_XYZ(
         cluster.x, cluster.y, cluster.z, Xsun=8.0, Zsun=0.025
     ).T
-    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
+    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
         cluster.vx,
         cluster.vy,
         cluster.vz,
@@ -156,13 +158,13 @@ def sky_coords(cluster):
         vsun=[-11.1, 244.0, 7.25],
     ).T
 
-    l0, b0, d0 = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
-    ra, dec = bovy_coords.lb_to_radec(l0, b0, degree=True).T
+    l0, b0, d0 = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
+    ra, dec = coords.lb_to_radec(l0, b0, degree=True).T
 
-    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
+    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
         vx0, vy0, vz0, l0, b0, d0, degree=True
     ).T
-    pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
+    pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
 
     cluster.return_cluster()
 
@@ -186,10 +188,10 @@ def cart_to_sky(x,y,z,vx,vy,vz):
     2021 - Written - Webb (UofT)
     """
 
-    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
+    x0, y0, z0 = coords.galcenrect_to_XYZ(
         x, y, z, Xsun=8.0, Zsun=0.025
     ).T
-    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
+    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
         vx,
         vy,
         vz,
@@ -198,12 +200,12 @@ def cart_to_sky(x,y,z,vx,vy,vz):
         vsun=[-11.1, 244.0, 7.25],
     ).T
 
-    l0, b0, d0 = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
-    ra, dec = bovy_coords.lb_to_radec(l0, b0, degree=True).T
+    l0, b0, d0 = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
+    ra, dec = coords.lb_to_radec(l0, b0, degree=True).T
 
-    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
+    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
         vx0, vy0, vz0, l0, b0, d0, degree=True
     ).T
-    pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
+    pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
 
     return ra, dec, d0, pmra, pmdec, vr0

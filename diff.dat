@@ -1,0 +1,1659 @@
+diff --git a/clustertools/analysis/__init__.py b/clustertools/analysis/__init__.py
+index 0888e5a..7101967 100644
+--- a/clustertools/analysis/__init__.py
++++ b/clustertools/analysis/__init__.py
+@@ -10,7 +10,6 @@ from . import tails
+ # Functions
+ #
+ sub_cluster=cluster.sub_cluster
+-overlap_cluster=cluster.overlap_cluster
+ 
+ find_centre=functions.find_centre
+ find_centre_of_density=functions.find_centre_of_density
+diff --git a/clustertools/analysis/cluster.py b/clustertools/analysis/cluster.py
+index ffff382..6493d3a 100644
+--- a/clustertools/analysis/cluster.py
++++ b/clustertools/analysis/cluster.py
+@@ -7,7 +7,6 @@ __author__ = "Jeremy J Webb"
+ __all__ = [
+     "StarCluster",
+     "sub_cluster",
+-    "overlap_cluster",
+ ]
+ 
+ import numpy as np
+@@ -25,7 +24,6 @@ from .operations import *
+ from .operations import from_radec
+ from .tails import *
+ from copy import copy
+-from galpy.orbit import Orbit
+ 
+ class StarCluster(object):
+     """ A class that represents a star cluster population that ooperations and functions can be performed on
+@@ -163,8 +161,8 @@ class StarCluster(object):
+         self.kw = np.array([])
+         self.m0 = np.array([])
+ 
+-        #If using Nbodypp
+-        self.rhos=np.array([])
++        #Opitional stellar variables
++        self.rhos=None
+ 
+         # variables for add_nbody
+         self.zmbar = 1.0
+@@ -231,9 +229,6 @@ class StarCluster(object):
+             self.pmdec_gc = self.orbit.pmdec()
+             self.vlos_gc = self.orbit.vlos()           
+ 
+-        self.orbit=None
+-        self.orbits=None
+-
+         # variables for add_nbody6
+         # Number of stars in the core
+         self.nc = 0
+@@ -413,37 +408,37 @@ class StarCluster(object):
+ 
+             if len(self.m) == 1:
+                 self.m = np.ones(nmax) * self.m[0]
+-            elif len(self.m) <nmax:
++            elif len(self.m <nmax):
+                 length_error=True
+ 
+             if len(self.x) == 1:
+-                self.x = np.ones(nmax) * self.xgc
+-            elif len(self.x) <nmax:
++                self.x = np.ones(nmax) * self.x[0]
++            elif len(self.x <nmax):
+                 length_error=True
+ 
+             if len(self.y) == 1:
+-                self.y = np.ones(nmax) * self.ygc
+-            elif len(self.y) <nmax:
++                self.y = np.ones(nmax) * self.y[0]
++            elif len(self.y <nmax):
+                 length_error=True
+ 
+             if len(self.z) == 1:
+-                self.z = np.ones(nmax) * self.zgc
+-            elif len(self.z) <nmax:
++                self.z = np.ones(nmax) * self.z[0]
++            elif len(self.z <nmax):
+                 length_error=True
+ 
+             if len(self.vx) == 1:
+-                self.vx = np.ones(nmax) * self.vxgc
+-            elif len(self.vx) <nmax:
++                self.vx = np.ones(nmax) * self.vx[0]
++            elif len(self.vx <nmax):
+                 length_error=True
+ 
+             if len(self.vy) == 1:
+-                self.vy = np.ones(nmax) * self.vygc
+-            elif len(self.vy) <nmax:
++                self.vy = np.ones(nmax) * self.vy[0]
++            elif len(self.vy <nmax):
+                 length_error=True
+ 
+             if len(self.vz) == 1:
+-                self.vz = np.ones(nmax) * self.vzgc
+-            elif len(self.vz) <nmax:
++                self.vz = np.ones(nmax) * self.vz[0]
++            elif len(self.vz <nmax):
+                 length_error=True
+ 
+         if length_error:
+@@ -536,15 +531,6 @@ class StarCluster(object):
+                     ygc /= 1000.0
+                     zgc /= 1000.0
+ 
+-                elif ounits == 'radec':
+-                    o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,solarmotion=[-11.1, 24.0, 7.25])
+-                    xgc=o.x()
+-                    ygc=o.y()
+-                    zgc=o.z()
+-                    vxgc=o.vx()
+-                    vygc=o.vy()
+-                    vzgc=o.vz()
+-
+                 ounits = "kpckms"
+ 
+             if self.units == "pckms":
+@@ -582,21 +568,6 @@ class StarCluster(object):
+             self.pmdec_gc = vygc
+             self.vlos_gc = vzgc
+ 
+-            #Add on orbital parameters for missing data
+-            if self.origin == 'sky':
+-                if self.ra == np.zeros(len(self.ra)):
+-                    self.ra += self.ra_gc
+-                if self.dec == np.zeros(len(self.dec)):
+-                    self.dec += self.dec_gc
+-                if self.dist == np.zeros(len(self.dist)):
+-                    self.dist += self.dist_gc
+-                if self.pmra == np.zeros(len(self.pmra)):
+-                    self.pmra += self.pmra_gc
+-                if self.pmdec == np.zeros(len(self.pmdec)):
+-                    self.pmdec += self.pmdec_gc
+-                if self.vlos == np.zeros(len(self.vlos)):
+-                    self.vlos += self.vlos_gc
+-
+         if initialize:
+             self.initialize_orbit(from_centre=from_centre)
+ 
+@@ -1428,8 +1399,8 @@ class StarCluster(object):
+             emax=emax,
+             kwmin=kwmin,
+             kwmax=kwmax,
+-            indx=indx,
+-            mcorr=mcorr,
++            indx=None,
++            mcorr=None,
+             projected=projected,
+             plot=plot,
+             title="GLOBAL",
+@@ -1671,7 +1642,7 @@ class StarCluster(object):
+         if full:
+             return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+         else:
+-            return JR, Jphi, Jz
++            return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+ 
+     def ttensor(self, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False,t=0.):
+         self.tidal_tensor=ttensor(self, pot=pot, ro=ro, vo=vo, eigenval=eigenval,t=t)
+@@ -1983,58 +1954,4 @@ def sub_cluster(
+     if subcluster.ntot > 0:
+         subcluster.analyze(sortstars=sortstars)
+ 
+-    return subcluster
+-
+-def overlap_cluster(cluster1,cluster2,tol=0.1,projected=False,return_cluster=True):
+-    """Extract a sub population of stars from cluster1 that spatially overlaps with cluster2
+-
+-    Parameters
+-    ----------
+-    cluster1 : StarCluster
+-        cluster from which stars are to be extracted
+-    cluster2 : StarCluster
+-        cluster from which overlap region is defined
+-    tol: float
+-        tolerance parameter for how much regions need to overlap (default: 0.1)
+-    projected : bool 
+-        use projected values and constraints (default:False)
+-    return_cluster: bool
+-        returns a sub_cluster if True, otherwise return the boolean array (default:True)
+-
+-    Returns
+-    -------
+-    StarCluster
+-
+-    History
+-    -------
+-    2021 - Written - Webb (UofT)
+-
+-    """
+-    indx=np.zeros(cluster1.ntot,dtype=bool)
+-    drmin=np.zeros(cluster1.ntot)
+-
+-    for i in range(0,cluster1.ntot):
+-        dx=cluster1.x[i]-cluster2.x
+-        dy=cluster1.y[i]-cluster2.y
+-
+-        if not projected:
+-            dz=cluster1.z[i]-cluster2.z
+-            dr=np.sqrt(dx**2.+dy**2.+dz**2.)
+-        else:
+-            dr=np.sqrt(dx**2.+dy**2.)
+-
+-        drmin[i]=np.amin(dr)
+-        if np.amin(dr) < tol:
+-            indx[i]=True
+-
+-    if return_cluster:
+-        return sub_cluster(cluster1,indx=indx)
+-    else:
+-        return indx
+-
+-
+-
+-
+-
+-
+-
++    return subcluster
+\ No newline at end of file
+diff --git a/clustertools/analysis/load.py b/clustertools/analysis/load.py
+index 00291f4..c4443b7 100644
+--- a/clustertools/analysis/load.py
++++ b/clustertools/analysis/load.py
+@@ -1384,75 +1384,39 @@ def _get_snapshot(
+         print(cluster.ntot)
+         return cluster
+ 
+-    if "m" in col_names:
+-        mindx = np.argwhere(col_names == "m")[0][0]
+-        m = data[:, col_nums[mindx]] * mcon
+-    else:
+-        m=1.
+-
+-    if "x" in col_names:
+-        xindx = np.argwhere(col_names == "x")[0][0]
+-        x = data[:, col_nums[xindx]]
+-    else:
+-        x=0.
+-
+-    if "y" in col_names:
+-        yindx = np.argwhere(col_names == "y")[0][0]
+-        y = data[:, col_nums[yindx]]
+-    else:
+-        y=0.
+-
+-    if "z" in col_names:
+-        zindx = np.argwhere(col_names == "z")[0][0]
+-        z = data[:, col_nums[zindx]]
+-    else:
+-        z=0.
+-
+-    if "vx" in col_names:
+-        vxindx = np.argwhere(col_names == "vx")[0][0]
+-        vx = data[:, col_nums[vxindx]] * vcon
+-    else:
+-        vx=0.
+-
+-    if "vy" in col_names:
+-        vyindx = np.argwhere(col_names == "vy")[0][0]
+-        vy = data[:, col_nums[vyindx]] * vcon
+-    else:
+-        vy=0.
+-
+-    if "vz" in col_names:
+-        vzindx = np.argwhere(col_names == "vz")[0][0]
+-        vz = data[:, col_nums[vzindx]] * vcon
+-    else:
+-        vz=0.
++    mindx = np.argwhere(col_names == "m")[0][0]
++    m = data[:, col_nums[mindx]] * mcon
++
++    xindx = np.argwhere(col_names == "x")[0][0]
++    x = data[:, col_nums[xindx]]
++    yindx = np.argwhere(col_names == "y")[0][0]
++    y = data[:, col_nums[yindx]]
++    zindx = np.argwhere(col_names == "z")[0][0]
++    z = data[:, col_nums[zindx]]
++    vxindx = np.argwhere(col_names == "vx")[0][0]
++    vx = data[:, col_nums[vxindx]] * vcon
++    vyindx = np.argwhere(col_names == "vy")[0][0]
++    vy = data[:, col_nums[vyindx]] * vcon
++    vzindx = np.argwhere(col_names == "vz")[0][0]
++    vz = data[:, col_nums[vzindx]] * vcon
+ 
+     if "id" in col_names:
+         idindx = np.argwhere(col_names == "id")[0][0]
+         i_d = data[:, col_nums[idindx]]
+-        idindx=True
+     else:
+-        idindx=False
++        i_d = np.linspace(0, len(x), len(x)) + 1
+ 
+     if "kw" in col_names:
+         kwindx = np.argwhere(col_names == "kw")[0][0]
+         kw = data[:, col_nums[kwindx]]
+-        kwindx=True
+     else:
+-        kwindx=False
+-
+-
++        kw = np.zeros(len(x))
+ 
+     cluster = StarCluster(
+         tphys, units=units, origin=origin, ctype=ctype, **kwargs
+     )
+-
+-    if idindx:
+-        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
+-    else:
+-        cluster.add_stars(x, y, z, vx, vy, vz, m,sortstars=False)
+-
+-    if kwindx: 
+-        cluster.kw = kw
++    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)
++    cluster.kw = kw
+ 
+     if origin == "galaxy":
+         if ofile == None:
+diff --git a/clustertools/analysis/operations.py b/clustertools/analysis/operations.py
+index 9978fc6..1885257 100644
+--- a/clustertools/analysis/operations.py
++++ b/clustertools/analysis/operations.py
+@@ -255,7 +255,7 @@ def to_nbody(cluster, ro=8.0, vo=220.0):
+ 
+     cluster.analyze()
+ 
+-def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
++def to_radec(cluster, sortstars=True, ro=8.0, vo=220.0):
+     """Convert to on-sky position, proper motion, and radial velocity of cluster
+     
+     Parameters
+@@ -264,8 +264,6 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
+         StarCluster
+     sortstars : bool
+         sort star by radius after coordinate change (default: False)
+-    from_centre : bool
+-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+     ro : float
+         galpy radius scaling parameter
+     vo : float
+@@ -280,69 +278,92 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
+    2018 - Written - Webb (UofT)
+     """
+ 
+-    if cluster.units != "radec" and cluster.origin != "sky":
+-
+-        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo)
+-        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo)
+-
+-        cluster.ra=cluster.orbits.ra()
+-        cluster.dec=cluster.orbits.dec()
+-        cluster.dist=cluster.orbits.dist()
+-        cluster.pmra=cluster.orbits.pmra()
+-        cluster.pmdec=cluster.orbits.pmdec()
+-        cluster.vlos=cluster.orbits.vlos()
+-
+-        cluster.ra_gc=cluster.orbit.ra()
+-        cluster.dec_gc=cluster.orbit.dec()
+-        cluster.dist_gc=cluster.orbit.dist()
+-        cluster.pmra_gc=cluster.orbit.pmra()
+-        cluster.pmdec_gc=cluster.orbit.pmdec()
+-        cluster.vlos_gc=cluster.orbit.vlos()
+-
+-        cluster.x = copy(cluster.ra)
+-        cluster.y = copy(cluster.dec)
+-        cluster.z = copy(cluster.dist)
+-        cluster.vx = copy(cluster.pmra)
+-        cluster.vy = copy(cluster.pmdec)
+-        cluster.vz = copy(cluster.vlos)
+-
+-        cluster.xgc = copy(cluster.ra_gc)
+-        cluster.ygc = copy(cluster.dec_gc)
+-        cluster.zgc = copy(cluster.dist_gc)
+-        cluster.vxgc = copy(cluster.pmra_gc)
+-        cluster.vygc = copy(cluster.pmdec_gc)
+-        cluster.vzgc = copy(cluster.vlos_gc)
+-
+-        cluster.units = "radec"
+-        cluster.origin = "sky"
++    units0, origin0 = cluster.units, cluster.origin
+ 
+-        cluster.analyze(sortstars=sortstars)
++    cluster.to_galaxy(sortstars=False)
++    cluster.to_kpckms()
+ 
+-    elif cluster.units=='radec' and (cluster.origin=='cluster' or cluster.origin=='centre'):
+-        cluster.x+=cluster.xgc
+-        cluster.y+=cluster.ygc
+-        cluster.z+=cluster.zgc
+-        cluster.vx+=cluster.vxgc
+-        cluster.vy+=cluster.vygc
+-        cluster.vz+=cluster.vzgc
+-        cluster.origin = "sky"
+-        cluster.analyze(sortstars=sortstars)
++    x0, y0, z0 = coords.galcenrect_to_XYZ(
++        cluster.x, cluster.y, cluster.z, Xsun=8.0, Zsun=0.025
++    ).T
++
++    cluster.dist = np.sqrt(x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0)
++
++    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
++        cluster.vx,
++        cluster.vy,
++        cluster.vz,
++        Xsun=8.0,
++        Zsun=0.025,
++        vsun=[-11.1, 244.0, 7.25],
++    ).T
++
++    cluster.vlos = (vx0 * x0 + vy0 * y0 + vz0 * z0) / np.sqrt(
++        x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0
++    )
++
++    l0, b0, cluster.dist = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
++    cluster.ra, cluster.dec = coords.lb_to_radec(l0, b0, degree=True).T
++
++    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
++        vx0, vy0, vz0, l0, b0, cluster.dist, degree=True
++    ).T
++    cluster.pmra, cluster.pmdec = coords.pmllpmbb_to_pmrapmdec(
++        pmll0, pmbb0, l0, b0, degree=True
++    ).T
++
++    x0, y0, z0 = coords.galcenrect_to_XYZ(
++        cluster.xgc, cluster.ygc, cluster.zgc, Xsun=8.0, Zsun=0.025
++    )
++    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
++        cluster.vxgc,
++        cluster.vygc,
++        cluster.vzgc,
++        Xsun=8.0,
++        Zsun=0.025,
++        vsun=[-11.1, 244.0, 7.25],
++    )
++
++    cluster.vlos_gc = (vx0 * x0 + vy0 * y0 + vz0 * z0) / np.sqrt(
++        x0 ** 2.0 + y0 ** 2.0 + z0 ** 2.0
++    )
++
++    l0, b0, cluster.dist_gc = coords.XYZ_to_lbd(x0, y0, z0, degree=True)
++    cluster.ra_gc, cluster.dec_gc = coords.lb_to_radec(l0, b0, degree=True)
++
++    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
++        vx0, vy0, vz0, l0, b0, cluster.dist_gc, degree=True
++    )
++    cluster.pmra_gc, cluster.pmdec_gc = coords.pmllpmbb_to_pmrapmdec(
++        pmll0, pmbb0, l0, b0, degree=True
++    )
++
++    cluster.x = copy(cluster.ra)
++    cluster.y = copy(cluster.dec)
++    cluster.z = copy(cluster.dist)
++    cluster.vx = copy(cluster.pmra)
++    cluster.vy = copy(cluster.pmdec)
++    cluster.vz = copy(cluster.vlos)
++
++    cluster.xgc = copy(cluster.ra_gc)
++    cluster.ygc = copy(cluster.dec_gc)
++    cluster.zgc = copy(cluster.dist_gc)
++    cluster.vxgc = copy(cluster.pmra_gc)
++    cluster.vygc = copy(cluster.pmdec_gc)
++    cluster.vzgc = copy(cluster.vlos_gc)
++
++    cluster.units = "radec"
++    cluster.origin = "sky"
+ 
+-def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
++    cluster.analyze(sortstars=sortstars)
++
++def from_radec(cluster):
+     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
+ 
+     Parameters
+     ----------
+     cluster : class
+         StarCluster
+-    sortstars : bool
+-        sort star by radius after coordinate change (default: False)
+-    from_centre : bool
+-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+-    ro : float
+-        galpy radius scaling parameter
+-    vo : float
+-        galpy velocity scaling parameter
+ 
+     Returns
+     -------
+@@ -355,22 +376,53 @@ def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
+     """
+     if cluster.units == "radec" and cluster.origin == "sky":
+ 
+-        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo)
+-        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo)
+-
+-        cluster.x = cluster.orbits.x()
+-        cluster.y = cluster.orbits.y()
+-        cluster.z = cluster.orbits.z()
+-        cluster.vx = cluster.orbits.vx()
+-        cluster.vy = cluster.orbits.vy()
+-        cluster.vz = cluster.orbits.vz()
++        origin0 = cluster.origin
+ 
+-        cluster.xgc = cluster.orbit.x()
+-        cluster.ygc = cluster.orbit.y()
+-        cluster.zgc = cluster.orbit.z()
+-        cluster.vxgc = cluster.orbit.vx()
+-        cluster.vygc = cluster.orbit.vy()
+-        cluster.vzgc = cluster.orbit.vz()
++        l, b = coords.radec_to_lb(cluster.ra, cluster.dec, degree=True).T
++        x0, y0, z0 = coords.lbd_to_XYZ(l, b, cluster.dist, degree=True).T
++        cluster.x, cluster.y, cluster.z = coords.XYZ_to_galcenrect(
++            x0, y0, z0, Xsun=8.0, Zsun=0.025
++        ).T
++
++        pml, pmb = coords.pmrapmdec_to_pmllpmbb(
++            cluster.pmra, cluster.pmdec, cluster.ra, cluster.dec, degree=True
++        ).T
++        vx0, vy0, vz0 = coords.vrpmllpmbb_to_vxvyvz(
++            cluster.vlos, pml, pmb, l, b, cluster.dist, degree=True
++        ).T
++        cluster.vx, cluster.vy, cluster.vz = coords.vxvyvz_to_galcenrect(
++            vx0,
++            vy0,
++            vz0,
++            vsun=[0.0, 220.0, 0.0],
++            Xsun=8.0,
++            Zsun=0.025,
++            _extra_rot=True,
++        ).T
++
++        l_gc, b_gc = coords.radec_to_lb(cluster.ra_gc, cluster.dec_gc, degree=True)
++        x0_gc, y0_gc, z0_gc = coords.lbd_to_XYZ(
++            l_gc, b_gc, cluster.dist_gc, degree=True
++        )
++        cluster.xgc, cluster.ygc, cluster.zgc = coords.XYZ_to_galcenrect(
++            x0_gc, y0_gc, z0_gc, Xsun=8.0, Zsun=0.025
++        )
++
++        pml_gc, pmb_gc = coords.pmrapmdec_to_pmllpmbb(
++            cluster.pmra_gc, cluster.pmdec_gc, cluster.ra_gc, cluster.dec_gc, degree=True
++        )
++        vx0_gc, vy0_gc, vz0_gc = coords.vrpmllpmbb_to_vxvyvz(
++            cluster.vlos_gc, pml_gc, pmb_gc, l_gc, b_gc, cluster.dist_gc, degree=True
++        )
++        cluster.vx_gc, cluster.vy_gc, cluster.vz_gc = coords.vxvyvz_to_galcenrect(
++            vx0_gc,
++            vy0_gc,
++            vz0_gc,
++            vsun=[0.0, 220.0, 0.0],
++            Xsun=8.0,
++            Zsun=0.025,
++            _extra_rot=True,
++        )
+ 
+         cluster.origin = "galaxy"
+         cluster.units = "kpckms"
+@@ -658,8 +710,6 @@ def to_cluster(cluster, sortstars=True, centre_method=None):
+                 )
+ 
+                 cluster.z -= cluster.zgc
+-                cluster.vz -= cluster.vzgc
+-
+ 
+             else:
+                 if cluster.centre_method == "VandeVen":
+diff --git a/clustertools/analysis/profiles.py b/clustertools/analysis/profiles.py
+index efc550b..be384ce 100644
+--- a/clustertools/analysis/profiles.py
++++ b/clustertools/analysis/profiles.py
+@@ -390,8 +390,6 @@ def alpha_prof(
+     indx=None,
+     projected=False,
+     normalize=True,
+-    r_lower=None,
+-    r_upper=None,
+     aerror=False,
+     mcorr=None,
+     plot=False,
+@@ -426,10 +424,6 @@ def alpha_prof(
+         use projected values and constraints (default:False)
+     normalize : bool
+         normalize radial bins by cluster's half-mass radius (default: True)
+-    r_lower : float
+-        lower limits to radial bins
+-    r_upper : float
+-        upper limits to radial bins
+     aerror : bool
+         return error in alpha calculations (default:True)
+     mcorr : bool
+@@ -521,24 +515,13 @@ def alpha_prof(
+     if emin != None:
+         indx *= cluster.etot <= emax
+ 
+-    if r_lower is None:
+-        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+-    else:
+-        r_mean=np.zeros(len(r_lower))
+-        r_hist=np.zeros(len(r_lower))
+-
+-        for i in range(0,len(r_lower)):
+-            rindx=(r[indx] >= r_lower[i]) * (r[indx]<r_upper[i])
+-            r_mean[i]=np.mean(r[rindx])
+-            r_hist[i]=np.sum(rindx)
+-
++    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+ 
+     rbinerror=np.zeros(len(r_mean))
+ 
+     for i in range(0, len(r_mean)):
+         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+ 
+-
+         if return_error:
+             m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
+             rbinerror[i]=np.amin(mbinerror)
+@@ -583,7 +566,7 @@ def alpha_prof(
+         _plot(
+             lrprofn,
+             aprof,
+-            xlabel=xlabel,
++            xlabel=r"$\ln(r/r_m)$",
+             ylabel=r"$\alpha$",
+             overplot=overplot,
+             **kwargs
+diff --git a/clustertools/analysis/tails.py b/clustertools/analysis/tails.py
+index 32100f2..e503e7d 100644
+--- a/clustertools/analysis/tails.py
++++ b/clustertools/analysis/tails.py
+@@ -163,19 +163,11 @@ def tail_path(
+             vytail = np.append(vytail, np.mean(cluster.vy[indx]))
+             vztail = np.append(vztail, np.mean(cluster.vz[indx]))
+ 
+-    if skypath:
+-        ratail,dectail,disttail,pmratail,pmdectail,vlostail=cart_to_sky(xtail, ytail, ztail, vxtail, vytail, vztail)
+-
+-
+     if plot:
+         filename = kwargs.pop("filename", None)
+         overplot = kwargs.pop("overplot", False)
+-        if skypath:
+-            skyplot(cluster,coords='radec',overplot=overplot)
+-            _lplot(ratail,dectail,overplot=True)
+-        else:
+-            starplot(cluster,coords='xy',overplot=overplot)
+-            _lplot(xtail,ytail,overplot=True)
++        starplot(cluster,coords='xy',overplot=overplot)
++        _lplot(xtail,ytail,overplot=True)
+ 
+         if filename != None:
+             plt.savefig(filename)
+@@ -183,6 +175,7 @@ def tail_path(
+     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+ 
+     if skypath:
++        ratail,dectail,disttail,pmratail,pmdectail,vlostail=cart_to_sky(xtail, ytail, ztail, vxtail, vytail, vztail)
+         return ttail,ratail,dectail,disttail,pmratail,pmdectail,vlostail
+     else:
+         return ttail, xtail, ytail, ztail, vxtail, vytail, vztail
+@@ -384,10 +377,7 @@ def tail_path_match(
+     if plot:
+         filename = kwargs.pop("filename", None)
+         overplot = kwargs.pop("overplot", False)
+-        if skypath:
+-            _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (degree)$",ylabel=r"$ \rm D_{path} (degree)$",overplot=overplot)
+-        else:
+-            _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
++        _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
+ 
+         if filename != None:
+             plt.savefig(filename)
+diff --git a/clustertools/simulate/__init__.py b/clustertools/simulate/__init__.py
+index 5e03106..9a792c9 100644
+--- a/clustertools/simulate/__init__.py
++++ b/clustertools/simulate/__init__.py
+@@ -1,6 +1,3 @@
+ from . import corespray
+-from . import tailspray
+ 
+ corespray=corespray.corespray
+-
+-tailspray=tailspray.tailspray
+diff --git a/clustertools/simulate/corespray.py b/clustertools/simulate/corespray.py
+index 3ebfb87..6896d17 100644
+--- a/clustertools/simulate/corespray.py
++++ b/clustertools/simulate/corespray.py
+@@ -1,14 +1,12 @@
+ from galpy.orbit import Orbit
+-from galpy.potential import MWPotential2014,PlummerPotential,KingPotential,MovingObjectPotential
+-from galpy.util import bovy_conversion,conversion,bovy_plot
++from galpy.potential import MWPotential2014
++from galpy.util import bovy_conversion,bovy_plot
+ import numpy as np
+ 
+ import matplotlib.pyplot as plt
+-from matplotlib import animation
+ 
+ from ..util.recipes import *
+ from ..util.coordinates import *
+-from ..analysis.cluster import StarCluster
+ 
+ class corespray(object):
+ 
+@@ -24,25 +22,21 @@ class corespray(object):
+ 
+ 	"""
+ 
+-	def __init__(self,gcorbit,pot=MWPotential2014,mu0=0.,sig0=10.0,vesc0=10.0,rho0=1.,mgc=None,rgc=None,W0=None,mmin=0.1,mmax=1.4,alpha=-1.35,ro=8.,vo=220.,q=-2):
++	def __init__(self,gcname,pot=MWPotential2014,mu0=0.,sig0=10.0,vesc0=10.0,rho0=1.,mmin=0.1,mmax=1.4,alpha=-1.35,ro=8.,vo=220.):
+ 		
+-		#gc orbit - name of or orbit instance corresponding to GC
+ 		#mu0 - average 1D velocity in core (km/s)
+ 		#sig0 - 1D velocity dispersion in core (km/s)
+ 		#vesc0 - core velocity dispersion (km/s)
+ 		#rho0 - core density (Msun/pc^3)
+-		#mgc - mass of GC
+-		#rgc - size of gc (assumed to be rh if Plummer or rt if King)
+-		#W0 - central potential if King model
+ 		#mmin,mmax - minimum and maximum mass in the core (MSun)
+ 		#alpha - slope of core mass function
+ 
+-		if isinstance(gcorbit,str):
+-			self.gcname=gcorbit
+-			self.o = Orbit.from_name(self.gcname, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
+-		else:
+-			self.gcname='unknown'
+-			self.o=gcorbit
++		to=bovy_conversion.time_in_Gyr(ro=ro,vo=vo)*1000.
++
++		self.gcname=gcname
++		self.o = Orbit.from_name(gcname, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])		
++
++		self.pot=pot
+ 
+ 		self.mu0,self.sig0,self.vesc0,self.rho0=mu0,sig0,vesc0,rho0
+ 
+@@ -56,67 +50,55 @@ class corespray(object):
+ 
+ 
+ 		self.ro,self.vo=ro,vo
+-		self.to=conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.
+-		self.mo=bovy_conversion.mass_in_msol(ro=self.ro,vo=self.vo)
+-
+ 
+-		self.q=q
+ 
+-		self.mwpot=pot
+-
+-		if mgc is None:
+-			self.gcpot=None
+-		else:
+-			if W0 is None:
+-				ra=rgc/1.3
+-				self.gcpot=PlummerPotential(mgc/self.mo,ra/self.ro,ro=self.ro,vo=self.vo)
+-			else:
+-				self.gcpot=KingPotential(W0,mgc/self.mo,rgc/self.ro,ro=self.ro,vo=self.vo)
+-
+-	def sample(self,tdisrupt=1000.,rate=1.,nstar=None,npeak=5.,verbose=False):
+-		#tdisrupt - time over which sampling begins (Myr)
++	def sample(self,tstart=-1000.,tend=0.,rate=1.,nstar=None,npeak=5.,verbose=False):
++		#tstart - initial time when sampling begins (Myr)
++		#tend - final time when sampling ends (Myr)
+ 		#rate - ejection rate (default 1 per Myr)
+ 		#nstar - if set, nstar stars will be ejected randomly between start and tend
+ 		#npeak - when sampling vs, sampling range will be from 0 to npeak*vpeak, where vpeak is the peak in the distribution 
+ 
+ 		grav=4.302e-3 #pc/Msun (km/s)^2
+ 
+-		self.tdisrupt=tdisrupt
++		to=bovy_conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.0
++
++		self.tstart=tstart
++		self.tend=tend
++		self.dt=tend-tstart
+ 
+ 		#Select escape times
+ 		#If nstar is not None, randomly select escapers between tstart and tend
+ 		if nstar is not None:
+ 			self.nstar=nstar
+-			self.rate=nstar/self.tdisrupt
++			self.rate=self.dt/nstar
++			self.tesc=tstart+np.random.rand(nstar)*self.dt
+ 		else:
+ 			self.rate=rate
+-			self.nstar=self.tdisrupt*rate
+-			
+-		self.tesc=-1.*self.tdisrupt*np.random.rand(self.nstar)
++			self.nstar=(tend-tstart)/rate
++			self.tesc=tstart+np.random.rand(nstar)*(tend-tstart)
+ 
+-		ts=np.linspace(0.,-1.*self.tdisrupt/self.to,1000)
+-		self.o.integrate(ts,self.mwpot)
+-
+-		moving_pot=MovingObjectPotential(self.o,self.gcpot,ro=self.ro,vo=self.vo)
+-		self.pot=[self.mwpot,moving_pot]
++		if tstart<tend:
++			ts=np.linspace(self.tend/to,self.tstart/to,1000)
++			self.o.integrate(ts,self.pot)
++		else:
++			print('FORWARD INTEGRATION HAS NOT YET BEEN IMPLEMENTED')
++			return -1
+ 	    
+ 	    #Generate positions and new velocities for escaped stars with velocity dispersions of 100/root(3), based on
+ 	    #gcname's position 1 Gyr ago
++		self.xe=self.o.x(self.tesc/to)
++		self.ye=self.o.y(self.tesc/to)
++		self.ze=self.o.z(self.tesc/to)
+ 
+-		vxesc=np.zeros(self.nstar)
+-		vyesc=np.zeros(self.nstar)
+-		vzesc=np.zeros(self.nstar)
++		self.vxe=self.o.vx(self.tesc/to)
++		self.vye=self.o.vy(self.tesc/to)
++		self.vze=self.o.vz(self.tesc/to)
+ 	    
+-		self.vesc=np.array([])
++		self.vescape=np.array([])
+ 
+ 		nescape=0
+ 
+-
+-		self.mstar=np.zeros(self.nstar)
+-		self.mb1=np.zeros(self.nstar)
+-		self.mb2=np.zeros(self.nstar)
+-		self.eb=np.zeros(self.nstar)
+-
+ 		while nescape < self.nstar:
+ 			masses=power_law_distribution_function(3, self.alpha, self.mmin, self.mmax)
+ 
+@@ -127,7 +109,7 @@ class corespray(object):
+ 			mb=m_a+m_b
+ 			M=ms+mb
+ 
+-			prob=self.prob_three_body_escape(ms,m_a,m_b,self.q)
++			prob=self.prob_three_body_escape(ms,m_a,m_b)
+ 
+ 			if np.random.rand() < prob:
+ 			    
+@@ -143,62 +125,49 @@ class corespray(object):
+ 				vs=self.sample_escape_velocity(e0,ms,mb,npeak)
+ 
+ 				if vs >self.vesc0:  
+-				    self.vesc=np.append(self.vesc,vs)
++				    self.vescape=np.append(self.vescape,vs)
+ 
+-				    vxesc[nescape]=vs*(vxs/vstar)
+-				    vyesc[nescape]=vs*(vys/vstar)
+-				    vzesc[nescape]=vs*(vzs/vstar)
+-
+-				    self.mstar[nescape]=ms
+-				    self.mb1[nescape]=m_a
+-				    self.mb2[nescape]=m_b
+-				    self.eb[nescape]=ebin
++				    self.vxe[nescape]+=vs*(vxs/vstar)
++				    self.vye[nescape]+=vs*(vys/vstar)
++				    self.vze[nescape]+=vs*(vzs/vstar)
+ 
+ 				    nescape+=1
+ 
+ 				if verbose: print('DEBUG: ',nescape,prob,vs,self.vesc0)
+ 		
+ 
+-		Re0, phie0, ze0, vRe0, vTe0, vze0=np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([])
+-
+-		self.o0=[]
++		#Need to do an orbit for each star
++		Re, phie, ze, vRe, vTe, vze=cart_to_cyl(self.xe,self.ye,self.ze,self.vxe,self.vye,self.vze)
+ 
+-		for i in range(0,self.nstar):
+-			xe,ye,ze=self.o.x(self.tesc[i]/self.to),self.o.y(self.tesc[i]/self.to),self.o.z(self.tesc[i]/self.to)
+-			vxe=vxesc[i]+self.o.vx(self.tesc[i]/self.to)
+-			vye=vyesc[i]+self.o.vy(self.tesc[i]/self.to)
+-			vze=vzesc[i]+self.o.vy(self.tesc[i]/self.to)
++		#Make array of star orbits
++		#Note positions and velocities are scaled by ro and vo respectively to be on Galpy units
++		vxvv=np.column_stack([Re/self.ro,vRe/self.vo,vTe/self.vo,ze/self.ro,vze/self.vo,phie])
++		os=Orbit(vxvv,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+ 
+-			if verbose: print(i,self.tesc[i],xe,ye,ze,vxe,vye,vze)
++		#Integrate all stars forward by dt
++		ts=np.linspace(0,self.dt/to,1000)
++		os.integrate(ts,self.pot)
+ 
+-			Re, phie, ze, vRe, vTe, vze=cart_to_cyl(xe,ye,ze,vxe,vye,vze)
+-			oe=Orbit([Re/self.ro, vRe/self.vo, vTe/self.vo, ze/self.ro, vze/self.vo, phie],ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-
+-			self.o0.append(oe)
+-
+-			ts=np.linspace(self.tesc[i]/self.to,0.,1000)
+-			oe.integrate(ts,self.pot)
+-
+-
+-			Re0=np.append(Re0,oe.R(0.))
+-			phie0=np.append(phie0,oe.phi(0.))
+-			ze0=np.append(ze0,oe.z(0.))
+-			vRe0=np.append(vRe0,oe.vR(0.))
+-			vTe0=np.append(vTe0,oe.vT(0.))
+-			vze0=np.append(vze0,oe.vz(0.))
++		#Get each stars orbit at time=tend
++		Re0, phie0, ze0, vRe0, vTe0, vze0=np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([])
++		for i in range(0,len(os)):
++			t0=(tend-self.tesc[i])/to
+ 
++			Re0=np.append(Re0,os[i].R(t0))
++			phie0=np.append(phie0,os[i].phi(t0))
++			ze0=np.append(ze0,os[i].z(t0))
++			vRe0=np.append(vRe0,os[i].vR(t0))
++			vTe0=np.append(vTe0,os[i].vT(t0))
++			vze0=np.append(vze0,os[i].vz(t0))
+ 
+ 		vxvve=np.column_stack([Re0/self.ro,vRe0/self.vo,vTe0/self.vo,ze0/self.ro,vze0/self.vo,phie0])
+ 		self.oe=Orbit(vxvve,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-		
+-
+-		cluster=StarCluster(units='kpckms',origin='galaxy')
+-		cluster.add_stars(self.oe.x(),self.oe.y(),self.oe.z(),self.oe.vx(),self.oe.vy(),self.oe.vz(),m=self.mstar)
+-		cluster.add_orbit(self.o.x(),self.o.y(),self.o.z(),self.o.vx(),self.o.vy(),self.o.vz())
++		ts=np.linspace(self.tend/to,self.tstart/to,1000)
++		self.oe.integrate(ts,self.pot)
+ 
+-		return cluster
++		return self.o,self.oe,self.tesc,self.vescape
+ 
+-	def prob_three_body_escape(self,ms,m_a,m_b,q):
++	def prob_three_body_escape(self,ms,m_a,m_b,q=-2):
+ 		#Equation 7.23
+ 		prob=(ms**q)/(ms**q+m_a**q+m_b**q)
+ 		return prob
+@@ -255,7 +224,7 @@ class corespray(object):
+ 
+ 	def escape_velocity_distribution_peak(self,e0,ms,mb):
+ 		M=ms+mb
+-		vs_peak=0.5*np.sqrt((M-ms)/(ms*M))*np.sqrt(np.fabs(e0))
++		vs_peak=0.5*np.sqrt((M-ms)/(ms*M))*np.sqrt(e0)
+ 
+ 		return vs_peak
+ 
+@@ -280,78 +249,30 @@ class corespray(object):
+ 	    else:      
+ 	        return np.array(x)
+ 
+-	def _init_fig(self,xlim=(-20,20),ylim=(-20,20)):
+-	    self.fig = plt.figure()
+-	    self.ax = plt.axes(xlim=xlim, ylim=ylim)
+-	    self.ax.set_xlabel('X (kpc)')
+-	    self.ax.set_ylabel('Y (kpc)')
+-	    self.txt_title=self.ax.set_title('')
+-	    self.line, = self.ax.plot([], [], lw=2)
+-	    self.pt, = self.ax.plot([],[],'.')
+-
+-	def _set_data(self,gcdata,sdata):
+-	    self.gcdata = gcdata
+-	    self.sdata=sdata
+-
+-	def _ani_init(self):
+-	    self.line.set_data([], [])
+-	    self.pt.set_data([],[])
+-	    return self.line,self.pt
+-
+-	def _ani_update(self, i):
+-
+-		if i < 5:
+-		    x = self.gcdata[0:i+1,0]
+-		    y = self.gcdata[0:i+1,1]
+-		else:
+-			x = self.gcdata[i-5:i+1,0]
+-			y = self.gcdata[i-5:i+1,1]	
+-		self.line.set_data(x, y)
+-
+-		escindx=self.tesc/self.to <= self.ts[i]
+-
+-
+-		if np.sum(escindx)>0:
+-			self.pt.set_data(self.sdata[i][0][escindx],self.sdata[i][1][escindx])
+-		else:
+-			self.pt.set_data([],[])
+-
+-		self.txt_title.set_text('%s' % str (self.ts[i]*self.to))
+-
+-		return self.line,self.pt
++	def animate(self,nsnap=100,xlim=10,ylim=10):
+ 
++		to=bovy_conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.0
++		ts=np.linspace(self.tend/to,self.tstart/to,nsnap)
+ 
+-	def animate(self,frames=100,interval=50,xlim=(-20,20),ylim=(-20,20)):
+ 
+-		self._init_fig(xlim,ylim)
++		for i in range(0,len(ts)):
++			plt.plot(self.o.x(ts[i]),o.y(ts[i]),'o')
+ 
+-		self.ts=np.linspace(-1.*self.tdisrupt/self.to,0.,frames)
+-		tsint=np.linspace(0.,-1.*self.tdisrupt/self.to,1000)
+-		self.oe.integrate(tsint,self.pot)
++			escindx=self.tesc/to<ts[i]
+ 
+-		gcdata=np.zeros(shape=(frames,2))
++			for j in range(0,np.sum(escindx)):
++				plt.plot(self.os[escindx][j].x(ts[i]/to),self.os[escindx][j].y(ts[i]/to),'k.')
+ 
+-		for i in range(0,frames):
+-		    gcdata[i]=[self.o.x(self.ts[i]),self.o.y(self.ts[i])]
++			plt.xlabel('X (kpc)')
++			plt.ylabel('Y (kpc)')
++			plt.xlim(-xlim,xlim)
++			plt.ylim(-ylim,ylim)
+ 
+-		sdata=np.zeros(shape=(frames,2,self.nstar))
++			plt.savefig('%s.png' % str(i).zfill(5))
++			plt.close()
+ 
+-		for i in range(0,frames):
+-			sdata[i]=[self.oe.x(self.ts[i]),self.oe.y(self.ts[i])]
+ 
+-		self._set_data(gcdata,sdata)
+ 
+-		self.anim = animation.FuncAnimation(self.fig, self._ani_update, init_func=self._ani_init, frames=frames, interval=interval, blit=False)
+ 
+-	def snapout(self,filename='corespray.dat'):
+-		R=np.append(self.o.R(0.),self.oe.R(0.))
+-		vR=np.append(self.o.vR(0.),self.oe.vR(0.))
+-		vT=np.append(self.o.vT(0.),self.oe.vT(0.))
+-		z=np.append(self.o.z(0.),self.oe.z(0.))
+-		vz=np.append(self.o.vz(0.),self.oe.vz(0.))
+-		phi=np.append(self.o.phi(0.),self.oe.phi(0.))
+ 
+-		vesc=np.append(0.,self.vesc)
+-		tesc=np.append(0.,self.tesc)
+ 
+-		np.savetxt(filename,np.column_stack([R,vR,vT,z,vz,phi,vesc,tesc]))
+\ No newline at end of file
+diff --git a/clustertools/simulate/tailspray.py b/clustertools/simulate/tailspray.py
+deleted file mode 100644
+index 44ea54f..0000000
+--- a/clustertools/simulate/tailspray.py
++++ /dev/null
+@@ -1,244 +0,0 @@
+-from galpy.orbit import Orbit
+-from galpy.potential import MWPotential2014,PlummerPotential,KingPotential,MovingObjectPotential
+-from galpy.util import bovy_conversion,conversion,bovy_plot
+-import numpy as np
+-
+-import matplotlib.pyplot as plt
+-from matplotlib import animation
+-
+-from ..util.recipes import *
+-from ..util.coordinates import *
+-from ..analysis.cluster import StarCluster
+-from ..analysis.tails import *
+-
+-from streamtools.df import streamspraydf
+-
+-from astropy import units
+-
+-class tailspray(object):
+-
+-	""" A class that is responsible for periodcially ejecting stars from a cluster via tidal stripping
+-	- Note this code is effectively a wrapper around Jo Bovy's streamtools python package that puts the 
+-	- output into a StarCluster
+-
+-	Parameters
+-	----------
+-
+-
+-	History
+-	-------
+-	2021 - Written - El-Falou/Webb (UofT)
+-
+-	"""
+-
+-	def __init__(self,gcorbit,mgc=None,pot=MWPotential2014,rtpot=MWPotential2014,ro=8.,vo=220.):
+-
+-		# - name of or orbit instance corresponding to GC
+-		#mgc - mass of GC
+-		#pot - potential for integrating cluster
+-		#rtpot - potential for calcuating the tidal radius
+-
+-
+-		self.ro,self.vo=ro,vo
+-		self.to=conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.
+-		self.mo=conversion.mass_in_msol(ro=self.ro,vo=self.vo)
+-
+-		if isinstance(gcorbit,str):
+-			self.gcname=gcorbit
+-			self.o=self.init_gc_orbit()
+-		else:
+-			self.gcname='unknown'
+-			self.o=gcorbit
+-
+-		self.mgc=mgc
+-
+-		self.pot=pot
+-		self.rtpot=rtpot
+-
+-	def init_gc_orbit(self):
+-		"""
+-		Initialise and return the glocbular cluster orbit using its name
+-		<gc_name>
+-		"""
+-		
+-		temp = Orbit.from_name(self.gcname, ro=self.ro, vo=self.vo, solarmotion=[-11.1, 24.0, 7.25])
+-
+-		o = Orbit([temp.R(use_physical=False), 
+-		           temp.vR(use_physical=False), 
+-		           temp.vT(use_physical=False), 
+-		           temp.z(use_physical=False), 
+-		           temp.vz(use_physical=False), 
+-		           temp.phi()],solarmotion=[-11.1, 24.0, 7.25])
+-
+-		return o
+-
+-	def sample(self,tdisrupt,nstar=100,integ=True, verbos=False):
+-		"""
+-		Makes stream using streamspraydf
+-
+-		Returns globular cluster orbit integratrated forward to tdisrupt, 
+-		globular cluster orbit integratrated backward to -tdisrupt, 6D numpy 
+-		array of Orbit's vxvv of each star in leading stream at t=0, array 
+-		of Orbit's vxvv of each star in trailing stream at t=0, array of 
+-		times when stars in leading stream escaped, and array of times 
+-		when stars in trailing stream escaped.
+-
+-		If not integ, RvR and RvRt are Orbit's vxvv at t=-tdisrupt
+-		"""
+-
+-		self.tdisrupt=tdisrupt
+-		self.nstar=nstar
+-
+-		spdf= streamspraydf(self.mgc/self.mo,
+-                           progenitor=self.o,
+-                           pot=self.pot,
+-                           tdisrupt=self.tdisrupt/self.to, 
+-                           rtpot=self.rtpot)
+-		spdft= streamspraydf(self.mgc/self.mo,
+-                           progenitor=self.o,
+-                           pot=self.pot,
+-                           tdisrupt=self.tdisrupt/self.to, 
+-                           rtpot=self.rtpot,
+-                           leading=False)
+-
+-		RvR,dt= spdf.sample(n=self.nstar,returndt=True,integrate=integ)
+-		RvRt,dtt= spdft.sample(n=self.nstar,returndt=True,integrate=integ)
+-
+-		vxvv=np.column_stack([RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5]])
+-		vxvvt=np.column_stack([RvRt[0],RvRt[1],RvRt[2],RvRt[3],RvRt[4],RvRt[5]])
+-
+-		ol=Orbit(vxvv,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-		ot=Orbit(vxvvt,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-
+-
+-		self.cluster=StarCluster(origin='galaxy',units='kpckms')
+-		self.cluster.add_stars(ol.x(),ol.y(),ol.z(),ol.vx(),ol.vy(),ol.vz())
+-		self.cluster.add_stars(ot.x(),ot.y(),ot.z(),ot.vx(),ot.vy(),ot.vz())
+-		self.cluster.add_orbit(self.o.x()*self.ro,self.o.y()*self.ro,self.o.z()*self.ro,self.o.vx()*self.vo,self.o.vy()*self.vo,self.o.vz()*self.vo)
+-
+-		self.tesc=-1.*np.append(dt*self.to,dtt*self.to)
+-
+-		return self.cluster
+-
+-	def tail_path(self, 
+-		dt=0.1, 
+-		nt=100, 
+-		pot=None, 
+-		from_centre=False, 
+-		skypath=False, 
+-		ro=None, 
+-		vo=None,
+-		plot=False,
+-		**kwargs):
+-
+-			if pot is None: pot=self.pot
+-			if ro is None: ro=self.ro
+-			if vo is None: vo=self.vo
+-
+-			self.ttail, self.xtail, self.ytail, self.ztail, self.vxtail, self.vytail, self.vztail=tail_path(self.cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,ro=ro,vo=vo,plot=plot,**kwargs)
+-
+-	def tail_path_match(self,
+-	    dt=0.1,
+-	    nt=100,
+-	    pot=None,
+-	    path=None,
+-	    from_centre=False,
+-	    skypath=False,
+-	    to_path=False,
+-	    do_full=False,
+-	    ro=None,
+-	    vo=None,
+-	    plot=False,
+-	    projected=False,
+-	    **kwargs,
+-		):
+-
+-			if pot is None: pot=self.pot
+-			if ro is None: ro=self.ro
+-			if vo is None: vo=self.vo
+-
+-			self.tstar,self.dprog,self.dpath=tail_path_match(self.cluster,dt=dt,nt=nt,pot=pot,path=path,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,projected=projected,**kwargs)
+-
+-	def _init_fig(self,xlim=(-20,20),ylim=(-20,20)):
+-	    self.fig = plt.figure()
+-	    self.ax = plt.axes(xlim=xlim, ylim=ylim)
+-	    self.ax.set_xlabel('X (kpc)')
+-	    self.ax.set_ylabel('Y (kpc)')
+-	    self.txt_title=self.ax.set_title('')
+-	    self.pt, = self.ax.plot([],[],'.')
+-	    self.line, = self.ax.plot([], [], lw=2)
+-
+-	def _set_data(self,gcdata,sdata):
+-	    self.gcdata = gcdata
+-	    self.sdata=sdata
+-
+-	def _ani_init(self):
+-	    self.line.set_data([], [])
+-	    self.pt.set_data([],[])
+-	    return self.line,self.pt
+-
+-	def _ani_update(self, i):
+-
+-		if i < 5:
+-		    x = self.gcdata[0:i+1,0]
+-		    y = self.gcdata[0:i+1,1]
+-		else:
+-			x = self.gcdata[i-5:i+1,0]
+-			y = self.gcdata[i-5:i+1,1]
+-
+-		self.line.set_data(x, y)
+-
+-		escindx=self.tesc/self.to <= self.ts[i]
+-
+-
+-		if np.sum(escindx)>0:
+-			self.pt.set_data(self.sdata[i][0][escindx],self.sdata[i][1][escindx])
+-		else:
+-			self.pt.set_data([],[])
+-
+-		self.txt_title.set_text('%s' % str (self.ts[i]*self.to))
+-
+-		return self.line,self.pt
+-
+-
+-	def animate(self,frames=100,interval=50,xlim=(-20,20),ylim=(-20,20)):
+-
+-		self._init_fig(xlim,ylim)
+-
+-		self.ts=np.linspace(-1.*self.tdisrupt/self.to,0.,frames)
+-
+-		tsint=np.linspace(0,-1.*self.tdisrupt/self.to,1000)
+-
+-		self.o.integrate(tsint,self.pot)
+-
+-		gcdata=np.zeros(shape=(frames,2))
+-
+-		for i in range(0,frames):
+-		    gcdata[i]=[self.o.x(self.ts[i])*self.ro,self.o.y(self.ts[i])*self.ro]
+-
+-		sdata=np.zeros(shape=(frames,2,2*self.nstar))
+-
+-		self.oe=self.cluster.initialize_orbits()
+-		self.oe.integrate(tsint,self.pot)
+-
+-		for i in range(0,frames):
+-			sdata[i]=[self.oe.x(self.ts[i]),self.oe.y(self.ts[i])]
+-
+-		self._set_data(gcdata,sdata)
+-
+-		self.anim = animation.FuncAnimation(self.fig, self._ani_update, init_func=self._ani_init, frames=frames, interval=interval, blit=False)
+-
+-	def snapout(self,filename='corespray.dat'):
+-		#Need positions, velocities, and escape times!
+-		self.oe=self.cluster.initialize_orbits()
+-
+-		R=np.append(self.o.R(0.),self.oe.R(0.))
+-		vR=np.append(self.o.vR(0.),self.oe.vR(0.))
+-		vT=np.append(self.o.vT(0.),self.oe.vT(0.))
+-		z=np.append(self.o.z(0.),self.oe.z(0.))
+-		vz=np.append(self.o.vz(0.),self.oe.vz(0.))
+-		phi=np.append(self.o.phi(0.),self.oe.phi(0.))
+-
+-		tesc=np.append(0.,self.tesc)
+-
+-		np.savetxt(filename,np.column_stack([R,vR,vT,z,vz,phi,tesc]))
+\ No newline at end of file
+diff --git a/clustertools/simulate/tailspray_old.py b/clustertools/simulate/tailspray_old.py
+deleted file mode 100644
+index e8930e5..0000000
+--- a/clustertools/simulate/tailspray_old.py
++++ /dev/null
+@@ -1,214 +0,0 @@
+-from galpy.orbit import Orbit
+-from galpy.potential import MWPotential2014,PlummerPotential,KingPotential,MovingObjectPotential
+-from galpy.util import bovy_conversion,conversion,bovy_plot
+-import numpy as np
+-
+-import matplotlib.pyplot as plt
+-from matplotlib import animation
+-
+-from ..util.recipes import *
+-from ..util.coordinates import *
+-from ..analysis.cluster import StarCluster
+-
+-#from streamtools.df import streamspraydf
+-import streamspraydf_Webb
+-
+-
+-class tailspray(object):
+-
+-	""" A class that is responsible for periodcially ejecting stars from a cluster via tidal stripping
+-	- Note this code is effectively a wrapper around Jo Bovy's streamtools python package that puts the 
+-	- output into a StarCluster
+-
+-	Parameters
+-	----------
+-
+-
+-	History
+-	-------
+-	2021 - Written - El-Falou/Webb (UofT)
+-
+-	"""
+-
+-	def __init__(self,gcname,mgc=None,rgc=None,pot=MWPotential2014,rtpot=MWPotential2014,ro=8.,vo=220.):
+-		
+-		#mu0 - average 1D velocity in core (km/s)
+-		#sig0 - 1D velocity dispersion in core (km/s)
+-		#vesc0 - core velocity dispersion (km/s)
+-		#rho0 - core density (Msun/pc^3)
+-		#mgc - mass of GC
+-		#rgc - size of gc (assumed to be rh if Plummer or rt if King)
+-		#W0 - central potential if King model
+-		#mmin,mmax - minimum and maximum mass in the core (MSun)
+-		#alpha - slope of core mass function
+-
+-		self.gcname=gcname
+-		self.init_orbit(self.gcname)
+-
+-		self.mgc=mgc
+-		self.rgc=rgc
+-
+-		self.ro,self.vo=ro,vo
+-		self.to=conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.
+-		self.mo=conversion.mass_in_msol(ro=self.ro,vo=self.vo)
+-
+-		self.pot=pot
+-		self.rtpot=rtpot
+-
+-	def sample(self,tstart= -1000., tend=0., nstar=100, nper=None, integ=True, verbose=False):
+-		"""
+-		Makes stream using streamspraydf
+-
+-		Returns globular cluster orbit integratrated forward to tdisrupt, 
+-		globular cluster orbit integratrated backward to -tdisrupt, 6D numpy 
+-		array of Orbit's vxvv of each star in leading stream at t=0, array 
+-		of Orbit's vxvv of each star in trailing stream at t=0, array of 
+-		times when stars in leading stream escaped, and array of times 
+-		when stars in trailing stream escaped.
+-
+-		If not integ, RvR and RvRt are Orbit's vxvv at t=-tdisrupt
+-		"""
+-
+-		if nper is not None:
+-
+-			ts=np.linspace(0.,1.,1000)
+-			self.o.integrate(ts,self.pot)
+-
+-			if nper < 0:
+-				self.tstart=nper*self.o.Tp()*1000.0
+-				self.tend=tend
+-			else:
+-				self.tstart=tstart
+-				self.tend=nper*self.o.Tp()*1000.0
+-
+-			self.tdisrupt=self.tend-self.tstart
+-
+-			self.init_orbit(self.gcname)
+-
+-		else:
+-			self.tstart=tstart
+-			self.tend=tend
+-			self.tdisrupt=tend-tstart
+-
+-		spdf= streamspraydf_Webb.streamspraydf(self.mgc,
+-                           progenitor=self.o,
+-                           pot=self.pot,
+-                           tdisrupt=self.tdisrupt, 
+-                           rtpot=self.rtpot)
+-		spdft= streamspraydf_Webb.streamspraydf(self.mgc,
+-                           progenitor=self.o,
+-                           pot=self.pot,
+-                           tdisrupt=self.tdisrupt, 
+-                           rtpot=self.rtpot,
+-                           leading=False)
+-
+-		RvR,dt= spdf.sample(n=nstar,returndt=True,integrate=integ)
+-		RvRt,dtt= spdft.sample(n=nstar,returndt=True,integrate=integ)
+-
+-		#vxvv=np.column_stack([RvR[0]/self.ro,RvR[1]/self.vo,RvR[2]/self.vo,RvR[3]/self.ro,RvR[4]/self.vo,RvR[5]])
+-		#vxvvt=np.column_stack([RvRt[0]/self.ro,RvRt[1]/self.vo,RvRt[2]/self.vo,RvRt[3]/self.ro,RvRt[4]/self.vo,RvRt[5]])
+-		vxvv=np.column_stack([RvR[0],RvR[1],RvR[2],RvR[3],RvR[4],RvR[5]])
+-		vxvvt=np.column_stack([RvRt[0],RvRt[1],RvRt[2],RvRt[3],RvRt[4],RvRt[5]])
+-
+-
+-		osleading=Orbit(vxvv,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-		ostrailing=Orbit(vxvvt,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-
+-		self.init_orbit(self.gcname,use_physical=True)
+-
+-		cluster=StarCluster(units='kpckms',origin='galaxy')
+-		cluster.add_stars(osleading.x(),osleading.y(),osleading.z(),osleading.vx(),osleading.vy(),osleading.vz())
+-		cluster.add_stars(ostrailing.x(),ostrailing.y(),ostrailing.z(),ostrailing.vx(),ostrailing.vy(),ostrailing.vz())
+-		cluster.add_orbit(self.o.x(),self.o.y(),self.o.z(),self.o.vx(),self.o.vy(),self.o.vz())
+-
+-		self.dt=np.append(dt,dtt)
+-
+-		return cluster,RvR,RvRt
+-
+-	def init_orbit(self,gcname,use_physical=False):
+-
+-		if use_physical:
+-			self.o=Orbit.from_name(gcname,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
+-		else:
+-			temp = Orbit.from_name(gcname)
+-			self.o = Orbit([temp.R(use_physical=False), 
+-			       temp.vR(use_physical=False), 
+-			       temp.vT(use_physical=False), 
+-			       temp.z(use_physical=False), 
+-			       temp.vz(use_physical=False), 
+-			       temp.phi()])
+-
+-	def _init_fig(self,xlim=(-20,20),ylim=(-20,20)):
+-	    self.fig = plt.figure()
+-	    self.ax = plt.axes(xlim=xlim, ylim=ylim)
+-	    self.ax.set_xlabel('X (kpc)')
+-	    self.ax.set_ylabel('Y (kpc)')
+-	    self.txt_title=self.ax.set_title('')
+-	    self.line, = self.ax.plot([], [], lw=2)
+-	    self.pt, = self.ax.plot([],[],'.')
+-
+-	def _set_data(self,gcdata,sdata):
+-	    self.gcdata = gcdata
+-	    self.sdata=sdata
+-
+-	def _ani_init(self):
+-	    self.line.set_data([], [])
+-	    self.pt.set_data([],[])
+-	    return self.line,self.pt
+-
+-	def _ani_update(self, i):
+-
+-		if i < 5:
+-		    x = self.gcdata[0:i,0]
+-		    y = self.gcdata[0:i,1]
+-		else:
+-			x = self.gcdata[i-5:i,0]
+-			y = self.gcdata[i-5:i,1]	
+-		self.line.set_data(x, y)
+-
+-		escindx=self.tesc/self.to <= self.ts[i]
+-
+-
+-		if np.sum(escindx)>0:
+-			self.pt.set_data(self.sdata[i][0][escindx],self.sdata[i][1][escindx])
+-		else:
+-			self.pt.set_data([],[])
+-
+-		self.txt_title.set_text('%s' % str (self.ts[i]*self.to))
+-
+-		return self.line,self.pt
+-
+-
+-	def animate(self,frames=100,interval=50,xlim=(-20,20),ylim=(-20,20)):
+-
+-		self._init_fig(xlim,ylim)
+-
+-		self.ts=np.linspace(self.tstart/self.to,self.tend/self.to,frames)
+-		self.oe.integrate(np.flip(self.ts),self.pot)
+-
+-		gcdata=np.zeros(shape=(frames,2))
+-
+-		for i in range(0,frames):
+-		    gcdata[i]=[self.o.x(self.ts[i]),self.o.y(self.ts[i])]
+-
+-		sdata=np.zeros(shape=(frames,2,self.nstar))
+-
+-		for i in range(0,frames):
+-			sdata[i]=[self.oe.x(self.ts[i]),self.oe.y(self.ts[i])]
+-
+-		self._set_data(gcdata,sdata)
+-
+-		self.anim = animation.FuncAnimation(self.fig, self._ani_update, init_func=self._ani_init, frames=frames, interval=interval, blit=False)
+-
+-	def snapout(self,filename='corespray.dat'):
+-		R=np.append(self.o.R(0.),self.oe.R(0.))
+-		vR=np.append(self.o.vR(0.),self.oe.vR(0.))
+-		vT=np.append(self.o.vT(0.),self.oe.vT(0.))
+-		z=np.append(self.o.z(0.),self.oe.z(0.))
+-		vz=np.append(self.o.vz(0.),self.oe.vz(0.))
+-		phi=np.append(self.o.phi(0.),self.oe.phi(0.))
+-
+-		vesc=np.append(0.,self.vesc)
+-		tesc=np.append(0.,self.tesc)
+-
+-		np.savetxt(filename,np.column_stack([R,vR,vT,z,vz,phi,vesc,tesc]))
+\ No newline at end of file
+diff --git a/clustertools/util/coordinates.py b/clustertools/util/coordinates.py
+index ea7244c..36cc297 100644
+--- a/clustertools/util/coordinates.py
++++ b/clustertools/util/coordinates.py
+@@ -17,8 +17,10 @@ __all__ = [
+ ]
+ 
+ import numpy as np
+-from galpy.util import bovy_coords
+-
++try:
++    from galpy.util import coords
++except:
++    import galpy.util.bovy_coords as coords
+ 
+ def sphere_coords(cluster):
+     """Get the spherical coordinates of every star in the cluster
+@@ -116,8 +118,8 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
+     -------
+     2018 - Written - Webb (UofT)
+     """
+-    r, theta, z = bovy_coords.rect_to_cyl(x, y, z)
+-    vr, vtheta, vz = bovy_coords.rect_to_cyl_vec(
++    r, theta, z = coords.rect_to_cyl(x, y, z)
++    vr, vtheta, vz = coords.rect_to_cyl_vec(
+         vx, vy, vz, x, y, z
+     )
+     return r, theta, z, vr, vtheta, vz
+@@ -144,10 +146,10 @@ def sky_coords(cluster):
+     if origin0 != "galaxy":
+         cluster.to_galaxy(starsort=False)
+ 
+-    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
++    x0, y0, z0 = coords.galcenrect_to_XYZ(
+         cluster.x, cluster.y, cluster.z, Xsun=8.0, Zsun=0.025
+     ).T
+-    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
++    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
+         cluster.vx,
+         cluster.vy,
+         cluster.vz,
+@@ -156,13 +158,13 @@ def sky_coords(cluster):
+         vsun=[-11.1, 244.0, 7.25],
+     ).T
+ 
+-    l0, b0, d0 = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
+-    ra, dec = bovy_coords.lb_to_radec(l0, b0, degree=True).T
++    l0, b0, d0 = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
++    ra, dec = coords.lb_to_radec(l0, b0, degree=True).T
+ 
+-    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
++    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
+         vx0, vy0, vz0, l0, b0, d0, degree=True
+     ).T
+-    pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
++    pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
+ 
+     cluster.return_cluster()
+ 
+@@ -186,10 +188,10 @@ def cart_to_sky(x,y,z,vx,vy,vz):
+     2021 - Written - Webb (UofT)
+     """
+ 
+-    x0, y0, z0 = bovy_coords.galcenrect_to_XYZ(
++    x0, y0, z0 = coords.galcenrect_to_XYZ(
+         x, y, z, Xsun=8.0, Zsun=0.025
+     ).T
+-    vx0, vy0, vz0 = bovy_coords.galcenrect_to_vxvyvz(
++    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
+         vx,
+         vy,
+         vz,
+@@ -198,12 +200,12 @@ def cart_to_sky(x,y,z,vx,vy,vz):
+         vsun=[-11.1, 244.0, 7.25],
+     ).T
+ 
+-    l0, b0, d0 = bovy_coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
+-    ra, dec = bovy_coords.lb_to_radec(l0, b0, degree=True).T
++    l0, b0, d0 = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
++    ra, dec = coords.lb_to_radec(l0, b0, degree=True).T
+ 
+-    vr0, pmll0, pmbb0 = bovy_coords.vxvyvz_to_vrpmllpmbb(
++    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
+         vx0, vy0, vz0, l0, b0, d0, degree=True
+     ).T
+-    pmra, pmdec = bovy_coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
++    pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
+ 
+     return ra, dec, d0, pmra, pmdec, vr0
+diff --git a/clustertools/util/output.py b/clustertools/util/output.py
+index 3d008e9..587c5b2 100644
+--- a/clustertools/util/output.py
++++ b/clustertools/util/output.py
+@@ -21,6 +21,7 @@ from ..analysis.functions import *
+ from ..analysis.profiles import *
+ from ..analysis.operations import *
+ 
++
+ def snapout(cluster, filename, energies=False, radec=False):
+     """Output a snapshot in clustertools format
+         - clustertools column format is mass,x,y,z,vx,vy,vz,id,kwtype where
+diff --git a/clustertools/util/plots.py b/clustertools/util/plots.py
+index c6324f9..72f752f 100644
+--- a/clustertools/util/plots.py
++++ b/clustertools/util/plots.py
+@@ -644,8 +644,6 @@ def starplot(
+                 units = "(kpc)"
+             elif cluster.units == "galpy":
+                 units = "(GALPY)"
+-            elif cluster.units == 'radec':
+-                units = "(degree)"
+             else:
+                 units = ""
+ 
+@@ -689,8 +687,6 @@ def starplot(
+             units = "(kpc)"
+         elif cluster.units == "galpy":
+             units = "(GALPY)"
+-        elif cluster.units == 'radec':
+-            units = "(degree)"
+         else:
+             units = ""
+ 
+@@ -698,12 +694,12 @@ def starplot(
+ 
+         plt.plot(cluster.x, cluster.z, ".", alpha=alpha, **kwargs)
+ 
+-        if cluster.origin == "galaxy" and do_centre:
++        if cluster.origin == "galaxy":
+             plt.plot(cluster.xgc, cluster.zgc, "o", label="Center")
+             plt.plot(
+                 cluster.xgc + cluster.xc, cluster.zgc + cluster.zc, "o", label="COM"
+             )
+-        elif cluster.origin != "centre" and do_centre:
++        elif cluster.origin != "centre":
+             plt.plot(cluster.xc, cluster.zc, "o", label="COM")
+ 
+         if xlim != None:
+@@ -718,12 +714,12 @@ def starplot(
+ 
+         plt.plot(cluster.x, cluster.y, ".", alpha=alpha, **kwargs)
+ 
+-        if cluster.origin == "galaxy" and do_centre:
++        if cluster.origin == "galaxy":
+             plt.plot(cluster.xgc, cluster.ygc, "o", label="Center")
+             plt.plot(
+                 cluster.xgc + cluster.xc, cluster.ygc + cluster.yc, "o", label="COM"
+             )
+-        elif cluster.origin != "centre" and do_centre:
++        elif cluster.origin != "centre":
+             plt.plot(cluster.xc, cluster.yc, "o", label="COM")
+ 
+         if xlim != None:

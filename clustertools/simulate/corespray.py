@@ -10,6 +10,7 @@ from ..util.recipes import *
 from ..util.coordinates import *
 from ..analysis.cluster import StarCluster
 
+
 class corespray(object):
 
 	""" A class that is responsible for periodcially ejecting stars from a cluster's core
@@ -27,6 +28,7 @@ class corespray(object):
 	def __init__(self,gcorbit,pot=MWPotential2014,mu0=0.,sig0=10.0,vesc0=10.0,rho0=1.,mgc=None,rgc=None,W0=None,mmin=0.1,mmax=1.4,alpha=-1.35,ro=8.,vo=220.,q=-2):
 		
 		#gc orbit - name of or orbit instance corresponding to GC
+
 		#mu0 - average 1D velocity in core (km/s)
 		#sig0 - 1D velocity dispersion in core (km/s)
 		#vesc0 - core velocity dispersion (km/s)
@@ -83,6 +85,7 @@ class corespray(object):
 
 		self.tdisrupt=tdisrupt
 
+
 		#Select escape times
 		#If nstar is not None, randomly select escapers between tstart and tend
 		if nstar is not None:
@@ -117,6 +120,7 @@ class corespray(object):
 		self.mb2=np.zeros(self.nstar)
 		self.eb=np.zeros(self.nstar)
 
+
 		while nescape < self.nstar:
 			masses=power_law_distribution_function(3, self.alpha, self.mmin, self.mmax)
 
@@ -143,6 +147,7 @@ class corespray(object):
 				vs=self.sample_escape_velocity(e0,ms,mb,npeak)
 
 				if vs >self.vesc0:  
+
 				    self.vesc=np.append(self.vesc,vs)
 
 				    vxesc[nescape]=vs*(vxs/vstar)
@@ -158,7 +163,6 @@ class corespray(object):
 
 				if verbose: print('DEBUG: ',nescape,prob,vs,self.vesc0)
 		
-
 		Re0, phie0, ze0, vRe0, vTe0, vze0=np.array([]),np.array([]),np.array([]),np.array([]),np.array([]),np.array([])
 
 		self.o0=[]
@@ -199,6 +203,7 @@ class corespray(object):
 		return cluster
 
 	def prob_three_body_escape(self,ms,m_a,m_b,q):
+
 		#Equation 7.23
 		prob=(ms**q)/(ms**q+m_a**q+m_b**q)
 		return prob

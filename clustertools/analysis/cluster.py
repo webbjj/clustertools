@@ -166,6 +166,7 @@ class StarCluster(object):
         #If using Nbodypp
         self.rhos=np.array([])
 
+
         # variables for add_nbody
         self.zmbar = 1.0
         self.rbar = 1.0
@@ -369,7 +370,7 @@ class StarCluster(object):
 
         if m is None:
             m = np.ones(len(x),float)
- 
+
         self.m = np.append(self.m, np.array(m))
 
         if id is None:
@@ -984,7 +985,7 @@ class StarCluster(object):
 
         History
         ----------
-
+ 
         2020 - Written - Webb (UofT)
         """
 

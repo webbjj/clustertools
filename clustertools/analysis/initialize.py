@@ -50,7 +50,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     Parameters
     ----------
     ctype : str
-        Type of model used to generate cluster ('SPES',LIMEPY','WOOLLEY','KING','WILSON',Name of Galactic Cluster, 'galpy')
+        Type of model used to generate cluster (LIMEPY','galpy')
     units : str
         units of generated model (default: 'pckms')
     origin : str
@@ -67,12 +67,18 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     ----------------
     N : int
         number of stars in the cluster (default: 1000)
+    model : str/object
+        model name ('WOOLLEY','KING','WILSON') or a limepy model object
+    gcname : str
+        name of globular cluster to generate model for
     g : float
-        model type for LIMEPY
+        model parameter for LIMEPY
+    phi0/W0 : float
+        central potential model parameter for LIMEPY
     M : float
         Mass of cluster 
-    rh : float 
-        half-mass radius of cluster
+    rh/rt : float 
+        half-mass radius or tidal radius of cluster
     source : str
         Source for extracting Galactic GC parameters (Harris 1996 (2010 Edition) or de Boer et al. 2019). The default checks 
             de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found
@@ -99,32 +105,37 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     -------
     2019 - Written - Webb (UofT)
     """
-    if isinstance(ctype, str):
 
-        if ctype == "spes":
-            cluster = _get_spes(**kwargs)
-        elif ctype == "limepy":
-            g = kwargs.pop("g")
-            cluster = _get_limepy(g=g, **kwargs)
-        elif ctype == "woolley":
-            g = kwargs.pop("g", 0)
-            cluster = _get_limepy(g=g, **kwargs)
-        elif ctype == "king":
-            g = kwargs.pop("g", 1)
-            cluster = _get_limepy(g=g, **kwargs)
-        elif ctype == "wilson":
-            g = kwargs.pop("g", 2)
-            cluster = _get_limepy(g=g, **kwargs)
-        elif ctype=='galpy':
-            cluster=_get_galpy(pot,**kwargs)
-        else:
+    if ctype == "limepy":
+
+        gcname=kwargs.pop("gcname",None)
+        model=kwargs.pop("model",None)
+
+        if gcname is not None:
             source = kwargs.pop("source", "default")
             mbar = kwargs.pop("mbar", 0.4)
-            cluster = _get_cluster(ctype, source, mbar, **kwargs)
-    else:
-        source = kwargs.pop("source", "default")
-        mbar = kwargs.pop("mbar", 0.4)
-        cluster = _get_cluster(ctype, source, mbar, **kwargs)
+            cluster = _get_cluster(gcname, source, mbar, **kwargs)   
+
+        elif model is not None:
+            if model == "woolley":
+                g = kwargs.pop("g", 0)
+                cluster = _get_limepy(g=g, **kwargs)
+            elif model == "king":
+                g = kwargs.pop("g", 1)
+                cluster = _get_limepy(g=g, **kwargs)
+            elif model == "wilson":
+                g = kwargs.pop("g", 2)
+                cluster = _get_limepy(g=g, **kwargs)
+            else:
+                cluster = _get_limepy(model=model, **kwargs)
+
+        else:
+            g = kwargs.pop("g")
+            cluster = _get_limepy(g=g, **kwargs)
+
+    elif ctype=='galpy':
+        cluster=_get_galpy(pot,**kwargs)
+
 
     cluster.ctype=ctype
 
@@ -147,14 +158,16 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     return cluster
 
 
-def _get_limepy(g=1,**kwargs):
+def _get_limepy(g=1,model=None,**kwargs):
     """Get an Nbody realization of a LIMEPY model cluster
 
     Parameters
     ----------
     g : float
         model type for LIMEPY
-    phi0 : float
+    model : object
+        LIMEPY model (default:None)
+    phi0/W0 : float
         Central potential
     project : bool
         return projected values
@@ -175,38 +188,41 @@ def _get_limepy(g=1,**kwargs):
        2019 - Written - Webb (UofT)
     """
 
-    phi0=kwargs.get("W0",None)
-    if phi0 is None:
-        phi0 = float(kwargs.get("phi0"))
+    if model is not None:
+        lmodel=model
     else:
-        phi0=float(phi0)
-
-    project = bool(kwargs.get("project", False))
-
-    if "M" in kwargs:
-        units = "pckms"
-        M = float(kwargs.get("M"))
-        if "rt" in kwargs:
-            rt = float(kwargs.get("rt"))
-            lmodel = limepy(phi0, g, M=M, rt=rt, project=project)
-        elif "rv" in kwargs:
-            rv = float(kwargs.get("rv"))
-            lmodel = limepy(phi0, g, M=M, rv=rv, project=project)
-        elif "rh" in kwargs:
-            rh = float(kwargs.get("rh"))
-            lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
-        elif "rm" in kwargs:
-            rh = float(kwargs.get("rm"))
-            lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
-        elif "ro" in kwargs:
-            ro = float(kwargs.get("ro"))
-            lmodel = limepy(phi0, g, M=M, ro=ro, project=project)
+        phi0=kwargs.get("W0",None)
+        if phi0 is None:
+            phi0 = float(kwargs.get("phi0"))
         else:
-            lmodel = limepy(phi0, g, M=M, ro=1.0, project=project)
-    else:
-        units = "nbody"
-        M=1.
-        lmodel = limepy(phi0, g, G=1, M=1, rv=1, project=project)
+            phi0=float(phi0)
+
+        project = bool(kwargs.get("project", False))
+
+        if "M" in kwargs:
+            units = "pckms"
+            M = float(kwargs.get("M"))
+            if "rt" in kwargs:
+                rt = float(kwargs.get("rt"))
+                lmodel = limepy(phi0, g, M=M, rt=rt, project=project)
+            elif "rv" in kwargs:
+                rv = float(kwargs.get("rv"))
+                lmodel = limepy(phi0, g, M=M, rv=rv, project=project)
+            elif "rh" in kwargs:
+                rh = float(kwargs.get("rh"))
+                lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
+            elif "rm" in kwargs:
+                rh = float(kwargs.get("rm"))
+                lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
+            elif "ro" in kwargs:
+                ro = float(kwargs.get("ro"))
+                lmodel = limepy(phi0, g, M=M, ro=ro, project=project)
+            else:
+                lmodel = limepy(phi0, g, M=M, ro=1.0, project=project)
+        else:
+            units = "nbody"
+            M=1.
+            lmodel = limepy(phi0, g, G=1, M=1, rv=1, project=project)
 
     mbar = kwargs.get("mbar", 0.4)
     N = int(kwargs.get("N", M/mbar))
@@ -225,89 +241,6 @@ def _get_limepy(g=1,**kwargs):
         ldata.m,
         np.linspace(1, N, N, dtype=int),
 
-    )
-    cluster.find_centre()
-
-    return cluster
-
-
-def _get_spes(**kwargs):
-    """Get an Nbody realization of a SPES model cluster
-
-    Parameters
-    ----------
-    phi0 : float
-        Central potential
-    project : bool
-        return projected values
-    B : float
-        B parameter
-    eta : float
-        eta parameter
-    fpe : float
-        fpe parameter
-    M : float
-        cluster mass
-    ro/rh/rv/rt : float
-        radius used for scaling population from model units (scale,half-mass,virial,limitig radius)
-    N : int
-        number of stars to generate in model cluster
-
-    Returns
-    -------
-    cluster : class
-        StarCluster 
-
-    History
-    -------
-    2019 - Written - Webb (UofT)
-
-    """
-    phi0 = float(kwargs.get("phi0"))
-    B = float(kwargs.get("B"))
-    eta = float(kwargs.get("eta"))
-    fpe = float(kwargs.get("fpe"))
-
-    project = bool(kwargs.get("project", False))
-
-    if "M" in kwargs:
-        units = "pckms"
-        M = float(kwargs.get("M"))
-        if "rt" in kwargs:
-            rt = float(kwargs.get("rt"))
-            smodel = spes(phi0, B=B, eta=eta, fpe=fpe, M=M, rt=rt, project=project)
-        elif "rv" in kwargs:
-            rv = float(kwargs.get("rv"))
-            smodel = spes(phi0, B=B, eta=eta, fpe=fpe, M=M, rv=rv, project=project)
-        elif "rh" in kwargs:
-            rh = float(kwargs.get("rh"))
-            smodel = spes(phi0, B=B, eta=eta, fpe=fpe, M=M, rh=rh, project=project)
-        elif "ro" in kwargs:
-            ro = float(kwargs.get("ro"))
-            smodel = spes(phi0, B=B, eta=eta, fpe=fpe, M=M, ro=ro, project=project)
-        else:
-            smodel = spes(phi0, B=B, eta=eta, fpe=fpe, M=M, ro=1.0, project=project)
-    else:
-        units = "nbody"
-        M=1
-        smodel = spes(phi0, B=B, eta=eta, fpe=fpe, G=1, M=1, rv=1, project=project)
-
-    mbar = kwargs.get("mbar", 0.4)
-    N = int(kwargs.get("N", M/mbar))
-
-    sdata = sample(smodel, N=N)
-
-    cluster = StarCluster(units=units, origin="cluster")
-    cluster.ctype = "spes"
-    cluster.add_stars(
-        sdata.x,
-        sdata.y,
-        sdata.z,
-        sdata.vx,
-        sdata.vy,
-        sdata.vz,
-        sdata.m,
-        np.linspace(1, N, N, dtype=int),
     )
     cluster.find_centre()
 

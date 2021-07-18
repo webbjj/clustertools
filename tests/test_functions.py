@@ -249,4 +249,6 @@ def test_rlagrange(tol=0.01):
 	rn=ctools.rlagrange(cluster,projected=True)
 	np.testing.assert_array_equal(rn,np.linspace(1,10,10))
 
+def test_virial_radius():
+
 

@@ -48,10 +48,10 @@ def load_cluster(
 
             - nbody6
             - nbody6se
-            - nbody6pp
-            - gyrfalcon
+            - nbody6pp or nbody6++
+            - nemo or gyrfalcon
             - snaptrim
-            - napauto
+            - snapauto
             - clustertools
             - snapshot
             - astropy_table
@@ -110,7 +110,7 @@ def load_cluster(
     verbose : bool
         print additional information to screen while loading (default : False)
     give : str
-        set what parameters are read in from gyrfalcon (default: 'mxv')
+        set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
 
     History
@@ -160,8 +160,7 @@ def load_cluster(
 
         cluster = _get_nbody6(out3, out33, fort82=fort82, fort83=fort83, ofile=ofile, advance=False, **kwargs)
 
-    elif ctype == "nbody6pp":
-
+    elif ctype == "nbody6pp" or ctype=='nbody6++':
         nsnap = kwargs.get("nsnap", 0)
 
         if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
@@ -182,7 +181,7 @@ def load_cluster(
         cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False, **kwargs)
 
 
-    elif ctype == "gyrfalcon":
+    elif ctype == "gyrfalcon" or ctype=='nemo':
         # Read in snapshot from gyrfalcon.
         filein = open(wdir + filename, "r")
         cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", advance=False, **kwargs)
@@ -344,7 +343,7 @@ def advance_cluster(
             cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
         )
 
-    elif cluster.ctype == "nbody6pp":
+    elif cluster.ctype == "nbody6pp" or cluster.ctype == "nbody6++":
         nsnap = advance_kwargs.get("nsnap") + 1
 
         if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
@@ -370,7 +369,7 @@ def advance_cluster(
             cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
         )
 
-    elif cluster.ctype == "gyrfalcon":
+    elif cluster.ctype == "gyrfalcon" or ctype=="nemo":
 
         cluster = _get_gyrfalcon(
             cluster.sfile,
@@ -576,7 +575,7 @@ def _get_gyrfalcon(
     Parameters
     ----------
     filein : file
-        opened gyrfalcon file
+        opened nemo/gyrfalcon file
     units : str
         units of data (default:'WDunits')
     ofile : file
@@ -588,7 +587,7 @@ def _get_gyrfalcon(
     ------
 
     give : str
-        set what parameters are read in from gyrfalcon (default: 'mxv')
+        set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
 
     Returns
@@ -647,7 +646,7 @@ def _get_gyrfalcon(
         data = filein.readline().split()
         if len(data) == 0:
             print("END OF FILE")
-            return StarCluster(0.0,ctype="gyrfalcon",**kwargs)
+            return StarCluster(0.0,ctype="nemo",**kwargs)
         elif "#" not in data:
             over_head = True
             print("OVER HEAD")
@@ -662,7 +661,7 @@ def _get_gyrfalcon(
         tphys,
         units=units,
         origin=origin,
-        ctype="gyrfalcon",
+        ctype="nemo",
         sfile=filein,
         bfile=None,
         skiprows=skiprows,
@@ -1068,7 +1067,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         alist[0],
         units="nbody",
         origin="cluster",
-        ctype="nbody6pp",
+        ctype="nbody6++",
         sfile=conf3,
         nsnap=nsnap,
     )
@@ -1273,7 +1272,7 @@ def _get_snapshot(
     Parameters
     ----------
     ctype : str
-        code used to generate data (nbody6/nbody6se/gyrfalcon/...)
+        code used to generate data (nbody6/nbody6se/nemo/gyrfalcon/...)
     filename : str
         name of file
     col_names : str

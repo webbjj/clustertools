@@ -46,7 +46,7 @@ class StarCluster(object):
         these two coordinate systems may be the same. (default: None)
     ctype : str
         Code type used to generate the cluster population. Current options include 'snapshot',
-        'nbody6','nbody6se','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
+        'nbody6','nbody6se','nemo','gyrfalcon','snaptrim', amuse','clustertools','snapauto'. The parameter
         informs clustertools how to load the stellar popuation and advance to the next snapshot.
         (default: 'snapshot')
     projected : bool
@@ -93,7 +93,7 @@ class StarCluster(object):
     centre_method: str
         {None,'orthographic','VandeVen'} method to convert to clustercentric coordinates when units are in radec (Default: None)
     give : str
-        set what parameters are read in from gyrfalcon (default: 'mxv')
+        set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
 
     History
@@ -321,7 +321,7 @@ class StarCluster(object):
         self.rvmax = None
         self.vmax = None
 
-        #For use with extended gyrfalcon output
+        #For use with extended nemo/gyrfalcon output
         if self.give == 'mxvpqael':
             self.gyrpot=np.array([])
             self.gyrq=np.array([])

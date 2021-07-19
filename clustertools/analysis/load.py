@@ -348,7 +348,7 @@ def advance_cluster(
 
     elif cluster.ctype == "nbody6pp" or cluster.ctype == "nbody6++":
         deltat=kwargs.pop('deltat',1)
-        nsnap = advance_kwargs.get("nsnap") + deltat
+        nsnap = advance_kwargs.get("nsnap") + deltat - 1
 
         if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
             conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")

@@ -1065,6 +1065,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
     
     initialize = kwargs.get("initialize", False)
     nsnap = kwargs.get("nsnap", 0)
+    wdir = kwargs.get("wdir", './')
 
     ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,**kwargs)
     cluster = StarCluster(
@@ -1075,6 +1076,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         sfile=conf3,
         nsnap=nsnap,
     )
+
+    cluster.wdir=wdir
 
     if ntot > 0:
         cluster.add_nbody6(
@@ -1448,6 +1451,8 @@ def _get_snapshot(
     cluster = StarCluster(
         tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
+
+    cluster.wdir=wdir
 
     if idindx:
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)

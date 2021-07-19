@@ -8,6 +8,24 @@ The package contains methods for loading data from commonly used N-body codes, g
 
 ``clustertools`` is developed on Github. Please go to https://github.com/webbjj/clustertools to report issues or contribute to the code. 
 
+Supported N-Body Simulation Codes
+-----------------
+
+AMUSE <https://amusecode.github.io/>
+
+NBODY6 <https://people.ast.cam.ac.uk/~sverre/web/pages/nbody.htm>
+
+NBODY6++GPU <https://github.com/nbodyx/Nbody6ppGPU>
+
+NEMO/GYRFALCON <https://astronemo.readthedocs.io/en/latest/>
+
+Supported Initial Condition Generation Codes
+-----------------
+
+galpy <https://docs.galpy.org/en/v1.6.0/index.html> - Very simple version, will be updated soon with Galpy's own distribution function generator
+
+limepy <https://limepy.readthedocs.io/en/latest/>
+
 Guide
 -----------------
 
@@ -28,24 +46,6 @@ Guide
 
    binaries.rst
 
-Supported N-Body Simulation Codes
------------------
-
-'AMUSE <https://amusecode.github.io/>'
-
-'NBODY6 <https://people.ast.cam.ac.uk/~sverre/web/pages/nbody.htm>'
-
-'NBODY6++GPU <https://github.com/nbodyx/Nbody6ppGPU>'
-
-'NEMO (GYRFALCON) <https://teuben.github.io/nemo/' 
-
-Supported Initial Condition Generation Codes
------------------
-
-'galpy <https://docs.galpy.org/en/v1.6.0/index.html>' - Very simple version, will be updated soon with Galpy's own distribution function generator
-
-`limepy
-<https://limepy.readthedocs.io/en/latest/>`
 
 Example Notebooks
 -----------------

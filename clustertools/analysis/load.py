@@ -317,7 +317,10 @@ def advance_cluster(
 
     Other Parameters
     ----------------
-    Same as load_cluster
+    Same as load_cluster except for:
+
+    nforward : integer
+        number of snaps forward to advance to next Nbody6++ timestep (default = 1)
 
     History
     -------
@@ -344,7 +347,8 @@ def advance_cluster(
         )
 
     elif cluster.ctype == "nbody6pp" or cluster.ctype == "nbody6++":
-        nsnap = advance_kwargs.get("nsnap") + 1
+        nforward=kwargs.pop('nforward',1)
+        nsnap = advance_kwargs.get("nsnap") + nforward
 
         if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
             conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")

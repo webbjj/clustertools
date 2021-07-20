@@ -1075,7 +1075,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         ctype="nbody6++",
         sfile=conf3,
         nsnap=nsnap,
-        wdir=wdir,np
+        wdir=wdir,
     )
 
     if ntot > 0:

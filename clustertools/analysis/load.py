@@ -1075,9 +1075,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         ctype="nbody6++",
         sfile=conf3,
         nsnap=nsnap,
+        wdir=wdir,np
     )
-
-    cluster.wdir=wdir
 
     if ntot > 0:
         cluster.add_nbody6(
@@ -1451,8 +1450,6 @@ def _get_snapshot(
     cluster = StarCluster(
         tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
-
-    cluster.wdir=wdir
 
     if idindx:
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,sortstars=False)

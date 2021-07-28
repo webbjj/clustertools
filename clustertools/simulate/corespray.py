@@ -54,7 +54,7 @@ class corespray(object):
 		#Assume all stars in the core have mass equal to the mean mass
 		masses=power_law_distribution_function(1000, self.alpha, self.mmin, self.mmax)
 		self.mbar=np.mean(masses)
-		self.rsep=2.*((self.mbar/self.rho0)/(4.*np.pi/3.))**(1./3.)
+		self.rsep=((self.mbar/self.rho0)/(4.*np.pi/3.))**(1./3.)
 
 
 		self.ro,self.vo=ro,vo

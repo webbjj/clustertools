@@ -10,6 +10,7 @@ from ..util.recipes import *
 from ..util.coordinates import *
 from ..analysis.cluster import StarCluster
 from ..analysis.tails import *
+from ..analysis.orbit import orbital_path
 
 from streamtools.df import streamspraydf
 
@@ -45,32 +46,17 @@ class tailspray(object):
 
 		if isinstance(gcorbit,str):
 			self.gcname=gcorbit
-			self.o=self.init_gc_orbit()
+			self.o=Orbit.from_name(self.gcname, ro=self.ro, vo=self.vo, solarmotion=[-11.1, 24.0, 7.25])
 		else:
 			self.gcname='unknown'
 			self.o=gcorbit
+		
+		self.o.turn_physical_off()
 
 		self.mgc=mgc
 
 		self.pot=pot
 		self.rtpot=rtpot
-
-	def init_gc_orbit(self):
-		"""
-		Initialise and return the glocbular cluster orbit using its name
-		<gc_name>
-		"""
-		
-		temp = Orbit.from_name(self.gcname, ro=self.ro, vo=self.vo, solarmotion=[-11.1, 24.0, 7.25])
-
-		o = Orbit([temp.R(use_physical=False), 
-		           temp.vR(use_physical=False), 
-		           temp.vT(use_physical=False), 
-		           temp.z(use_physical=False), 
-		           temp.vz(use_physical=False), 
-		           temp.phi()],solarmotion=[-11.1, 24.0, 7.25])
-
-		return o
 
 	def sample(self,tdisrupt,nstar=100,integ=True, verbos=False):
 		"""
@@ -119,6 +105,24 @@ class tailspray(object):
 		self.tesc=-1.*np.append(dt*self.to,dtt*self.to)
 
 		return self.cluster
+
+	def orbital_path(self, 
+		dt=0.1, 
+		nt=100, 
+		pot=None, 
+		from_centre=False, 
+		skypath=False, 
+		initialize=False,
+		ro=None, 
+		vo=None,
+		plot=False,
+		**kwargs):
+
+			if pot is None: pot=self.pot
+			if ro is None: ro=self.ro
+			if vo is None: vo=self.vo
+
+			self.torbit, self.xorbit, self.yorbit, self.zorbit, self.vxorbit, self.vyorbit, self.vzorbit=orbital_path(self.cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot,**kwargs)
 
 	def tail_path(self, 
 		dt=0.1, 

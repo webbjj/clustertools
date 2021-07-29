@@ -25,7 +25,8 @@ class corespray(object):
 
 	"""
 
-	def __init__(self,gcorbit,pot=MWPotential2014,mu0=0.,sig0=10.0,vesc0=10.0,rho0=1.,mgc=None,rgc=None,W0=None,mmin=0.1,mmax=1.4,alpha=-1.35,ro=8.,vo=220.,q=-2):
+	def __init__(self,gcorbit,pot=MWPotential2014,mu0=0.,sig0=10.0,vesc0=10.0,rho0=1.,mgc=None,rgc=None,W0=None,mmin=0.1,mmax=1.4,alpha=-1.35,emin=10.0**36,emax=10.0**40.0,ro=8.,vo=220.,q=-3):
+
 		
 		#gc orbit - name of or orbit instance corresponding to GC
 
@@ -56,6 +57,9 @@ class corespray(object):
 		self.mbar=np.mean(masses)
 		self.rsep=((self.mbar/self.rho0)/(4.*np.pi/3.))**(1./3.)
 
+		#Limits of binary energy distribution
+		self.emin=emin
+		self.emax=emax
 
 		self.ro,self.vo=ro,vo
 		self.to=conversion.time_in_Gyr(ro=self.ro,vo=self.vo)*1000.
@@ -114,7 +118,6 @@ class corespray(object):
 
 		nescape=0
 
-
 		self.mstar=np.zeros(self.nstar)
 		self.mb1=np.zeros(self.nstar)
 		self.mb2=np.zeros(self.nstar)
@@ -122,12 +125,7 @@ class corespray(object):
 
 
 		while nescape < self.nstar:
-			masses=power_law_distribution_function(3, self.alpha, self.mmin, self.mmax)
-
-			mindx=(masses==np.amin(masses))
-			ms=masses[mindx][0]
-			m_a,m_b=masses[np.invert(mindx)]
-			        
+			ms,m_a,m_b=power_law_distribution_function(3, self.alpha, self.mmin, self.mmax)   
 			mb=m_a+m_b
 			M=ms+mb
 
@@ -140,7 +138,7 @@ class corespray(object):
 				vxb,vyb,vzb=np.random.normal(self.mu0,self.sig0,3)
 				rdot=np.sqrt((vxs-vxb)**2.+(vys-vyb)**2.+(vzs-vzb)**2.)
 
-				ebin,semi=self.sample_binding_energy(m_a,m_b,alpha=-1,xmin=10.0**36,xmax=10.0**40.0)
+				ebin,semi=self.sample_binding_energy(m_a,m_b,-1,self.emin,self.emax)
 
 				e0=0.5*(mb*ms/M)*(rdot**2.)-grav*ms*mb/self.rsep + ebin
 
@@ -178,6 +176,7 @@ class corespray(object):
 			Re, phie, ze, vRe, vTe, vze=cart_to_cyl(xe,ye,ze,vxe,vye,vze)
 			oe=Orbit([Re/self.ro, vRe/self.vo, vTe/self.vo, ze/self.ro, vze/self.vo, phie],ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
 
+			#Save initial positions and velocities of kicked stars
 			self.o0.append(oe)
 
 			ts=np.linspace(self.tesc[i]/self.to,0.,1000)
@@ -192,6 +191,7 @@ class corespray(object):
 			vze0=np.append(vze0,oe.vz(0.))
 
 
+		#Save final positions and velocities of kicked stars at t=0
 		vxvve=np.column_stack([Re0/self.ro,vRe0/self.vo,vTe0/self.vo,ze0/self.ro,vze0/self.vo,phie0])
 		self.oe=Orbit(vxvve,ro=self.ro,vo=self.vo,solarmotion=[-11.1, 24.0, 7.25])
 		
@@ -208,7 +208,7 @@ class corespray(object):
 		prob=(ms**q)/(ms**q+m_a**q+m_b**q)
 		return prob
 
-	def sample_binding_energy(self,mb1,mb2,alpha=-1,xmin=10.0**36,xmax=10.0**40.0):
+	def sample_binding_energy(self,mb1,mb2,alpha,emin,emax):
 	    #Opik's Law
 		#Default binding energy distribution is:
 		# power law of slope -1 
@@ -222,7 +222,7 @@ class corespray(object):
 		else:
 			n=len(mb1)
 
-		ebin_si=self.xfunc(n,alpha,xmin,xmax) #Joules = kg (m/s)^2
+		ebin_si=self.xfunc(n,alpha,emin,emax) #Joules = kg (m/s)^2
 		ebin=ebin_si/1.9891e30 # Msun (m/s)^2
 		ebin/=(1000.0*1000.0) #Msun (km/s)^2
 

@@ -1,3 +1,13 @@
+""" The corespray d class
+  
+"""
+
+__author__ = "Steffani Grondin & Jeremy J Webb"
+
+__all__ = [
+    "corespraydf",
+]
+
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014,PlummerPotential,KingPotential,MovingObjectPotential
 from galpy.util import bovy_conversion,conversion,bovy_plot
@@ -13,32 +23,54 @@ from ..analysis.cluster import StarCluster
 
 class corespray(object):
 
-	""" A class that is responsible for periodcially ejecting stars from a cluster's core
+	""" A class for initializing a distribution function for stars that are ejected from the core of a globular cluster
 
 	Parameters
 	----------
 
+	gcorbit : string or galpy orbit instance
+		Name of Galactic Globular Cluster from which to simulate core ejection or a Galpy orbit instance
+	pot : galpy potential
+		Potentional to be used for orbit integration (default: MWPotential2014)
+	mu0 : float
+		average 1D velocity in the core (default: 0 km/s)
+	sig0 : float
+		avarege 1D velocity disperions in the core (default 10.0 km/s)
+	vesc0 : float
+		escape velocity from the core (default: 10.0 km/s)
+	rho0 : float
+		core density (default: 1 Msun/pc^3)
+	mgc : float
+		globular cluster mass - needed if cluster's potential is to be included in orbit integration of escapers (default: None)
+	rgc : float
+		scale radius of globular cluster (assuming Plummer potential) or tidal radius of globular cluster (assuming King potential) (default: None)
+	W0 : float
+		King central potential parameter (default: None, which results in cluster potential taken to be a Plummer)
+	mmin : float
+		minimum stellar mass in core (default (0.1))
+	mmax : float
+		maximum stellar mass in the core (default: 1.4)
+	alpha : float
+		slope of the stellar mass function in the core (default: -1.35)
+	emin : float
+		minimum binary energy (default: 10.0**36 J)
+	emax : float
+		maximum binary energy (default: 10.0**40 J)
+	ro : float
+		galpy length scaling parameter (default: 8.)
+	vo : float
+		galpy veocicity scaling parameter (default: 220.)
+	q : float
+		exponenet for calculating probability of stellar escape from three-body system (#Equation 7.23)
+
 
 	History
 	-------
-	2021 - Written - Grandin/Webb (UofT)
+	2021 - Written - Grandin (UofT)
 
 	"""
 
 	def __init__(self,gcorbit,pot=MWPotential2014,mu0=0.,sig0=10.0,vesc0=10.0,rho0=1.,mgc=None,rgc=None,W0=None,mmin=0.1,mmax=1.4,alpha=-1.35,emin=10.0**36,emax=10.0**40.0,ro=8.,vo=220.,q=-3):
-
-		
-		#gc orbit - name of or orbit instance corresponding to GC
-
-		#mu0 - average 1D velocity in core (km/s)
-		#sig0 - 1D velocity dispersion in core (km/s)
-		#vesc0 - core velocity dispersion (km/s)
-		#rho0 - core density (Msun/pc^3)
-		#mgc - mass of GC
-		#rgc - size of gc (assumed to be rh if Plummer or rt if King)
-		#W0 - central potential if King model
-		#mmin,mmax - minimum and maximum mass in the core (MSun)
-		#alpha - slope of core mass function
 
 		if isinstance(gcorbit,str):
 			self.gcname=gcorbit
@@ -80,10 +112,27 @@ class corespray(object):
 				self.gcpot=KingPotential(W0,mgc/self.mo,rgc/self.ro,ro=self.ro,vo=self.vo)
 
 	def sample(self,tdisrupt=1000.,rate=1.,nstar=None,npeak=5.,verbose=False):
-		#tdisrupt - time over which sampling begins (Myr)
-		#rate - ejection rate (default 1 per Myr)
-		#nstar - if set, nstar stars will be ejected randomly between start and tend
-		#npeak - when sampling vs, sampling range will be from 0 to npeak*vpeak, where vpeak is the peak in the distribution 
+ 		""" A function for sampling the core ejection distribution function
+
+		Parameters
+		----------
+
+		tdisrupt : float
+			time over which sampling begins (Myr)
+		rate : float
+			ejection rate (default 1 per Myr)
+		nstar : float
+			if set, nstar stars will be ejected randomly from tdisrupt to 0 Myr. Rate is recalculated. (default : None)
+		npeak : float
+			when sampling kick velocity distribution function, sampling range will be from 0 to npeak*vpeak, where vpeak is the peak in the distribution function (default: 5)
+		verbose : bool
+			print additional information to screen (default: False)
+
+		History
+		-------
+		2021 - Written - Grandin/Webb (UofT)
+
+		"""
 
 		grav=4.302e-3 #pc/Msun (km/s)^2
 
@@ -129,7 +178,7 @@ class corespray(object):
 			mb=m_a+m_b
 			M=ms+mb
 
-			prob=self.prob_three_body_escape(ms,m_a,m_b,self.q)
+			prob=self._prob_three_body_escape(ms,m_a,m_b,self.q)
 
 			if np.random.rand() < prob:
 			    
@@ -138,11 +187,11 @@ class corespray(object):
 				vxb,vyb,vzb=np.random.normal(self.mu0,self.sig0,3)
 				rdot=np.sqrt((vxs-vxb)**2.+(vys-vyb)**2.+(vzs-vzb)**2.)
 
-				ebin,semi=self.sample_binding_energy(m_a,m_b,-1,self.emin,self.emax)
+				ebin,semi=self._sample_binding_energy(m_a,m_b,-1,self.emin,self.emax)
 
 				e0=0.5*(mb*ms/M)*(rdot**2.)-grav*ms*mb/self.rsep + ebin
 
-				vs=self.sample_escape_velocity(e0,ms,mb,npeak)
+				vs=self._sample_escape_velocity(e0,ms,mb,npeak)
 
 				if vs >self.vesc0:  
 
@@ -202,13 +251,13 @@ class corespray(object):
 
 		return cluster
 
-	def prob_three_body_escape(self,ms,m_a,m_b,q):
+	def _prob_three_body_escape(self,ms,m_a,m_b,q):
 
 		#Equation 7.23
 		prob=(ms**q)/(ms**q+m_a**q+m_b**q)
 		return prob
 
-	def sample_binding_energy(self,mb1,mb2,alpha,emin,emax):
+	def _sample_binding_energy(self,mb1,mb2,alpha,emin,emax):
 	    #Opik's Law
 		#Default binding energy distribution is:
 		# power law of slope -1 
@@ -222,7 +271,7 @@ class corespray(object):
 		else:
 			n=len(mb1)
 
-		ebin_si=self.xfunc(n,alpha,emin,emax) #Joules = kg (m/s)^2
+		ebin_si=self.power_law_distribution_function(n,alpha,emin,emax) #Joules = kg (m/s)^2
 		ebin=ebin_si/1.9891e30 # Msun (m/s)^2
 		ebin/=(1000.0*1000.0) #Msun (km/s)^2
 
@@ -235,55 +284,34 @@ class corespray(object):
 
 		return ebin,semi
 
-	def sample_escape_velocity(self,e0,ms,mb,npeak=5):
+	def _sample_escape_velocity(self,e0,ms,mb,npeak=5):
 		#randomly sample between npeak*vs_peak
 
-		vs_peak=self.escape_velocity_distribution_peak(e0,ms,mb)
+		vs_peak=self._escape_velocity_distribution_peak(e0,ms,mb)
 		match=False
 
 		while not match:
 			vstemp=np.random.rand()*npeak*vs_peak
 			amptemp=np.random.rand()*vs_peak
 
-			if amptemp < self.escape_velocity_distribution(vstemp,e0,ms,mb):
+			if amptemp < self._escape_velocity_distribution(vstemp,e0,ms,mb):
 				vs=vstemp
 				match=True
 
 		return vs
 
 
-	def escape_velocity_distribution(self,vs,e0,ms,mb):
+	def _escape_velocity_distribution(self,vs,e0,ms,mb):
 		#Equation 7.19
 		M=ms+mb
 		fv=(3.5*(np.fabs(e0)**(7./2.))*ms*M/mb)*vs/((np.fabs(e0)+0.5*(ms*M/mb)*(vs**2.))**(9./2.))
 		return fv
 
-	def escape_velocity_distribution_peak(self,e0,ms,mb):
+	def _escape_velocity_distribution_peak(self,e0,ms,mb):
 		M=ms+mb
 		vs_peak=0.5*np.sqrt((M-ms)/(ms*M))*np.sqrt(np.fabs(e0))
 
 		return vs_peak
-
-	def xfunc(self,n,alpha,xmin,xmax):
-
-	    eta=alpha+1.
-	    
-	    if xmin==xmax:
-	        x=xmin
-	    elif alpha==0:
-	        x=xmin+np.random.random(n)*(xmax-xmin)
-	    elif alpha>0:
-	        x=xmin+np.random.power(eta,n)*(xmax-xmin)
-	    elif alpha<0 and alpha!=-1.:
-	        x=(xmin**eta + (xmax**eta - xmin**eta)*np.random.rand(n))**(1./eta)
-	    elif alpha==-1:
-	        x=np.log10(xmin)+np.random.random(n)*(np.log10(xmax)-np.log10(xmin))
-	        x=10.0**x
-	        
-	    if n==1:
-	        return x
-	    else:      
-	        return np.array(x)
 
 	def _init_fig(self,xlim=(-20,20),ylim=(-20,20)):
 	    self.fig = plt.figure()
@@ -327,7 +355,25 @@ class corespray(object):
 
 
 	def animate(self,frames=100,interval=50,xlim=(-20,20),ylim=(-20,20)):
+		"""Animate the ejection of stars from the cluster's core
+		
+		Parameters
+    	----------
 
+    	frames : int
+    		number of frames to use for animation (default:100)
+		interval : float
+			time intercal between frames (default: 50 Myr)
+		xlim : tuple
+			xlimits for figure
+		ylim : tuple
+			ylimts for figure
+
+	    History
+   		-------
+	    2021 - Written - Webb (UofT)
+
+	    """
 		self._init_fig(xlim,ylim)
 
 		self.ts=np.linspace(-1.*self.tdisrupt/self.to,0.,frames)
@@ -349,6 +395,19 @@ class corespray(object):
 		self.anim = animation.FuncAnimation(self.fig, self._ani_update, init_func=self._ani_init, frames=frames, interval=interval, blit=False)
 
 	def snapout(self,filename='corespray.dat'):
+		"""Output present day positions, velocities, escape times, and escape velocities of stars
+		
+		Parameters
+    	----------
+
+    	filename: str
+    		file name to write data to (default: corespray.dat)
+
+	    History
+   		-------
+	    2021 - Written - Webb (UofT)
+
+	    """
 		R=np.append(self.o.R(0.),self.oe.R(0.))
 		vR=np.append(self.o.vR(0.),self.oe.vR(0.))
 		vT=np.append(self.o.vT(0.),self.oe.vT(0.))

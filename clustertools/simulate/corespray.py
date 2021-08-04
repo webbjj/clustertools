@@ -5,7 +5,7 @@
 __author__ = "Steffani Grondin & Jeremy J Webb"
 
 __all__ = [
-    "corespraydf",
+    "corespray",
 ]
 
 from galpy.orbit import Orbit
@@ -112,7 +112,7 @@ class corespray(object):
 				self.gcpot=KingPotential(W0,mgc/self.mo,rgc/self.ro,ro=self.ro,vo=self.vo)
 
 	def sample(self,tdisrupt=1000.,rate=1.,nstar=None,npeak=5.,verbose=False):
- 		""" A function for sampling the core ejection distribution function
+		""" A function for sampling the core ejection distribution function
 
 		Parameters
 		----------
@@ -134,10 +134,9 @@ class corespray(object):
 
 		"""
 
-		grav=4.302e-3 #pc/Msun (km/s)^2
+		grav=4.302e-3
 
 		self.tdisrupt=tdisrupt
-
 
 		#Select escape times
 		#If nstar is not None, randomly select escapers between tstart and tend

@@ -1,3 +1,13 @@
+""" The tailspray d class
+  
+"""
+
+__author__ = "Nada El-Falou & Jeremy J Webb"
+
+__all__ = [
+    "tailspray",
+]
+
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014,PlummerPotential,KingPotential,MovingObjectPotential
 from galpy.util import bovy_conversion,conversion,bovy_plot

@@ -230,7 +230,7 @@ class tailspray(object):
 		for i in range(0,frames):
 		    gcdata[i]=[self.o.x(self.ts[i])*self.ro,self.o.y(self.ts[i])*self.ro]
 
-		sdata=np.zeros(shape=(frames,2,2*self.nstar))
+		sdata=np.zeros(shape=(frames,2,int(2*self.nstar)))
 
 		self.oe=self.cluster.initialize_orbits()
 		self.oe.integrate(tsint,self.pot)

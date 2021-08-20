@@ -107,13 +107,15 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
     return o
 
 
-def initialize_orbits(cluster, ro=8.0, vo=220.0):
+def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
     """Initialize a galpy orbit for every star in the cluster
 
     Parameters
     ----------
     cluster : class
         StarCluster
+    from_centre : bool
+        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     ro : float
         galpy distance scale (default: 8.)
     vo : float
@@ -133,8 +135,20 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0):
     cluster.to_galaxy(sortstars=False)
     cluster.to_galpy()
 
-    x, y, z = cluster.x, cluster.y, cluster.z
-    vx, vy, vz = cluster.vx, cluster.vy, cluster.vz
+    if from_centre:
+        x, y, z = (
+            cluster.x + cluster.xc,
+            cluster.y + cluster.yc,
+            cluster.z + cluster.zc,
+        )
+        vx, vy, vz = (
+            cluster.vx + cluster.vxc,
+            cluster.vy + cluster.vyc,
+            cluster.vz + cluster.vzc,
+        )
+    else:
+        x, y, z = cluster.x, cluster.y, cluster.z
+        vx, vy, vz = cluster.vx, cluster.vy, cluster.vz
 
     R, phi, z = coords.rect_to_cyl(x, y, z)
     vR, vT, vz = coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
@@ -464,6 +478,7 @@ def orbital_path(
     -------
     2018 - Written - Webb (UofT)
     """
+
     o = initialize_orbit(cluster, from_centre=from_centre)
 
     ts = np.linspace(0, -1.0 * dt / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
@@ -511,9 +526,7 @@ def orbital_path(
             if filename != None:
                 plt.savefig(filename)
 
-
         if initialize:
-            cluster.orbit = o
             return t, ra, dec, dist, pmra, pmdec, vlos, o
         else:
             return t, ra, dec, dist, pmra, pmdec, vlos
@@ -776,6 +789,7 @@ def orbital_path_match(
     else:
         yindx = np.argmin(np.fabs(dy),axis=1)
         dpath*=np.sign(dy[np.arange(0,len(dy)),yindx])
+
 
     if plot:
         filename = kwargs.pop("filename", None)

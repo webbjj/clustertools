@@ -1679,17 +1679,17 @@ class StarCluster(object):
         return self.tidal_tensor
 
 
-    def tail_path(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,skypath=False,
+    def tail_path(self,dt=0.1,nt=100,ntail=None,pot=MWPotential2014,from_centre=False,skypath=False,
         ro=8.0,vo=220.0,plot=False,**kwargs):
 
-        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,ro=ro,vo=vo,plot=plot,**kwargs)
+        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,nt=nt,ntail=ntail,pot=pot,from_centre=from_centre,skypath=skypath,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
-    def tail_path_match(self,dt=0.1,nt=100,pot=MWPotential2014,from_centre=False,
+    def tail_path_match(self,dt=0.1,nt=100,ntail=None, pot=MWPotential2014,from_centre=False,
         to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,**kwargs,):
 
-        self.tstar,self.dprog,self.dpath=tail_path_match(self,dt=dt,nt=nt,pot=pot,
+        self.tstar,self.dprog,self.dpath=tail_path_match(self,dt=dt,nt=nt,ntail=ntail,pot=pot,
         from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,**kwargs)
 
         return self.tstar,self.dprog,self.dpath

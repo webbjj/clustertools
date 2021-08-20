@@ -85,7 +85,7 @@ def to_tail(cluster):
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
 def tail_path(
-    cluster, dt=0.1, nt=100, pot=MWPotential2014, from_centre=False, skypath=False, ro=8.0, vo=220.0,
+    cluster, dt=0.1, nt=100, ntail=None, pot=MWPotential2014, dmax=None, from_centre=False, skypath=False, ro=8.0, vo=220.0,
     plot=False,**kwargs,
 ):
     """Calculate tail path +/- dt Gyr around the cluster
@@ -98,8 +98,12 @@ def tail_path(
         timestep that StarCluster is to be moved to
     nt : int
         number of timesteps
+    ntail : int
+        number of points along the tail (default: nt)
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    dmax : float
+        maximum distance (assumed to be same units as cluster) from orbital path to be included in generating tail path (default: None)
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     skypath : bool
@@ -125,9 +129,29 @@ def tail_path(
     2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
     """
 
+    if ntail is None:
+        ntail=nt
+
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
+
+    #dmax is assumed to have same units as cluster
+    if dmax is not None:
+        if units0=='nbody':
+            dmax*=cluster.rbar/1000.0
+        elif units0=='pckms':
+            dmax/=1000.
+        elif units0=='galpy':
+            dmax*=ro
+        elif units0=='radec' and not skypath:
+            dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
+            dmax=dist*np.tan(dmax)
+        elif units0=='kpckms' and skypath:
+            dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
+            dmax=np.arctan(dmax/dist)
+
 
     to, xo, yo, zo, vxo, vyo, vzo, o = orbital_path(
         cluster,
@@ -143,7 +167,12 @@ def tail_path(
         cluster=cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, ro=ro, vo=vo
     )
 
-    t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=nt)
+    if dmax is None:
+        dindx=np.ones(len(tstar),dtype=bool)
+    else:
+        dindx = (np.fabs(dpath) <= dmax)
+
+    t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=ntail)
     ttail = []
     xtail = []
     ytail = []
@@ -153,7 +182,7 @@ def tail_path(
     vztail = []
 
     for i in range(0, len(t_mid)):
-        indx = (tstar >= t_lower[i]) * (tstar <= t_upper[i])
+        indx = (tstar >= t_lower[i]) * (tstar <= t_upper[i]) * dindx
         if np.sum(indx) > 0:
             ttail = np.append(ttail, t_mid[i])
             xtail = np.append(xtail, np.mean(cluster.x[indx]))
@@ -192,6 +221,7 @@ def tail_path_match(
     cluster,
     dt=0.1,
     nt=100,
+    ntail=None,
     pot=MWPotential2014,
     path=None,
     from_centre=False,
@@ -214,6 +244,8 @@ def tail_path_match(
         timestep that StarCluster is to be moved to
     nt : int
         number of timesteps
+    ntail : int
+        number of points along the tail (default: nt)
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
     path : array
@@ -249,6 +281,10 @@ def tail_path_match(
     -------
     2018 - Written - Webb (UofT)
     """
+
+    if ntail is None:
+        ntail=nt
+
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()

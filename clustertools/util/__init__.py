@@ -30,6 +30,8 @@ _dens=plots._dens
 
 nbinmaker=recipes.nbinmaker
 binmaker=recipes.binmaker
+roaming_nbinmaker=recipes.roaming_nbinmaker
+roaming_binmaker=recipes.roaming_binmaker
 power_law_distribution_function=recipes.power_law_distribution_function
 dx_function=recipes.dx_function
 tapered_dx_function=recipes.tapered_dx_function

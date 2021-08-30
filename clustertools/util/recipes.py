@@ -5,6 +5,8 @@ __author__ = "Jeremy J Webb"
 __all__ = [
     'nbinmaker',
     "binmaker",
+    'roaming_nbinmaker',
+    "roaming_binmaker",
     "power_law_distribution_function",
     "dx_function",
     "tapered_dx_function",
@@ -153,6 +155,145 @@ def binmaker(x, nbin=10, nsum=False, steptype="linear"):
     else:
         return x_lower, x_mid, x_upper, x_hist
 
+def roaming_nbinmaker(x, nbin=10, ntot=20, nsum=False):
+
+    """Split an array into bins with equal numbers of elements
+
+    Parameters
+    ----------
+    x : float
+      input array
+    nbin : int
+      number of bins to set bin fraction
+    ntot : int
+      number of total bins
+    nsum : bool
+      return number of points in each bin (default: False)
+
+    Returns
+    -------
+    x_lower : float
+      lower bin values
+    x_mid : float
+      mean value in each bin
+    x_upper : float
+      upper bin values
+    x_hist : 
+      number of points in bin
+
+    if nsum==True:
+      x_sum : float
+        sum of point values in each bin
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+    xs = np.sort(x)
+
+    dx=1.0/float(nbin)
+    
+    xfrac_lower=np.linspace(0.,1-dx,ntot)
+    xfrac_upper=xfrac_lower+dx
+        
+    x_lower = xs[(xfrac_lower*(len(x)-1)).astype(int)]
+    x_upper = xs[(xfrac_upper*(len(x)-1)).astype(int)]
+
+    x_hist = np.array([])
+    x_sum = np.array([])
+    x_mid = np.array([])
+
+    indx = x_lower != x_upper
+    x_lower = x_lower[indx]
+    x_upper = x_upper[indx]
+
+    for i in range(0, np.sum(indx)):
+        if i<np.sum(indx)-1:
+            xindx = (x >= x_lower[i]) * (x < x_upper[i])
+        else:
+            xindx = (x >= x_lower[i])
+
+        x_hist = np.append(x_hist, np.sum(xindx))
+        x_sum = np.append(x_sum, np.sum(x[xindx]))
+        x_mid = np.append(x_mid, x_sum[i] / x_hist[i])
+
+    if nsum:
+        return x_lower, x_mid, x_upper, x_hist, x_sum
+    else:
+        return x_lower, x_mid, x_upper, x_hist
+        
+def roaming_binmaker(x, nbin=10, ntot=20, nsum=False, steptype="linear"):
+    """Split an array into bins of equal width with a roaming average
+
+    Parameters
+    ----------
+    x : float
+      input array
+    nbin : int
+      number of bins to set bin width
+    ntot : int
+      number of total bins
+    nsum : bool
+      return number of points in each bin (default: False)
+    steptype : str
+      linear or logarithmic steps (default: linear)
+
+    Returns
+    -------
+    x_lower : float
+      lower bin values
+    x_mid : float
+      mean value in each bin
+    x_upper : float
+      upper bin values
+    x_hist : 
+      number of points in bin
+
+    if nsum==True:
+      x_sum : float
+        sum of point values in each bin
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+
+    if steptype=='linear':
+    
+        xmin=np.amin(x)
+        xmax=np.amax(x)
+        dx=np.fabs(xmax-xmin)/nbin
+
+        x_lower=np.linspace(xmin,xmax-dx,ntot)
+        x_upper=x_lower+dx
+        x_mid=(x_upper+x_lower)/2.
+        
+    else:
+        xmin=np.amin(np.log10(x))
+        xmax=np.amax(np.log10(x))
+        dx=np.fabs(xmax-xmin)/nbin
+        
+        x_lower=np.logspace(xmin,xmax-dx,ntot)
+        x_upper=np.logspace(xmin+dx,xmax,ntot)
+                
+        x_mid=10.0**((np.log10(x_upper)+np.log10(x_lower))/2.)
+
+    x_hist=np.array([])
+    x_sum=np.array([])
+
+    for j in range(0, len(x_lower)):
+        if j<len(x_lower)-1:
+            indx = (x >= x_lower[j]) * (x < x_upper[j])
+        else:
+            indx = (x >= x_lower[j]) * (x <= x_upper[j])
+
+        x_hist = np.append(x_hist,np.sum(indx))
+        x_sum = np.append(x_sum,np.sum(x[indx]))
+
+    if nsum:
+        return x_lower, x_mid, x_upper, x_hist, x_sum
+    else:
+        return x_lower, x_mid, x_upper, x_hist
 
 def power_law_distribution_function(n, alpha, xmin, xmax):
     """Generate points from a power-law distribution function

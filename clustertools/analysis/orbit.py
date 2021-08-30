@@ -429,7 +429,7 @@ def orbit_interpolate(
 def orbital_path(
     cluster,
     dt=0.1,
-    nt=100,
+    nt=1000,
     pot=MWPotential2014,
     from_centre=False,
     skypath=False,
@@ -510,13 +510,16 @@ def orbital_path(
         vlos = np.array(o.vlos(ts))
 
         if cluster.units == "pckms":
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0
         elif cluster.units == "nbody":
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
         elif cluster.units == "galpy":
             t = ts
-        else:
+        elif cluster.units == "kpckms" or cluster.units == 'radec':
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
+        else:
+            print('TIME RETURNED IN GALPY UNITS')
+            t=ts
 
         if plot:
             filename = kwargs.pop("filename", None)
@@ -542,7 +545,7 @@ def orbital_path(
             x *= 1000.0
             y *= 1000.0
             z *= 1000.0
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)*1000.0
         elif cluster.units == "nbody":
             x *= 1000.0 / cluster.rbar
             y *= 1000.0 / cluster.rbar
@@ -560,7 +563,10 @@ def orbital_path(
             vy /= vo
             vz /= vo
             t = ts
+        elif cluster.units =="kpckms" or cluster.units == "radec":
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
         else:
+            print('TIME RETURNED IN GALPY UNITS')
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
 
         if plot:
@@ -580,8 +586,9 @@ def orbital_path(
 def orbital_path_match(
     cluster,
     dt=0.1,
-    nt=100,
+    nt=1000,
     pot=MWPotential2014,
+    path=None,
     from_centre=False,
     skypath=False,
     to_path=False,
@@ -604,6 +611,8 @@ def orbital_path_match(
         number of timesteps
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    path : array
+        array of (t,x,y,x,vx,vy,vz) corresponding to the tail path. If none path is calculated (default: None)
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     skypath : bool
@@ -637,40 +646,27 @@ def orbital_path_match(
     """
 
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    cluster.to_galaxy(sortstars=False)
-    cluster.to_kpckms()
-
-    t, x, y, z, vx, vy, vz, o = orbital_path(
-        cluster,
-        dt=dt,
-        nt=nt,
-        pot=pot,
-        from_centre=from_centre,
-        skypath=skypath,
-        initialize=True,
-        ro=ro,
-        vo=vo,
-    )
-
-    ts = t / conversion.time_in_Gyr(ro=ro, vo=vo)
 
     if skypath:
-        x = o.ra(ts)
-        y = o.dec(ts)
-        z = o.dist(ts)
-        vx = o.pmra(ts)
-        vy = o.pmdec(ts)
-        vz = o.vlos(ts)
-
-        cluster.to_sky()
-        projected=True
+        cluster.to_radec()
     else:
-        x = o.x(ts)
-        y = o.y(ts)
-        z = o.z(ts)
-        vx = o.vx(ts)
-        vy = o.vy(ts)
-        vz = o.vz(ts)
+        cluster.to_galaxy(sortstars=False)
+        cluster.to_kpckms()
+
+    if path is None:
+        ts, x, y, z, vx, vy, vz = orbital_path(
+            cluster,
+            dt=dt,
+            nt=nt,
+            pot=pot,
+            from_centre=from_centre,
+            skypath=skypath,
+            initialize=False,
+            ro=ro,
+            vo=vo,
+        )
+    else:
+        ts, x, y, z, vx, vy, vz = path
 
     pindx = np.argmin(np.fabs(ts))
 
@@ -690,7 +686,7 @@ def orbital_path_match(
         dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
 
     indx = np.argmin(dr, axis=1)
-    tstar = ts[indx] * conversion.time_in_Gyr(ro=ro, vo=vo)
+    tstar = ts[indx]
     dpath = np.amin(dr, axis=1)
 
     dxo = x[1:] - x[0:-1]
@@ -771,15 +767,15 @@ def orbital_path_match(
 
     # Assign negative to stars with position vectors in opposite direction as local angular momentum vector
     if not projected:
-        rgc = np.column_stack([o.x(ts[indx]), o.y(ts[indx]), o.z(ts[indx])])
-        vgc = np.column_stack([o.vx(ts[indx]), o.vy(ts[indx]), o.vz(ts[indx])])
+        rgc = np.column_stack([x[indx], y[indx], z[indx]])
+        vgc = np.column_stack([vx[indx], vy[indx], vz[indx]])
         lz = np.cross(rgc, vgc)
 
         rstar = np.column_stack(
             [
-                cluster.x - o.x(ts[indx]),
-                cluster.y - o.y(ts[indx]),
-                cluster.z - o.z(ts[indx]),
+                cluster.x - x[indx],
+                cluster.y - y[indx],
+                cluster.z - z[indx],
             ]
         )
 
@@ -794,7 +790,15 @@ def orbital_path_match(
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
-        _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
+
+        if skypath:
+            xlabel=r"$\rm D_{prog} (Degree)$"
+            ylabel=r"$ \rm D_{path} (Degree)$"
+        else:
+            xlabel=r"$\rm D_{prog} (kpc)$"
+            ylabel=r"$ \rm D_{path} (kpc)$"
+
+        _scatter(dprog,dpath,xlabel=xlabel,ylabel=ylabel,overplot=overplot)
 
         if filename != None:
             plt.savefig(filename)

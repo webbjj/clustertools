@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 from .orbit import orbital_path, orbital_path_match
 from .operations import *
-from ..util.recipes import binmaker
+from ..util.recipes import binmaker,nbinmaker,roaming_binmaker,roaming_nbinmaker
 from ..util.coordinates import cart_to_sky
 
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
@@ -85,8 +85,12 @@ def to_tail(cluster):
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
 def tail_path(
-    cluster, dt=0.1, nt=100, ntail=None, pot=MWPotential2014, dmax=None, from_centre=False, skypath=False, ro=8.0, vo=220.0,
-    plot=False,**kwargs,
+    cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=MWPotential2014, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
+    to_path=False,
+    do_full=False,
+    ro=8.0, vo=220.0,
+    plot=False,projected=False,
+    **kwargs,
 ):
     """Calculate tail path +/- dt Gyr around the cluster
 
@@ -96,24 +100,35 @@ def tail_path(
         StarCluster
     dt : float
         timestep that StarCluster is to be moved to
+    no : int
+        number of timesteps for orbit integration (default:1000)
     nt : int
-        number of timesteps
+        number of points along the tail to set the tail spacing (default: 100)
     ntail : int
-        number of points along the tail (default: nt)
+        number of points along the tail with roaming average (default: 1000)
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
     dmax : float
         maximum distance (assumed to be same units as cluster) from orbital path to be included in generating tail path (default: None)
+    bintype : str
+        type of binning for tail stars (default : 'fix')
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     skypath : bool
         return sky coordinates instead of cartesian coordinates (default: False)
+    to_path : bool
+        measure distance to the path itself instead of distance to central point along the path (default: False)
+    do_full : bool
+        calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
         galpy velocity scale (Default: 220.)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
+    projected : bool
+        match to projected orbital path, which means matching just x and y coordinates or Ra and Dec coordinates (not z, or dist) (default:False)
+
 
     Returns
     -------
@@ -128,9 +143,6 @@ def tail_path(
     2018 - Written - Webb (UofT)
     2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
     """
-
-    if ntail is None:
-        ntail=nt
 
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
 
@@ -152,19 +164,35 @@ def tail_path(
             dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
             dmax=np.arctan(dmax/dist)
 
-
-    to, xo, yo, zo, vxo, vyo, vzo, o = orbital_path(
+    to, xo, yo, zo, vxo, vyo, vzo = orbital_path(
         cluster,
         dt=dt,
-        nt=nt,
+        nt=no,
         pot=pot,
         from_centre=from_centre,
-        initialize=True,
+        skypath=skypath,
+        initialize=False,
         ro=ro,
         vo=vo,
     )
+
+    path=(to, xo, yo, zo, vxo, vyo, vzo)
+
+
+    if bintype=='fix':
+        if ntail > nt:
+            t_lower, t_mid, t_upper, t_hist = roaming_binmaker(to, nbin=nt,ntot=ntail)
+        else:
+            t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=nt)
+    elif bintype=='num':
+        if ntail>nt:
+            t_lower, t_mid, t_upper, t_hist = roaming_nbinmaker(to, nbin=nt,ntot=ntail)
+        else:
+            t_lower, t_mid, t_upper, t_hist = nbinmaker(to, nbin=nt)
+
+
     tstar, dprog, dpath = orbital_path_match(
-        cluster=cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, ro=ro, vo=vo
+        cluster=cluster, dt=dt, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, projected=projected
     )
 
     if dmax is None:
@@ -172,14 +200,13 @@ def tail_path(
     else:
         dindx = (np.fabs(dpath) <= dmax)
 
-    t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=ntail)
-    ttail = []
-    xtail = []
-    ytail = []
-    ztail = []
-    vxtail = []
-    vytail = []
-    vztail = []
+    ttail = np.array([])
+    xtail = np.array([])
+    ytail = np.array([])
+    ztail = np.array([])
+    vxtail = np.array([])
+    vytail = np.array([])
+    vztail = np.array([])
 
     for i in range(0, len(t_mid)):
         indx = (tstar >= t_lower[i]) * (tstar <= t_upper[i]) * dindx
@@ -220,8 +247,9 @@ def tail_path(
 def tail_path_match(
     cluster,
     dt=0.1,
+    no=1000,
     nt=100,
-    ntail=None,
+    ntail=100,
     pot=MWPotential2014,
     path=None,
     from_centre=False,
@@ -242,10 +270,12 @@ def tail_path_match(
         StarCluster
     dt : float
         timestep that StarCluster is to be moved to
+    no : int
+        number of timesteps for orbit integration (default:1000)
     nt : int
-        number of timesteps
+        number of points along the tail to set the tail spacing (default: 100)
     ntail : int
-        number of points along the tail (default: nt)
+        number of points along the tail with roaming average (default: 1000)
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
     path : array
@@ -281,153 +311,11 @@ def tail_path_match(
     -------
     2018 - Written - Webb (UofT)
     """
-
-    if ntail is None:
-        ntail=nt
-
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    cluster.to_galaxy(sortstars=False)
-    cluster.to_kpckms()
  
     if path is None:
-        print('DEBUG: ',cluster,dt,nt,pot,from_centre,ro,vo)
-        ts, x, y, z, vx, vy, vz = tail_path(
-            cluster, dt=dt, nt=nt, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo
-        )
-    else:
-        ts,x,y,z,vx,vy,vz=path
-
-    if skypath:
-        cluster.to_sky()
-        projected=True
-
-    pindx = np.argmin(np.fabs(ts))
-
-    dx = np.tile(x, cluster.ntot).reshape(cluster.ntot, len(ts)) - np.repeat(
-        cluster.x, len(ts)
-    ).reshape(cluster.ntot, len(ts))
-    dy = np.tile(y, cluster.ntot).reshape(cluster.ntot, len(ts)) - np.repeat(
-        cluster.y, len(ts)
-    ).reshape(cluster.ntot, len(ts))
-    dz = np.tile(z, cluster.ntot).reshape(cluster.ntot, len(ts)) - np.repeat(
-        cluster.z, len(ts)
-    ).reshape(cluster.ntot, len(ts))
-
-    if projected:
-        dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
-    else:
-        dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
-
-    indx = np.argmin(dr, axis=1)
-    dpath = np.amin(dr, axis=1)
-    tstar = ts[indx]  # *conversion.time_in_Gyr(ro=ro,vo=vo)
-
-    dxo = x[1:] - x[0:-1]
-    dyo = y[1:] - y[0:-1]
-    dzo = z[1:] - z[0:-1]
-
-    dprogx = np.cumsum(np.fabs(dxo))
-    dprogy = np.cumsum(np.fabs(dyo))
-    dprogz = np.cumsum(np.fabs(dzo))
-
-    dprogx = np.insert(dprogx, 0, 0.0)
-    dprogy = np.insert(dprogy, 0, 0.0)
-    dprogz = np.insert(dprogz, 0, 0.0)
-
-    if projected:
-        dprogr = np.sqrt(dprogx ** 2.0 + dprogy ** 2.0)
-    else:
-        dprogr = np.sqrt(dprogx ** 2.0 + dprogy ** 2.0 + dprogz ** 2.0)
-
-    dprog = dprogr[indx] - dprogr[pindx]
-
-    # Find distance to path instead of to central point
-    if to_path:
-        dxo = np.append(dxo, dxo[-1])
-        dyo = np.append(dyo, dyo[-1])
-        dzo = np.append(dzo, dzo[-1])
-
-        if do_full:
-            # Typically it is too expensive to calculate dpath all at once, but will allow option via do_full
-
-            if projected:
-                ovec = np.column_stack([dxo, dyo])
-                mag_ovec = np.sqrt(dxo ** 2.0 + dyo ** 2.0)
-                svec = np.column_stack([dx[:, indx], dy[:, indx]])
-                mag_svec = dr[:, indx]
-                theta = np.arccos(np.dot(ovec[indx], svec) / (mag_ovec[indx] * mag_svec))
-                dpath = mag_svec * np.sin(theta)
-
-            else:
-                ovec = np.column_stack([dxo, dyo, dzo])
-                mag_ovec = np.sqrt(dxo ** 2.0 + dyo ** 2.0 + dzo ** 2.0)
-                svec = np.column_stack([dx[:, indx], dy[:, indx], dz[:, indx]])
-                mag_svec = dr[:, indx]
-                theta = np.arccos(np.dot(ovec[indx], svec) / (mag_ovec[indx] * mag_svec))
-                dpath = mag_svec * np.sin(theta)
-        else:
-            # Need to optimize this via numba
-            dpath = np.array([])
-
-            if projected:
-                for i in range(0, cluster.ntot):
-                    ovec = [dxo[indx[i]], dyo[indx[i]]]
-                    mag_ovec = np.sqrt(
-                        dxo[indx[i]] ** 2.0 + dyo[indx[i]] ** 2.0)
-
-                    svec = [dx[i, indx[i]], dy[i, indx[i]]]
-                    mag_svec = dr[i, indx[i]]
-
-                    theta = np.arccos(
-                        (ovec[0] * svec[0] + ovec[1] * svec[1])
-                        / (mag_ovec * mag_svec)
-                    )
-                    dpath = np.append(dpath, mag_svec * np.sin(theta))
-
-            else:
-                for i in range(0, cluster.ntot):
-                    ovec = [dxo[indx[i]], dyo[indx[i]], dzo[indx[i]]]
-                    mag_ovec = np.sqrt(
-                        dxo[indx[i]] ** 2.0 + dyo[indx[i]] ** 2.0 + dzo[indx[i]] ** 2.0
-                    )
-
-                    svec = [dx[i, indx[i]], dy[i, indx[i]], dz[i, indx[i]]]
-                    mag_svec = dr[i, indx[i]]
-
-                    theta = np.arccos(
-                        (ovec[0] * svec[0] + ovec[1] * svec[1] + ovec[2] * svec[2])
-                        / (mag_ovec * mag_svec)
-                    )
-                    dpath = np.append(dpath, mag_svec * np.sin(theta))
-
-    # Assign negative to stars with position vectors in opposite direction as local angular momentum vector
-    if not projected:
-        rgc = np.column_stack([x[indx], y[indx], z[indx]])
-        vgc = np.column_stack([vx[indx], vy[indx], vz[indx]])
-        lz = np.cross(rgc, vgc)
-
-        rstar = np.column_stack(
-            [cluster.x - x[indx], cluster.y - y[indx], cluster.z - z[indx]]
+        path = tail_path(
+            cluster, dt=dt, no=no, nt=nt, ntail=ntail, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo
         )
 
-        ldot = np.sum(rstar * lz, axis=1)
-        dpath[ldot < 0] *= -1
-    else:
-        yindx = np.argmin(np.fabs(dy),axis=1)
-        dpath*=np.sign(dy[np.arange(0,len(dy)),yindx])
-
-
-    if plot:
-        filename = kwargs.pop("filename", None)
-        overplot = kwargs.pop("overplot", False)
-        if skypath:
-            _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (degree)$",ylabel=r"$ \rm D_{path} (degree)$",overplot=overplot)
-        else:
-            _scatter(dprog,dpath,xlabel=r"$\rm D_{prog} (kpc)$",ylabel=r"$ \rm D_{path} (kpc)$",overplot=overplot)
-
-        if filename != None:
-            plt.savefig(filename)
-
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
-
-    return np.array(tstar), np.array(dprog), np.array(dpath)
+    return orbital_path_match(cluster=cluster,dt=dt,nt=no,pot=pot,path=path,from_centre=from_centre,
+        skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,projected=projected,**kwargs)

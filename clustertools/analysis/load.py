@@ -121,6 +121,9 @@ def load_cluster(
     if wdir[-1] != '/':
         wdir+='/'
 
+    filename=_get_filename(filename,**kwargs)
+    print('LOAD DEBUG: ',filename)
+
     initialize = kwargs.get("initialize", False)
 
     if "ofilename" in kwargs and ofile is None:
@@ -183,7 +186,6 @@ def load_cluster(
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
         # Read in snapshot from gyrfalcon.
-        filename=_get_filename(filename,**kwargs)
         print('DEBUG NEMO FILENAME',filename)
 
         filein = open(filename, "r")
@@ -331,6 +333,9 @@ def advance_cluster(
     2018 - Written - Webb (UofT)
     """
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
+    filename=_get_filename(filename,**advance_kwargs)
+    print('ADVANCE DEBUG: ',filename)
+
 
     wdir = advance_kwargs.get("wdir", "./")
     if wdir[-1] != '/':
@@ -379,8 +384,8 @@ def advance_cluster(
 
     elif cluster.ctype == "gyrfalcon" or cluster.ctype=="nemo":
 
-        if filename is None:
 
+        if filename is None:
             cluster = _get_gyrfalcon(
                 cluster.sfile,
                 units="WDunits",
@@ -389,12 +394,20 @@ def advance_cluster(
                 advance=True,
                 **advance_kwargs
             )
+
         else:
-            filename=_get_filename(filename,**kwargs)
-            print('DEBUG NEMO FILENAME',filename)
-
             filein = open(filename, "r")
+            cluster = _get_gyrfalcon(
+                filein,
+                units="WDunits",
+                origin="galaxy",
+                ofile=ofile,
+                advance=True,
+                **advance_kwargs
+            )
 
+        if cluster.ntot==0:
+            filein = open(filename, "r")
             cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", ofile=ofile,advance=True, **advance_kwargs)
 
 
@@ -421,7 +434,6 @@ def advance_cluster(
         try:
             wdir = cluster.wdir + "cont/"
         except:
-            print("WDIR NOT SET")
             wdir = "./cont/"
 
         try:

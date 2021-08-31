@@ -377,7 +377,7 @@ def advance_cluster(
             cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
         )
 
-    elif cluster.ctype == "gyrfalcon" or ctype=="nemo":
+    elif cluster.ctype == "gyrfalcon" or cluster.ctype=="nemo":
 
         if filename is None:
 

@@ -122,7 +122,6 @@ def load_cluster(
         wdir+='/'
 
     filename=_get_filename(filename,**kwargs)
-    print('LOAD DEBUG: ',filename)
 
     initialize = kwargs.get("initialize", False)
 
@@ -334,7 +333,6 @@ def advance_cluster(
     """
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
     filename=_get_filename(filename,**advance_kwargs)
-    print('ADVANCE DEBUG: ',filename)
 
 
     wdir = advance_kwargs.get("wdir", "./")
@@ -405,11 +403,6 @@ def advance_cluster(
                 advance=True,
                 **advance_kwargs
             )
-
-        if cluster.ntot==0:
-            filein = open(filename, "r")
-            cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", ofile=ofile,advance=True, **advance_kwargs)
-
 
     elif cluster.ctype == "snapshot":
         col_names = kwargs.pop("col_names", ["m", "x", "y", "z", "vx", "vy", "vz"])

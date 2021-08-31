@@ -183,7 +183,11 @@ def load_cluster(
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
         # Read in snapshot from gyrfalcon.
-        filein = open(wdir + filename, "r")
+        filename=_get_filename(filename,**kwargs)
+        print('DEBUG NEMO FILENAME',filename)
+
+        filein = open(filename, "r")
+
         cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", advance=False, **kwargs)
 
     elif ctype=='amuse':
@@ -386,7 +390,11 @@ def advance_cluster(
                 **advance_kwargs
             )
         else:
-            filein = open(wdir + filename, "r")
+            filename=_get_filename(filename,**kwargs)
+            print('DEBUG NEMO FILENAME',filename)
+
+            filein = open(filename, "r")
+
             cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", ofile=ofile,advance=True, **advance_kwargs)
 
 
@@ -456,6 +464,69 @@ def advance_cluster(
             )
 
     return cluster
+
+def _get_filename(filename,**kwargs):
+    """assemble filename from **kwargs
+
+    Parameters
+    ----------
+    filename : str or None
+       given filename to read in cluster data
+
+    Returns
+    -------
+    filename : str
+
+    Other Parameters
+    ----------------
+    Same as load_cluster
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+
+    nzfill = int(kwargs.get("nzfill", 1))
+    nsnap = int(kwargs.get("nsnap", "0"))
+    wdir = kwargs.get("wdir", "./")
+    snapdir = kwargs.get("snapdir", "snaps/")
+    snapbase = kwargs.get("snapbase", "")
+    snapend = kwargs.get("snapend", ".dat")
+
+    if filename != None:
+        if os.path.isfile(filename):
+            pass
+        elif os.path.isfile("%s%s%s" % (wdir, snapdir, filename)):
+            filename="%s%s%s" % (wdir, snapdir, filename)
+        elif os.path.isfile("%s%s" % (wdir, filename)):
+            filename="%s%s" % (wdir, filename)
+        else:
+            print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
+            filename=None
+
+    elif os.path.isfile(
+        "%s%s%s%s%s" % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
+    ):
+        filename = "%s%s%s%s%s" % (
+            wdir,
+            snapdir,
+            snapbase,
+            str(nsnap).zfill(nzfill),
+            snapend,
+        )
+
+    elif os.path.isfile(
+        "%s%s%s%s" % (wdir, snapbase, str(nsnap).zfill(nzfill), snapend)
+    ):
+        filename = "%s%s%s%s" % (wdir, snapbase, str(nsnap).zfill(nzfill), snapend)
+    else:
+        print(
+            "NO FILE FOUND - %s%s%s%s%s"
+            % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
+        )
+        filename = None
+
+    return filename
 
 
 def _get_advanced_kwargs(cluster, **kwargs):

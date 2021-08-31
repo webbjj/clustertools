@@ -375,14 +375,19 @@ def advance_cluster(
 
     elif cluster.ctype == "gyrfalcon" or ctype=="nemo":
 
-        cluster = _get_gyrfalcon(
-            cluster.sfile,
-            units="WDunits",
-            origin="galaxy",
-            ofile=ofile,
-            advance=True,
-            **advance_kwargs
-        )
+        if filename is None:
+
+            cluster = _get_gyrfalcon(
+                cluster.sfile,
+                units="WDunits",
+                origin="galaxy",
+                ofile=ofile,
+                advance=True,
+                **advance_kwargs
+            )
+        else:
+            filein = open(wdir + filename, "r")
+            cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", ofile=ofile,advance=True, **advance_kwargs)
 
 
     elif cluster.ctype == "snapshot":

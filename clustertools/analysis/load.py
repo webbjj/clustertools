@@ -326,7 +326,7 @@ def advance_cluster(
     -------
     2018 - Written - Webb (UofT)
     """
-    advance_kwargs = _get_advanced_kwargs(cluster, **kwargs)
+    advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
 
     wdir = advance_kwargs.get("wdir", "./")
     if wdir[-1] != '/':
@@ -506,7 +506,7 @@ def _get_advanced_kwargs(cluster, **kwargs):
         "sortstars": sortstars,
         "otime": otime,
         "give" : give,
-    }  # ,"sfile":sfile,"bfile":bfile}
+    }, kwargs
 
 
 def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):

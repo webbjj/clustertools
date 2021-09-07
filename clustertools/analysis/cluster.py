@@ -160,7 +160,6 @@ class StarCluster(object):
         self.vx = np.array([])
         self.vy = np.array([])
         self.vz = np.array([])
-        self.kw = np.array([])
         self.m0 = np.array([])
 
         #If using Nbodypp
@@ -264,11 +263,12 @@ class StarCluster(object):
         self.np = 0
 
         # variables for add_sse (stellar evolution information)
+        self.kw = np.array([])
         self.logl = np.array([])
         self.logr = np.array([])
-        self.lum = np.array([])
         self.ep = np.array([])
         self.ospin = np.array([])
+        self.lum = np.array([])
 
         # variables for add_bse (binary star evolution information)
         self.id1 = np.array([])
@@ -459,6 +459,10 @@ class StarCluster(object):
             self.vlos = np.append(self.vlos, np.array(vz))
 
         self.kw = np.append(self.kw, np.zeros(len(self.id)))
+        self.logl = np.append(self.logl, -10.*np.ones(len(self.id)))
+        self.logr = np.append(self.logr, -10.*np.ones(len(self.id)))
+        self.ep = np.append(self.ep, np.zeros(len(self.id)))
+        self.ospin = np.append(self.ospin, np.zeros(len(self.id)))
 
         self.analyze()
 
@@ -682,7 +686,7 @@ class StarCluster(object):
         # Number of particles (from NBODY6 when tidal tail is being integrated)
         self.np = np
 
-    def add_sse(self, kw, logl, logr, ep = None, ospin = None):
+    def add_sse(self, kw, logl, logr, ep = None, ospin = None, arg = None):
         """Add stellar evolution information to stars
         
         - parameters are common output variables in NBODY6
@@ -700,6 +704,8 @@ class StarCluster(object):
             epoch
         ospin : float
             ospin
+        arg : int
+            array address arguments if SSE parameters do not necessarily match position and velocity arrays
 
         Returns
         ----------
@@ -710,19 +716,30 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        self.kw = np.array(kw)
-        self.logl = np.array(logl)
-        self.logr = np.array(logr)
+
+        if arg is None:
+            self.kw[0:len(kw)] = np.array(kw)
+            self.logl[0:len(kw)] = np.array(logl)
+            self.logr[0:len(kw)] = np.array(logr)
+            self.lum = 10.0 ** self.logl
+        else:
+            self.kw[arg.astype(int)] = np.array(kw)
+            self.logl[arg.astype(int)] = np.array(logl)
+            self.logr[arg.astype(int)] = np.array(logr)
+        
         self.lum = 10.0 ** self.logl
+        loglindx=(self.logl==-10.)
+        self.lum[loglindx]=0.
+
         self.ltot = np.sum(self.lum)
 
         if ep is not None:
-            self.ep = np.array(ep)
-            self.ospin = np.array(ospin)
-        else:
-            self.ep = ep
-            self.ospin = ospin
-
+            if arg is None:
+                self.ep[0:len(ep)] = np.array(ep)
+                self.ospin[0:len(ospin)] = np.array(ospin)
+            else:
+                self.ep[arg.astype(int)]= np.array(ep)
+                self.ospin[arg.astype(int)] = np.array(ospin)
     def add_bse(
         self,
         id1,
@@ -929,7 +946,7 @@ class StarCluster(object):
             self.r10pro = self.rpro[self.rproorder[indx][0]]
 
 
-        if len(self.logl) > 0 and self.rorder is not None:
+        if len(self.lum) > 0 and self.rorder is not None:
             lsum = np.cumsum(self.lum[self.rorder])
             indx = lsum >= 0.5 * self.ltot
             self.rh = self.r[self.rorder[indx][0]]

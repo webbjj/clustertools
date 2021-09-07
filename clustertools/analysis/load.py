@@ -85,6 +85,8 @@ def load_cluster(
         units of orbital information (else assumed equal to StarCluster.units)
     nsnap : int
         if a specific snapshot is to be read in instead of starting from zero
+    osnap : int
+        if line number in orbital file does not match snapshot number
     nzfill : int
         value for zfill when reading and writing snapshots (Default: 5)
     delimiter : str
@@ -127,6 +129,7 @@ def load_cluster(
 
     if "ofilename" in kwargs and ofile is None:
         ofile = open(wdir + kwargs["ofilename"], "r")
+
 
     if load_function is not None:
         ctype='custom'
@@ -175,8 +178,8 @@ def load_cluster(
         else:
             bev82=None
 
-        if os.path.isfile("%ssev.3_%s" % (wdir,str(nsnap))):
-            sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
+        if os.path.isfile("%ssev.83_%s" % (wdir,str(nsnap))):
+            sev83 = open("%ssev.83_%s" % (wdir,str(nsnap)), "r")
         else:
             sev83=None
 
@@ -506,7 +509,6 @@ def _get_filename(filename,**kwargs):
         elif os.path.isfile("%s%s" % (wdir, filename)):
             filename="%s%s" % (wdir, filename)
         else:
-            print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
             filename=None
 
     elif os.path.isfile(
@@ -525,10 +527,6 @@ def _get_filename(filename,**kwargs):
     ):
         filename = "%s%s%s%s" % (wdir, snapbase, str(nsnap).zfill(nzfill), snapend)
     else:
-        print(
-            "NO FILE FOUND - %s%s%s%s%s"
-            % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
-        )
         filename = None
 
     return filename
@@ -556,6 +554,8 @@ def _get_advanced_kwargs(cluster, **kwargs):
     """
 
     nsnap = np.maximum(int(kwargs.pop("nsnap", 0)), cluster.nsnap) + 1
+    osnap = kwargs.pop("osnap", nsnap)
+
     delimiter = kwargs.pop("delimiter", cluster.delimiter)
     wdir = kwargs.pop("wdir", cluster.wdir)
     nzfill = int(kwargs.pop("nzfill", cluster.nzfill))
@@ -590,9 +590,8 @@ def _get_advanced_kwargs(cluster, **kwargs):
     }, kwargs
 
 
-def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
+def _get_cluster_orbit(cluster, ofile, advance=False, col_names=["t", "x", "y", "z", "vx", "vy", "vz"],col_nums=[0, 1, 2, 3, 4, 5, 6], **kwargs):
     """ Read in cluster oribit from an ascii file and apply it to StarCluster
-    -Columns assumed to be time,x,y,z,vx,vy,vz.
 
     cluster - class 
         StarCluster to be advanced
@@ -600,7 +599,10 @@ def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
         an already opened file containing orbit information (default: None)
     advance : bool
         Is this a continuation from a previous timestep, in which case read next line (default: False)
-
+    col_names : str
+        names corresponding to time, position, and velocity
+    col_nums : int
+        column numbers corresponding to each column name
     Returns
     -------
     cluster : class
@@ -622,27 +624,46 @@ def _get_cluster_orbit(cluster, ofile, advance=False, **kwargs):
     2018 
     """
     nsnap = int(kwargs.get("nsnap", cluster.nsnap))
+    osnap = int(kwargs.get("osnap", nsnap))
+
     ounits = kwargs.get("ounits", None)
     otime = kwargs.get("otime", False)
 
-
     # Read in orbital information from orbit
-    if nsnap != 0 and not advance:
-        for i in range(0, int(nsnap) + 1):
+    if osnap != 0 and not advance:
+        for i in range(0, int(osnap) + 1):
             data = ofile.readline().split()
     else:
         data = ofile.readline().split()
 
 
-    tphys = float(data[0])
-    xgc = float(data[1])
-    ygc = float(data[2])
-    zgc = float(data[3])
-    vxgc = float(data[4])
-    vygc = float(data[5])
-    vzgc = float(data[6])
+    #Testing 
+    if True:
+        tphys,xgc,ygc,zgc,vxgc,vygc,vzgc=0.,0.,0.,0.,0.,0.,0.
 
-    print(cluster.tphys,otime)
+        for i in range(0,len(col_names)):
+            if col_names[i]=="t":
+                t=float(data[col_nums[i]])
+            elif col_names[i]=="x":
+                xgc=float(data[col_nums[i]])
+            elif col_names[i]=="y":
+                ygc=float(data[col_nums[i]])
+            elif col_names[i]=="z":
+                zgc=float(data[col_nums[i]])
+            elif col_names[i]=="vx":
+                vxgc=float(data[col_nums[i]])
+            elif col_names[i]=="vy":
+                vygc=float(data[col_nums[i]])
+            elif col_names[i]=="vz":
+                vzgc=float(data[col_nums[i]])
+    else:
+        tphys = float(data[0])
+        xgc = float(data[1])
+        ygc = float(data[2])
+        zgc = float(data[3])
+        vxgc = float(data[4])
+        vygc = float(data[5])
+        vzgc = float(data[6])
 
     if cluster.tphys == 0.0 or otime:
         cluster.tphys = tphys
@@ -888,8 +909,8 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
         sortstars=kwargs.get("sortstars", True)
         cluster.analyze(sortstars=sortstars)
 
-        if ofile != None:
-            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+    if ofile != None:
+        _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
             
     return cluster
 
@@ -1171,7 +1192,10 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         cluster.add_energies(ek,pot)
 
     if bev82 is not None and sev83 is not None:
-        i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,**kwargs)
+        arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,**kwargs)
+        #Convert from fortran array address to python
+        arg-=1
+
         cluster.add_sse(kw,zl1,r1)
         cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
     
@@ -1179,9 +1203,10 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         sortstars=kwargs.get("sortstars", True)
         cluster.analyze(sortstars=sortstars)
 
-        if ofile != None:
-            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
-            
+    if ofile != None:
+        _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+           
+
     return cluster
 
 def _get_nbody6pp_conf3(f,**kwargs): 
@@ -1258,10 +1283,8 @@ def _get_nbody6pp_conf3(f,**kwargs):
         return 0,np.zeros(20),0,0,0,0,0,0,0,0,0,0,0
 
 def _get_nbody6pp_ev(bev, sev, **kwargs):
-
-    header=sev.readline().split()
-    ntot,tphys=int(header[0]),float(header[1])
     
+    arg=np.array([])
     i_d=np.array([])
     kw=np.array([])
     ri=np.array([])
@@ -1270,22 +1293,8 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
     r1=np.array([])
     te=np.array([])
 
-    for i in range(0,ntot):
-        data=sev.readline().split()
 
-        i_d=np.append(i_d,int(data[2]))
-        kw=np.append(kw,int(data[3]))
-        ri=np.append(ri,float(data[4]))
-        m1=np.append(m1,float(data[5]))
-
-        if data[6]=='NaN':
-            zl1=np.append(zl1,0.)
-            r1=np.append(r1,0.)
-            te=np.append(te,0.)
-        else:
-            zl1=np.append(zl1,float(data[6]))
-            r1=np.append(r1,float(data[7]))
-            te=np.append(te,float(data[8]))        
+    #Read in binary data first 
   
     header=bev.readline().split()
     nb,tphys=int(header[0]),float(header[1])
@@ -1312,7 +1321,11 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
 
         for i in range(0,nb):
             data=bev.readline().split()
-
+            if len(data)==0:
+                print('Missing stars in BEV Star')
+                break
+            arg1=int(data[1])
+            arg2=int(data[2])
             i_d1=np.append(i_d1,int(data[3]))
             i_d2=np.append(i_d2,int(data[4]))
             kw1=np.append(kw1,int(data[5]))
@@ -1338,9 +1351,46 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
                 r1b=np.append(r1b,float(data[16]))
                 r2b=np.append(r2b,float(data[17]))
                 te1=np.append(te1,float(data[18]))
-                te2=np.append(te2,float(ata[19]))
+                te2=np.append(te2,float(data[19]))
 
-    return i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
+            #Add select parameters to single star array
+            arg=np.append(arg,arg1)
+            arg=np.append(arg,arg2)
+            i_d=np.append(i_d,i_d1[-1])
+            i_d=np.append(i_d,i_d2[-1])
+            kw=np.append(kw,kw1[-1])
+            kw=np.append(kw,kw2[-1])
+            zl1=np.append(zl1,zl1b[-1])
+            zl1=np.append(zl1,zl2b[-1])
+            r1=np.append(r1,r1b[-1])
+            r1=np.append(r1,r2b[-1])
+
+    header=sev.readline().split()
+    ntot,tphys=int(header[0]),float(header[1])
+
+    for i in range(0,ntot):
+        data=sev.readline().split()
+
+        if len(data)==0:
+            print('Missing stars in SEV Star',i,ntot)
+            break
+
+        arg=np.append(arg,int(data[1]))
+        i_d=np.append(i_d,int(data[2]))
+        kw=np.append(kw,int(data[3]))
+        ri=np.append(ri,float(data[4]))
+        m1=np.append(m1,float(data[5]))
+
+        if data[6]=='NaN':
+            zl1=np.append(zl1,0.)
+            r1=np.append(r1,0.)
+            te=np.append(te,0.)
+        else:
+            zl1=np.append(zl1,float(data[6]))
+            r1=np.append(r1,float(data[7]))
+            te=np.append(te,float(data[8]))
+
+    return arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
 
 def _get_snapshot(
     filename=None,
@@ -1425,7 +1475,6 @@ def _get_snapshot(
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
             cluster = StarCluster( 0., ctype=ctype, **kwargs)
-            print(cluster.ntot)
             return cluster
     elif os.path.isfile(
         "%s%s%s%s%s" % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
@@ -1467,7 +1516,6 @@ def _get_snapshot(
             snapend,
         )
         cluster = StarCluster( 0., ctype=ctype, **kwargs)
-        print(cluster.ntot)
         return cluster
 
     if "m" in col_names:

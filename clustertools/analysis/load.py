@@ -761,7 +761,7 @@ def _get_gyrfalcon(
             sntot = data[2]
             ntot = int(sntot[:-1])
         if any("time" in dat for dat in data):
-            tphys = float(data[2]) * 1000.0
+            tphys = float(data[2])
 
     cluster = StarCluster(
         tphys,

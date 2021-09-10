@@ -85,8 +85,6 @@ def load_cluster(
         units of orbital information (else assumed equal to StarCluster.units)
     nsnap : int
         if a specific snapshot is to be read in instead of starting from zero
-    osnap : int
-        if line number in orbital file does not match snapshot number
     nzfill : int
         value for zfill when reading and writing snapshots (Default: 5)
     delimiter : str
@@ -114,7 +112,8 @@ def load_cluster(
     give : str
         set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
-
+    deltat : integer
+        number of nbody timesteps forward to advance to next Nbody6++ timestep (default = 1)
     History
     _______
     2018 - Written - Webb (UofT)
@@ -167,6 +166,7 @@ def load_cluster(
 
     elif ctype == "nbody6pp" or ctype=='nbody6++':
         nsnap = kwargs.get("nsnap", 0)
+        deltat=kwargs.pop('deltat',1)
 
         if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
             conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
@@ -183,7 +183,7 @@ def load_cluster(
         else:
             sev83=None
 
-        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False, **kwargs)
+        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,deltat=deltat, **kwargs)
 
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
@@ -375,7 +375,7 @@ def advance_cluster(
         else:
             sev83=None
 
-        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
+        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs)
 
     elif cluster.ctype == 'nbody6':
 
@@ -554,7 +554,6 @@ def _get_advanced_kwargs(cluster, **kwargs):
     """
 
     nsnap = np.maximum(int(kwargs.pop("nsnap", 0)), cluster.nsnap) + 1
-    osnap = kwargs.pop("osnap", nsnap)
 
     delimiter = kwargs.pop("delimiter", cluster.delimiter)
     wdir = kwargs.pop("wdir", cluster.wdir)
@@ -624,14 +623,15 @@ def _get_cluster_orbit(cluster, ofile, advance=False, col_names=["t", "x", "y", 
     2018 
     """
     nsnap = int(kwargs.get("nsnap", cluster.nsnap))
-    osnap = int(kwargs.get("osnap", nsnap))
 
     ounits = kwargs.get("ounits", None)
     otime = kwargs.get("otime", False)
 
+    print('DEBUG:',nsnap,ounits,otime,advance)
+
     # Read in orbital information from orbit
-    if osnap != 0 and not advance:
-        for i in range(0, int(osnap) + 1):
+    if nsnap != 0 and not advance:
+        for i in range(0, int(nsnap) + 1):
             data = ofile.readline().split()
     else:
         data = ofile.readline().split()
@@ -1166,10 +1166,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
     """
     
     initialize = kwargs.get("initialize", False)
-    nsnap = kwargs.get("nsnap", 0)
+    nsnap = kwargs.pop("nsnap", 0)
     wdir = kwargs.get("wdir", './')
+    deltat=kwargs.get('deltat',1)
 
-    ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,**kwargs)
+    ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
     cluster = StarCluster(
         alist[0],
         units="nbody",
@@ -1192,7 +1193,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         cluster.add_energies(ek,pot)
 
     if bev82 is not None and sev83 is not None:
-        arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,**kwargs)
+        arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,nsnap=nsnap,**kwargs)
         #Convert from fortran array address to python
         arg-=1
 
@@ -1204,7 +1205,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         cluster.analyze(sortstars=sortstars)
 
     if ofile != None:
-        _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+        _get_cluster_orbit(cluster, ofile, advance=advance, nsnap=int(nsnap/deltat),**kwargs)
            
 
     return cluster

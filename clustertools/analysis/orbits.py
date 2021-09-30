@@ -32,7 +32,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ..util.recipes import interpolate, binmaker
-from .operations import save_cluster, return_cluster
 from .profiles import rho_prof
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 
@@ -78,7 +77,9 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
             solarmotion=[-11.1, 24.0, 7.25],
         )
     else:
-        units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+        cluster.save_cluster()
+        units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
         cluster.to_galpy()
 
         if from_centre:
@@ -102,7 +103,8 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
             [R, vR, vT, z, vz, phi], ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25]
         )
         
-        return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return o
 
@@ -131,7 +133,9 @@ def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
     cluster.to_galaxy(sortstars=False)
     cluster.to_galpy()
 
@@ -156,7 +160,8 @@ def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
     vxvv = np.column_stack([R, vR, vT, z, vz, phi])
     os = Orbit(vxvv, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return os
 
@@ -303,7 +308,9 @@ def orbit_interpolate(
     """
 
     cluster.tphys += dt
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
     cluster.to_galaxy(sortstars=False)
 
     if do_tails:
@@ -421,7 +428,8 @@ def orbit_interpolate(
         vy[tindx] = np.array(otail.vy(ts[-1]))
         vz[tindx] = np.array(otail.vz(ts[-1]))
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return x,y,z,vx,vy,vz
 
@@ -645,7 +653,8 @@ def orbital_path_match(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
     if skypath:
         cluster.to_radec()
@@ -803,7 +812,8 @@ def orbital_path_match(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return np.array(tstar), np.array(dprog), np.array(dpath)
 

@@ -15,9 +15,9 @@ except:
     import galpy.util.bovy_conversion as conversion
 
 import os, struct
-from .cluster import StarCluster
-from .operations import *
-from .orbit import initialize_orbit
+from ..cluster.cluster import StarCluster
+from ..analysis.orbits import initialize_orbit
+from ..planet.clusterwplanets import StarClusterwPlanets
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
@@ -114,6 +114,9 @@ def load_cluster(
         Currently only accepts 'mxvpqael' as an alternative.
     deltat : integer
         number of nbody timesteps forward to advance to next Nbody6++ timestep (default = 1)
+    planets : bool
+        will planets be added to the system (default:False)
+
     History
     _______
     2018 - Written - Webb (UofT)
@@ -168,6 +171,7 @@ def load_cluster(
         nsnap = kwargs.get("nsnap", 0)
         deltat=kwargs.pop('deltat',1)
 
+
         if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
             conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
         else:
@@ -183,7 +187,7 @@ def load_cluster(
         else:
             sev83=None
 
-        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,deltat=deltat, **kwargs)
+        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,deltat=deltat,**kwargs)
 
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
@@ -280,12 +284,13 @@ def load_cluster(
                 orbit.vz(t) / 220.0,
             )
 
-        units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+        cluster.save_cluster()
+        units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
         cluster.to_cluster(sortstars=False)
         cluster.find_centre()
 
-        return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0 )
     elif initialize:
         initialize_orbit(cluster)
 
@@ -374,6 +379,7 @@ def advance_cluster(
             sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
         else:
             sev83=None
+
 
         cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs)
 
@@ -1170,16 +1176,35 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
     wdir = kwargs.get("wdir", './')
     deltat=kwargs.get('deltat',1)
 
+    planets = kwargs.pop("planets", False)
+
+
     ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
-    cluster = StarCluster(
-        alist[0],
-        units="nbody",
-        origin="cluster",
-        ctype="nbody6++",
-        sfile=conf3,
-        nsnap=nsnap,
-        wdir=wdir,
-    )
+
+
+    if planets:
+
+        cluster = StarClusterwPlanets(
+            alist[0],
+            units="nbody",
+            origin="cluster",
+            ctype="nbody6++",
+            sfile=conf3,
+            nsnap=nsnap,
+            wdir=wdir,
+        )
+
+    else:
+
+        cluster = StarCluster(
+            alist[0],
+            units="nbody",
+            origin="cluster",
+            ctype="nbody6++",
+            sfile=conf3,
+            nsnap=nsnap,
+            wdir=wdir,
+        )
 
     if ntot > 0:
         cluster.add_nbody6(

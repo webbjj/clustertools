@@ -17,9 +17,6 @@ except:
     import galpy.util.bovy_conversion as conversion
 
 from .coordinates import sky_coords
-from ..analysis.functions import *
-from ..analysis.profiles import *
-from ..analysis.operations import *
 
 def snapout(cluster, filename, energies=False, radec=False):
     """Output a snapshot in clustertools format
@@ -164,7 +161,9 @@ def sseout(cluster, filename):
     -------
     2021 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
     cluster.to_pckms()
 
     np.savetxt(
@@ -180,7 +179,7 @@ def sseout(cluster, filename):
         ),fmt=('%f %i %f %f %f')
     )
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 def fortout(
     cluster,
@@ -219,11 +218,13 @@ def fortout(
     2019 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
     cluster.to_centre(sortstars=False)
 
     if reset_nbody:
-        reset_nbody_scale(cluster, mass=reset_nbody_mass, radii=reset_nbody_radii)
+        cluster.reset_nbody_scale(mass=reset_nbody_mass, radii=reset_nbody_radii)
 
     cluster.to_nbody()
 
@@ -260,7 +261,7 @@ def fortout(
             ),fmt=('%f %i %f %f %f'),
         )       
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return 0
 
@@ -295,7 +296,9 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
     vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
     mcon = 222288.4543021174
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
 
@@ -346,6 +349,6 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
             ),
         )
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return 0

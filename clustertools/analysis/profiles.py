@@ -21,8 +21,7 @@ except:
 
 from ..util.constants import *
 from ..util.recipes import *
-from .operations import *
-from .operations import _get_grav
+from ..util.constants import _get_grav
 from ..util.plots import _lplot,_plot
 from ..util.coordinates import sphere_coords
 from .functions import mass_function, eta_function
@@ -95,8 +94,10 @@ def rho_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -200,7 +201,8 @@ def rho_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rprof, pprof, nprof
 
@@ -272,8 +274,10 @@ def m_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -369,7 +373,8 @@ def m_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rprof, mprof, nprof
 
@@ -464,8 +469,10 @@ def alpha_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -596,7 +603,8 @@ def alpha_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if aerror:
         return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, eaprof
@@ -670,8 +678,10 @@ def sigv_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -762,7 +772,8 @@ def sigv_prof(
 
             sigvprof.append(sigv)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -849,8 +860,10 @@ def beta_prof(
     -------
     2020 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -934,7 +947,8 @@ def beta_prof(
 
             betaprof.append(beta)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -1022,8 +1036,10 @@ def v_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -1110,7 +1126,8 @@ def v_prof(
 
             vprof.append(vmean)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -1210,8 +1227,10 @@ def eta_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -1337,7 +1356,8 @@ def eta_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return lrprofn, eprof, deta, edeta, ydeta, eydeta
 
@@ -1516,8 +1536,10 @@ def vcirc_prof(
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -1631,6 +1653,7 @@ def vcirc_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rprof, vcprof, rvmax, vmax

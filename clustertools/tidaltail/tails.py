@@ -20,8 +20,8 @@ from galpy.potential import MWPotential2014
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .orbit import orbital_path, orbital_path_match
-from .operations import *
+from ..analysis.orbits import orbital_path, orbital_path_match
+from ..cluster.operations import *
 from ..util.recipes import binmaker,nbinmaker,roaming_binmaker,roaming_nbinmaker
 from ..util.coordinates import cart_to_sky
 

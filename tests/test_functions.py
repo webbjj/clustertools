@@ -3,7 +3,7 @@ import numpy as np
 from galpy.orbit import Orbit
 
 def test_find_centre_of_density(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
@@ -20,7 +20,7 @@ def test_find_centre_of_density(tol=0.01):
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
 def test_find_centre_of_mass(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
@@ -37,7 +37,7 @@ def test_find_centre_of_mass(tol=0.01):
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
 def test_find_centre(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
@@ -249,6 +249,6 @@ def test_rlagrange(tol=0.01):
 	rn=ctools.rlagrange(cluster,projected=True)
 	np.testing.assert_array_equal(rn,np.linspace(1,10,10))
 
-def test_virial_radius():
+#def test_virial_radius():
 
 

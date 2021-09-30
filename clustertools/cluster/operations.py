@@ -279,11 +279,13 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
     -------
    2018 - Written - Webb (UofT)
     """
-
+    print('START TO RADEC:',sortstars)
     if cluster.units != "radec" and cluster.origin != "sky":
 
+        print('START ORBIT')
         if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo)
         if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo)
+        print('DONE ORBITs')
 
         cluster.ra=cluster.orbits.ra()
         cluster.dec=cluster.orbits.dec()
@@ -315,7 +317,6 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
 
         cluster.units = "radec"
         cluster.origin = "sky"
-
         cluster.analyze(sortstars=sortstars)
 
     elif cluster.units=='radec' and (cluster.origin=='cluster' or cluster.origin=='centre'):
@@ -1030,17 +1031,3 @@ def add_rotation(cluster, qrot):
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     return x,y,z,vx,vy,vz
-
-def _get_grav(cluster):
-    if cluster.units == "nbody":
-        grav = 1.0
-    elif cluster.units == "pckms":
-        # G has units of pc (km/s)^2 / Msun
-        grav = 4.302e-3
-    elif cluster.units == "kpckms":
-        # G has units of kpc (km/s)^2 / Msun
-        grav = 4.302e-6
-    else:
-        grav = 1.0
-
-    return grav

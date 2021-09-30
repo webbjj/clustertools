@@ -27,8 +27,8 @@ try:
 except:
     pass
 
-from .cluster import StarCluster
-from .profiles import m_prof
+from ..cluster.cluster import StarCluster
+from ..analysis.profiles import m_prof
 
 def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, **kwargs):
     """ Setup an N-body realization of a StarCluster with specific parameters

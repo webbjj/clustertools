@@ -795,6 +795,7 @@ def skyplot(
     """
 
     cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
     cluster.to_radec(sortstars=False)
 
@@ -813,7 +814,7 @@ def skyplot(
     out = plt.plot(x, y, ".", alpha=alpha, **kwargs)
 
     if overplot:
-        cluster.return_cluster()
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
         return out
     else:
@@ -821,7 +822,7 @@ def skyplot(
             xgc, ygc = cluster.ragc, cluster.decgc
             plt.plot(xgc, ygc, ".", alpha=1.0, label="COM", **kwargs)
 
-        cluster.return_cluster()
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
         if coords == "radec":
             plt.xlabel("Ra (degree)")

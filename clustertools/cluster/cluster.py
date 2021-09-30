@@ -18,12 +18,12 @@ except:
     import galpy.util.bovy_conversion as conversion
 from textwrap import dedent
 from galpy.potential import MWPotential2014
-from .orbit import *
-from .functions import *
-from .profiles import *
+from ..analysis.orbits import *
+from ..analysis.functions import *
+from ..analysis.profiles import *
 from .operations import *
 from .operations import from_radec
-from .tails import *
+from ..tidaltail.tails import *
 from copy import copy
 from galpy.orbit import Orbit
 
@@ -331,6 +331,7 @@ class StarCluster(object):
         elif self.give =='mxve':
             self.eps=np.array([])
 
+        self.planets=False
 
     def add_stars(
         self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,sortstars=False
@@ -418,32 +419,32 @@ class StarCluster(object):
                 length_error=True
 
             if len(self.x) == 1:
-                self.x = np.ones(nmax) * self.xgc
+                self.x = np.ones(nmax) * self.x[0]
             elif len(self.x) <nmax:
                 length_error=True
 
             if len(self.y) == 1:
-                self.y = np.ones(nmax) * self.ygc
+                self.y = np.ones(nmax) * self.y[0]
             elif len(self.y) <nmax:
                 length_error=True
 
             if len(self.z) == 1:
-                self.z = np.ones(nmax) * self.zgc
+                self.z = np.ones(nmax) * self.z[0]
             elif len(self.z) <nmax:
                 length_error=True
 
             if len(self.vx) == 1:
-                self.vx = np.ones(nmax) * self.vxgc
+                self.vx = np.ones(nmax) * self.vx[0]
             elif len(self.vx) <nmax:
                 length_error=True
 
             if len(self.vy) == 1:
-                self.vy = np.ones(nmax) * self.vygc
+                self.vy = np.ones(nmax) * self.vy[0]
             elif len(self.vy) <nmax:
                 length_error=True
 
             if len(self.vz) == 1:
-                self.vz = np.ones(nmax) * self.vzgc
+                self.vz = np.ones(nmax) * self.vz[0]
             elif len(self.vz) <nmax:
                 length_error=True
 
@@ -589,17 +590,17 @@ class StarCluster(object):
 
             #Add on orbital parameters for missing data
             if self.origin == 'sky':
-                if self.ra == np.zeros(len(self.ra)):
+                if np.array_equal(self.ra,np.zeros(len(self.ra))):
                     self.ra += self.ra_gc
-                if self.dec == np.zeros(len(self.dec)):
+                if np.array_equal(self.dec,np.zeros(len(self.dec))):
                     self.dec += self.dec_gc
-                if self.dist == np.zeros(len(self.dist)):
+                if np.array_equal(self.dist, np.zeros(len(self.dist))):
                     self.dist += self.dist_gc
-                if self.pmra == np.zeros(len(self.pmra)):
+                if np.array_equal(self.pmra,np.zeros(len(self.pmra))):
                     self.pmra += self.pmra_gc
-                if self.pmdec == np.zeros(len(self.pmdec)):
+                if np.array_equal(self.pmdec,np.zeros(len(self.pmdec))):
                     self.pmdec += self.pmdec_gc
-                if self.vlos == np.zeros(len(self.vlos)):
+                if np.array_equal(self.vlos,np.zeros(len(self.vlos))):
                     self.vlos += self.vlos_gc
 
         if initialize:
@@ -716,6 +717,15 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
+
+
+        if len(self.kw) == 0.:
+            self.kw=np.zeros(len(kw))
+            self.logl=np.zeros(len(kw))
+            self.logr=np.zeros(len(kw))
+            self.lum=np.zeros(len(kw))
+            self.ep=np.zeros(len(kw))
+            self.ospin=np.zeros(len(kw))
 
         if arg is None:
             self.kw[0:len(kw)] = np.array(kw)
@@ -1135,7 +1145,7 @@ class StarCluster(object):
     def to_nbody(self, ro=8.0, vo=220.0):
         to_nbody(self, ro=ro, vo=vo)
 
-    def to_radec(self, sortstars=False, ro=8.0, vo=220.0):
+    def to_radec(self, sortstars=True, ro=8.0, vo=220.0):
         to_radec(self, sortstars=sortstars, ro=ro, vo=vo)
 
     def to_galpy(self, ro=8.0, vo=220.0):
@@ -1201,6 +1211,8 @@ class StarCluster(object):
         self.qv=virialize(self, specific=True, full=True, projected=projected)
 
         self.save_cluster()
+        units0,origin0, rorder0, rorder_origin0 = self.units0,self.origin0, self.rorder0, self.rorder_origin0
+
         if self.origin0 != 'cluster' and self.origin0 != 'centre':
             self.to_centre(sortstars=False)
 
@@ -1208,7 +1220,7 @@ class StarCluster(object):
         self.vy *= self.qv
         self.vz *= self.qv
 
-        self.return_cluster()
+        self.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     # Directly call from functions.py (see functions.py files for documenation):
 
@@ -1781,6 +1793,8 @@ def sub_cluster(
 
     """
     cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
 
     if projected:
         r = cluster.rpro
@@ -1827,12 +1841,15 @@ def sub_cluster(
     )
 
     if np.sum(indx) > 0:
+
+
         subcluster = StarCluster(
             cluster.tphys,
             units=cluster.units,
             origin=cluster.origin,
             ctype=cluster.ctype,
         )
+
         subcluster.add_stars(
             cluster.x[indx],
             cluster.y[indx],
@@ -2002,6 +2019,9 @@ def sub_cluster(
 
     if subcluster.ntot > 0:
         subcluster.analyze(sortstars=sortstars)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+    subcluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return subcluster
 

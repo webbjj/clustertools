@@ -18,7 +18,7 @@ from matplotlib import animation
 
 from ..util.recipes import *
 from ..util.coordinates import *
-from ..analysis.cluster import StarCluster
+from ..cluster.cluster import StarCluster
 from ..analysis.tails import *
 from ..analysis.orbit import orbital_path
 

@@ -64,3 +64,17 @@ def kwtypes():
 
         """
     )
+
+def _get_grav(cluster):
+    if cluster.units == "nbody":
+        grav = 1.0
+    elif cluster.units == "pckms":
+        # G has units of pc (km/s)^2 / Msun
+        grav = 4.302e-3
+    elif cluster.units == "kpckms":
+        # G has units of kpc (km/s)^2 / Msun
+        grav = 4.302e-6
+    else:
+        grav = 1.0
+
+    return grav

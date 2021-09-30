@@ -142,6 +142,7 @@ def sky_coords(cluster):
     2018 - Written - Webb (UofT)
     """
     cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
     if origin0 != "galaxy":
         cluster.to_galaxy(starsort=False)
@@ -166,7 +167,7 @@ def sky_coords(cluster):
     ).T
     pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
 
-    cluster.return_cluster()
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return ra, dec, d0, pmra, pmdec, vr0
 

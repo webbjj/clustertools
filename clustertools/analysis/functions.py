@@ -39,10 +39,8 @@ from galpy import potential
 from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
 from scipy.optimize import curve_fit
 
-from ..util.constants import *
 from ..util.recipes import *
-from .operations import *
-from .operations import _get_grav
+from ..util.constants import _get_grav
 from ..util.plots import _plot,_lplot,_scatter
 
 import matplotlib.pyplot as plt
@@ -321,8 +319,10 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     2020 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -359,7 +359,8 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     # Units of Myr
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     return trelax
 
 def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
@@ -388,8 +389,10 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
        2019 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -412,7 +415,8 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     # Units of Myr
     trh*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     return trh
 
 
@@ -444,8 +448,10 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     2019 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -465,7 +471,8 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     return trc
 
 
@@ -494,8 +501,10 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
     -------
        2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_cluster(sortstars=False)
 
     grav=_get_grav(cluster)
@@ -570,7 +579,8 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
             pot.append(np.sum(gmr))
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return ek, pot
 
@@ -685,8 +695,10 @@ def rlagrange(cluster, nlagrange=10, projected=False):
        2019 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -711,7 +723,8 @@ def rlagrange(cluster, nlagrange=10, projected=False):
     while len(rn) != nlagrange:
         rn.append(np.max(r))
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rn
 
@@ -795,8 +808,10 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
 
@@ -834,7 +849,8 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
 
     r_v=(np.sum(ms) ** 2) / (2 * partial_sum)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return r_v
 
@@ -920,8 +936,10 @@ def virial_radius_critical_density(
     2019 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -1003,15 +1021,16 @@ def virial_radius_critical_density(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-    if units0=='kpckms':
+
+    if cluster.units0=='kpckms':
         r_v/=1000.0
-    elif units0=='galpy':
+    elif cluster.units0=='galpy':
         r_v/=ro
-    elif units0=='nbody':
+    elif cluster.units0=='nbody':
         r_v/=cluster.rbar
-    elif units0=='radec':
+    elif cluster.units0=='radec':
         print('Conversion of r_v to "radec" no implemented')
 
 
@@ -1794,10 +1813,10 @@ def rtidal(
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-
-    if origin0 != 'cluster' and origin0 != 'centre':
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
 
@@ -1854,14 +1873,14 @@ def rtidal(
             " iterations",
         )
 
-    if units0 == "pckms":
+    if cluster.units0 == "pckms":
         rt *= 1000.0 * ro
-    elif units0 == "kpckms":
+    elif cluster.units0 == "kpckms":
         rt *= ro
-    elif units0 == "nbody":
+    elif cluster.units0 == "nbody":
         rt *= 1000.0 * ro / cluster.rbar
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     if plot:
 
@@ -1900,14 +1919,14 @@ def rtidal(
         x=np.append(x,x)
         y=np.append(y,-y)
 
-        if origin0=='galaxy':
+        if cluster.origin0=='galaxy':
             if from_centre:
                 x+=(cluster.xgc+cluster.xc)
                 y+=(cluster.ygc+cluster.yc)
             else:
                 x+=cluster.xgc
                 y+=cluster.ygc
-        elif origin0=='cluster' and from_centre:
+        elif cluster.origin0=='cluster' and from_centre:
             x+=cluster.xc
             y+=cluster.yc
 
@@ -1973,9 +1992,10 @@ def rlimiting(
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-    if origin0 != 'cluster' and origin0 != 'centre':
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
     cluster.to_galpy()
@@ -2014,14 +2034,15 @@ def rlimiting(
 
         rl = interpolate(r1, r2, y=rho_local)
 
-    if units0 == "pckms":
+    if cluster.units0 == "pckms":
         rl *= 1000.0 * ro
-    elif units0 == "kpckms":
+    elif cluster.units0 == "kpckms":
         rl *= ro
-    elif units0 == "nbody":
+    elif cluster.units0 == "nbody":
         rl *= 1000.0 * ro / cluster.rbar
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if plot:
 
@@ -2150,8 +2171,10 @@ def _rho_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
     rprof = np.array([])
@@ -2253,6 +2276,7 @@ def _rho_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rprof, pprof, nprof

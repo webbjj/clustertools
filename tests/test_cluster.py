@@ -56,7 +56,7 @@ def test_add_stars_custom():
 	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
 	vx,vy,vz=np.ones(nstar),np.ones(nstar),np.ones(nstar)
 	m=np.ones(nstar)*0.1
-	id=np.linspace(0,nstar,nstar)
+	id=np.linspace(0,nstar,nstar+1)
 	cluster.add_stars(x,y,z,vx,vy,vz,m,id)
 
 	np.testing.assert_array_equal(m,cluster.m)
@@ -236,8 +236,9 @@ def test_add_actions():
 	np.testing.assert_array_equal(Tz,cluster.Tz)
 
 def test_analyze(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='king',phi0=5.,rh=3.,M=10000,N=10000)
-	assert cluster.ctype == 'king'
+	cluster=ctools.setup_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
+	assert cluster.ctype == 'limepy'
+
 	assert float(np.fabs(cluster.ntot-10000)/10000) <= tol
 
 	assert np.fabs(cluster.rm-3.)/3. <= tol
@@ -280,14 +281,15 @@ def test_analyze(tol=0.01):
 	assert np.fabs(cluster.rh10pro-rpro[np.argsort(rpro)][1000])/rpro[np.argsort(rpro)][5000] <= tol
 
 def test_sortstars():
-	cluster=ctools.setup_cluster(ctype='king',phi0=5.,rh=3.,M=10000,N=10000)
+	cluster=ctools.setup_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
 	np.testing.assert_array_equal(np.argsort(cluster.r),cluster.rorder)
 	np.testing.assert_array_equal(np.argsort(cluster.rpro),cluster.rproorder)
 
 def test_subcluster():
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_radec()
 	cluster.to_cluster(sortstars=True)
+
 	cluster.find_centre()
 	cluster.reset_nbody_scale()
 
@@ -316,7 +318,7 @@ def test_subcluster():
 	assert subcluster.vzc == cluster.vzc
 
 	#Assert subset of stars is correct
-	assert subcluster.ntot == cluster.ntot/2
+	assert subcluster.ntot == np.sum(cluster.r <= cluster.rm)
 	assert np.amin(subcluster.r) == np.amin(cluster.r)
 	assert subcluster.r[subcluster.rorder[0]] == cluster.r[cluster.rorder[0]]
 
@@ -366,7 +368,7 @@ def test_subcluster():
 	assert subcluster.ntot == np.sum(cluster.vpro >= np.mean(cluster.v))
 
 	#Assert that Nbody conversion can be rescaled and centre recalculated
-	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm,reset_nbody_scale=True,reset_centre=True)
+	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm,reset_nbody=True,reset_centre=True)
 
 	print(np.sum(subcluster.m),subcluster.mtot,np.sum(cluster.m[cluster.r>=cluster.rm]))
 
@@ -418,7 +420,7 @@ def test_subcluster():
 	assert subcluster.nb==cluster.nb
 	assert subcluster.np==cluster.np
 
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_cluster(sortstars=True)
 
 	kw=np.random.randint(0,10,cluster.ntot)

@@ -390,7 +390,7 @@ def advance_cluster(
                 nsnap = advance_kwargs.pop("nsnap") - 1
 
 
-                nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide,cluster.xc,cluster.yc,cluster.zc
+                nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
                 xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
                 zmbar,vbar,rscale=cluster.zmbar,cluster.vbar,cluster.rscale
                 ns,nb,np=cluster.ns,cluster.nb,cluster.np

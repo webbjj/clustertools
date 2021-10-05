@@ -389,12 +389,16 @@ def advance_cluster(
 
                 nsnap = advance_kwargs.pop("nsnap") - 1
 
-                if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-                    conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
-                else:
-                    conf3=None
 
+                nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide,cluster.xc,cluster.yc,cluster.zc
+                xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
+                zmbar,vbar,rscale=cluster.zmbar,cluster.vbar,cluster.rscale
+                ns,nb,np=cluster.ns,cluster.nb,cluster.np
+                conf3=None
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
+                cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,rscale,ns,nb,np)
+
+
             else:
                 deltat=kwargs.pop('deltat',1)
                 nsnap = advance_kwargs.pop("nsnap") + deltat - 1
@@ -1270,10 +1274,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.add_sse(kw,lum,rs)
         cluster.pot=pot
 
-        ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
-        cluster.add_nbody6(
-        alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
-    )
+        if conf3 is not None:
+            ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
+            cluster.add_nbody6(
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
+        )
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

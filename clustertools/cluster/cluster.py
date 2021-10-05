@@ -331,6 +331,12 @@ class StarCluster(object):
         elif self.give =='mxve':
             self.eps=np.array([])
 
+
+        #For use with HDF5
+        self.hdf5=False
+        self.ngroups=0
+        self.ngroup=0
+
         self.planets=False
 
     def add_stars(
@@ -458,12 +464,6 @@ class StarCluster(object):
             self.pmra = np.append(self.pmra, np.array(vx))
             self.pmdec = np.append(self.pmdec, np.array(vy))
             self.vlos = np.append(self.vlos, np.array(vz))
-
-        self.kw = np.append(self.kw, np.zeros(len(self.id)))
-        self.logl = np.append(self.logl, -10.*np.ones(len(self.id)))
-        self.logr = np.append(self.logr, -10.*np.ones(len(self.id)))
-        self.ep = np.append(self.ep, np.zeros(len(self.id)))
-        self.ospin = np.append(self.ospin, np.zeros(len(self.id)))
 
         self.analyze()
 
@@ -719,37 +719,47 @@ class StarCluster(object):
         """
 
 
-        if len(self.kw) == 0.:
-            self.kw=np.zeros(len(kw))
-            self.logl=np.zeros(len(kw))
-            self.logr=np.zeros(len(kw))
-            self.lum=np.zeros(len(kw))
-            self.ep=np.zeros(len(kw))
-            self.ospin=np.zeros(len(kw))
+        if arg is not None:
 
-        if arg is None:
-            self.kw[0:len(kw)] = np.array(kw)
-            self.logl[0:len(kw)] = np.array(logl)
-            self.logr[0:len(kw)] = np.array(logr)
-            self.lum = 10.0 ** self.logl
+            if len(self.kw) == 0:
+                self.kw=np.zeros(len(kw))
+                self.logl=np.zeros(len(kw))
+                self.logr=np.zeros(len(kw))
+                self.lum=np.zeros(len(kw))
+                self.ep=np.zeros(len(kw))
+                self.ospin=np.zeros(len(kw))
+            else:
+                self.kw=np.append(self.kw,np.zeros(len(kw)))
+                self.logl=np.append(self.logl,np.zeros(len(kw)))
+                self.logr=np.append(self.logr,np.zeros(len(kw)))
+                self.lum=np.append(self.lum,np.zeros(len(kw)))
+                self.ep=np.append( self.ep,np.zeros(len(kw)))
+                self.ospin=np.append(self.ospin,np.zeros(len(kw)))
+
+            self.kw[arg.astype(int)] = np.asarray(kw)
+            self.logl[arg.astype(int)] = np.asarray(logl)
+            self.logr[arg.astype(int)] = np.asarray(logr)
+            self.ep[arg.astype(int)]= np.array(ep)
+            self.ospin[arg.astype(int)] = np.array(ospin)
+
         else:
-            self.kw[arg.astype(int)] = np.array(kw)
-            self.logl[arg.astype(int)] = np.array(logl)
-            self.logr[arg.astype(int)] = np.array(logr)
-        
-        self.lum = 10.0 ** self.logl
-        loglindx=(self.logl==-10.)
-        self.lum[loglindx]=0.
+            self.kw = np.append(self.kw,kw)
+            self.logl = np.append(self.logl,logl)
+            self.logr = np.append(self.logr,logr)
 
+        self.lum = 10.0 ** self.logl
         self.ltot = np.sum(self.lum)
 
-        if ep is not None:
-            if arg is None:
-                self.ep[0:len(ep)] = np.array(ep)
-                self.ospin[0:len(ospin)] = np.array(ospin)
-            else:
-                self.ep[arg.astype(int)]= np.array(ep)
-                self.ospin[arg.astype(int)] = np.array(ospin)
+        if ep is not None: 
+            self.ep= np.append(self.ep,np.array(ep))
+        else:
+            self.ep= np.append(self.ep,np.zeros(len(kw)))
+
+        if ospin is not None: 
+            self.ospin = np.append(self.ospin,np.array(ospin))
+        else:
+            self.ospin = np.append(self.ospin,np.zeros(len(kw)))
+
     def add_bse(
         self,
         id1,
@@ -1885,7 +1895,7 @@ def sub_cluster(
         subcluster.centre_method = cluster.centre_method
 
         if len(cluster.logl) > 0:
-            if cluster.ep is not None and cluster.ospin is not None:
+            if len(cluster.ep) !=0 and len(cluster.ospin) != 0:
                 subcluster.add_sse(
                     cluster.kw[indx],
                     cluster.logl[indx],
@@ -1906,7 +1916,7 @@ def sub_cluster(
             bindx=np.logical_or(bindx1,bindx2)
 
 
-            if cluster.ep1 is not None and cluster.ospin1 is not None:
+            if len(cluster.ep1) !=0 and len(cluster.ospin1) != 0:
 
                 subcluster.add_bse(
                     cluster.id1[bindx],

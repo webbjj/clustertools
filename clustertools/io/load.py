@@ -129,7 +129,7 @@ def load_cluster(
 
     initialize = kwargs.get("initialize", False)
 
-    if "ofilename" in kwargs and ofile is None:
+    if kwargs.get("ofilename", None) is not None and ofile is None:
         ofile = open(wdir + kwargs["ofilename"], "r")
 
 
@@ -170,24 +170,29 @@ def load_cluster(
     elif ctype == "nbody6pp" or ctype=='nbody6++':
         nsnap = kwargs.get("nsnap", 0)
         deltat=kwargs.pop('deltat',1)
+        hdf5=kwargs.pop('hdf5',False)
 
-
-        if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-            conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+        if hdf5:
+            snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
+            cluster = _get_nbody6pp(None, snap40=snap40, ofile=ofile, advance=False,deltat=deltat,**kwargs)
         else:
-            conf3=None
 
-        if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
-            bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
-        else:
-            bev82=None
+            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            else:
+                conf3=None
 
-        if os.path.isfile("%ssev.83_%s" % (wdir,str(nsnap))):
-            sev83 = open("%ssev.83_%s" % (wdir,str(nsnap)), "r")
-        else:
-            sev83=None
+            if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
+                bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
+            else:
+                bev82=None
 
-        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,deltat=deltat,**kwargs)
+            if os.path.isfile("%ssev.83_%s" % (wdir,str(nsnap))):
+                sev83 = open("%ssev.83_%s" % (wdir,str(nsnap)), "r")
+            else:
+                sev83=None
+
+            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,deltat=deltat,**kwargs)
 
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
@@ -362,26 +367,44 @@ def advance_cluster(
         )
 
     elif cluster.ctype == "nbody6pp" or cluster.ctype == "nbody6++":
-        deltat=kwargs.pop('deltat',1)
-        nsnap = advance_kwargs.pop("nsnap") + deltat - 1
+        
 
-        if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-            conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+        hdf5=advance_kwargs.pop("hdf5")
+
+        if hdf5:
+            ngroups=advance_kwargs.get("ngroups")
+            ngroup=advance_kwargs.get("ngroup")
+
+            if ngroup < ngroups:
+                cluster = _get_nbody6pp(None, snap40=cluster.sfile, ofile=ofile, advance=True,**advance_kwargs)
+            else:
+                deltat=kwargs.pop('deltat',1)
+                nsnap = advance_kwargs.pop("nsnap") + deltat - 1
+
+                snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
+                cluster = _get_nbody6pp(None, snap40=snap40, ofile=ofile, advance=True,deltat=deltat,**advance_kwargs)
+
         else:
-            conf3=None
+            deltat=kwargs.pop('deltat',1)
+            nsnap = advance_kwargs.pop("nsnap") + deltat - 1
 
-        if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
-            bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
-        else:
-            bev82=None
+            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            else:
+                conf3=None
 
-        if os.path.isfile("%ssev.3_%s" % (wdir,str(nsnap))):
-            sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
-        else:
-            sev83=None
+            if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
+                bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
+            else:
+                bev82=None
+
+            if os.path.isfile("%ssev.3_%s" % (wdir,str(nsnap))):
+                sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
+            else:
+                sev83=None
 
 
-        cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs)
+            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs)
 
     elif cluster.ctype == 'nbody6':
 
@@ -578,6 +601,11 @@ def _get_advanced_kwargs(cluster, **kwargs):
 
     give = kwargs.pop('give','mxv')
 
+    hdf5 = kwargs.pop('hdf5',cluster.hdf5)
+    ngroups = kwargs.pop('ngroups',cluster.ngroups)
+    ngroup = np.maximum(int(kwargs.pop("ngroup", 0)), cluster.ngroup) + 1
+
+
     return {
         "nsnap": nsnap,
         "delimiter": delimiter,
@@ -592,6 +620,9 @@ def _get_advanced_kwargs(cluster, **kwargs):
         "sortstars": sortstars,
         "otime": otime,
         "give" : give,
+        "hdf5" : hdf5,
+        "ngroups" : ngroups,
+        "ngroup" : ngroup
     }, kwargs
 
 
@@ -632,8 +663,6 @@ def _get_cluster_orbit(cluster, ofile, advance=False, col_names=["t", "x", "y", 
 
     ounits = kwargs.get("ounits", None)
     otime = kwargs.get("otime", False)
-
-    print('DEBUG:',nsnap,ounits,otime,advance)
 
     # Read in orbital information from orbit
     if nsnap != 0 and not advance:
@@ -1179,51 +1208,88 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
     planets = kwargs.pop("planets", False)
 
 
-    ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
+    if conf3 is None and snap40 is not None:
+        ngroup=kwargs.pop('ngroup',0)
+        tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
 
+        if planets:
 
-    if planets:
+            cluster = StarClusterwPlanets(
+                tphys,
+                units="nbody",
+                origin="cluster",
+                ctype="nbody6++",
+                sfile=snap40,
+                nsnap=nsnap,
+                wdir=wdir,
+            )
 
-        cluster = StarClusterwPlanets(
-            alist[0],
-            units="nbody",
-            origin="cluster",
-            ctype="nbody6++",
-            sfile=conf3,
-            nsnap=nsnap,
-            wdir=wdir,
-        )
+        else:
+
+            cluster = StarCluster(
+                tphys,
+                units="nbody",
+                origin="cluster",
+                ctype="nbody6++",
+                sfile=snap40,
+                nsnap=nsnap,
+                wdir=wdir,
+            )
+
+        cluster.hdf5=True
+        cluster.ngroups=len(snap40)
+        cluster.group=ngroup
+        
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+        cluster.add_sse(kw,lum,rs)
+        cluster.pot=pot
 
     else:
+        ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
 
-        cluster = StarCluster(
-            alist[0],
-            units="nbody",
-            origin="cluster",
-            ctype="nbody6++",
-            sfile=conf3,
-            nsnap=nsnap,
-            wdir=wdir,
+
+        if planets:
+
+            cluster = StarClusterwPlanets(
+                alist[0],
+                units="nbody",
+                origin="cluster",
+                ctype="nbody6++",
+                sfile=conf3,
+                nsnap=nsnap,
+                wdir=wdir,
+            )
+
+        else:
+
+            cluster = StarCluster(
+                alist[0],
+                units="nbody",
+                origin="cluster",
+                ctype="nbody6++",
+                sfile=conf3,
+                nsnap=nsnap,
+                wdir=wdir,
+            )
+
+        if ntot > 0:
+            cluster.add_nbody6(
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
         )
+            cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+            cluster.rhos=rhos
 
-    if ntot > 0:
-        cluster.add_nbody6(
-        alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
-    )
-        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
-        cluster.rhos=rhos
+            v=np.sqrt(vx**2.+vy**2.+vz**2.)
+            ek=0.5*m*v**2.
+            cluster.add_energies(ek,pot)
 
-        v=np.sqrt(vx**2.+vy**2.+vz**2.)
-        ek=0.5*m*v**2.
-        cluster.add_energies(ek,pot)
+        if bev82 is not None and sev83 is not None:
+            arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,nsnap=nsnap,**kwargs)
+            #Convert from fortran array address to python
+            arg-=1
 
-    if bev82 is not None and sev83 is not None:
-        arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,nsnap=nsnap,**kwargs)
-        #Convert from fortran array address to python
-        arg-=1
-
-        cluster.add_sse(kw,zl1,r1)
-        cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
+            cluster.add_sse(kw,zl1,r1)
+            cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
     
     if kwargs.get("analyze", True) and cluster.ntot>0:
         sortstars=kwargs.get("sortstars", True)
@@ -1418,6 +1484,31 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
 
     return arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
 
+
+def _get_nbody6pp_hdf5(f,ngroup=0,**kwargs):
+        
+    datakeys=['NAM', 'X1', 'X2', 'X3', 'V1', 'V2', 'V3', 'A1', 'A2', 'A3', 'J1', 'J2', 'J3', 'M']       
+    snapshot=sfile['/Step#%d' % ngroup]
+
+
+    ntot=snapshot.attrs['N_SINGLE']
+    tphys=snapshot.attrs['Time']
+    
+    i_d=snapshot['NAM']
+    x,y,z=snapshot['X1'],snapshot['X2'],snapshot['X3']
+    vx,vy,vz=snapshot['V1'],snapshot['V2'],snapshot['V3']
+    m=snapshot['M']
+    
+    #Note mass is in units of Msun
+    zmbar=np.sum(m)
+    m/=zmbar
+
+    kw,lum,rc,rs,te=snapshot['KW'],np.log10(snapshot['L']),snapshot['RC'],snapshot['RS'],snapshot['TE']
+    pot=snapshot['POT']
+
+
+    return tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot
+    
 def _get_snapshot(
     filename=None,
     tphys=0.0,

@@ -413,7 +413,7 @@ def sub_clusterwplanets(
         subcluster.centre_method = cluster.centre_method
 
         if len(cluster.logl) > 0:
-            if cluster.ep is not None and cluster.ospin is not None:
+            if len(cluster.ep) !=0 and len(cluster.ospin) != 0:
                 subcluster.add_sse(
                     cluster.kw[indx],
                     cluster.logl[indx],
@@ -434,7 +434,7 @@ def sub_clusterwplanets(
             bindx=np.logical_or(bindx1,bindx2)
 
 
-            if cluster.ep1 is not None and cluster.ospin1 is not None:
+            if len(cluster.ep1) !=0 and len(cluster.ospin1) != 0:
 
                 subcluster.add_bse(
                     cluster.id1[bindx],

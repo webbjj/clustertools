@@ -178,8 +178,13 @@ def load_cluster(
         hdf5=kwargs.pop('hdf5',False)
 
         if hdf5:
+            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            else:
+                conf3=None
+
             snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
-            cluster = _get_nbody6pp(None, snap40=snap40, ofile=ofile, advance=False,deltat=deltat,**kwargs)
+            cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=False,deltat=deltat,**kwargs)
         else:
 
             if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
@@ -380,14 +385,19 @@ def advance_cluster(
             ngroups=advance_kwargs.get("ngroups")
             ngroup=advance_kwargs.get("ngroup")
 
+            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            else:
+                conf3=None
+
             if ngroup < ngroups:
-                cluster = _get_nbody6pp(None, snap40=cluster.sfile, ofile=ofile, advance=True,**advance_kwargs)
+                cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,**advance_kwargs)
             else:
                 deltat=kwargs.pop('deltat',1)
                 nsnap = advance_kwargs.pop("nsnap") + deltat - 1
 
                 snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
-                cluster = _get_nbody6pp(None, snap40=snap40, ofile=ofile, advance=True,deltat=deltat,**advance_kwargs)
+                cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,deltat=deltat,**advance_kwargs)
 
         else:
             deltat=kwargs.pop('deltat',1)
@@ -1215,7 +1225,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     planets = kwargs.pop("planets", False)
 
 
-    if conf3 is None and snap40 is not None:
+    if snap40 is not None:
         ngroup=kwargs.pop('ngroup',0)
         tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
 
@@ -1250,6 +1260,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)
         cluster.pot=pot
+
+        ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
+        cluster.add_nbody6(
+        alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
+    )
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

@@ -1173,7 +1173,7 @@ def _get_nbody6se(fort82, fort83, **kwargs):
 
     return i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
 
-def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kwargs):
+def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advance=False, **kwargs):
     """Extract a single snapshot from NBODY6++ output
 
        - Called for Nbody6 simulations with or without stellar evolution
@@ -1186,6 +1186,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, ofile=None, advance=False, **kw
         opened bev82 file containing BSE data (default: None)
     sev83 : file
         opened sev83 file containing SSE data (default: None)
+    snap40 : file
+        opened snap40 file containing hdf5 data (default: None)
     ofile : file
         opened file containing orbital information
     advance : bool

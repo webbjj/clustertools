@@ -1495,7 +1495,7 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
 def _get_nbody6pp_hdf5(f,ngroup=0,**kwargs):
         
     datakeys=['NAM', 'X1', 'X2', 'X3', 'V1', 'V2', 'V3', 'A1', 'A2', 'A3', 'J1', 'J2', 'J3', 'M']       
-    snapshot=sfile['/Step#%d' % ngroup]
+    snapshot=f['/Step#%d' % ngroup]
 
 
     ntot=snapshot.attrs['N_SINGLE']

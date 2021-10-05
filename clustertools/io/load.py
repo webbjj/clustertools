@@ -385,16 +385,24 @@ def advance_cluster(
             ngroups=advance_kwargs.get("ngroups")
             ngroup=advance_kwargs.get("ngroup")
 
-            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
-            else:
-                conf3=None
-
             if ngroup < ngroups:
+
+                nsnap = advance_kwargs.pop("nsnap") - 1
+                               
+                if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+                    conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+                else:
+                    conf3=None
+
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,**advance_kwargs)
             else:
                 deltat=kwargs.pop('deltat',1)
                 nsnap = advance_kwargs.pop("nsnap") + deltat - 1
+
+                if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
+                    conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+                else:
+                    conf3=None
 
                 snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
                 cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,deltat=deltat,**advance_kwargs)

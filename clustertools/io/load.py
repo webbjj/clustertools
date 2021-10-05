@@ -1245,7 +1245,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         cluster.hdf5=True
         cluster.ngroups=len(snap40)
-        cluster.group=ngroup
+        cluster.ngroup=ngroup
         
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)

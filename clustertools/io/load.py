@@ -26,6 +26,11 @@ try:
 except:
     pass
 
+#Try importing hdf5. Only necessary with Nbody6++ and hdf5 output
+try: 
+    import h5py
+except:
+    pass
 
 def load_cluster(
     ctype="snapshot",

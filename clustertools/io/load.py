@@ -1274,18 +1274,20 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.ngroups=len(snap40)
         cluster.ngroup=ngroup
         
+        if binaries:
+            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,(m1b+m2b),i_d1)
+            cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
+
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)
         cluster.pot=pot
 
-        if binaries:
-            cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
-
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
             cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1]
-        )
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1])
+        else:
+            if binaries: cluster.nb = len(semi)
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
@@ -1562,7 +1564,7 @@ def _get_nbody6pp_hdf5_binaries(f,ngroup=0,**kwargs):
 
     a,ecc,gb=snapshot['A'],snapshot['ECC'],snapshot['G']
     kw1,kw2,kwc=snapshot['KW1'],snapshot['KW2'],snapshot['KWC']
-    l1,l2,m1,m2,mc1,mc2=snapshot['L1'],snapshot['L2'],snapshot['M1'],snapshot['M2'],snapshot['MC1'],snapshot['MC2']
+    l1,l2,m1,m2,mc1,mc2=np.log10(snapshot['L1']),np.log10(snapshot['L2']),snapshot['M1'],snapshot['M2'],snapshot['MC1'],snapshot['MC2']
     id1,id2,idc=snapshot['NAM1'],snapshot['NAM2'],snapshot['NAMC']
     pb,pot,rc1,rc2,rs1,rs2,te1,te2=snapshot['P'],snapshot['POT'],snapshot['RC1'],snapshot['RC2'],snapshot['RS1'],snapshot['RS2'],snapshot['TE1'],snapshot['TE2']
     vc1,vc2,vc3,vr1,vr2,vr3=snapshot['VC1'],snapshot['VC2'],snapshot['VC3'],snapshot['VR1'],snapshot['VR2'],snapshot['VR3']

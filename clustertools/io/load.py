@@ -1299,6 +1299,9 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.zmbar=np.sum(cluster.m)
 
         cluster.m/=cluster.zmbar
+        if binaries:
+            cluster.m1/=cluster.zmbar
+            cluster.m2/=cluster.zmbar
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

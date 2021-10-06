@@ -1240,7 +1240,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
     if snap40 is not None:
         ngroup=kwargs.pop('ngroup',0)
-        tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot,binaries=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
+        tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,binaries=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
 
         if binaries:
             bdata=_get_nbody6pp_hdf5_binaries(snap40,ngroup=ngroup,**kwargs)
@@ -1553,7 +1553,7 @@ def _get_nbody6pp_hdf5(f,ngroup=0,**kwargs):
     else:
         binaries=False
 
-    return tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot,binaries
+    return tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,binaries
     
 def _get_nbody6pp_hdf5_binaries(f,ngroup=0,**kwargs):
         

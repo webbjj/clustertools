@@ -1244,7 +1244,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         if binaries:
             bdata=_get_nbody6pp_hdf5_binaries(snap40,ngroup=ngroup,**kwargs)
-            semi,ecc,gb,kw1,kw2,kwb,zl1b,zl2b,m1b,m2b,mc1,mc2,i_d1,i_d2,idc,pb,pot,rc1,rc2,r1b,r2b,te1,te2,vc1,vc2,vc3,vr1,vr2,vr3,xc1,xc2,xc3,xr1,xr2,xr3=bdata
+            semi,ecc,gb,kw1,kw2,kwb,zl1b,zl2b,m1b,m2b,mc1,mc2,i_d1,i_d2,idc,pb,potb,rc1,rc2,r1b,r2b,te1,te2,vc1,vc2,vc3,vr1,vr2,vr3,xc1,xc2,xc3,xr1,xr2,xr3=bdata
             mbtot=np.asarray(m1b)+np.asarray(m2b)
             lbtot=np.log10(10.0**np.asarray(zl1b)+10.0**np.asarray(zl2b))
 
@@ -1283,7 +1283,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)
-        cluster.pot=pot
+        cluster.pot=np.append(potb,pot)
 
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

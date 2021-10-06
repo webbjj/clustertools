@@ -1277,11 +1277,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.ngroup=ngroup
         
         if binaries:
-            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
+            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1,analyze=False)
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
             cluster.add_sse(kw1,lbtot,np.maximum(r1b,r2b))
 
-        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,analyze=False)
         cluster.add_sse(kw,lum,rs)
         cluster.pot=np.append(potb,pot)
 

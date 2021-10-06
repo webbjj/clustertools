@@ -340,7 +340,7 @@ class StarCluster(object):
         self.planets=False
 
     def add_stars(
-        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,sortstars=False
+        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,sortstars=False,analyze=False
     ):
         """Add stars to StarCluster.
 
@@ -360,6 +360,8 @@ class StarCluster(object):
             initial stellar mass
         sortstars: bool
             order stars by radius (default: False)
+        analyze : bool
+            perform analysis on cluster after stars are added
 
         Notes
         -----
@@ -465,7 +467,7 @@ class StarCluster(object):
             self.pmdec = np.append(self.pmdec, np.array(vy))
             self.vlos = np.append(self.vlos, np.array(vz))
 
-        self.analyze()
+        if analyze: self.analyze(sortstars=sortstars)
 
         self.ntot = nmax
 

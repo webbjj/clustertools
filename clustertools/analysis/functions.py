@@ -1024,13 +1024,13 @@ def virial_radius_critical_density(
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
-    if cluster.units0=='kpckms':
+    if units0=='kpckms':
         r_v/=1000.0
-    elif cluster.units0=='galpy':
+    elif units0=='galpy':
         r_v/=ro
-    elif cluster.units0=='nbody':
+    elif units0=='nbody':
         r_v/=cluster.rbar
-    elif cluster.units0=='radec':
+    elif units0=='radec':
         print('Conversion of r_v to "radec" no implemented')
 
 
@@ -1873,11 +1873,11 @@ def rtidal(
             " iterations",
         )
 
-    if cluster.units0 == "pckms":
+    if units0 == "pckms":
         rt *= 1000.0 * ro
-    elif cluster.units0 == "kpckms":
+    elif units0 == "kpckms":
         rt *= ro
-    elif cluster.units0 == "nbody":
+    elif units0 == "nbody":
         rt *= 1000.0 * ro / cluster.rbar
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
@@ -2034,11 +2034,11 @@ def rlimiting(
 
         rl = interpolate(r1, r2, y=rho_local)
 
-    if cluster.units0 == "pckms":
+    if units0 == "pckms":
         rl *= 1000.0 * ro
-    elif cluster.units0 == "kpckms":
+    elif units0 == "kpckms":
         rl *= ro
-    elif cluster.units0 == "nbody":
+    elif units0 == "nbody":
         rl *= 1000.0 * ro / cluster.rbar
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)

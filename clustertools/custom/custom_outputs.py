@@ -20,7 +20,7 @@ except:
 from ..util.coordinates import sky_coords
 from ..analysis.functions import *
 from ..analysis.profiles import *
-from ..analysis.operations import *
+from ..cluster.operations import *
 
 def extrct_out(cluster, fileout, projected=False):
     """Extrct key cluster properties and write to file

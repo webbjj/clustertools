@@ -1245,6 +1245,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         if binaries:
             bdata=_get_nbody6pp_hdf5_binaries(snap40,ngroup=ngroup,**kwargs)
             semi,ecc,gb,kw1,kw2,kwb,zl1b,zl2b,m1b,m2b,mc1,mc2,i_d1,i_d2,idc,pb,pot,rc1,rc2,r1b,r2b,te1,te2,vc1,vc2,vc3,vr1,vr2,vr3,xc1,xc2,xc3,xr1,xr2,xr3=bdata
+            mbtot=np.asarray(m1b)+np.asarray(m2b)
 
         if planets:
 
@@ -1275,7 +1276,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.ngroup=ngroup
         
         if binaries:
-            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,(m1b+m2b),i_d1)
+            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)

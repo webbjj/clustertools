@@ -1240,7 +1240,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
     if snap40 is not None:
         ngroup=kwargs.pop('ngroup',0)
-        tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
+        tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot,binaries=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
+
+        if binaries:
+            bdata=_get_nbody6pp_hdf5_binaries(snap40,ngroup=ngroup,**kwargs)
+            semi,ecc,gb,kw1,kw2,kwb,zl1b,zl2b,m1b,m2b,mc1,mc2,i_d1,i_d2,idc,pb,pot,rc1,rc2,r1b,r2b,te1,te2,vc1,vc2,vc3,vr1,vr2,vr3,xc1,xc2,xc3,xr1,xr2,xr3=bdata
 
         if planets:
 
@@ -1273,6 +1277,9 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)
         cluster.pot=pot
+
+        if binaries:
+            cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
 
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
@@ -1523,9 +1530,8 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
 
 def _get_nbody6pp_hdf5(f,ngroup=0,**kwargs):
         
-    datakeys=['NAM', 'X1', 'X2', 'X3', 'V1', 'V2', 'V3', 'A1', 'A2', 'A3', 'J1', 'J2', 'J3', 'M']       
+    #datakeys=['NAM', 'X1', 'X2', 'X3', 'V1', 'V2', 'V3', 'A1', 'A2', 'A3', 'J1', 'J2', 'J3', 'M']       
     snapshot=f['/Step#%d' % ngroup]
-
 
     ntot=snapshot.attrs['N_SINGLE']
     tphys=snapshot.attrs['Time']
@@ -1542,9 +1548,28 @@ def _get_nbody6pp_hdf5(f,ngroup=0,**kwargs):
     kw,lum,rc,rs,te=snapshot['KW'],np.log10(snapshot['L']),snapshot['RC'],snapshot['RS'],snapshot['TE']
     pot=snapshot['POT']
 
+    if 'Binaries' in snapshot:
+        binaries=True
+    else:
+        binaries=False
 
-    return tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot
+    return tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,pot,binaries
     
+def _get_nbody6pp_hdf5_binaries(f,ngroup=0,**kwargs):
+        
+    #datakeys=['A', 'ECC', 'G', 'KW1', 'KW2', 'KWC', 'L1', 'L2', 'M1', 'M2', 'MC1', 'MC2', 'NAM1', 'NAM2', 'NAMC', 'P', 'POT', 'RC1', 'RC2', 'RS1', 'RS2', 'TE1', 'TE2', 'VC1', 'VC2', 'VC3', 'VR1', 'VR2', 'VR3', 'XC1', 'XC2', 'XC3', 'XR1', 'XR2', 'XR3']      
+    snapshot=f['/Step#%d/Binaries' % ngroup]
+
+    a,ecc,gb=snapshot['A'],snapshot['ECC'],snapshot['G']
+    kw1,kw2,kwc=snapshot['KW1'],snapshot['KW2'],snapshot['KWC']
+    l1,l2,m1,m2,mc1,mc2=snapshot['L1'],snapshot['L2'],snapshot['M1'],snapshot['M2'],snapshot['MC1'],snapshot['MC2']
+    id1,id2,idc=snapshot['NAM1'],snapshot['NAM2'],snapshot['NAMC']
+    pb,pot,rc1,rc2,rs1,rs2,te1,te2=snapshot['P'],snapshot['POT'],snapshot['RC1'],snapshot['RC2'],snapshot['RS1'],snapshot['RS2'],snapshot['TE1'],snapshot['TE2']
+    vc1,vc2,vc3,vr1,vr2,vr3=snapshot['VC1'],snapshot['VC2'],snapshot['VC3'],snapshot['VR1'],snapshot['VR2'],snapshot['VR3']
+    xc1,xc2,xc3,xr1,xr2,xr3=snapshot['XC1'],snapshot['XC2'],snapshot['XC3'],snapshot['XR1'],snapshot['XR2'],snapshot['XR3']
+
+    return a,ecc,gb,kw1,kw2,kwc,l1,l2,m1,m2,mc1,mc2,id1,id2,idc,pb,pot,rc1,rc2,rs1,rs2,te1,te2,vc1,vc2,vc3,vr1,vr2,vr3,xc1,xc2,xc3,xr1,xr2,xr3
+
 def _get_snapshot(
     filename=None,
     tphys=0.0,

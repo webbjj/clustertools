@@ -1295,6 +1295,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             if binaries: cluster.nb = len(semi)
 
+        if cluster.zmbar==1.:
+            cluster.zmbar=np.sum(cluster.m)
+
+        cluster.m/=cluster.zmbar
+
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
 
@@ -1549,10 +1554,6 @@ def _get_nbody6pp_hdf5(f,ngroup=0,**kwargs):
     vx,vy,vz=snapshot['V1'],snapshot['V2'],snapshot['V3']
     m=snapshot['M']
     
-    #Note mass is in units of Msun
-    zmbar=np.sum(m)
-    m/=zmbar
-
     kw,lum,rc,rs,te=snapshot['KW'],np.log10(snapshot['L']),snapshot['RC'],snapshot['RS'],snapshot['TE']
     pot=snapshot['POT']
 

@@ -1247,6 +1247,9 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             semi,ecc,gb,kw1,kw2,kwb,zl1b,zl2b,m1b,m2b,mc1,mc2,i_d1,i_d2,idc,pb,potb,rc1,rc2,r1b,r2b,te1,te2,vc1,vc2,vc3,vr1,vr2,vr3,xc1,xc2,xc3,xr1,xr2,xr3=bdata
             mbtot=np.asarray(m1b)+np.asarray(m2b)
             lbtot=np.log10(10.0**np.asarray(zl1b)+10.0**np.asarray(zl2b))
+            nb=len(semi)
+        else:
+            nb=0
 
         if planets:
 
@@ -1288,7 +1291,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
             cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, alist[1], ntot+alist[1])
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11], alist[17], ntot, nb, ntot+alist[1])
         else:
             if binaries: cluster.nb = len(semi)
 

@@ -853,6 +853,8 @@ class StarCluster(object):
 
         self.eb=0.5*self.m1*self.m2/self.semi
 
+        self.nb=len(self.id1)
+
     def add_energies(self, kin, pot, etot=None):
         """ add energy information for stars 
 

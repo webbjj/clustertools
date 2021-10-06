@@ -402,8 +402,6 @@ def sub_clusterwplanets(
                 cluster.vlos[indx],
             )
 
-        subcluster.kw = cluster.kw[indx]
-
         subcluster.add_nbody6(cluster.nc,cluster.rc,cluster.rbar,
             cluster.rtide,cluster.xc,cluster.yc,cluster.zc,
             cluster.zmbar,cluster.vbar,cluster.rscale,
@@ -427,6 +425,10 @@ def sub_clusterwplanets(
                         cluster.logl[indx],
                         cluster.logr[indx],
                     )
+
+        else:
+            subcluster.kw = cluster.kw[indx]
+
 
         if len(cluster.id2) > 0:
             bindx1 = np.in1d(cluster.id1, cluster.id[indx])

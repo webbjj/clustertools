@@ -722,6 +722,9 @@ class StarCluster(object):
         if arg is not None:
 
             if len(self.kw) == 0:
+
+                nstart=0
+
                 self.kw=np.zeros(len(kw))
                 self.logl=np.zeros(len(kw))
                 self.logr=np.zeros(len(kw))
@@ -729,6 +732,9 @@ class StarCluster(object):
                 self.ep=np.zeros(len(kw))
                 self.ospin=np.zeros(len(kw))
             else:
+
+                nstart=len(self.kw)
+
                 self.kw=np.append(self.kw,np.zeros(len(kw)))
                 self.logl=np.append(self.logl,np.zeros(len(kw)))
                 self.logr=np.append(self.logr,np.zeros(len(kw)))
@@ -736,11 +742,11 @@ class StarCluster(object):
                 self.ep=np.append( self.ep,np.zeros(len(kw)))
                 self.ospin=np.append(self.ospin,np.zeros(len(kw)))
 
-            self.kw[arg.astype(int)] = np.asarray(kw)
-            self.logl[arg.astype(int)] = np.asarray(logl)
-            self.logr[arg.astype(int)] = np.asarray(logr)
-            self.ep[arg.astype(int)]= np.array(ep)
-            self.ospin[arg.astype(int)] = np.array(ospin)
+            self.kw[nstart+arg.astype(int)] = np.asarray(kw)
+            self.logl[nstart+arg.astype(int)] = np.asarray(logl)
+            self.logr[nstart+arg.astype(int)] = np.asarray(logr)
+            self.ep[nstart+arg.astype(int)]= np.array(ep)
+            self.ospin[nstart+arg.astype(int)] = np.array(ospin)
 
         else:
             self.kw = np.append(self.kw,kw)
@@ -1884,8 +1890,6 @@ def sub_cluster(
                 cluster.vlos[indx],
             )
 
-        subcluster.kw = cluster.kw[indx]
-
         subcluster.add_nbody6(cluster.nc,cluster.rc,cluster.rbar,
             cluster.rtide,cluster.xc,cluster.yc,cluster.zc,
             cluster.zmbar,cluster.vbar,cluster.rscale,
@@ -1909,6 +1913,9 @@ def sub_cluster(
                         cluster.logl[indx],
                         cluster.logr[indx],
                     )
+        else:
+            subcluster.kw = cluster.kw[indx]
+
 
         if len(cluster.id2) > 0:
             bindx1 = np.in1d(cluster.id1, cluster.id[indx])

@@ -138,6 +138,12 @@ class StarClusterwPlanets(StarCluster):
 
         self.return_cluster()
 
+    def generate_planets(self,inputfilename=''):
+        return 0
+
+    def output_planets(self):
+        return 0
+
 
 def _get_lonelyplanets(npsys=1,p_sys_id=None,pwdir=None,psnapdir='',p_sys_ic='planetary_systems.h5ic',psnapbase='p_sys_',p_sys_id_sub='',psnapend='.hdf5',**kwargs):
 

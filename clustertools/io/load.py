@@ -389,15 +389,16 @@ def advance_cluster(
 
                 nsnap = advance_kwargs.pop("nsnap") - 1
 
-
+                cluster.to_nbody()
                 nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
                 xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
                 zmbar,vbar,rscale=cluster.zmbar,cluster.vbar,cluster.rscale
                 ns,nb,np=cluster.ns,cluster.nb,cluster.np
+                xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
                 conf3=None
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
                 cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,rscale,ns,nb,np)
-
+                cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
             else:
                 deltat=kwargs.pop('deltat',1)
@@ -1234,12 +1235,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     nsnap = kwargs.pop("nsnap", 0)
     wdir = kwargs.get("wdir", './')
     deltat=kwargs.get('deltat',1)
+    ngroup=kwargs.pop('ngroup',0)
 
     planets = kwargs.pop("planets", False)
 
-
     if snap40 is not None:
-        ngroup=kwargs.pop('ngroup',0)
         tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,binaries=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
 
         if binaries:
@@ -1354,9 +1354,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         sortstars=kwargs.get("sortstars", True)
         cluster.analyze(sortstars=sortstars)
 
-    if ofile != None:
+    if ofile != None and ngroup==0:
         _get_cluster_orbit(cluster, ofile, advance=advance, nsnap=int(nsnap/deltat),**kwargs)
-           
 
     return cluster
 

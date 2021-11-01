@@ -427,8 +427,8 @@ def advance_cluster(
             else:
                 bev82=None
 
-            if os.path.isfile("%ssev.3_%s" % (wdir,str(nsnap))):
-                sev83 = open("%ssev.3_%s" % (wdir,str(nsnap)), "r")
+            if os.path.isfile("%ssev.83_%s" % (wdir,str(nsnap))):
+                sev83 = open("%ssev.83_%s" % (wdir,str(nsnap)), "r")
             else:
                 sev83=None
 

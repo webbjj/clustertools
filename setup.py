@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     license='MIT',
-    packages=["clustertools","clustertools/analysis","clustertools/util","clustertools/custom"],
+    packages=["clustertools","clustertools/analysis","clustertools/cluster","clustertools/custom","clustertools/io","clustertools/planet","clustertools/simulate","clustertools/tidaltail","clustertools/util"],
     setup_requires=['numpy>=1.8','scipy'],
     install_requires=['galpy','seaborn','numba','llvmlite'],
     )

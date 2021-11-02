@@ -1,4 +1,7 @@
 from . import clusterwplanets
 
-StarClusterwPlanets=clusterwplanets.StarClusterwPlanets
 sub_clusterwplanets=clusterwplanets.sub_clusterwplanets
+
+#Classes
+StarClusterwPlanets=clusterwplanets.StarClusterwPlanets
+PlanetarySystem=clusterwplanets.PlanetarySystem

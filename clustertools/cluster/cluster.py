@@ -22,7 +22,6 @@ from ..analysis.orbits import *
 from ..analysis.functions import *
 from ..analysis.profiles import *
 from .operations import *
-from .operations import from_radec
 from ..tidaltail.tails import *
 from copy import copy
 from galpy.orbit import Orbit

@@ -15,9 +15,8 @@ except:
     import galpy.util.bovy_conversion as conversion
 
 import os, struct
-from ..cluster.cluster import StarCluster
-from ..analysis.orbits import initialize_orbit
-from ..planet.clusterwplanets import StarClusterwPlanets
+
+import cluster as scluster
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
@@ -307,7 +306,7 @@ def load_cluster(
 
         cluster.return_cluster(units0,origin0, rorder0, rorder_origin0 )
     elif initialize:
-        initialize_orbit(cluster)
+        cluster.initialize_orbit()
 
     return cluster
 
@@ -389,15 +388,16 @@ def advance_cluster(
 
                 nsnap = advance_kwargs.pop("nsnap") - 1
 
-
+                cluster.to_nbody()
                 nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
                 xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
                 zmbar,vbar,rscale=cluster.zmbar,cluster.vbar,cluster.rscale
                 ns,nb,np=cluster.ns,cluster.nb,cluster.np
+                xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
                 conf3=None
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
                 cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,rscale,ns,nb,np)
-
+                cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
             else:
                 deltat=kwargs.pop('deltat',1)
@@ -479,7 +479,7 @@ def advance_cluster(
             **advance_kwargs
         )
     else:
-        cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs)
+        cluster = scluster.StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs)
 
     # Check for restart
     if cluster.ntot == 0.0:
@@ -815,7 +815,7 @@ def _get_gyrfalcon(
         data = filein.readline().split()
         if len(data) == 0:
             print("END OF FILE")
-            return StarCluster(0.0,ctype="nemo",**kwargs)
+            return scluster.StarCluster(0.0,ctype="nemo",**kwargs)
         elif "#" not in data:
             over_head = True
             print("OVER HEAD")
@@ -826,7 +826,7 @@ def _get_gyrfalcon(
         if any("time" in dat for dat in data):
             tphys = float(data[2])
 
-    cluster = StarCluster(
+    cluster = scluster.StarCluster(
         tphys,
         units=units,
         origin=origin,
@@ -937,7 +937,7 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
     if out3 is not None:
     
         ntot,alist,x,y,z,vx,vy,vz,m,i_d=_get_nbody6_out3(out3,**kwargs)
-        cluster = StarCluster(
+        cluster = scluster.StarCluster(
             alist[0],
             units="nbody",
             origin="cluster",
@@ -1234,12 +1234,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     nsnap = kwargs.pop("nsnap", 0)
     wdir = kwargs.get("wdir", './')
     deltat=kwargs.get('deltat',1)
+    ngroup=kwargs.pop('ngroup',0)
 
     planets = kwargs.pop("planets", False)
 
-
     if snap40 is not None:
-        ngroup=kwargs.pop('ngroup',0)
         tphys,ntot,x,y,z,vx,vy,vz,m,i_d,pot,kw,lum,rc,rs,te,binaries=_get_nbody6pp_hdf5(snap40,ngroup=ngroup,**kwargs)
 
         if binaries:
@@ -1253,7 +1252,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         if planets:
 
-            cluster = StarClusterwPlanets(
+            cluster = scluster.StarClusterwPlanets(
                 tphys,
                 units="nbody",
                 origin="cluster",
@@ -1265,7 +1264,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         else:
 
-            cluster = StarCluster(
+            cluster = scluster.StarCluster(
                 tphys,
                 units="nbody",
                 origin="cluster",
@@ -1309,7 +1308,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         if planets:
 
-            cluster = StarClusterwPlanets(
+            cluster = scluster.StarClusterwPlanets(
                 alist[0],
                 units="nbody",
                 origin="cluster",
@@ -1321,7 +1320,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         else:
 
-            cluster = StarCluster(
+            cluster = scluster.StarCluster(
                 alist[0],
                 units="nbody",
                 origin="cluster",
@@ -1354,9 +1353,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         sortstars=kwargs.get("sortstars", True)
         cluster.analyze(sortstars=sortstars)
 
-    if ofile != None:
+    if ofile != None and ngroup==0:
         _get_cluster_orbit(cluster, ofile, advance=advance, nsnap=int(nsnap/deltat),**kwargs)
-           
 
     return cluster
 
@@ -1664,7 +1662,7 @@ def _get_snapshot(
             )
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
-            cluster = StarCluster( 0., ctype=ctype, **kwargs)
+            cluster = scluster.StarCluster( 0., ctype=ctype, **kwargs)
             return cluster
     elif os.path.isfile(
         "%s%s%s%s%s" % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)
@@ -1705,7 +1703,7 @@ def _get_snapshot(
             str(nsnap).zfill(nzfill),
             snapend,
         )
-        cluster = StarCluster( 0., ctype=ctype, **kwargs)
+        cluster = scluster.StarCluster( 0., ctype=ctype, **kwargs)
         return cluster
 
     if "m" in col_names:
@@ -1766,7 +1764,7 @@ def _get_snapshot(
 
 
 
-    cluster = StarCluster(
+    cluster = scluster.StarCluster(
         tphys, units=units, origin=origin, ctype=ctype, **kwargs
     )
 
@@ -1833,7 +1831,7 @@ def _get_amuse_particles(
     2018 - Written - Webb (UofT)
     """
 
-    cluster = StarCluster(
+    cluster = scluster.StarCluster(
         tphys=0.0,
         units=units,
         origin=origin,
@@ -2017,7 +2015,7 @@ def _get_astropy_table(
         m = table[cm.pop("m")] if "m" in cm else None
         ID = table[cm.pop("id")] if "id" in cm else None
 
-    cluster = StarCluster(
+    cluster = scluster.StarCluster(
         0., units=units, origin=origin, ctype='table', **kwargs
     )
 

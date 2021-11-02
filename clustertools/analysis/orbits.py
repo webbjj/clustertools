@@ -78,7 +78,7 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
         )
     else:
         cluster.save_cluster()
-        units0, origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+        units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
         cluster.to_galpy()
 
@@ -167,7 +167,7 @@ def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
 
 
 def integrate_orbit(
-    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, from_centre=False, ro=8.0, vo=220.0, plot=False
+    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for the cluster
 
@@ -181,8 +181,6 @@ def integrate_orbit(
         final time (in Gyr) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
-    from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
@@ -201,11 +199,7 @@ def integrate_orbit(
     -------
        2018 - Written - Webb (UofT)
     """
-    if cluster.orbit is None:
-        o = initialize_orbit(cluster,from_centre=from_centre)
-    else:
-        o=cluster.orbit
-
+    o = initialize_orbit(cluster)
     ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
     o.integrate(ts, pot)
 
@@ -215,7 +209,7 @@ def integrate_orbit(
     return ts, o
 
 def integrate_orbits(
-    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, from_centre=False, ro=8.0, vo=220.0, plot=False
+    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for each star
 
@@ -229,8 +223,6 @@ def integrate_orbits(
         final time (in Gyr) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
-    from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
@@ -249,11 +241,7 @@ def integrate_orbits(
     -------
        2018 - Written - Webb (UofT)
     """
-    if cluster.orbits is None:
-        os = initialize_orbits(cluster,from_centre=from_centre)
-    else:
-        os=cluster.orbits
-
+    os = initialize_orbits(cluster)
     ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
     os.integrate(ts, pot)
 

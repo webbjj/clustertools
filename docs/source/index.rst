@@ -132,7 +132,6 @@ Library Reference
 
 Planned Future Additions
 ----------------------------------
-* Add planetary systems to a given StarCluster instance (currently in development - see /exoplanet branch if curious)
 
 * Allow for the use of astropy units
 

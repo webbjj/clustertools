@@ -142,6 +142,7 @@ class StarCluster(object):
         self.bsefile = kwargs.get("bsefile", None)
         self.ofile = kwargs.get("ofile", None)
         self.ofilename = kwargs.get("ofilename", None)
+        self.orbit = kwargs.get("orbit", None)
         self.give=kwargs.get('give','mxv')
 
         self.centre_method = kwargs.get("centre_method", None)

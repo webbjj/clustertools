@@ -47,9 +47,6 @@ def test_add_stars_default():
 
 	assert cluster.ntot == nstar
 
-	np.testing.assert_array_equal(cluster.kw,np.zeros(nstar))
-
-
 def test_add_stars_custom():
 	nstar=100
 	cluster=ctools.StarCluster()

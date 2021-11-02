@@ -654,7 +654,7 @@ def _get_advanced_kwargs(cluster, **kwargs):
     }, kwargs
 
 
-def _get_cluster_orbit(cluster, ofile, advance=False, col_names=["t", "x", "y", "z", "vx", "vy", "vz"],col_nums=[0, 1, 2, 3, 4, 5, 6], **kwargs):
+def _get_cluster_orbit(cluster, ofile, advance=False, ocol_names=["t", "x", "y", "z", "vx", "vy", "vz"],ocol_nums=[0, 1, 2, 3, 4, 5, 6], **kwargs):
     """ Read in cluster oribit from an ascii file and apply it to StarCluster
 
     cluster - class 
@@ -704,21 +704,21 @@ def _get_cluster_orbit(cluster, ofile, advance=False, col_names=["t", "x", "y", 
     if True:
         tphys,xgc,ygc,zgc,vxgc,vygc,vzgc=0.,0.,0.,0.,0.,0.,0.
 
-        for i in range(0,len(col_names)):
-            if col_names[i]=="t":
-                t=float(data[col_nums[i]])
-            elif col_names[i]=="x":
-                xgc=float(data[col_nums[i]])
-            elif col_names[i]=="y":
-                ygc=float(data[col_nums[i]])
-            elif col_names[i]=="z":
-                zgc=float(data[col_nums[i]])
-            elif col_names[i]=="vx":
-                vxgc=float(data[col_nums[i]])
-            elif col_names[i]=="vy":
-                vygc=float(data[col_nums[i]])
-            elif col_names[i]=="vz":
-                vzgc=float(data[col_nums[i]])
+        for i in range(0,len(ocol_names)):
+            if ocol_names[i]=="t":
+                t=float(data[ocol_nums[i]])
+            elif ocol_names[i]=="x":
+                xgc=float(data[ocol_nums[i]])
+            elif ocol_names[i]=="y":
+                ygc=float(data[ocol_nums[i]])
+            elif ocol_names[i]=="z":
+                zgc=float(data[ocol_nums[i]])
+            elif ocol_names[i]=="vx":
+                vxgc=float(data[ocol_nums[i]])
+            elif ocol_names[i]=="vy":
+                vygc=float(data[ocol_nums[i]])
+            elif ocol_names[i]=="vz":
+                vzgc=float(data[ocol_nums[i]])
     else:
         tphys = float(data[0])
         xgc = float(data[1])
@@ -1350,6 +1350,15 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.add_sse(kw,zl1,r1)
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
     
+            sseindx=np.logical_or(np.logical_or(np.in1d(cluster.id,i_d),np.in1d(cluster.id,i_d1)),np.in1d(cluster.id,i_d2))
+
+            if np.sum(sseindx) != cluster.ntot:
+                print('SSE/BSE NBODY6++ ERROR',cluster.ntot-np.sum(sseindx))
+                nextra=cluster.ntot-np.sum(sseindx)
+                cluster.add_sse(np.zeros(nextra),np.ones(nextra)*-10,np.ones(nextra))
+
+
+
     if kwargs.get("analyze", True) and cluster.ntot>0:
         sortstars=kwargs.get("sortstars", True)
         cluster.analyze(sortstars=sortstars)

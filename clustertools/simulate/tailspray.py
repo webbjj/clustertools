@@ -19,8 +19,8 @@ from matplotlib import animation
 from ..util.recipes import *
 from ..util.coordinates import *
 from ..cluster.cluster import StarCluster
-from ..analysis.tails import *
-from ..analysis.orbit import orbital_path
+from ..tidaltail.tails import *
+from ..analysis.orbits import orbital_path
 
 from streamtools.df import streamspraydf
 

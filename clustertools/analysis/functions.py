@@ -733,7 +733,6 @@ def virial_radius(cluster, method='inverse_distance',
     H=70.0,
     Om=0.3,
     overdens=200.0,
-    nrad=20,
     projected=False,
     plot=False,
     **kwargs):
@@ -746,7 +745,7 @@ def virial_radius(cluster, method='inverse_distance',
     cluster : class
         StarCluster
     method : str
-        method for calculating virial radius (default: 'inverse_distance')
+        method for calculating virial radius (default: 'inverse_distance', alternative: 'critical_density')
 
     Returns
     -------
@@ -763,8 +762,6 @@ def virial_radius(cluster, method='inverse_distance',
         density of matter
     overdens : float
         overdensity constant
-    nrad : int
-        number of radial bins used to calculate cluster density profile
     projected : bool
         calculate projected virial radius (default: False)
     plot : bool
@@ -779,8 +776,8 @@ def virial_radius(cluster, method='inverse_distance',
 
     if method=='inverse_distance':
         rv=virial_radius_inverse_distance(cluster,projected=projected,full=full)
-    else:
-        rv=virial_radius_critical_density(cluster,H,Om,overdens,nrad,projected,plot,**kwargs)
+    elif method=='critical_density':
+        rv=virial_radius_critical_density(cluster,H,Om,overdens,projected,plot,**kwargs)
 
     return rv
 
@@ -887,7 +884,6 @@ def virial_radius_critical_density(
     H=70.0,
     Om=0.3,
     overdens=200.0,
-    nrad=20,
     projected=False,
     plot=False,
     ro=8.,
@@ -910,8 +906,6 @@ def virial_radius_critical_density(
         density of matter
     overdens : float
         overdensity constant
-    nrad : int
-        number of radial bins used to calculate cluster density profile
     projected : bool
         calculate projected virial radius (default: False)
     plot : bool
@@ -953,7 +947,7 @@ def virial_radius_critical_density(
 
     if projected:
         if not cluster.projected: cluster.analyze(sortstars=True,projected=True)
-        indx - cluster.rproorder
+        indx = cluster.rproorder
     else:
         indx = cluster.rorder
 
@@ -968,11 +962,29 @@ def virial_radius_critical_density(
         pprof = msum / vsum
         rprof = cluster.r[indx]
 
-    # Find radius where maxium density occurs
-    rindx = np.argmax(pprof)
-    rmax = rprof[rindx]
+    rho_local = rhocrit * overdens
+    rindx=np.argmin(np.fabs(pprof-rho_local))
 
-    r_v=np.interp(rhocrit * overdens,pprof,rprof)
+    if rindx==len(pprof)-1 or rindx==0:
+        r_v=rprof[rindx]
+    elif pprof[rindx]==rho_local:
+        r_v=rprof[rindx]
+    else:
+        if pprof[rindx] > rho_local:
+            r1=rprof[rindx-1]
+            r2=rprof[rindx]
+            p1=pprof[rindx-1]
+            p2=pprof[rindx]
+        elif pprof[rindx] > rho_local:
+            r1=rprof[rindx]
+            r2=rprof[rindx+1]
+            p1=pprof[rindx]
+            p2=pprof[rindx+1]
+
+        m=(p2-p1)/(r2-r1)
+        b=p2-m*r2
+
+        r_v=(rho_local-b)/m
 
     """
     indx1 = (rprof > rmax) * (pprof > rhocrit * overdens)
@@ -993,7 +1005,6 @@ def virial_radius_critical_density(
     """
 
     if plot:
-        rho_local = rhocrit * overdens
 
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)

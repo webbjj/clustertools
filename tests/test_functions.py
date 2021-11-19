@@ -67,6 +67,7 @@ def test_relaxation_time(tol=0.01):
 	vy,vz=np.zeros(ntot),np.zeros(ntot)
 
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.analyze()
 
 	coulomb=0.4
 	rad=1.
@@ -80,6 +81,8 @@ def test_relaxation_time(tol=0.01):
 
 	# Units of Myr
 	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
+
+	print('DEBUG: ',cluster.r)
 
 	assert np.fabs(1.0-trelax/cluster.relaxation_time()) <= tol
 
@@ -97,6 +100,7 @@ def test_projected_relaxation_time(tol=0.01):
 	vy,vz=np.zeros(ntot),np.random.rand(ntot)
 
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.analyze()
 
 	coulomb=0.4
 	rad=1.
@@ -127,6 +131,7 @@ def test_half_mass_relaxation_time(tol=0.01):
 	vy,vz=np.zeros(ntot),np.zeros(ntot)
 
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.analyze()
 
 	coulomb=0.4
 	rad=1.
@@ -157,6 +162,7 @@ def test_core_relaxation_time(tol=0.01):
 	vy,vz=np.zeros(ntot),np.zeros(ntot)
 
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.analyze()
 
 	coulomb=0.4
 	rc,rh=1.,1.
@@ -194,6 +200,7 @@ def test_energies(tol=0.01):
 	ptot=np.sum(pot)/2.
 
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.analyze()
 	cluster.energies()
 
 	print(ektot,cluster.ektot)
@@ -225,6 +232,7 @@ def test_closest_star(tol=0.01):
 	vx,vy,vz=np.zeros(5),np.zeros(5),np.zeros(5)
 	cluster=ctools.StarCluster(units='nbody',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz)
+	cluster.analyze()
 
 	mindx=ctools.closest_star(cluster)
 	np.testing.assert_array_equal(mindx,np.ones(5))
@@ -239,6 +247,7 @@ def test_rlagrange(tol=0.01):
 	vx,vy,vz=np.zeros(21),np.zeros(21),np.zeros(21)
 	cluster=ctools.StarCluster(units='nbody',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz)
+	cluster.analyze()
 
 	rn=ctools.rlagrange(cluster)
 	np.testing.assert_array_equal(rn,np.linspace(1,10,10))

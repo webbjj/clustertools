@@ -279,13 +279,10 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
     -------
    2018 - Written - Webb (UofT)
     """
-    print('START TO RADEC:',sortstars)
     if cluster.units != "radec" and cluster.origin != "sky":
 
-        print('START ORBIT')
         if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo)
         if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo)
-        print('DONE ORBITs')
 
         cluster.ra=cluster.orbits.ra()
         cluster.dec=cluster.orbits.dec()

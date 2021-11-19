@@ -970,7 +970,7 @@ def virial_radius_critical_density(
     elif pprof[rindx]==rho_local:
         r_v=rprof[rindx]
     else:
-        if pprof[rindx] > rho_local:
+        if pprof[rindx] < rho_local:
             r1=rprof[rindx-1]
             r2=rprof[rindx]
             p1=pprof[rindx-1]

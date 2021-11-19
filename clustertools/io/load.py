@@ -1286,8 +1286,13 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)
-        cluster.pot=np.append(potb,pot)
 
+        if binaries: 
+            cluster.pot=np.append(potb,pot)
+        else:
+            cluster.pot=pot
+
+            
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
             cluster.add_nbody6(

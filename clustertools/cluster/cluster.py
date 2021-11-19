@@ -1853,10 +1853,11 @@ def sub_cluster(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
         * eindx
     )
+
+    if len(cluster.kw) > 0:
+        indx*=((cluster.kw >= kwmin) * (cluster.kw <= kwmax))
 
     if np.sum(indx) > 0:
 
@@ -1915,7 +1916,7 @@ def sub_cluster(
                         cluster.logl[indx],
                         cluster.logr[indx],
                     )
-        else:
+        elif len(cluster.kw) > 0:
             subcluster.kw = cluster.kw[indx]
 
 
@@ -2037,10 +2038,12 @@ def sub_cluster(
         subcluster = StarCluster(cluster.tphys)
 
     if subcluster.ntot > 0:
+        if subcluster.units!=units0: subcluster.to_units(units0)
+        if subcluster.origin!=origin0: subcluster.to_origin(origin0)
         subcluster.analyze(sortstars=sortstars)
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
-    subcluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return subcluster
 

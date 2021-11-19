@@ -324,6 +324,7 @@ def test_subcluster():
 	cluster.add_energies(kin,pot)
 	cluster.m=np.random.rand(cluster.ntot)
 	cluster.kw=np.random.rand(cluster.ntot)
+	cluster.analyze()
 
 	#Assert different cuts are working
 	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm)

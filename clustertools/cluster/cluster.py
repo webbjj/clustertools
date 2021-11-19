@@ -666,7 +666,7 @@ class StarCluster(object):
         #Define GM, AU and PC in cgs units (2009 IAU values) - Taken from Nbody6
         GM = 1.32712442099e26
         AU = 1.49597870700e13
-        PC = 1296000.0/(2.0*np.pi)*AU
+        PC = 1296000.0/(2.0*(np.pi))*AU
 
         # Number of stars in the core
         self.nc = nc

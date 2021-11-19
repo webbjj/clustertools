@@ -259,7 +259,7 @@ class StarCluster(object):
         # Number of binary stars
         self.nb = 0
         # Number of particles (from NBODY6 when tidal tail is being integrated)
-        self.np = 0
+        self.n_p = 0
 
         # variables for add_sse (stellar evolution information)
         self.kw = np.array([])
@@ -621,7 +621,7 @@ class StarCluster(object):
         rscale=1.0,
         ns=0.0,
         nb=0.0,
-        np=0.0,
+        n_p=0.0,
     ):
         """ Add additional information to StarCluster
 
@@ -666,7 +666,7 @@ class StarCluster(object):
         #Define GM, AU and PC in cgs units (2009 IAU values) - Taken from Nbody6
         GM = 1.32712442099e26
         AU = 1.49597870700e13
-        PC = 1296000.0/(2.0*3.141592653589793)*AU
+        PC = 1296000.0/(2.0*np.pi)*AU
 
         # Number of stars in the core
         self.nc = nc
@@ -698,7 +698,7 @@ class StarCluster(object):
         # Number of binary stars
         self.nb = nb
         # Number of particles (from NBODY6 when tidal tail is being integrated)
-        self.np = np
+        self.n_p = n_p
 
     def add_sse(self, kw, logl, logr, ep = None, ospin = None, arg = None):
         """Add stellar evolution information to stars

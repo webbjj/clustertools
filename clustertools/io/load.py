@@ -1299,6 +1299,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.xc*=cluster.rbar
             cluster.yc*=cluster.rbar
             cluster.zc*=cluster.rbar
+            cluster.tphys*=cluster.tbar
 
         else:
             if binaries: cluster.nb = len(semi)

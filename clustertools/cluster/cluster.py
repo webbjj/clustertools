@@ -618,6 +618,7 @@ class StarCluster(object):
         zc=0.0,
         zmbar=1.0,
         vbar=1.0,
+        tbar=1.0,
         rscale=1.0,
         ns=0.0,
         nb=0.0,
@@ -644,6 +645,8 @@ class StarCluster(object):
             scaling factor between NBODY units and Msun (default:1.)
         vbar : float
             scaling factor between NBODY units and km/s (default:1.)
+        tbar : float
+            scaling factor between NBODY units and Myr (default:1.)
         rscale : float
             the scale radius of data (default:1.)
         ns : int
@@ -679,7 +682,7 @@ class StarCluster(object):
         # Velocity scaling parameter
         self.vbar = vbar
         # Time scaling parameter
-        self.tbar=self.rbar/(1.023*self.vbar)
+        self.tbar=tbar
 
         # Scale radius of cluster
         self.rscale = rscale
@@ -1897,7 +1900,7 @@ def sub_cluster(
 
         subcluster.add_nbody6(cluster.nc,cluster.rc,cluster.rbar,
             cluster.rtide,cluster.xc,cluster.yc,cluster.zc,
-            cluster.zmbar,cluster.vbar,cluster.rscale,
+            cluster.zmbar,cluster.vbar,cluster.tbar,cluster.rscale,
             cluster.ns,cluster.nb,cluster.np)
 
         subcluster.projected = cluster.projected

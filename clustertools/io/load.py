@@ -393,7 +393,7 @@ def advance_cluster(
                 nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
                 xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
                 zmbar,vbar,tbar,rscale=cluster.zmbar,cluster.vbar,cluster.tbar,cluster.rscale
-                ns,nb,np=cluster.ns,cluster.nb,cluster.np
+                ns,nb,np=cluster.ns,cluster.nb,cluster.n_p
                 conf3=None
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
                 cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np)

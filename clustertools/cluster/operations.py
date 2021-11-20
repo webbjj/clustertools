@@ -948,7 +948,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
     AU = 1.49597870700e13
     PC = 1296000.0/(2.0*np.pi)*AU
 
-    zmass=float(custer.ntot)/zmbar
+    zmass=float(cluster.ntot)/zmbar
 
     tbar = SQRT(PC/GM)*PC
     tbar = tbar/(3.15576e7*1.0e6)

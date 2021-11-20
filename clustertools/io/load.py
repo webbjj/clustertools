@@ -1255,7 +1255,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
             cluster = StarClusterwPlanets(
                 tphys,
-                units="nbody",
+                units="pckms",
                 origin="cluster",
                 ctype="nbody6++",
                 sfile=snap40,
@@ -1267,7 +1267,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
             cluster = StarCluster(
                 tphys,
-                units="nbody",
+                units="pckms",
                 origin="cluster",
                 ctype="nbody6++",
                 sfile=snap40,
@@ -1303,10 +1303,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         if cluster.zmbar==1.:
             cluster.zmbar=np.sum(cluster.m)
 
-        cluster.m/=cluster.zmbar
-        if binaries:
-            cluster.m1/=cluster.zmbar
-            cluster.m2/=cluster.zmbar
+        cluster.to_nbody()
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

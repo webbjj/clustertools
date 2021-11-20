@@ -1292,6 +1292,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             cluster.pot=pot
 
+        cluster.to_nbody()
 
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
@@ -1300,10 +1301,6 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             if binaries: cluster.nb = len(semi)
 
-        if cluster.zmbar==1.:
-            cluster.zmbar=np.sum(cluster.m)
-
-        cluster.to_nbody()
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

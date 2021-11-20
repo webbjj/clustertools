@@ -950,7 +950,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
 
     zmass=float(cluster.ntot)/zmbar
 
-    tbar = SQRT(PC/GM)*PC
+    tbar = np.sqrt(PC/GM)*PC
     tbar = tbar/(3.15576e7*1.0e6)
     tbar=tbar*np.sqrt(rbar**3/(zmass*zmbar))
 

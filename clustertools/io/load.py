@@ -392,11 +392,11 @@ def advance_cluster(
 
                 nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
                 xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
-                zmbar,vbar,tbat,rscale=cluster.zmbar,cluster.vbar,cluster,tbar,cluster.rscale
+                zmbar,vbar,rscale=cluster.zmbar,cluster.vbar,cluster.rscale
                 ns,nb,np=cluster.ns,cluster.nb,cluster.np
                 conf3=None
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
-                cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np)
+                cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,rscale,ns,nb,np)
 
 
             else:
@@ -947,7 +947,7 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
                 
         if ntot > 0:
             cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, alist[1], ntot+alist[1]
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[17], ntot, alist[1], ntot+alist[1]
         )
             cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
 
@@ -1296,7 +1296,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
             cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[17], ntot, nb, ntot+alist[1])
         else:
             if binaries: cluster.nb = len(semi)
 
@@ -1338,7 +1338,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         if ntot > 0:
             cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, alist[1], ntot+alist[1]
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[17], ntot, alist[1], ntot+alist[1]
         )
             cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
             cluster.rhos=rhos

@@ -1292,15 +1292,18 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             cluster.pot=pot
 
-        cluster.to_nbody()
-
         if conf3 is not None:
             ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
+            cluster.xc*=cluster.rbar
+            cluster.yc*=cluster.rbar
+            cluster.zc*=cluster.rbar
+
         else:
             if binaries: cluster.nb = len(semi)
 
+        cluster.to_nbody()
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

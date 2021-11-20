@@ -618,7 +618,6 @@ class StarCluster(object):
         zc=0.0,
         zmbar=1.0,
         vbar=1.0,
-        tbar=1.0,
         rscale=1.0,
         ns=0.0,
         nb=0.0,
@@ -645,8 +644,6 @@ class StarCluster(object):
             scaling factor between NBODY units and Msun (default:1.)
         vbar : float
             scaling factor between NBODY units and km/s (default:1.)
-        tbar : float
-            scaling factor between NBODY units and time (default:1.)
         rscale : float
             the scale radius of data (default:1.)
         ns : int
@@ -682,7 +679,8 @@ class StarCluster(object):
         # Velocity scaling parameter
         self.vbar = vbar
         # Time scaling parameter
-        self.tbar=tbar
+        self.tbar=self.rbar/(1.023*self.vbar)
+
         # Scale radius of cluster
         self.rscale = rscale
         # Number of single stars

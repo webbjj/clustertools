@@ -404,7 +404,7 @@ def sub_clusterwplanets(
 
         subcluster.add_nbody6(cluster.nc,cluster.rc,cluster.rbar,
             cluster.rtide,cluster.xc,cluster.yc,cluster.zc,
-            cluster.zmbar,cluster.vbar,cluster.tbar,cluster.rscale,
+            cluster.zmbar,cluster.vbar,cluster.rscale,
             cluster.ns,cluster.nb,cluster.np)
 
         subcluster.projected = cluster.projected

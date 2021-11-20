@@ -618,6 +618,7 @@ class StarCluster(object):
         zc=0.0,
         zmbar=1.0,
         vbar=1.0,
+        tbar=1.0,
         rscale=1.0,
         ns=0.0,
         nb=0.0,
@@ -644,6 +645,8 @@ class StarCluster(object):
             scaling factor between NBODY units and Msun (default:1.)
         vbar : float
             scaling factor between NBODY units and km/s (default:1.)
+        tbar : float
+            scaling factor between NBODY units and time (default:1.)
         rscale : float
             the scale radius of data (default:1.)
         ns : int
@@ -662,12 +665,6 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
         """
 
-
-        #Define GM, AU and PC in cgs units (2009 IAU values) - Taken from Nbody6
-        GM = 1.32712442099e26
-        AU = 1.49597870700e13
-        PC = 1296000.0/(2.0*np.pi)*AU
-
         # Number of stars in the core
         self.nc = nc
         # Core radius
@@ -685,12 +682,7 @@ class StarCluster(object):
         # Velocity scaling parameter
         self.vbar = vbar
         # Time scaling parameter
-        #Form time scale in seconds and velocity scale in km/sec.
-        self.tbar=np.sqrt(PC/GM)*PC
-        #Convert time scale from units of seconds to million years.
-        self.tbar/=(3.15576e07*1.0e06)
-        #Scale to working units of RBAR in pc & ZMBAR in solar masses.
-        self.tbar*=np.sqrt((self.rbar**3.)/(self.zmbar**2.))
+        self.tbar=tbar
         # Scale radius of cluster
         self.rscale = rscale
         # Number of single stars

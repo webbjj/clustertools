@@ -389,15 +389,25 @@ def advance_cluster(
 
                 nsnap = advance_kwargs.pop("nsnap") - 1
 
+                if cluster.nc!=0. and cluster.n_p!=0.:
 
-                nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
-                xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
-                zmbar,vbar,tbar,rscale=cluster.zmbar,cluster.vbar,cluster.tbar,cluster.rscale
-                ns,nb,np=cluster.ns,cluster.nb,cluster.n_p
+                    units0=cluster.units
+                    if units0!='pckms': cluster.to_pckms()
+
+                    nc,rc,rbar,rtide=cluster.nc,cluster.rc,cluster.rbar,cluster.rtide
+                    xc,yc,zc=cluster.xc,cluster.yc,cluster.zc
+                    zmbar,vbar,tbar,rscale=cluster.zmbar,cluster.vbar,cluster.tbar,cluster.rscale
+                    ns,nb,n_p=cluster.ns,cluster.nb,cluster.n_p
+
+                    if units0!='pckms': cluster.to_units(units0)
+
+
                 conf3=None
                 cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
-                cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np)
-
+                
+                if nc!=0. and n_p!=0.:
+                    cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np)
+                    cluster.to_nbody()
 
             else:
                 deltat=kwargs.pop('deltat',1)
@@ -1300,11 +1310,11 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.yc*=cluster.rbar
             cluster.zc*=cluster.rbar
             cluster.tphys*=cluster.tbar
+            cluster.to_nbody()
 
         else:
             if binaries: cluster.nb = len(semi)
 
-        cluster.to_nbody()
 
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)

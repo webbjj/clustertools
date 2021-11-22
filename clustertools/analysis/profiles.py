@@ -137,9 +137,10 @@ def rho_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -317,9 +318,10 @@ def m_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -519,9 +521,10 @@ def alpha_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -719,9 +722,9 @@ def sigv_prof(
         * (v <= vmax)
     )
 
-    if kwmin is not None:
+    if kwmin is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw >= kwmin)
-    if kwmax is not None:
+    if kwmax is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw <= kwmax)
 
     if emin is not None:
@@ -901,9 +904,9 @@ def beta_prof(
         * (v <= vmax)
     )
 
-    if kwmin is not None:
+    if kwmin is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw >= kwmin)
-    if kwmax is not None:
+    if kwmax is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw <= kwmax)
 
     if emin is not None:
@@ -1078,9 +1081,10 @@ def v_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -1269,9 +1273,10 @@ def eta_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -1582,9 +1587,10 @@ def vcirc_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin

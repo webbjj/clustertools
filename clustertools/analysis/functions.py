@@ -1153,9 +1153,10 @@ def mass_function(
         * (cluster.m < mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -1315,9 +1316,10 @@ def tapered_mass_function(
         * (cluster.m < mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -1488,9 +1490,10 @@ def eta_function(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -2223,9 +2226,10 @@ def _rho_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin

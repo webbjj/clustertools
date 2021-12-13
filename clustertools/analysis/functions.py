@@ -940,10 +940,7 @@ def virial_radius_critical_density(
 
     cluster.to_pckms()
 
-    H /= 1000000.0  # (km/s) / pc
-    Grav = 4.302e-3  # pc (km/s)^2 / Msun
-
-    rhocrit = 3.0 * (H ** 2.0) / (8.0 * np.pi * Grav)  # Msun/pc^3
+    rhocrit=conversion.dens_in_msolpc3(vo=220.,ro=8.)/conversion.dens_in_criticaldens(vo=220.,ro=8.,H=H)
 
     if projected:
         if not cluster.projected: cluster.analyze(sortstars=True,projected=True)
@@ -963,6 +960,7 @@ def virial_radius_critical_density(
         rprof = cluster.r[indx]
 
     rho_local = rhocrit * overdens
+
     rindx=np.argmin(np.fabs(pprof-rho_local))
 
     if rindx==len(pprof)-1 or rindx==0:
@@ -985,24 +983,6 @@ def virial_radius_critical_density(
         b=p2-m*r2
 
         r_v=(rho_local-b)/m
-
-    """
-    indx1 = (rprof > rmax) * (pprof > rhocrit * overdens)
-    indx2 = (rprof > rmax) * (pprof < rhocrit * overdens)
-
-    if np.sum(indx2) == 0.0:
-        print("SYSTEM IS NOT VIRIALIZED")
-        r_v = -1.0
-    else:
-        r1 = rprof[indx1][-1]
-        r2 = rprof[indx2][0]
-
-        rho1 = pprof[indx1][-1]
-        rho2 = pprof[indx2][0]
-
-        print(r1, r2, rho1, rho2, rhocrit * overdens)
-        r_v = interpolate([r1, rho1], [r2, rho2], y=rhocrit * overdens)
-    """
 
     if plot:
 
@@ -1043,7 +1023,6 @@ def virial_radius_critical_density(
         r_v/=cluster.rbar
     elif units0=='radec':
         print('Conversion of r_v to "radec" no implemented')
-
 
     return r_v
 
@@ -2138,6 +2117,7 @@ def _rho_prof(
     kwmax=15,
     indx=None,
     projected=False,
+    normalize=False,
     plot=False,
     **kwargs
 ):
@@ -2163,6 +2143,8 @@ def _rho_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the density profile (default: False)
 
@@ -2189,7 +2171,9 @@ def _rho_prof(
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
-        cluster.to_centre(sortstars=False)
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     rprof = np.array([])
     pprof = np.array([])
@@ -2228,8 +2212,8 @@ def _rho_prof(
         * (v <= vmax)
     )
 
-    if len(cluster.kw) > 0:
-        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
@@ -2280,8 +2264,8 @@ def _rho_prof(
         _lplot(
             x,
             y,
-            xlabel=r"$R %s$" % xunits,
-            ylabel=r"$\rho %s$" % yunits,
+            xlabel=r"$R \ %s$" % xunits,
+            ylabel=r"$\rho \ %s$" % yunits,
             title="Time = %f" % cluster.tphys,
             log=True,
             overplot=overplot,

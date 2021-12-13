@@ -1,6 +1,9 @@
 import clustertools as ctools
 import numpy as np
 from galpy.orbit import Orbit
+from galpy.potential import NFWPotential
+from galpy.df import isotropicNFWdf
+from galpy.util import bovy_conversion
 
 def test_find_centre_of_density(tol=0.01):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
@@ -81,8 +84,6 @@ def test_relaxation_time(tol=0.01):
 
 	# Units of Myr
 	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
-
-	print('DEBUG: ',cluster.r)
 
 	assert np.fabs(1.0-trelax/cluster.relaxation_time()) <= tol
 
@@ -203,8 +204,6 @@ def test_energies(tol=0.01):
 	cluster.analyze()
 	cluster.energies()
 
-	print(ektot,cluster.ektot)
-
 	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
 	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
 	np.testing.assert_array_equal(etot,cluster.etot)
@@ -258,6 +257,93 @@ def test_rlagrange(tol=0.01):
 	rn=ctools.rlagrange(cluster,projected=True)
 	np.testing.assert_array_equal(rn,np.linspace(1,10,10))
 
-#def test_virial_radius():
+def test_virial_radius(tol=0.01):
+	cluster=ctools.setup_cluster(ctype='limepy',g=1.,phi0=1.,rv=1.,m=1.,N=10000)
 
+	rv=ctools.virial_radius(cluster,method='inverse_distance')
+	assert np.fabs(rv-1.)<=tol
+
+	np.random.seed(5)
+
+	#Generate GALPY NFW Halo and calculate virial radius via critical density method
+	mhalo=2562109.8143978487
+	chalo=24.31377803
+	mo=bovy_conversion.mass_in_msol(ro=8.,vo=220.)
+
+	nfw=NFWPotential(mvir=mhalo/1e12,conc=chalo,wrtcrit=True,ro=8.,vo=220.)
+	rvnfw=nfw.rvir(wrtcrit=True,ro=8.,vo=220.)
+	ndf= isotropicNFWdf(pot=nfw,rmax=rvnfw/8.,ro=8.,vo=220.) 
+	os= ndf.sample(n=100000)
+	msub=nfw.mass(rvnfw/8.)/100000
+	cluster=ctools.StarCluster(units='kpckms',origin='cluster')
+	cluster.add_stars(os.x(),os.y(),os.z(),os.vx(),os.vy(),os.vz(),m=msub)
+	cluster.analyze()
+	rv=ctools.virial_radius(cluster,method='critical_density')
+
+	assert np.fabs(rv-rvnfw) <= tol
+
+def test_mass_function(tol=0.01):
+	x,y,z=np.zeros(10000),np.zeros(10000),np.zeros(10000)
+	vx,vy,vz=np.zeros(10000),np.zeros(10000),np.zeros(10000)
+	alphatest=-1
+	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
+	cluster=ctools.StarCluster(units='pckms',origin='centre')
+	cluster.add_stars(x,y,z,vx,vy,vz,m)
+	cluster.analyze()
+	m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha=ctools.mass_function(cluster)
+
+	assert np.fabs(alpha-alphatest) <= tol
+
+def test_eta_function(tol=0.01):
+	alphatest=-1
+	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
+	x,y,z=np.zeros(10000),np.zeros(10000),np.zeros(10000)
+	vx=np.array([])
+
+	etatest=-0.25
+	for i in range(0,len(x)):
+		sig=m[i]**etatest
+		vx=np.append(vx,np.random.normal(0.,sig))
+
+	vy,vz=np.zeros(10000),np.zeros(10000)
+	cluster=ctools.StarCluster(units='pckms',origin='centre')
+	cluster.add_stars(x,y,z,vx,vy,vz,m)
+	cluster.analyze()
+	m_mean, sigvm, eta, eeta, yeta, eyeta=ctools.eta_function(cluster)
+
+	assert np.fabs(eta-etatest) <= tol
+
+def test_meq_function(tol=0.01):
+	"""
+	    - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
+      versus mass is fit with the following:
+      sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
+              = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
+    """
+
+	alphatest=-1
+	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
+	x,y,z=np.zeros(10000),np.zeros(10000),np.zeros(10000)
+	vx=np.array([])
+
+	meqtest=0.5
+	sigma0test=1.
+
+	for i in range(0,len(x)):
+		if m[i]<=meqtest:
+			sig=sigma0test*np.exp(-0.5*m[i]/meqtest)
+		else:
+			sig=sigma0test*np.exp(-0.5)*((m[i]/meqtest)**(-0.5))
+
+		vx=np.append(vx,np.random.normal(0.,sig))
+
+	vy,vz=np.zeros(10000),np.zeros(10000)
+
+	cluster=ctools.StarCluster(units='pckms',origin='centre')
+	cluster.add_stars(x,y,z,vx,vy,vz,m)
+	cluster.analyze()
+	m_mean, sigvm, meq, emq, sigma0, esigma0=ctools.meq_function(cluster)
+
+	assert np.fabs(meq-meqtest) <= tol
+	assert np.fabs(sigma0-sigma0test) <= tol
 

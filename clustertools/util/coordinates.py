@@ -10,6 +10,7 @@ __author__ = "Jeremy J Webb"
 __all__ = [
     "sphere_coords",
     "cart_to_sphere",
+    "sphere_to_cart",
     "cyl_coords",
     "cart_to_cyl",
     "sky_coords",
@@ -81,6 +82,46 @@ def cart_to_sphere(x,y,z,vx,vy,vz):
     vphi=vx*phatx+vy*phaty+vz*phatz
     
     return r,phi,theta,vr,vphi,vtheta
+
+def sphere_to_cart(r,phi,theta,vr,vphi,vtheta):
+    """Convert cartesian coordinates to spherical coordinates
+
+    Parameters
+    ----------
+    x,y,z,vx,vy,vz : float
+      positions and velocities in cartesian coordinates
+
+    Returns
+    -------
+    r,theta,phi,vr,vtheta,vphi : float
+      positions and velocities in spherical coordinates
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+
+    x=r*np.cos(phi)*np.sin(theta)
+    y=r*np.sin(phi)*np.sin(theta)
+    z=r*np.cos(theta)
+
+    xhatr=np.sin(theta)*np.cos(phi)
+    xhatt=np.cos(theta)*np.cos(phi)
+    xhatp=-1.*np.sin(phi)
+
+    yhatr=np.sin(theta)*np.sin(phi)
+    yhatt=np.cos(theta)*np.sin(phi)
+    yhatp=np.cos(phi)
+
+    zhatr=np.cos(theta)
+    zhatt=-1.*np.sin(theta)
+    zhatp=0.
+
+    vx=vr*xhatr+vtheta*xhatt+vphi*xhatp
+    vy=vr*yhatr+vtheta*yhatt+vphi*yhatp
+    vz=vr*zhatr+vtheta*zhatt+vphi*zhatp
+
+    return x,y,z,vx,vy,vz
 
 def cyl_coords(cluster):
     """Get the cylindrical coordinates of every star in the cluster

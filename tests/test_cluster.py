@@ -159,7 +159,7 @@ def test_add_orbit_radec():
 
 def test_add_nbody6():
 	cluster=ctools.StarCluster()
-	cluster.add_nbody6(1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.)
+	cluster.add_nbody6(1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.)
 
 	assert cluster.nc == 1.
 	assert cluster.rc == 1.
@@ -170,10 +170,11 @@ def test_add_nbody6():
 	assert cluster.zc == 1.
 	assert cluster.zmbar == 1.
 	assert cluster.vbar == 1.
+	assert cluster.tbar == 1.
 	assert cluster.rscale == 1.
 	assert cluster.ns == 1.
 	assert cluster.nb == 1.
-	assert cluster.np == 1.
+	assert cluster.n_p == 1.
 
 
 def test_add_nbody6():
@@ -401,7 +402,7 @@ def test_subcluster():
 	assert subcluster.pmdec_gc==cluster.pmdec_gc
 	assert subcluster.vlos_gc==cluster.vlos_gc
 
-	cluster.add_nbody6(nc=100,rc=cluster.r10,rbar=2.,rtide=100.,xc=cluster.xc, yc=cluster.yc,zc=cluster.zc,zmbar=cluster.mtot,vbar=5.,rscale=2.,ns=cluster.ntot,nb=2,np=1.)
+	cluster.add_nbody6(nc=100,rc=cluster.r10,rbar=2.,rtide=100.,xc=cluster.xc, yc=cluster.yc,zc=cluster.zc,zmbar=cluster.mtot,vbar=5.,tbar=2.,rscale=2.,ns=cluster.ntot,nb=2,n_p=1.)
 	subcluster=ctools.sub_cluster(cluster,indx=indx)
 
 	assert subcluster.nc==cluster.nc
@@ -413,10 +414,11 @@ def test_subcluster():
 	assert subcluster.zc==cluster. zc
 	assert subcluster.zmbar==cluster.zmbar
 	assert subcluster.vbar==cluster.vbar
+	assert subcluster.tbar==cluster.tbar
 	assert subcluster.rscale==cluster.rscale
 	assert subcluster.ns==cluster.ns
 	assert subcluster.nb==cluster.nb
-	assert subcluster.np==cluster.np
+	assert subcluster.n_p==cluster.n_p
 
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_cluster(sortstars=True)

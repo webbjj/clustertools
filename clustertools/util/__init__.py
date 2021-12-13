@@ -10,6 +10,7 @@ kwtypes=constants.kwtypes
 
 sphere_coords=coordinates.sphere_coords
 cart_to_sphere=coordinates.cart_to_sphere
+sphere_to_cart=coordinates.sphere_to_cart
 cyl_coords=coordinates.cyl_coords
 cart_to_cyl=coordinates.cart_to_cyl
 sky_coords=coordinates.sky_coords

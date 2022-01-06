@@ -1,7 +1,10 @@
 import clustertools as ctools
+from clustertools.analysis.functions import tpl_func
+from scipy.optimize import curve_fit
+
 import numpy as np
 from galpy.orbit import Orbit
-from galpy.potential import NFWPotential
+from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 from galpy.util import bovy_conversion
 
@@ -283,10 +286,13 @@ def test_virial_radius(tol=0.01):
 	assert np.fabs(rv-rvnfw) <= tol
 
 def test_mass_function(tol=0.01):
-	x,y,z=np.zeros(10000),np.zeros(10000),np.zeros(10000)
-	vx,vy,vz=np.zeros(10000),np.zeros(10000),np.zeros(10000)
+
 	alphatest=-1
 	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
+
+	x,y,z=np.zeros(len(m)),np.zeros(len(m)),np.zeros(len(m))
+	vx,vy,vz=np.zeros(len(m)),np.zeros(len(m)),np.zeros(len(m))
+
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m)
 	cluster.analyze()
@@ -294,7 +300,39 @@ def test_mass_function(tol=0.01):
 
 	assert np.fabs(alpha-alphatest) <= tol
 
-def test_eta_function(tol=0.01):
+def test_tapered_mass_function(tol=3.):
+
+	msample=np.linspace(0.1,1.,100)
+	deltam=(msample[1]-msample[0])/2.
+	A=10000
+	alpha=-1.
+	mc=0.5
+	beta=2.
+
+	m=np.array([])
+	for i in range(0,len(msample)-1):
+	    
+	    dm=tpl_func(msample[i]+deltam,A,alpha,mc,beta)*deltam
+	    m=np.append(m,np.random.uniform(msample[i],msample[i+1],int(np.ceil(dm))))
+ 	    
+
+	x,y,z=np.zeros(len(m)),np.zeros(len(m)),np.zeros(len(m))
+	vx,vy,vz=np.zeros(len(m)),np.zeros(len(m)),np.zeros(len(m))
+
+	cluster=ctools.StarCluster(units='pckms',origin='centre')
+	cluster.add_stars(x,y,z,vx,vy,vz,m,analyze=True)
+
+	lower_bounds=[5000.,-2.,np.amin(cluster.m),1.]
+	upper_bounds=[15000.,0.,np.amax(cluster.m),3.]
+
+	m_mean, m_hist, dm, Afit, eA, alphafit, ealpha, mcfit, emc, betafit, ebeta=ctools.tapered_mass_function(cluster,lower_bounds=lower_bounds,upper_bounds=upper_bounds)
+
+	assert np.fabs(alphafit-alpha) <= ealpha*tol
+	assert np.fabs(mcfit-mc) <= emc*tol
+	assert np.fabs(betafit-beta) <= ebeta*tol
+
+
+def test_eta_function(tol=0.1):
 	alphatest=-1
 	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
 	x,y,z=np.zeros(10000),np.zeros(10000),np.zeros(10000)
@@ -334,8 +372,12 @@ def test_meq_function(tol=0.01):
 			sig=sigma0test*np.exp(-0.5*m[i]/meqtest)
 		else:
 			sig=sigma0test*np.exp(-0.5)*((m[i]/meqtest)**(-0.5))
+       
+		vxtemp=np.random.normal(0.,sig)
+		while vxtemp < 0:
+			vxtemp=np.random.normal(0.,sig)
 
-		vx=np.append(vx,np.random.normal(0.,sig))
+		vx=np.append(vx,vxtemp)
 
 	vy,vz=np.zeros(10000),np.zeros(10000)
 
@@ -345,5 +387,96 @@ def test_meq_function(tol=0.01):
 	m_mean, sigvm, meq, emq, sigma0, esigma0=ctools.meq_function(cluster)
 
 	assert np.fabs(meq-meqtest) <= tol
-	assert np.fabs(sigma0-sigma0test) <= tol
 
+def test_ckin(tol=0.1):
+	alphatest=-1
+	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
+	x,y,z=np.zeros(10000),np.zeros(10000),np.zeros(10000)
+	vx=np.array([])
+
+	meqtest=0.5
+	sigma0test=1.
+
+	for i in range(0,len(x)):
+		if m[i]<=meqtest:
+			sig=sigma0test*np.exp(-0.5*m[i]/meqtest)
+		else:
+			sig=sigma0test*np.exp(-0.5)*((m[i]/meqtest)**(-0.5))
+	   
+		vxtemp=np.random.normal(0.,sig)
+		while vxtemp < 0:
+			vxtemp=np.random.normal(0.,sig)
+
+		vx=np.append(vx,vxtemp)
+
+	vy,vz=np.zeros(10000),np.zeros(10000)
+
+	cluster=ctools.StarCluster(units='pckms',origin='centre')
+	cluster.add_stars(x,y,z,vx,vy,vz,m)
+	cluster.analyze()
+
+	ck=ctools.ckin(cluster)
+
+	assert np.fabs(ck-1.)<=tol
+
+def test_rtide(tol=0.1):
+	#test rtide is the same as galpy calculates
+	ro,vo=8.,220.
+	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
+
+	cluster=ctools.setup_cluster('limepy',gcname='NGC5466')
+	m=cluster.mtot
+	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
+	zgc=cluster.zgc/1000.
+
+	pot=MWPotential2014
+
+	rtgalpy=rtide(pot,Rgc/ro,zgc/ro,M=m/mo,ro=ro,vo=vo)*1000.0
+	rtctools=ctools.rtidal(cluster)
+
+	assert np.fabs(rtgalpy-rtctools) < tol
+
+def test_rlimiting(tol=0.1):
+	#test the densities are equal
+	ro,vo=8.,220.
+	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
+
+	cluster=ctools.setup_cluster('limepy',gcname='NGC5466')
+
+
+
+	m=cluster.mtot
+	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
+	zgc=cluster.zgc/1000.
+	pot=MWPotential2014
+
+	rholocal=evaluateDensities(pot,Rgc/ro,zgc/ro,ro=ro,vo=vo)
+
+	rl=ctools.rlimiting(cluster)
+
+	rprof, pprof, nprof = ctools.rho_prof(cluster, nrad=20, projected=False)
+
+	rlarg=np.argmin(np.fabs(rprof-rl))
+
+	if rprof[rlarg] > rl:
+		assert pprof[rlarg-1] > rholocal
+		assert pprof[rlarg] < rholocal
+	else:
+		assert pprof[rlarg] > rholocal
+		assert pprof[rlarg+1] < rholocal
+
+	rl=ctools.rlimiting(cluster,projected=True)
+
+	rprof, pprof, nprof = ctools.rho_prof(cluster, nrad=20, projected=True)
+
+	rlarg=np.argmin(np.fabs(rprof-rl))
+
+	#Approximate projected local density across area of cluster
+	rholocal_pro=rholocal*(4.*rprof[-1]/3)
+
+	if rprof[rlarg] > rl:
+		assert pprof[rlarg-1] > rholocal_pro
+		assert pprof[rlarg] < rholocal_pro
+	else:
+		assert pprof[rlarg] > rholocal_pro
+		assert pprof[rlarg+1] < rholocal_pro

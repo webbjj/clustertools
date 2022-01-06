@@ -32,6 +32,8 @@ alpha_prof=profiles.alpha_prof
 sigv_prof=profiles.sigv_prof
 beta_prof=profiles.beta_prof
 v_prof=profiles.v_prof
+v2_prof=profiles.v2_prof
+
 eta_prof=profiles.eta_prof
 meq_prof=profiles.meq_prof
 vcirc_prof=profiles.vcirc_prof

@@ -227,7 +227,6 @@ def _get_limepy(g=1,model=None,**kwargs):
     mbar = kwargs.get("mbar", 0.4)
     N = int(kwargs.get("N", M/mbar))
 
-    print('N = ',N)
     ldata = sample(lmodel, N=N)
 
     cluster = StarCluster(units=units, origin="cluster")

@@ -116,6 +116,7 @@ class StarCluster(object):
 
         # Units and origin
         self.units = units
+        self.bunits = units
         self.origin = origin
         self.units_init=units
         self.origin_init=origin
@@ -240,6 +241,8 @@ class StarCluster(object):
         self.rc = 0
         # Distance scaling parameter
         self.rbar = 1.
+        self.rbar_su=1.
+        self.rbar_au=1.
         # Tidal limit from NBODY6 (not neccesarily a true tidal radius)
         self.rtide = 0.
         # Center of mass of cluster (x,yz)
@@ -252,6 +255,7 @@ class StarCluster(object):
         self.vbar = 1.
         # Time scaling parameter
         self.tbar = 1.
+        self.tbar_days=1.
         # Scale radius of cluster
         self.rscale = 1.
         # Number of single stars
@@ -369,6 +373,7 @@ class StarCluster(object):
             - 2018 - Written - Webb (UofT)
 
         """
+
         self.x = np.append(self.x, np.array(x))
         self.y = np.append(self.y, np.array(y))
         self.z = np.append(self.z, np.array(z))
@@ -468,12 +473,12 @@ class StarCluster(object):
 
         if analyze: self.analyze(sortstars=sortstars)
 
-        self.ntot = nmax
-
         if m0 is not None:
-            self.m0=m0
+            self.m0=np.append(self.m0,m0)
         else:
-            self.m0=np.zeros(self.ntot)
+            self.m0=np.append(self.m0,np.zeros(len(x)))
+
+        self.ntot = len(x)
 
     def add_orbit(
         self,
@@ -693,6 +698,15 @@ class StarCluster(object):
         # Number of particles (from NBODY6 when tidal tail is being integrated)
         self.n_p = n_p
 
+        au_to_cm = 1.49597870700e13
+        pc_to_cm = 1296000.0/(2.0*np.pi)*au_to_cm
+
+        nbody_to_years = (self.rbar*1296000.0/(2.0*np.pi))**1.5/np.sqrt(self.zmbar)
+        self.tbar_days = 365.25*nbody_to_years
+        rsun_to_cm = 6.957e10
+        self.rbar_su = pc_to_cm/rsun_to_cm*self.rbar
+        self.rbar_au= pc_to_cm/au_to_cm*self.rbar
+
     def add_sse(self, kw, logl, logr, ep = None, ospin = None, arg = None):
         """Add stellar evolution information to stars
         
@@ -834,6 +848,7 @@ class StarCluster(object):
 
         2018 - Written - Webb (UofT)
         """
+
         self.id1 = np.append(self.id1,np.array(id1))
         self.id2 = np.append(self.id2,np.array(id2))
         self.kw1 = np.append(self.kw1,np.array(kw1))
@@ -951,6 +966,7 @@ class StarCluster(object):
         self.rpro = np.sqrt(self.x ** 2.0 + self.y ** 2.0)
         self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
         self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
+        self.vlos = self.vz
 
         self.mtot = np.sum(self.m)
         self.mmean = np.mean(self.m)
@@ -1177,8 +1193,11 @@ class StarCluster(object):
     def to_units(self, units, ro=8.0, vo=220.0):
         to_units(self, units=units, ro=ro, vo=vo)
 
-    def convert_binary_units(self,param,from_units,to_units):
-        convert_binary_units(self,param=param,from_units=from_units,to_units=to_units)
+    def to_sudays(self):
+        to_sudays(self)
+
+    def to_audays(self):
+        to_audays(self)
 
     def to_centre(self, sortstars=True, centre_method=None):
         to_centre(self, sortstars=sortstars, centre_method=centre_method)

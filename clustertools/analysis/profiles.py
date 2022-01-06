@@ -9,6 +9,7 @@ __all__ = [
     "sigv_prof",
     "beta_prof",
     "v_prof",
+    "v2_prof",
     "eta_prof",
     "vcirc_prof",
 ]
@@ -147,7 +148,10 @@ def rho_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
@@ -187,12 +191,19 @@ def rho_prof(
             xunits = ""
             yunits = ""
 
+        if projected:
+            xlabel=r"$R \ %s$" % xunits
+            ylabel=r"$\Sigma \ %s$" % yunits
+        else:
+            xlabel=r"$r \ %s$" % xunits
+            ylabel=r"$\rho \ %s$" % yunits
+
         x, y, n = rprof, pprof, nprof
         _lplot(
             x,
             y,
-            xlabel=r"$R \ %s$" % xunits,
-            ylabel=r"$\rho \ %s$" % yunits,
+            xlabel=xlabel,
+            ylabel=ylabel,
             title="Time = %f" % cluster.tphys,
             log=True,
             overplot=overplot,
@@ -328,7 +339,10 @@ def m_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         if cumulative:
@@ -532,7 +546,10 @@ def alpha_prof(
         indx *= cluster.etot <= emax
 
     if r_lower is None:
-        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+        if kwargs.get('bintype','num')=='fix':
+            r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+        else:
+            r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
     else:
         r_mean=np.zeros(len(r_lower))
         r_hist=np.zeros(len(r_lower))
@@ -732,38 +749,46 @@ def sigv_prof(
     if emin is not None:
         indx *= cluster.etot <= emax
 
-    # Convert to cylindrical or spherical coordinates:
-    if projected:
-        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = coords.rect_to_cyl_vec(
-            cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
-        )
-    else:
-        r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+    if coord is not None:
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+        if projected:
+            r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+            vr, vp, vz = coords.rect_to_cyl_vec(
+                cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+            )
+        else:
+            r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+        if coord =='r':
+            v=vr
+            ylabel=r"$\sigma_{v_r}$"
+        elif coord=='phi':
+            v=vp
+            ylabel=r"$\sigma_{v_p}$"
+        elif coord=='theta':
+            v=vt
+            ylabel=r"$\sigma_{v_t}$"
+        elif coord=='z':
+            v=vz
+            ylabel=r"$\sigma_{v_z}$"
+    else:
+        if projected:
+            ylabel=r"$\sigma_{v_{pro}}$"
+        else:
+            ylabel=r"$\sigma_v$"
+
+
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if np.sum(rindx) > 3.0:
 
-            sigr = np.std(vr[rindx])
-            sigt = np.std(vt[rindx])
-
-            if projected:
-                sigp = np.zeros(len(vr))
-            else:
-                sigp = np.std(vp[rindx])
-
-            if coord is None:
-                sigv = np.sqrt(sigr ** 2.0 + sigt ** 2.0 + sigp ** 2.0)
-            elif coord=='r':
-                sigv=sigr
-            elif coord=='phi':
-                sigv=sigp
-            elif coord=='theta':
-                sigv=sigt 
+            sigv = np.std(v[rindx])
 
             if normalize:
                 if projected:
@@ -791,7 +816,7 @@ def sigv_prof(
             lrprofn,
             sigvprof,
             xlabel=xlabel,
-            ylabel=r"$\sigma_v$",
+            ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
@@ -914,16 +939,18 @@ def beta_prof(
     if emin is not None:
         indx *= cluster.etot <= emax
 
-    # Convert to cylindrical or spherical coordinates:
     if projected:
-        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = coords.rect_to_cyl_vec(
+        r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vp, vz = coords.rect_to_cyl_vec(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
@@ -931,13 +958,13 @@ def beta_prof(
         if np.sum(rindx) > 3.0:
 
             sigr = np.std(vr[rindx])
-            sigt = np.std(vt[rindx])
+            sigp = np.std(vp[rindx])
 
             if projected:
-                sigp = np.zeros(len(vr))
-                beta = sigt / sigr - 1.0
+                sigt = np.zeros(len(vr))
+                beta = sigp / sigr - 1.0
             else:
-                sigp = np.std(vp[rindx])
+                sigt = np.std(vt[rindx])
                 beta = 1.0 - (sigt ** 2.0 + sigp ** 2.0) / (2.0 * (sigr ** 2.0))
 
             if normalize:
@@ -992,6 +1019,7 @@ def v_prof(
     kwmax=15,
     indx=None,
     projected=False,
+    coord=None,
     normalize=False,
     plot=False,
     **kwargs,
@@ -1018,6 +1046,9 @@ def v_prof(
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    coord : str
+        choose what coordinate the mean velocity profile is to be returned in (default None returns (vx**2.+vy**2.+vz**2.)^1/2).
+        Alternatively can ask for 'vr', 'vphi', or 'vtheta' for spherical coordinate velocity dispersions.
     normalize : bool
         normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
@@ -1091,31 +1122,47 @@ def v_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    # Convert to cylindrical or spherical coordinates:
-    if projected:
-        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = coords.rect_to_cyl_vec(
-            cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
-        )
-    else:
-        r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+    if coord is not None:
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+        if projected:
+            r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+            vr, vp, vz = coords.rect_to_cyl_vec(
+                cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+            )
+        else:
+            r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+        if coord =='r':
+            v=vr
+            ylabel=r"$<v_r>$"
+        elif coord=='phi':
+            v=vp
+            ylabel=r"$<v_p>$"
+        elif coord=='theta':
+            v=vt
+            ylabel=r"$<v_t>$"
+        elif coord=='z':
+            v=vz
+            ylabel=r"$<v_z>$"
+    else:
+        if projected:
+            ylabel=r"$<v_{pro}>$"
+        else:
+            ylabel=r"$<v>$"
+
+
+
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if np.sum(rindx) > 3.0:
 
-            vrmean = np.mean(vr[rindx])
-            vtmean = np.mean(vt[rindx])
-
-            if projected:
-                vpmean = np.zeros(len(vr))
-            else:
-                vpmean = np.mean(vp[rindx])
-
-            vmean = np.sqrt(vrmean ** 2.0 + vtmean ** 2.0 + vpmean ** 2.0)
+            vmean = np.mean(v[rindx])
 
             if normalize:
                 if projected:
@@ -1146,7 +1193,7 @@ def v_prof(
             lrprofn,
             vprof,
             xlabel=xlabel,
-            ylabel=r"$<v>$",
+            ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
@@ -1156,6 +1203,203 @@ def v_prof(
 
     return lrprofn, vprof
 
+
+def v2_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    indx=None,
+    projected=False,
+    coord=None,
+    normalize=False,
+    plot=False,
+    **kwargs,
+):
+    """Measure the radial variation in the mean squared velocity 
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    indx : float
+        user defined boolean array from which to extract the subset
+    projected : bool
+        use projected values and constraints (default:False)
+    coord : str
+        choose what coordinate the mean velocity profile is to be returned in (default None returns (vx**2.+vy**2.+vz**2.)^1/2).
+        Alternatively can ask for 'vr', 'vphi', or 'vtheta' for spherical coordinate velocity dispersions.
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
+    plot : bool 
+        plot the velocity disperions profile (default: False)
+
+    Returns
+    -------
+    lrprofn : float
+        natural log of radius (normalized by half-mass radius)
+    vprof : float
+        mean velocity
+
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
+
+    lrprofn = np.array([])
+    vprof = np.array([])
+
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
+
+    if indx is None:
+        indx = cluster.id > -1
+
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+    )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
+
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+
+    if coord is not None:
+
+        if projected:
+            r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+            vr, vp, vz = coords.rect_to_cyl_vec(
+                cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+            )
+        else:
+            r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+        if coord =='r':
+            v=vr
+            ylabel=r"$<v_r^2>$"
+        elif coord=='phi':
+            v=vp
+            ylabel=r"$<v_p^2>$"
+        elif coord=='theta':
+            v=vt
+            ylabel=r"$<v_t^2>$"
+        elif coord=='z':
+            v=vz
+            ylabel=r"$<v_z^2>$"
+    else:
+        if projected:
+            ylabel=r"$<v_{pro}^2>$"
+        else:
+            ylabel=r"$<v^2>$"
+
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+
+        if np.sum(rindx) > 3.0:
+
+            vmean = np.mean(v[rindx]**2.)
+
+            if normalize:
+                if projected:
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rmpro))
+                else:
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rm))
+            else:
+                if projected:
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i]))
+                else:
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i]))
+
+            vprof=np.append(vprof,vmean)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if normalize:
+            xlabel=r"$\ln(r/r_m)$"
+        else:
+            xlabel=r"$\ln(r)$"
+
+        _plot(
+            lrprofn,
+            vprof,
+            xlabel=xlabel,
+            ylabel=r"$<v^2>$",
+            overplot=overplot,
+            **kwargs
+        )
+
+        if filename != None:
+            plt.savefig(filename)
+
+    return lrprofn, vprof
 
 def eta_prof(
     cluster,
@@ -1283,7 +1527,10 @@ def eta_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
+    if kwargs.get('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
 
     for i in range(0, len(r_mean)):
 

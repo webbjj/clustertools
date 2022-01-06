@@ -1323,8 +1323,10 @@ def tapered_mass_function(
         dm = m_corr_hist / (m_upper - m_lower)
         ldm = np.log10(dm)
 
-        #(A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm),bounds=([0.,np.inf],[0,np.inf],[np.amin(cluster.m),np.amax(cluster.m)],[0.,np.inf]))
-        (A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm) ,bounds=([0.,-1.*np.inf,np.amin(cluster.m),-1.*np.inf],[np.inf,np.inf,np.amax(cluster.m),np.inf]))
+        lower_bounds=kwargs.get('lower_bounds',[0.,-1.*np.inf,np.amin(cluster.m),-1.*np.inf])
+        upper_bounds=kwargs.get('upper_bounds',[np.inf,np.inf,np.amax(cluster.m),np.inf])
+
+        (A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm) ,bounds=(lower_bounds,upper_bounds))
 
         eA = np.sqrt(V[0][0])
         ealpha = np.sqrt(V[1][1])
@@ -1502,7 +1504,7 @@ def eta_function(
 
         if plot:
             filename = kwargs.get("filename", None)
-            _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$\sigma_v$", **kwargs)
+            _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$\log_{10} \\ \sigma_v$", **kwargs)
             mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
 
             if meq:
@@ -1987,6 +1989,8 @@ def rlimiting(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    mo=conversion.mass_in_msol(ro=ro,vo=vo)
+    dens_in_msolpc2=(mo/ro**2.)/(1000.0**2.)
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
@@ -2012,9 +2016,13 @@ def rlimiting(
     # Calculate local density:
     rho_local = potential.evaluateDensities(
         pot, R, z, ro=ro, vo=vo, use_physical=False
-    ) / conversion.dens_in_msolpc3(ro=ro, vo=vo)
+     )
+
 
     rprof, pprof, nprof = _rho_prof(cluster, nrad=nrad, projected=projected)
+
+    #Approximate projected local density across entire area of cluster
+    if projected: rho_local*=(4.*rprof[-1]/3)
 
     if pprof[-1] > rho_local:
         rl = rprof[-1]
@@ -2044,22 +2052,45 @@ def rlimiting(
 
         if cluster.units == "nbody":
             rprof *= ro * 1000.0 / cluster.rbar
-            pprof *= (
-                conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
-            rho_local *= (
-                conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
+
+            if projected:
+                pprof *= (
+                    dens_in_msolpc2
+                    * (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+                rho_local *= (
+                    dens_in_msolpc2
+                    * (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+            else:
+                pprof *= (
+                    conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                    * (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
+                rho_local *= (
+                    conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                    * (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
             xunits = " (NBODY)"
             yunits = " (NBODY)"
         elif cluster.units == "pckms":
             rprof *= ro * 1000.0
-            pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+
+            if projected:
+                pprof *= dens_in_msolpc2
+                rho_local *= dens_in_msolpc2
+            else:
+                pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+
             xunits = " (pc)"
             if projected:
                 yunits = " Msun/pc^2"
@@ -2067,8 +2098,12 @@ def rlimiting(
                 yunits = " Msun/pc^3"
         elif cluster.units == "kpckms":
             rprof *= ro
-            pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-            rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+            if projected:
+                pprof *= dens_in_msolpc2 * (1000.0 ** 2.0)
+                rho_local *= dens_in_msolpc2 * (1000.0 ** 2.0)
+            else:
+                pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+                rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
 
             xunits = " (kpc)"
             if projected:

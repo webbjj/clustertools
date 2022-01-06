@@ -11,6 +11,8 @@ __all__ = [
     "to_radec",
     "to_galpy",
     "to_units",
+    "to_sudays",
+    "to_audays",
     "to_centre",
     "to_cluster",
     "to_galaxy",
@@ -84,6 +86,7 @@ def to_pckms(cluster):
         cluster.vzgc *= cluster.vbar
 
         cluster.units = "pckms"
+
 
     elif cluster.units == "kpckms":
 
@@ -252,6 +255,19 @@ def to_nbody(cluster, ro=8.0, vo=220.0):
         cluster.vzgc /= cluster.vbar
 
         cluster.units = "nbody"
+
+    if cluster.bunits == 'audays' and cluster.nb>0:
+        cluster.semi/=cluster.rbar_au
+        cluster.pb/=cluster.tbar_days
+        cluster.m1/=cluster.zmbar
+        cluster.m2/=cluster.zmbar
+        cluster.bunits='nbody'
+    elif cluster.bunits == 'sudays' and cluster.nb>0:
+        cluster.semi/=cluster.rbar_su
+        cluster.pb/=cluster.tbar_days
+        cluster.m1/=cluster.zmbar
+        cluster.m2/=cluster.zmbar
+        cluster.bunits='nbody'
 
     cluster.analyze()
 
@@ -461,103 +477,70 @@ def to_units(cluster, units, ro=8.0, vo=220.0):
         cluster.to_radec(sortstars=False)
         cluster.to_origin(origin0)
 
-def convert_binary_units(cluster,param,from_units,to_units):
-        """Convert units of binary star parameters
+def to_sudays(cluster):
+    """ Convert binary star semi-major axis and periods to solar radii and days
+        Note: Masses will be converted to solar masses
 
-            - This function is a wip
-        
-        Parameters
-        ----------
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
 
-            cluster : class
-                StarCluster instance
-            param : str
-                list of strings for parameters to be convered (pb,semi,mass)
-            from_units : str
-                list of strings for current parameter units ((days, years, nbody), (pc, su, au, nbody), (Msun,nbody))
-            from_units : str (default: True)
-                list of strings for converted parameter units ((days, years, nbody), (pc, su, au, nbody), (Msun,nbody))
+    Returns
+    -------
+    None
 
-        Returns
-        -------
+    History
+    -------
+    2022 - Written - Webb (UofT)
 
-            None
+    """
+    
+    if cluster.bunits == 'audays':
+        cluster.semi/=cluster.rbar_au
+        cluster.pb/=cluster.tbar_days
+        cluster.m1/=cluster.zmbar
+        cluster.m2/=cluster.zmbar
+        cluster.bunits='nbody'
 
-        History:
+    if cluster.bunits == 'nbody':
+        cluster.semi*=cluster.rbar_su
+        cluster.pb*=cluster.tbar_days
+        cluster.m1*=cluster.zmbar
+        cluster.m2*=cluster.zmbar
+        cluster.bunits='sudays'
 
-           2020 - Written - Webb (UofT)
-        """
-        yrs = (self.rbar * 1296000.0 / (2.0 * np.pi)) ** 1.5 / np.sqrt(self.zmbar)
-        days = 365.25 * yrs
-        au = 1.49597870700e13
-        pc = 1296000.0e0/(2.0*np.pi)*au
-        rsun=6.960e10
-        su=pc/rsun*self.rbar
+def to_audays(cluster):
+    """ Convert binary star semi-major axis and periods to solar radii and days
 
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
 
-        param=np.array(param)
-        from_units=np.array(from_units)
-        tp_units=np.array(to_units)
+    Returns
+    -------
+    None
 
-        for i in range(0,len(param)):
-            p=param[i]
+    History
+    -------
+    2022 - Written - Webb (UofT)
 
-            if p=='pb':
-                #Convert to nbody first
-                if from_units[i]=='days':
-                    self.pb/=days
-                elif from_units[i]=='years':
-                    self.pb/=yrs
-                elif from_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % from_units[i])
+    """
+    
+    if cluster.bunits == 'sudays':
+        cluster.semi/=cluster.rbar_su
+        cluster.pb/=cluster.tbar_days
+        cluster.m1/=cluster.zmbar
+        cluster.m2/=cluster.zmbar
+        cluster.bunits='nbody'
 
-                if to_units[i]=='days':
-                    self.pb*=days
-                elif to_units[i]=='years':
-                    self.pb*=yrs
-                elif to_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % from_units[i])
-
-            elif p=='semi':
-                #Convert to nbody first
-                if from_units[i]=='pc':
-                    self.semi/=self.rbar
-                elif from_units[i]=='su':
-                    self.semi/=su
-                elif from_units[i]=='au':
-                    self.semi/=(pc/au)*self.rbar
-                elif from_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % from_units[i])
-
-                if to_units[i]=='pc':
-                    self.semi*=self.rbar
-                elif to_units[i]=='su':
-                    self.semi*=su
-                elif to_units[i]=='au':
-                    self.semi*=(pc/au)*self.rbar
-                elif to_units[i]=='nbody':
-                    pass
-                else:
-                    print('UNIT %s NOT FOUND' % to_units[i])
-
-            elif p=='mass':
-                if from_units[i]=='Msun' or from_units[i]=='msun' :
-                    self.m1/=self.zmbar
-                    self.m2/=self.zmbar
-                elif from_units[i]=='nbody':
-                    pass
-
-                if to_units=='Msun' or to_units[i]=='msun' :
-                    self.m1*=self.zmbar
-                    self.m2*=self.zmbar
-                elif to_units[i]=='nbody':
-                    pass
+    if cluster.bunits == 'nbody':
+        cluster.semi*=cluster.rbar_au
+        cluster.pb*=cluster.tbar_days
+        cluster.m1*=cluster.zmbar
+        cluster.m2*=cluster.zmbar
+        cluster.bunits='audays'
 
 def to_centre(cluster, sortstars=True, centre_method=None):
     """Shift coordinates such that origin is the centre of mass

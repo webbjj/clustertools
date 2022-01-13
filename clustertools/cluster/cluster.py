@@ -301,6 +301,7 @@ class StarCluster(object):
         # Lagrange Radii,10% lagrage radius, half-mass radius, limiting radius, tidal radius, and virial radius
         self.rn = None
         self.r10 = None
+        self.r10pro=None
         self.rm = None
         self.rmpro = None
         self.rh = None
@@ -383,11 +384,15 @@ class StarCluster(object):
 
         if m is None:
             m = np.ones(len(x),float)
+        elif isinstance(m,float):
+            m=np.ones(len(x))*m
 
         self.m = np.append(self.m, np.array(m))
 
         if id is None:
             id = np.linspace(0, len(x) - 1, len(x), dtype=int)
+        if len(self.id) != 0:
+            id+=(1+int(np.amax(self.id)))
 
         self.id = np.append(self.id, np.array(id))
         self.id = self.id.astype(int)
@@ -478,7 +483,7 @@ class StarCluster(object):
         else:
             self.m0=np.append(self.m0,np.zeros(len(x)))
 
-        self.ntot = len(x)
+        self.ntot = len(self.x)
 
     def add_orbit(
         self,
@@ -1639,6 +1644,29 @@ class StarCluster(object):
         return self.ck
 
     # Directly call from orbit.py (see orbit,py files for documentation):
+
+    def rcore(
+        self,
+        method='heggie2003',
+        mfrac=0.01,
+        projected=False,
+        plot=False,
+        ro=8.,
+        vo=220.,
+        **kwargs
+    ):
+        self.rc = core(
+            self,
+            method=method,
+            mfrac=mfrac,
+            projected=projected,
+            plot=plot,
+            ro=ro,
+            vo=vo,
+            **kwargs
+        )
+
+        return self.rl
 
     def rtidal(self, pot=MWPotential2014, rtiterate=0, rtconverge=0.9, rgc=None, ro=8.0, vo=220.0, from_centre=False, plot=False, verbose=False, **kwargs):
         self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, ro=ro, vo=vo, from_centre=from_centre, plot=plot, verbose=verbose, **kwargs)

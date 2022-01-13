@@ -260,6 +260,9 @@ def test_rlagrange(tol=0.01):
 	rn=ctools.rlagrange(cluster,projected=True)
 	np.testing.assert_array_equal(rn,np.linspace(1,10,10))
 
+	r10=ctools.rlagrange(cluster,projected=True,mfrac=0.1)
+	assert rn[0]==r10
+
 def test_virial_radius(tol=0.01):
 	cluster=ctools.setup_cluster(ctype='limepy',g=1.,phi0=1.,rv=1.,m=1.,N=10000)
 
@@ -418,6 +421,16 @@ def test_ckin(tol=0.1):
 	ck=ctools.ckin(cluster)
 
 	assert np.fabs(ck-1.)<=tol
+
+def test_rcore(tol=0.2):
+	cluster=ctools.setup_cluster('limepy',model='king',phi0=3.,r0=2.,M=1e4)
+	rc=ctools.rcore(cluster,method='isothermal')
+
+	assert np.fabs(rc-2.) <= tol
+
+	rc=ctools.rcore(cluster,method='heggie2003')
+
+	assert np.fabs(rc-2.) <= tol
 
 def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates

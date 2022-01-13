@@ -148,7 +148,7 @@ def rho_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -339,7 +339,7 @@ def m_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -546,7 +546,7 @@ def alpha_prof(
         indx *= cluster.etot <= emax
 
     if r_lower is None:
-        if kwargs.get('bintype','num')=='fix':
+        if kwargs.pop('bintype','num')=='fix':
             r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
         else:
             r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -778,7 +778,7 @@ def sigv_prof(
             ylabel=r"$\sigma_v$"
 
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -947,7 +947,7 @@ def beta_prof(
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -1152,7 +1152,7 @@ def v_prof(
 
 
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -1350,7 +1350,7 @@ def v2_prof(
         else:
             ylabel=r"$<v^2>$"
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -1527,7 +1527,7 @@ def eta_prof(
     if emin != None:
         indx *= cluster.etot <= emax
 
-    if kwargs.get('bintype','num')=='fix':
+    if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)

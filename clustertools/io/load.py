@@ -18,7 +18,6 @@ import os, struct
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
 from ..planet.clusterwplanets import StarClusterwPlanets
-from .orbit import _get_cluster_orbit
 
 #Import loaders for different code
 from .gyrfalcon import _get_gyrfalcon
@@ -27,6 +26,7 @@ from .nbody6 import _get_nbody6
 from .snapshot import _get_snapshot
 from .amuse import _get_amuse_particles
 from .astropy_table import _get_astropy_table
+from .galpydf import _get_galpy_orbits
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
@@ -82,7 +82,8 @@ def load_cluster(
         name of file to be opened (optional - necessary if no defaults assigned to ctype) (default: None)
     particles : particles
         AMUSE particle dataset (default: None)
-        or `~astropy.table.Table` instance if `ctype` is "astropy_table".
+        or `~astropy.table.Table` instance if `ctype` is "astropy_table"
+        or galpy orbits instance if 'ctype' is 'galpy'
     load_function : function
         use a custom function to load data (default : None)
 
@@ -254,6 +255,10 @@ def load_cluster(
             ofile=ofile,
             **kwargs
         )
+
+    elif ctype == 'galpy':
+
+        cluster = _get_galpy_orbits(particles, units=units, origin=origin, ofile=ofile, **kwargs)
 
     else:
         print("NO CTYPE GIVEN")

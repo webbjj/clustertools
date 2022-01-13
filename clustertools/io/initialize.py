@@ -197,7 +197,7 @@ def _get_limepy(g=1,model=None,**kwargs):
         else:
             phi0=float(phi0)
 
-        project = bool(kwargs.get("project", False))
+        project = bool(kwargs.get("projected", False))
 
         if "M" in kwargs:
             units = "pckms"
@@ -214,11 +214,14 @@ def _get_limepy(g=1,model=None,**kwargs):
             elif "rm" in kwargs:
                 rh = float(kwargs.get("rm"))
                 lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
-            elif "ro" in kwargs:
-                ro = float(kwargs.get("ro"))
-                lmodel = limepy(phi0, g, M=M, ro=ro, project=project)
+            elif "r0" in kwargs:
+                r0 = float(kwargs.get("r0"))
+                lmodel = limepy(phi0, g, M=M, r0=r0, project=project)
+            elif "rc" in kwargs:
+                r0 = float(kwargs.get("rc"))
+                lmodel = limepy(phi0, g, M=M, r0=r0, project=project)
             else:
-                lmodel = limepy(phi0, g, M=M, ro=1.0, project=project)
+                lmodel = limepy(phi0, g, M=M, rv=1.0, project=project)
         else:
             units = "nbody"
             M=1.

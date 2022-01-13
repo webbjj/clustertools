@@ -24,6 +24,7 @@ __all__ = [
     "eta_function",
     "meq_function",
     "ckin",
+    "rcore",
     "rtidal",
     "rlimiting",
 ]
@@ -673,7 +674,7 @@ def closest_star(cluster, projected=False):
     return minimum_distance(x)
 
 
-def rlagrange(cluster, nlagrange=10, projected=False):
+def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
     """Calculate lagrange radii of the cluster by mass
 
     Parameters
@@ -682,6 +683,8 @@ def rlagrange(cluster, nlagrange=10, projected=False):
         StarCluster
     nlagrange : int 
         number of lagrange radii bins (default: 10)
+    mfrac : float
+        Exact masss fraction to calculate radius. Will supersede nlagrange if not None (default : None)
     projected : bool
         calculate projected lagrange radii (default: False)
 
@@ -716,12 +719,18 @@ def rlagrange(cluster, nlagrange=10, projected=False):
 
     msum = np.cumsum(cluster.m[rorder])
 
-    for i in range(1, nlagrange):
-        indx = msum >= np.sum(cluster.m) * float(i) / float(nlagrange)
-        rn.append(r[rorder[indx][0]])
+    if mfrac is None:
 
-    while len(rn) != nlagrange:
-        rn.append(np.max(r))
+        for i in range(1, nlagrange):
+            indx = msum >= np.sum(cluster.m) * float(i) / float(nlagrange)
+            rn.append(r[rorder[indx][0]])
+
+        while len(rn) != nlagrange:
+            rn.append(np.max(r))
+
+    else:
+        indx=(msum/cluster.mtot)>=mfrac
+        rn=r[rorder][indx][0]
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
@@ -1745,6 +1754,213 @@ def ckin(
     ck=meq/meq50
 
     return ck
+
+def rcore(
+    cluster,
+    method='isothermal',
+    mfrac=0.1,
+    projected=False,
+    plot=False,
+    ro=8.,
+    vo=220.,
+    **kwargs
+):
+    """Calculate core radius of the cluster
+    - The core radius can be calculated using two different methods
+    -- Isothermal (method=='isothermal') - if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
+    --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
+    --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
+    -- Heggie and Hut 2003 (method=='heggie2003') - where 4 pi G/3 rho_c r_c^2 = v_c^2 and v_c^2 = 3 sigma_c^2
+    ---Note that the inner mass fraction of stars used to calculate v_c an rho_c is set by mfrac (default 0.1 = 10%)
+
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    method : str
+        method for calculating the core radius (default: isothermal)
+    projected : bool
+        use projected values (default: False)
+    plot : bool
+        plot the density profile and mark the core radius of the cluster (default: False)
+    Returns
+    -------
+    rc : float
+        core radius
+
+    Other Parameters
+    ----------------
+    None
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    mo=conversion.mass_in_msol(ro=ro,vo=vo)
+    dens_in_msolpc2=(mo/ro**2.)/(1000.0**2.)
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
+        cluster.to_centre(sortstars=False)
+
+    cluster.to_pckms()
+
+    if projected:
+        r=cluster.rpro
+        rorder=cluster.rproorder
+        v=cluster.vpro
+    else:
+        r=cluster.r
+        rorder=cluster.rorder
+        v=cluster.v
+
+    rcentral=rlagrange(cluster,mfrac=mfrac,projected=projected)
+
+    if method=='heggie2003':
+
+        rindx=(r<rcentral)
+
+        if projected:
+            rho_c=np.sum(cluster.m[rindx])/(np.pi*(rcentral**2.))
+        else:
+            rho_c=np.sum(cluster.m[rindx])/(4.*np.pi*(rcentral**3.)/3.)
+
+        v_c2=np.mean(v[rindx]**2.)
+
+        grav=_get_grav(cluster)
+
+        rc=np.sqrt((3.*v_c2)/(4.*np.pi*grav*rho_c))
+
+        if plot:
+            nrad=int(np.ceil(1./mfrac))
+            rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+
+    elif method=='isothermal':
+        nrad=int(np.ceil(1./mfrac))
+
+        rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+
+
+        #interpolate
+
+        if projected:
+            rho_c=0.5*pprof[0]
+        else:
+            rho_c=pprof[0]/3.
+
+        rindx=pprof < rho_c
+
+        r1=rprof[np.invert(rindx)][-1]
+        r2=rprof[rindx][0]
+
+        p1=pprof[np.invert(rindx)][-1]
+        p2=pprof[rindx][0]
+       
+        m=(p2-p1)/(r2-r1)
+        b=p2-m*r2
+
+        rc=(rho_c-b)/m
+
+    if units0 == "kpckms":
+        rc /= 1000.0
+    elif units0 == "nbody":
+        rc /= cluster.rbar
+    elif units0=='galpy':
+        rc /= (1000.0*ro)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if plot:
+
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if cluster.units == "nbody":
+            rprof /= cluster.rbar
+
+            if projected:
+                pprof *= (
+                    (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+                rho_c *= (
+                    (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+            else:
+                pprof *= (
+                    (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
+                rho_c *= (
+                    (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+
+        elif cluster.units == "kpckms":
+            rprof /=1000.0
+            if projected:
+                pprof *= (1000.0 ** 2.0)
+                rho_c *= (1000.0 ** 2.0)
+            else:
+                pprof *= (1000.0 ** 3.0)
+                rho_c *= (1000.0 ** 3.0)
+
+            xunits = " (kpc)"
+            if projected:
+                yunits = " Msun/kpc^2"
+            else:
+                yunits = " Msun/kpc^3"
+
+        elif cluster.units=='galpy':
+            rprof /=(1000.0*ro)
+
+            if projected:
+                pprof /= dens_in_msolpc2
+                rho_c /= dens_in_msolpc2
+            else:
+                pprof /= conversion.dens_in_msolpc3(ro=ro, vo=vo) 
+                rho_c /= conversion.dens_in_msolpc3(ro=ro, vo=vo)               
+
+            xunits = "(GALPY)"
+            yunits = "(GALPY)"
+
+        elif cluster.units == "pckms":
+            xunits = " (pc)"
+            if projected:
+                yunits = " Msun/ppc^2"
+            else:
+                yunits = " Msun/ppc^3"
+
+        else:
+            xunits = ""
+            yunits = ""
+
+        x, y, n = rprof, pprof, nprof
+        _lplot(
+            x,
+            y,
+            xlabel=r"$R %s$" % (xunits),
+            ylabel=r"$\rho %s$" % (yunits),
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
+        _lplot(x, np.ones(len(x)) * rho_c, "--", overplot=True)
+        _lplot(np.ones(len(y)) * rc, y, "--", overplot=True)
+
+        if filename != None:
+            plt.savefig(filename)
+    return rc
 
 def rtidal(
     cluster,

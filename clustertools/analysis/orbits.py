@@ -209,7 +209,7 @@ def integrate_orbit(
     return ts, o
 
 def integrate_orbits(
-    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
+    cluster, cluster_pot, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for each star
 
@@ -217,8 +217,10 @@ def integrate_orbits(
     ----------
     cluster : class
         StarCluster
+    cluster_pot : class
+        Galpy potential for host cluster that orbit is to be integrated in
     pot : class
-        Galpy potential that orbit is to be integrate in (default: MWPotential2014)
+        Galpy potential for host galaxy that orbit is to be integrate in (default: MWPotential2014)
     tfinal : float
         final time (in Gyr) to integrate orbit to (default: 12 Gyr)
     nt : int
@@ -241,9 +243,22 @@ def integrate_orbits(
     -------
        2018 - Written - Webb (UofT)
     """
+
+    o=intialize_oribt(cluster)
     os = initialize_orbits(cluster)
     ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
-    os.integrate(ts, pot)
+
+
+    #Integrate cluster's orbit in galaxy potential
+    o.integrate(ts,pot)
+
+
+    #Create total potential with moving cluster in galaxy
+    moving_cluster_potential=potential.MovingObjectPotential(o,pot=cluster_pot,ro=ro,vo=vo)
+    total_pot=[pot,moving_cluster_potential]
+
+    #integrate orbits of stars in combined potential of GC and galaxy
+    os.integrate(ts, total_pot)
 
     if plot:
         os.plot()

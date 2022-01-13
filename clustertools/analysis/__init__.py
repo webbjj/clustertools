@@ -23,6 +23,7 @@ tapered_mass_function=functions.tapered_mass_function
 eta_function=functions.eta_function
 meq_function=functions.meq_function
 ckin=functions.ckin
+rcore=functions.rcore
 rtidal=functions.rtidal
 rlimiting=functions.rlimiting
 

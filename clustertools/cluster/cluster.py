@@ -391,8 +391,9 @@ class StarCluster(object):
 
         if id is None:
             id = np.linspace(0, len(x) - 1, len(x), dtype=int)
-        if len(self.id) != 0:
-            id+=(1+int(np.amax(self.id)))
+            
+            if len(self.id) != 0:
+                id+=(1+int(np.amax(self.id)))
 
         self.id = np.append(self.id, np.array(id))
         self.id = self.id.astype(int)

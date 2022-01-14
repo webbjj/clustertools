@@ -209,7 +209,7 @@ def integrate_orbit(
     return ts, o
 
 def integrate_orbits(
-    cluster, cluster_pot, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
+    cluster, cluster_pot=None, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for each star
 
@@ -219,6 +219,7 @@ def integrate_orbits(
         StarCluster
     cluster_pot : class
         Galpy potential for host cluster that orbit is to be integrated in
+        if None, assume a Plumme Potential
     pot : class
         Galpy potential for host galaxy that orbit is to be integrate in (default: MWPotential2014)
     tfinal : float
@@ -244,7 +245,15 @@ def integrate_orbits(
        2018 - Written - Webb (UofT)
     """
 
-    o=intialize_oribt(cluster)
+    if cluster_pot is None:
+        cluster.save_cluster()
+        units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+        cluster.to_galpy()
+        cluster_pot=potential.PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=ro,vo=vo)
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+
+    o = intialize_orbit(cluster)
     os = initialize_orbits(cluster)
     ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
 
@@ -252,10 +261,12 @@ def integrate_orbits(
     #Integrate cluster's orbit in galaxy potential
     o.integrate(ts,pot)
 
-
-    #Create total potential with moving cluster in galaxy
-    moving_cluster_potential=potential.MovingObjectPotential(o,pot=cluster_pot,ro=ro,vo=vo)
-    total_pot=[pot,moving_cluster_potential]
+    if pot is None:
+        total_pot=cluster_pot
+    else:
+        #Create total potential with moving cluster in galaxy
+        moving_cluster_potential=potential.MovingObjectPotential(o,pot=cluster_pot,ro=ro,vo=vo)
+        total_pot=[pot,moving_cluster_potential]
 
     #integrate orbits of stars in combined potential of GC and galaxy
     os.integrate(ts, total_pot)

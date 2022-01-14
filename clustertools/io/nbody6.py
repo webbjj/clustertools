@@ -48,6 +48,8 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
     
     initialize = kwargs.get("initialize", False)
 
+    ntot=0
+
     if out3 is not None:
     
         nstot,alist,xs,ys,zs,vxs,vys,vzs,ms,i_ds=_get_nbody6_out3(out3,**kwargs)
@@ -59,10 +61,11 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
             sfile=out3,
         )
                 
-        if ntot > 0:
+        if nstot > 0:
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, alist[1], ntot+alist[1]
         )
+            ntot+=nstot
 
     #Add binaries first
     if out33 is not None:
@@ -73,6 +76,7 @@ def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=
         if nbtot > 0: 
             cluster.add_stars(xb, yb, zb, vxb, vyb, vzb, mb, i_db)
             cluster.add_orbit(alist[0],alist[1],alist[2],alist[3],alist[4],alist[5])
+            ntot+=nbtot
 
     if nstot > 0:
         cluster.add_stars(xs, ys, zs, vxs, vys, vzs, ms, i_ds)

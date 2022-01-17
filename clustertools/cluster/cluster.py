@@ -391,7 +391,7 @@ class StarCluster(object):
 
         if id is None:
             id = np.linspace(0, len(x) - 1, len(x), dtype=int)
-            
+
             if len(self.id) != 0:
                 id+=(1+int(np.amax(self.id)))
 
@@ -1707,8 +1707,8 @@ class StarCluster(object):
         self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo)
         return self.orbit
 
-    def initialize_orbits(self, ro=8.0, vo=220.0):
-        self.orbits=initialize_orbits(self, ro=ro, vo=vo)
+    def initialize_orbits(self, from_centre=False,ro=8.0, vo=220.0):
+        self.orbits=initialize_orbits(self,from_centre=from_centre,ro=ro, vo=vo)
         return self.orbits
 
     def integrate_orbit(self, pot=MWPotential2014, tfinal=12.0, 

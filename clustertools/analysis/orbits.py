@@ -167,7 +167,7 @@ def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
 
 
 def integrate_orbit(
-    cluster, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
+    cluster, pot=MWPotential2014, tfinal=None, nt=1000, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for the cluster
 
@@ -178,7 +178,7 @@ def integrate_orbit(
     pot : class
         Galpy potential that orbit is to be integrate in (default: MWPotential2014)
     tfinal : float
-        final time (in Gyr) to integrate orbit to (default: 12 Gyr)
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
     ro :float 
@@ -200,7 +200,17 @@ def integrate_orbit(
        2018 - Written - Webb (UofT)
     """
     o = initialize_orbit(cluster)
-    ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+
+    if tfinal is None:
+        tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='pckms':
+        tfinal/=1000.
+    elif cluster.units=='kpckms':
+        tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='nbody':
+        tfinal*=(cluster.tbar/1000.)
+
+    ts = np.linspace(0, tfinal, nt)
     o.integrate(ts, pot)
 
     if plot:

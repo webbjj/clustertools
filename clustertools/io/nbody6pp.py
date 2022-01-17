@@ -102,9 +102,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         
         if binaries:
             cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
-
-            pb=(10.0**np.array(pb))/cluster.tbar_days
-            semi=(10.0**np.array(semi))/cluster.rbar_su
+            pb=np.array(pb)/cluster.tbar_days
+            semi=np.array(semi)/cluster.rbar_su
             m1b=np.array(m1b)/cluster.zmbar
             m2b=np.array(m2b)/cluster.zmbar
 

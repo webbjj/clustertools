@@ -99,11 +99,20 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.hdf5=True
         cluster.ngroups=len(snap40)
         cluster.ngroup=ngroup
+
+        if conf3 is not None:
+            ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
+            cluster.add_nbody6(
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
+            cluster.xc*=cluster.rbar
+            cluster.yc*=cluster.rbar
+            cluster.zc*=cluster.rbar
+            cluster.tphys*=cluster.tbar
         
         if binaries:
             cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
             pb=np.array(pb)/cluster.tbar_days
-            semi=np.array(semi)/cluster.rbar_su
+            semi=np.array(semi)/cluster.rbar_au
             m1b=np.array(m1b)/cluster.zmbar
             m2b=np.array(m2b)/cluster.zmbar
 
@@ -118,18 +127,9 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             cluster.pot=pot
 
-        if conf3 is not None:
-            ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
-            cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
-            cluster.xc*=cluster.rbar
-            cluster.yc*=cluster.rbar
-            cluster.zc*=cluster.rbar
-            cluster.tphys*=cluster.tbar
-            cluster.to_nbody()
+        if binaries: cluster.nb = len(semi)
 
-        else:
-            if binaries: cluster.nb = len(semi)
+        cluster.to_nbody()
 
 
     else:

@@ -101,7 +101,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.ngroup=ngroup
         
         if conf3 is not None:
-            ntotc3,alist,posx,posy,posz,velx,vely,velz,mc3,i_dc3,rhosc3,xnsc3,potc3=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
+            alist=_get_nbody6pp_conf3(conf3,nsnap=nsnap,return_alist_only=True,**kwargs)
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
 
@@ -129,7 +129,10 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.yc*=cluster.rbar
             cluster.zc*=cluster.rbar
             cluster.tphys*=cluster.tbar
-            cluster.to_nbody()
+        else:
+            cluster.reset_nbody_scale(rvirial=True)
+
+        cluster.to_nbody()
 
 
         if binaries: cluster.nb = len(semi)
@@ -207,7 +210,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
     return cluster
 
-def _get_nbody6pp_conf3(f,**kwargs): 
+def _get_nbody6pp_conf3(f,return_alist_only=False,**kwargs): 
 
     #Read in header
     try:
@@ -276,7 +279,10 @@ def _get_nbody6pp_conf3(f,**kwargs):
             print('Error reading CONF3')
             return -1
 
-        return ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,phi
+        if return_alist:
+            return alist
+        else:
+            return ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,phi
     else:
         return 0,np.zeros(20),0,0,0,0,0,0,0,0,0,0,0
 

@@ -100,11 +100,6 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.ngroups=len(snap40)
         cluster.ngroup=ngroup
         
-        if conf3 is not None:
-            c3ntot,alist,xc3,yc3,zc3,vxc3,vyc3,vzc3,mc3,i_dc3,rhosc3,xnsc3,potc3=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
-            cluster.add_nbody6(
-            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
-
         if binaries:
             cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
             pb=np.array(pb)/cluster.tbar_days
@@ -124,6 +119,9 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.pot=pot
 
         if conf3 is not None:
+            ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
+            cluster.add_nbody6(
+            alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
             cluster.xc*=cluster.rbar
             cluster.yc*=cluster.rbar
             cluster.zc*=cluster.rbar

@@ -279,7 +279,7 @@ def _get_nbody6pp_conf3(f,return_alist_only=False,**kwargs):
             print('Error reading CONF3')
             return -1
 
-        if return_alist:
+        if return_alist_only:
             return alist
         else:
             return ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,phi

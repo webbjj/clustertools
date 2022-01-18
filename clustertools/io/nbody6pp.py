@@ -114,6 +114,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             m2b=np.array(m2b)/cluster.zmbar
 
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
+            cluster.bunits='nbody'
+            
             cluster.add_sse(kw1,lbtot,np.maximum(r1b,r2b))
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)

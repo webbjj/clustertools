@@ -7,7 +7,10 @@ __all__ = [
     "initialize_orbits",
     "integrate_orbit",
     "integrate_orbits",
+    "interpolate_orbit",
+    "interpolate_orbits",
     "orbit_interpolate",
+    "orbits_interpolate",
     "orbital_path",
     "orbital_path_match",
     "calc_actions",
@@ -38,7 +41,7 @@ from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 import astropy.coordinates as coord
 import astropy.units as u
 
-def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
+def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """ Initialize a galpy orbit instance for the cluster
 
     Parameters
@@ -46,11 +49,13 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
     cluster : class
         StarCluster
     from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+        intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
     ro : float
         galpy distance scale (default: 8.)
     vo : float
         galpy velocity scale (default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
 
     Returns
     -------
@@ -61,6 +66,7 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
     -------
     2018 - Written - Webb (UofT)
     """
+
     if cluster.units == "radec":
         o = Orbit(
             [
@@ -74,54 +80,56 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0):
             radec=True,
             ro=ro,
             vo=vo,
-            solarmotion=[-11.1, 24.0, 7.25],
+            solarmotion=solarmotion,
         )
     else:
+
         cluster.save_cluster()
         units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
         cluster.to_galpy()
 
+        x, y, z = cluster.xgc, cluster.ygc, cluster.zgc
+        vx, vy, vz = cluster.vxgc, cluster.vygc, cluster.vzgc
+
         if from_centre:
-            x, y, z = (
-                cluster.xgc + cluster.xc,
-                cluster.ygc + cluster.yc,
-                cluster.zgc + cluster.zc,
-            )
-            vx, vy, vz = (
-                cluster.vxgc + cluster.vxc,
-                cluster.vygc + cluster.vyc,
-                cluster.vzgc + cluster.vzc,
-            )
-        else:
-            x, y, z = cluster.xgc, cluster.ygc, cluster.zgc
-            vx, vy, vz = cluster.vxgc, cluster.vygc, cluster.vzgc
+            x+=cluster.xc
+            y+=cluster.yc
+            z+=cluster.zc
+            vx+=cluster.vxc
+            vy+=cluster.vyc
+            vz+=cluster.vzc
+
 
         R, phi, z = coords.rect_to_cyl(x, y, z)
         vR, vT, vz = coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
         o = Orbit(
-            [R, vR, vT, z, vz, phi], ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25]
+            [R, vR, vT, z, vz, phi], ro=ro, vo=vo, solarmotion=solarmotion
         )
-        
+    
         cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
     return o
 
 
-def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
+def initialize_orbits(cluster,from_cluster=False, from_centre= False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Initialize a galpy orbit for every star in the cluster
 
     Parameters
     ----------
     cluster : class
         StarCluster
+    from_cluster : bool
+        intialize orbits from within cluster instead of in galactocentric coordinates (default :False)
     from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+        intialize orbits from cluster centre instead of in galactocentric coordinates (default :False)
     ro : float
         galpy distance scale (default: 8.)
     vo : float
         galpy velocity scale (default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
 
     Returns
     -------
@@ -133,41 +141,55 @@ def initialize_orbits(cluster, from_centre=False,ro=8.0, vo=220.0):
     2018 - Written - Webb (UofT)
     """
 
-    cluster.save_cluster()
-    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    if cluster.units == "radec" and cluster.origin=='sky' and not from_centre and not from_cluster:
 
-    cluster.to_galaxy(sortstars=False)
-    cluster.to_galpy()
+        vxvv=np.column_stack([cluster.ra,cluster.dec,cluster.dist,cluster.pmra,cluster.pmdec,cluster.vlos])
 
-    if from_centre:
-        x, y, z = (
-            cluster.x + cluster.xc,
-            cluster.y + cluster.yc,
-            cluster.z + cluster.zc,
+        os = Orbit(
+            vxvv,
+            radec=True,
+            ro=ro,
+            vo=vo,
+            solarmotion=solarmotion,
         )
-        vx, vy, vz = (
-            cluster.vx + cluster.vxc,
-            cluster.vy + cluster.vyc,
-            cluster.vz + cluster.vzc,
-        )
+
+    elif cluster.units == "radec" and (from_centre or from_cluster):
+        print('NO METHOD FOR INITALIZING STELLAR ORBITS FROM_CENTRE OR FROM_CLUSTER WHEN UNITS==RADEC')
     else:
+
+        cluster.save_cluster()
+        units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+        cluster.to_galpy()
+     
+        if from_cluster: 
+            cluster.to_cluster()
+        elif from_centre: 
+            cluster.to_centre()
+        else:
+            cluster.to_galaxy()
+
         x, y, z = cluster.x, cluster.y, cluster.z
         vx, vy, vz = cluster.vx, cluster.vy, cluster.vz
 
-    R, phi, z = coords.rect_to_cyl(x, y, z)
-    vR, vT, vz = coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
+        R, phi, z = coords.rect_to_cyl(x, y, z)
+        vR, vT, vz = coords.rect_to_cyl_vec(vx, vy, vz, x, y, z)
 
-    vxvv = np.column_stack([R, vR, vT, z, vz, phi])
-    os = Orbit(vxvv, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
+        vxvv = np.column_stack([R, vR, vT, z, vz, phi])
 
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+        if from_cluster or from_centre:
+            os = Orbit(vxvv, ro=ro, vo=vo)
+        else:
+            os = Orbit(vxvv, ro=ro, vo=vo, solarmotion=solarmotion)
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
     return os
 
 
 def integrate_orbit(
-    cluster, pot=MWPotential2014, tfinal=None, nt=1000, ro=8.0, vo=220.0, plot=False
+    cluster, pot=MWPotential2014, tfinal=None, nt=1000, from_centre=False, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for the cluster
 
@@ -181,6 +203,8 @@ def integrate_orbit(
         final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
+    from_centre : bool
+        intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
@@ -199,7 +223,7 @@ def integrate_orbit(
     -------
        2018 - Written - Webb (UofT)
     """
-    o = initialize_orbit(cluster)
+    o = initialize_orbit(cluster,from_centre=from_centre)
 
     if tfinal is None:
         tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
@@ -219,7 +243,7 @@ def integrate_orbit(
     return ts, o
 
 def integrate_orbits(
-    cluster, cluster_pot=None, pot=MWPotential2014, tfinal=12.0, nt=1000, ro=8.0, vo=220.0, plot=False
+    cluster, pot=None, tfinal=None, nt=1000, from_cluster=False, from_centre= False, ro=8.0, vo=220.0, plot=False
 ):
     """Integrate a galpy orbit instance for each star
 
@@ -227,15 +251,17 @@ def integrate_orbits(
     ----------
     cluster : class
         StarCluster
-    cluster_pot : class
+    pot : class
         Galpy potential for host cluster that orbit is to be integrated in
         if None, assume a Plumme Potential
-    pot : class
-        Galpy potential for host galaxy that orbit is to be integrate in (default: MWPotential2014)
     tfinal : float
-        final time (in Gyr) to integrate orbit to (default: 12 Gyr)
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
+    from_cluster : bool
+        intialize orbits from within cluster instead of in galactocentric coordinates (default :False)
+    from_centre : bool
+        intialize orbits from cluster centre instead of in galactocentric coordinates (default :False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
@@ -255,77 +281,71 @@ def integrate_orbits(
        2018 - Written - Webb (UofT)
     """
 
-    if cluster_pot is None:
-        cluster.save_cluster()
-        units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
-        cluster.to_galpy()
-        cluster_pot=potential.PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=ro,vo=vo)
-        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
-
-
-    o = intialize_orbit(cluster)
-    os = initialize_orbits(cluster)
-    ts = np.linspace(0, tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
-
-
-    #Integrate cluster's orbit in galaxy potential
-    o.integrate(ts,pot)
+    if tfinal is None:
+        tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='pckms':
+        tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
+    elif cluster.units=='kpckms':
+        tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='nbody':
+        tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
 
     if pot is None:
-        total_pot=cluster_pot
-    else:
-        #Create total potential with moving cluster in galaxy
-        moving_cluster_potential=potential.MovingObjectPotential(o,pot=cluster_pot,ro=ro,vo=vo)
-        total_pot=[pot,moving_cluster_potential]
+
+        if from_centre or from_cluster:
+            cluster.save_cluster()
+            units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+            cluster.to_galpy()
+            if from_centre:
+                cluster.to_centre()
+            else:
+                cluster.to_cluster()
+
+            print(cluster.mtot,cluster.rm)
+            pot=potential.PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=ro,vo=vo)
+            cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+        else:
+            pot=MWPotential2014
+
+    os = initialize_orbits(cluster,from_centre=from_centre,from_cluster=from_cluster, ro=ro,vo=vo)
+    ts = np.linspace(0, tfinal, nt)
 
     #integrate orbits of stars in combined potential of GC and galaxy
-    os.integrate(ts, total_pot)
+    os.integrate(ts, pot)
 
     if plot:
         os.plot()
 
     return ts, os
 
-
-def orbit_interpolate(
+def interpolate_orbit(
     cluster,
-    dt,
     pot=MWPotential2014,
+    tfinal=None,
+    nt=1000,
     from_centre=False,
-    do_tails=False,
-    rmin=None,
-    rmax=None,
-    emin=None,
-    emax=None,
-    indx=None,
     ro=8.0,
     vo=220.0,
 ):
     """
-    NAME: Interpolate past or future position of cluster and escaped stars
-
-    - When moving the cluster centre and stars backwards or forwards along their orbits, stars within the cluster are shifted with the cluster centre.
-    Tail stars, identified using either rmin/rmax, emin/emax, or indx can be integrated separately in the potential 
-    - Note that this function operates on the cluster and changes the positions and velocities of all stars
+    Interpolate past or future position of cluster and escaped stars
 
     Parameters
     ----------
     cluster : class
         StarCluster
-    dt : float
-        timestep that StarCluster is to be moved to
+    cluster_pot : class
+        Galpy potential for host cluster that orbit is to be integrated in
+        if None, assume a Plumme Potential
     pot : class
         galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
     from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
-    do_tails : bool
-        interpolate the orbits of tail stars separately (default: False)
-    rmin/rmax : float
-        radial range corresponding to cluster (needed to identify tail stars)
-    emin/emax : float
-        energy range corresponding to cluster (needed to identify tail stars)
-    indx : bool 
-        specific subset of stars
+        intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
     ro :float 
         galpy distance scale (Default: 8.)
     vo : float
@@ -335,139 +355,160 @@ def orbit_interpolate(
     -------
     x,y,z : float
         interpolated positions of each star
-    x,y,z : float
+    vx,vy,vz : float
         interpolated velocities of each star    
 
     History
     -------
-    2018 - Written - Webb (UofT)
+    2021 - Written - Webb (UofT)
     """
 
-    cluster.tphys += dt
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-    cluster.to_galaxy(sortstars=False)
+    ts,o=integrate_orbit(cluster, pot=pot, tfinal=tfinal, nt=nt, from_centre=from_centre, ro=ro, vo=vo, plot=False)
 
-    if do_tails:
-
-        cluster.to_cluster(sortstars=False)
-        if from_centre:
-            cluster.to_centre(sortstars=False)
-
-        if rmin == None:
-            rmin = np.min(cluster.r)
-        if rmax == None:
-            rmax = np.max(cluster.r)
-        rindx = (cluster.r >= rmin) * (cluster.r <= rmax)
-
-        if len(cluster.etot) == cluster.ntot:
-            if emin == None:
-                emin = np.min(cluster.etot)
-            if emax == None:
-                emax = np.max(cluster.etot)
-            eindx = (cluster.etot >= emin) * (cluster.etot <= emax)
-        else:
-            eindx = cluster.id > -1
-
-        if indx is None:
-            indx = rindx * eindx
-        else:
-            indx*=(rindx*eindx)
-
-        tindx = np.invert(indx)
-
-        cluster.to_galaxy(sortstars=False)
-
+    if cluster.units=='radec':
+        if cluster.origin!='sky':
+            cluster.to_sky()
+        xgc,ygc,zgc=o.ra(ts[-1]),o.dec(ts[-1]),o.dist(ts[-1])
+        vxgc,vygc,vzgc=o.pmra(ts[-1]),o.pmdec(ts[-1]),o.vlos(ts[-1])  
     else:
-        indx = cluster.id > -1
+        xgc,ygc,zgc=o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1])
+        vxgc,vygc,vzgc=o.vx(ts[-1]),o.vy(ts[-1]),o.vz(ts[-1])
 
-    if cluster.orbit is None:
-        cluster.orbit = initialize_orbit(cluster, from_centre)
-
-    ts = np.linspace(0, dt / conversion.time_in_Gyr(ro=ro, vo=vo), 10)
-
-    cluster.orbit.integrate(ts, pot)
-
-    cluster.to_kpckms()
-
-    x,y,z=cluster.x,cluster.y,cluster.z
-    vx,vy,vz=cluster.vx,cluster.vy,cluster.vz
-
-    if from_centre:
-        dx = cluster.orbit.x(ts[-1]) - cluster.xc - cluster.xgc
-        dy = cluster.orbit.y(ts[-1]) - cluster.yc - cluster.ygc
-        dz = cluster.orbit.z(ts[-1]) - cluster.zc - cluster.zgc
-        dvx = cluster.orbit.vx(ts[-1]) - cluster.vxc - cluster.vxgc
-        dvy = cluster.orbit.vy(ts[-1]) - cluster.vyc - cluster.vygc
-        dvz = cluster.orbit.vz(ts[-1]) - cluster.vzc - cluster.vzgc
-    else:
-        dx = cluster.orbit.x(ts[-1]) - cluster.xgc
-        dy = cluster.orbit.y(ts[-1]) - cluster.ygc
-        dz = cluster.orbit.z(ts[-1]) - cluster.zgc
-        dvx = cluster.orbit.vx(ts[-1]) - cluster.vxgc
-        dvy = cluster.orbit.vy(ts[-1]) - cluster.vygc
-        dvz = cluster.orbit.vz(ts[-1]) - cluster.vzgc
-
-    x[indx] += dx
-    y[indx] += dy
-    z[indx] += dz
-    vx[indx] += dvx
-    vy[indx] += dvy
-    vz[indx] += dvz
-
-    if from_centre:
-        xc, yc, zc = 0.0, 0.0, 0.0
-        vxc, vyc, vzc = 0.0, 0.0, 0.0
-    else:
-        xc = dx
-        yc = dy
-        zc = dz
-        vxc = dvx
-        vyc = dvy
-        vzc = dvz
-
-    xgc, ygc, zgc = (
-        cluster.orbit.x(ts[-1]),
-        cluster.orbit.y(ts[-1]),
-        cluster.orbit.z(ts[-1]),
-    )
-    vxgc, vygc, vzgc = (
-        cluster.orbit.vx(ts[-1]),
-        cluster.orbit.vy(ts[-1]),
-        cluster.orbit.vz(ts[-1]),
-    )
-
-    if do_tails:
-        cluster.to_galaxy(sortstars=False)
-        cluster.to_galpy()
-
-        xt, yt, zt = cluster.x[tindx], cluster.y[tindx], cluster.z[tindx]
-        vxt, vyt, vzt = cluster.vx[tindx], cluster.vy[tindx], cluster.vz[tindx]
-
-        Rt, phit, zt = coords.rect_to_cyl(xt, yt, zt)
-        vRt, vTt, vzt = coords.rect_to_cyl_vec(vxt, vyt, vzt, xt, yt, zt)
-
-        vxvvt = np.column_stack([Rt, vRt, vTt, zt, vzt, phit])
-        otail = Orbit(vxvvt, ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
-
-        cluster.to_kpckms()
-
-        ts = np.linspace(0, dt / conversion.time_in_Gyr(ro=ro, vo=vo), 10)
-
-        otail.integrate(ts, pot)
-
-        x[tindx] = np.array(otail.x(ts[-1]))
-        y[tindx] = np.array(otail.y(ts[-1]))
-        z[tindx] = np.array(otail.z(ts[-1]))
-        vx[tindx] = np.array(otail.vx(ts[-1]))
-        vy[tindx] = np.array(otail.vy(ts[-1]))
-        vz[tindx] = np.array(otail.vz(ts[-1]))
+        if cluster.units=='pckms':
+            xgc*=1000
+            ygc*=1000
+            zgc*=1000
+        elif cluster.units=='galpy':
+            xgc/=ro
+            ygc/=ro
+            zgc/=ro
+            vxgc/=vo
+            vygc/=vo
+            vzgc/=vo
+        elif cluster.units=='nbody':
+            xgc*=(1000/cluster.rbar)
+            ygc*=(1000/cluster.rbar)
+            zgc*=(1000/cluster.rbar)
+            vxgc/=cluster.vbar
+            vygc/=cluster.vbar
+            vzgc/=cluster.vbar
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    return xgc,ygc,zgc,vxgc,vygc,vzgc
+
+def interpolate_orbits(
+    cluster,
+    pot=None,
+    tfinal=None,
+    nt=1000,
+    from_cluster=False,
+    from_centre=False,
+    ro=8.0,
+    vo=220.0,
+):
+    """
+    Interpolate past or future position of stars within the cluster
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    pot : class
+        Galpy potential for host cluster that orbit is to be integrated in
+        if None, assume a Plumme Potential
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    from_cluster : bool
+        intialize orbits from within cluster instead of in galactocentric coordinates (default :False)
+    from_centre : bool
+        intialize orbits from cluster centre instead of in galactocentric coordinates (default :False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+
+    Returns
+    -------
+    x,y,z : float
+        interpolated positions of each star
+    vx,vy,vz : float
+        interpolated velocities of each star    
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    print(pot,from_centre,from_cluster)
+    if from_centre:
+        ts,o=integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, from_centre=True, ro=ro, vo=vo, plot=False)
+    elif from_cluster:
+        ts,o=integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, from_cluster=True, ro=ro, vo=vo, plot=False)
+    else:
+        ts,o=integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
+
+    if cluster.units=='radec' and cluster.origin=='sky' and not from_centre and not from_cluster:
+        x,y,z=o.ra(ts[-1]),o.dec(ts[-1]),o.dist(ts[-1])
+        vx,vy,vz=o.pmra(ts[-1]),o.pmdec(ts[-1]),o.vlos(ts[-1])
+    elif cluster.units=='radec' and cluster.origin=='sky' and (from_centre or from_cluster):
+        print('CANT INTEGRATE ORBITS WITH FROM_CENTRE OR FROM_CLUSTER AND RETURN IN SKY COORDINATES')
+
+    else:
+        x,y,z=o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1])
+        vx,vy,vz=o.vx(ts[-1]),o.vy(ts[-1]),o.vz(ts[-1])
+
+        if cluster.units=='pckms':
+            x*=1000
+            y*=1000
+            z*=1000
+        elif cluster.units=='galpy':
+            x/=ro
+            y/=ro
+            z/=ro
+            vx/=vo
+            vy/=vo
+            vz/=vo
+        elif cluster.units=='nbody':
+            x*=(1000/cluster.rbar)
+            y*=(1000/cluster.rbar)
+            z*=(1000/cluster.rbar)
+            vx/=cluster.vbar
+            vy/=cluster.vbar
+            vz/=cluster.vbar
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return x,y,z,vx,vy,vz
+
+# Renamed to interpolate_orbit and interpolates_orbit, but will keep old names for legacy purposes
+def orbit_interpolate(
+    cluster,
+    pot=MWPotential2014,
+    tfinal=None,
+    nt=1000,
+    ro=8.0,
+    vo=220.0,
+):
+    return interpolate_orbit(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
+
+def orbits_interpolate(
+    cluster,
+    pot=None,
+    tfinal=None,
+    nt=1000,
+    ro=8.0,
+    vo=220.0,
+):
+    return interpolate_orbits(cluster, cluster_pot=cluster_pot, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
 
 
 def orbital_path(

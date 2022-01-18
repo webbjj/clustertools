@@ -563,7 +563,13 @@ def to_centre(cluster, sortstars=True, centre_method=None):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.origin != "centre":
+
+    if cluster.units=='radec':
+        if cluster.origin=='sky':
+            cluster.to_cluster()
+        cluster.origin = "centre"
+
+    elif cluster.origin != 'centre':
 
         if cluster.origin != "cluster":
             cluster.to_cluster(centre_method=centre_method)
@@ -661,10 +667,11 @@ def to_cluster(cluster, sortstars=True, centre_method=None):
 
                 cluster.z -= cluster.zgc
 
-                cluster.vx -= -cluster.vxgc
+                cluster.vx -= cluster.vxgc
                 cluster.vy -= cluster.vygc
                 cluster.vz -= cluster.vzgc
-
+        elif cluster.units=='radec' and cluster.origin=='centre':
+            pass
         elif cluster.origin == "centre":
             cluster.x += cluster.xc
             cluster.y += cluster.yc

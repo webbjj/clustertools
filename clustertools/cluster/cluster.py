@@ -1306,7 +1306,7 @@ class StarCluster(object):
             return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
 
-        elif self.origin == "galaxy" or self.origin=='sky':
+        elif self.origin == "galaxy":
 
             if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
                 self.xgc, self.ygc, self.zgc = xc,yc,zc
@@ -1323,6 +1323,17 @@ class StarCluster(object):
 
                 return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
+        elif self.origin=='sky':
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+            else:
+                print('No Cluster Variables Set')
+                return xc,yc,zc,vxc,vyc,vzc
         else:
             print('No Cluster Variables Set')
             return xc,yc,zc,vxc,vyc,vzc
@@ -1356,7 +1367,7 @@ class StarCluster(object):
             return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
 
-        elif self.origin == "galaxy" or self.origin=='sky':
+        elif self.origin == "galaxy":
 
             if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
                 self.xgc, self.ygc, self.zgc = xc,yc,zc
@@ -1372,6 +1383,18 @@ class StarCluster(object):
 
 
                 return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+        elif self.origin=='sky':
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+            else:
+                print('No Cluster Variables Set')
+                return xc,yc,zc,vxc,vyc,vzc
 
         else:
             print('No Cluster Variables Set')
@@ -1389,7 +1412,7 @@ class StarCluster(object):
             return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
 
-        elif self.origin == "galaxy" or self.origin=='sky':
+        elif self.origin == "galaxy":
 
             if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
                 self.xgc, self.ygc, self.zgc = xc,yc,zc
@@ -1406,6 +1429,17 @@ class StarCluster(object):
 
                 return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
+        elif self.origin=='sky':
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+            else:
+                print('No Cluster Variables Set')
+                return xc,yc,zc,vxc,vyc,vzc
         else:
             print('No Cluster Variables Set')
             return xc,yc,zc,vxc,vyc,vzc
@@ -1707,37 +1741,82 @@ class StarCluster(object):
         self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo)
         return self.orbit
 
-    def initialize_orbits(self, from_centre=False,ro=8.0, vo=220.0):
-        self.orbits=initialize_orbits(self,from_centre=from_centre,ro=ro, vo=vo)
+    def initialize_orbits(self, from_centre=False,from_cluster=False,ro=8.0, vo=220.0):
+        self.orbits=initialize_orbits(self,from_centre=from_centre,from_cluster=from_cluster,ro=ro, vo=vo)
         return self.orbits
 
     def integrate_orbit(self, pot=MWPotential2014, tfinal=12.0, 
-        nt=1000, ro=8.0, vo=220.0, plot=False):
+        nt=1000, from_centre=False, ro=8.0, vo=220.0, plot=False):
 
         self.ts,self.orbit=integrate_orbit(self,pot=pot,tfinal=tfinal,
-            nt=nt,ro=ro,vo=vo,plot=plot)
+            nt=nt,from_centre=from_centre, ro=ro,vo=vo,plot=plot)
 
         return self.orbit
 
     def integrate_orbits(self, pot=MWPotential2014, tfinal=12.0, 
-        nt=1000, ro=8.0, vo=220.0, plot=False):
+        nt=1000, from_centre=False,from_cluster=False, ro=8.0, vo=220.0, plot=False):
 
         self.ts,self.orbits=integrate_orbits(self,pot=pot,tfinal=tfinal,
-            nt=nt,ro=ro,vo=vo,plot=plot)
+            nt=nt,from_centre=from_centre,from_cluster=from_cluster,ro=ro,vo=vo,plot=plot)
 
         return self.orbits
 
-    def orbit_interpolate(self,dt,pot=MWPotential2014,from_centre=False,
-        do_tails=False,rmin=None,rmax=None,emin=None,emax=None,ro=8.0,vo=220.0):
+    def interpolate_orbit(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False, ro=8.0,vo=220.0):
 
-        self.x,self.y,self.z,self.vx,self.vy,self.vz=orbit_interpolate(self,dt,pot=pot,from_centre=from_centre,
-            do_tails=do_tails,rmin=rmin,rmax=rmax,emin=emin,emax=emax,ro=ro,vo=vo)
+        xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo)
 
-        tint=dt / conversion.time_in_Gyr(ro=ro, vo=vo)
+        origin0=self.origin
+        self.to_cluster()
 
-        self.add_orbit(self.orbit.x(tint),self.orbit.y(tint),self.orbit.z(tint),self.orbit.vx(tint),self.orbit.vy(tint),self.orbit.vz(tint),ounits='kpckms')
+        self.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
-        self.tphys+=dt
+        if self.units=='radec' and self.origin=='sky':
+            self.ra_gc,self.dec_gc,self.dist_gc=xgc,ygc,zgc
+            self.pmra_gc,self.pmdec_gc,self.vlos_gc=vxgc,vygc,vzgc
+
+        self.to_origin(origin0)
+
+    def orbit_interpolate(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False,ro=8.0,vo=220.0):
+        self.interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre,ro=ro,vo=vo)
+
+
+    def interpolate_orbits(self,pot=None,tfinal=None,nt=1000,from_cluster=False,from_centre=False,in_galaxy=False,ro=8.0,vo=220.0):
+        #Note additional option, in_galaxy, which will move the cluster's centre too
+
+        x,y,z,vx,vy,vz=interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,from_cluster=from_cluster,from_centre=from_centre,ro=ro,vo=vo)
+
+        origin0=self.origin
+        units0=self.units
+
+        if from_centre and origin0!='sky' and units0!='radec':
+            self.to_centre()
+            self.x,self.y,self.z=x,y,z
+            self.vx,self.vy,self.vz=vx,vy,vz
+        elif from_cluster and origin0!='sky' and units0!='radec':
+            self.to_cluster()
+            self.x,self.y,self.z=x,y,z
+            self.vx,self.vy,self.vz=vx,vy,vz
+        elif origin0=='sky' and units0=='radec' and not from_centre and not from_cluster:
+            self.to_sky()
+            self.ra,self.dec,self.dist=x,y,z
+            self.pmra,self.pmdec,self.vlos=vx,vy,vz
+            self.x,self.y,self.z=x,y,z
+            self.vx,self.vy,self.vz=vx,vy,vz
+        elif origin0=='sky' and units0=='radec' and (from_centre or from_cluster):
+            print('NO METHOD FOR INITALIZING STELLAR ORBITS FROM_CENTRE OR FROM_CLUSTER WHEN UNITS==RADEC')
+        else:
+            self.to_galaxy()
+            self.x,self.y,self.z=x,y,z
+            self.vx,self.vy,self.vz=vx,vy,vz
+
+        self.to_origin(origin0)
+
+        if in_galaxy:
+            self.interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo)
+
+    def orbits_interpolate(self,pot=None,tfinal=None,nt=1000,from_cluster=False,from_centre=False,ro=8.0,vo=220.0):
+        #Legacy function name
+        self.interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,from_cluster=from_cluster,from_centre=from_centre,ro=ro,vo=vo)
 
     def orbital_path(self,dt=0.1,nt=1000,pot=MWPotential2014,from_centre=False,
         skypath=False,initialize=False,ro=8.0,vo=220.0,plot=False,**kwargs):

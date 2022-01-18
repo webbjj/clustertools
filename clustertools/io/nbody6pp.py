@@ -108,14 +108,14 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
         if binaries:
             cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
-            pb=np.array(pb)/cluster.tbar_days
-            semi=np.array(semi)/cluster.rbar_au
-            m1b=np.array(m1b)/cluster.zmbar
-            m2b=np.array(m2b)/cluster.zmbar
+            pb=np.array(pb)
+            semi=np.array(semi)
+            m1b=np.array(m1b)
+            m2b=np.array(m2b)
 
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,ep1=te1,ep2=te2)
-            cluster.bunits='nbody'
-            
+            cluster.bunits='audays'
+
             cluster.add_sse(kw1,lbtot,np.maximum(r1b,r2b))
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
@@ -134,7 +134,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             cluster.reset_nbody_scale(rvirial=True)
 
-        cluster.to_nbody()
+        if not advance: cluster.to_nbody()
 
 
         if binaries: cluster.nb = len(semi)

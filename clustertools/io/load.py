@@ -656,6 +656,7 @@ def _get_advanced_kwargs(cluster, **kwargs):
     ngroups = kwargs.pop('ngroups',cluster.ngroups)
     ngroup = np.maximum(int(kwargs.pop("ngroup", 0)), cluster.ngroup) + 1
 
+    verbose = kwargs.pop('verbose',True)
 
     return {
         "nsnap": nsnap,

@@ -1812,7 +1812,7 @@ class StarCluster(object):
 
         self.to_origin(origin0)
 
-        if self.origin!='centre' and not self.origin!='cluster' :
+        if self.origin!='centre' and self.origin!='cluster' :
 
             if pot is None:
                 xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=MWPotential2014,tfinal=tfinal,nt=nt, ro=ro,vo=vo)

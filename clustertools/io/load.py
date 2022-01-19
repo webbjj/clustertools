@@ -674,7 +674,8 @@ def _get_advanced_kwargs(cluster, **kwargs):
         "give" : give,
         "hdf5" : hdf5,
         "ngroups" : ngroups,
-        "ngroup" : ngroup
+        "ngroup" : ngroup,
+        "verbose" : verbose
     }, kwargs
 
 # /def

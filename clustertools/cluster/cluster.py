@@ -1789,11 +1789,11 @@ class StarCluster(object):
         origin0=self.origin
         units0=self.units
 
-        if cluster.origin=='centre' and units0!='radec':
+        if self.origin=='centre' and units0!='radec':
             self.to_centre()
             self.x,self.y,self.z=x,y,z
             self.vx,self.vy,self.vz=vx,vy,vz
-        if cluster.origin=='cluster' and units0!='radec':
+        if self.origin=='cluster' and units0!='radec':
             self.to_cluster()
             self.x,self.y,self.z=x,y,z
             self.vx,self.vy,self.vz=vx,vy,vz
@@ -1803,7 +1803,7 @@ class StarCluster(object):
             self.pmra,self.pmdec,self.vlos=vx,vy,vz
             self.x,self.y,self.z=x,y,z
             self.vx,self.vy,self.vz=vx,vy,vz
-        elif units0=='radec' and (cluster.origin=='centre' or cluster.origin=='cluster'):
+        elif units0=='radec' and (self.origin=='centre' or self.origin=='cluster'):
             print('CANT INTEGRATE ORBITS WITH FROM_CENTRE OR FROM_CLUSTER AND RETURN IN SKY COORDINATES')
         else:
             self.to_galaxy()
@@ -1812,12 +1812,12 @@ class StarCluster(object):
 
         self.to_origin(origin0)
 
-        if cluster.origin!='centre' and not cluster.origin!='cluster' :
+        if self.origin!='centre' and not self.origin!='cluster' :
 
             if pot is None:
-                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=MWPotential2014,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo)
+                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=MWPotential2014,tfinal=tfinal,nt=nt, ro=ro,vo=vo)
             else:
-                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo)
+                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt, ro=ro,vo=vo)
 
             self.to_galaxy()
             self.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)

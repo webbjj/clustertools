@@ -300,7 +300,7 @@ def integrate_orbits(
         else:
             pot=MWPotential2014
 
-    os = initialize_orbits(cluster,from_centre=from_centre,from_cluster=from_cluster, ro=ro,vo=vo)
+    os = initialize_orbits(cluster, ro=ro,vo=vo)
     ts = np.linspace(0, tfinal, nt)
 
     #integrate orbits of stars in combined potential of GC and galaxy

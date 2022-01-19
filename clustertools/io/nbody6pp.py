@@ -50,7 +50,10 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     -------
     2021 - Written - Webb (UofT)
     """
-    
+
+    verbose=kwargs.get('verbose',True)
+
+
     initialize = kwargs.get("initialize", False)
     nsnap = kwargs.pop("nsnap", 0)
     wdir = kwargs.get("wdir", './')

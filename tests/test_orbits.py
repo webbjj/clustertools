@@ -2,6 +2,10 @@ import clustertools as ctools
 import numpy as np
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014
+try:
+	from galpy.util import conversion
+except:
+	import galpy.util.bovy_conversion as conversion
 
 def test_initialize_orbit(tol=0.001):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
@@ -28,7 +32,7 @@ def test_initialize_orbit(tol=0.001):
 	assert np.fabs(o.vy()-ocluster.vy()+cluster.vyc) <= tol
 	assert np.fabs(o.vz()-ocluster.vz()+cluster.vzc) <= tol
 
-def test_initialize_orbits(tol=0.1):
+def test_initialize_orbits(tol=0.0001):
 	
 	x=np.random.rand(1000)
 	y=np.random.rand(1000)
@@ -41,50 +45,124 @@ def test_initialize_orbits(tol=0.1):
 	cluster.add_stars(x,y,z,vx,vy,vz,m=1.,sortstars=True,analyze=True)
 
 	cluster.add_orbit(8000.,0.,0.,0.,220.,0.)
+	cluster.find_centre()
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 
 	ocluster=cluster.initialize_orbits()
 
-	np.testing.assert_allclose(8.0+x/1000.,ocluster.x(),rtol=0.0001)
-	np.testing.assert_allclose(y/1000.,ocluster.y(),rtol=0.0001)
-	np.testing.assert_allclose(z/1000.,ocluster.z(),rtol=0.0001)
+	np.testing.assert_allclose(8.0+x/1000.,ocluster.x(),rtol=tol)
+	np.testing.assert_allclose(y/1000.,ocluster.y(),rtol=tol)
+	np.testing.assert_allclose(z/1000.,ocluster.z(),rtol=tol)
 
-	np.testing.assert_allclose(vx,ocluster.vx(),rtol=0.0001)
-	np.testing.assert_allclose(220.+vy,ocluster.vy(),rtol=0.0001)
-	np.testing.assert_allclose(vz,ocluster.vz(),rtol=0.0001)
+	np.testing.assert_allclose(vx,ocluster.vx(),rtol=tol)
+	np.testing.assert_allclose(220.+vy,ocluster.vy(),rtol=tol)
+	np.testing.assert_allclose(vz,ocluster.vz(),rtol=tol)
 
 	ocluster=cluster.initialize_orbits(from_centre=True)
 
-	np.testing.assert_allclose(8.0+x/1000.,ocluster.x()+cluster.xc,rtol=0.0001)
-	np.testing.assert_allclose(y/1000.,ocluster.y()+cluster.yc,rtol=0.0001)
-	np.testing.assert_allclose(z/1000.,ocluster.z()+cluster.zc,rtol=0.0001)
+	np.testing.assert_allclose(x/1000.,ocluster.x()+cluster.xc,rtol=tol)
+	np.testing.assert_allclose(y/1000.,ocluster.y()+cluster.yc,rtol=tol)
+	np.testing.assert_allclose(z/1000.,ocluster.z()+cluster.zc,rtol=tol)
 
-	np.testing.assert_allclose(vx,ocluster.vx()+cluster.vxc,rtol=0.0001)
-	np.testing.assert_allclose(220.+vy,ocluster.vy()+cluster.vyc,rtol=0.0001)
-	np.testing.assert_allclose(vz,ocluster.vz()+cluster.vzc,rtol=0.0001)
+	np.testing.assert_allclose(vx,ocluster.vx()+cluster.vxc,rtol=tol)
+	np.testing.assert_allclose(vy,ocluster.vy()+cluster.vyc,rtol=tol)
+	np.testing.assert_allclose(vz,ocluster.vz()+cluster.vzc,rtol=tol)
 
-def test_integrate_orbit(tol=0.1):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
-	cluster.to_galaxy()
-	cluster.to_kpckms()
+	ocluster=cluster.initialize_orbits(from_cluster=True)
+
+	np.testing.assert_allclose(x/1000.,ocluster.x(),rtol=tol)
+	np.testing.assert_allclose(y/1000.,ocluster.y(),rtol=tol)
+	np.testing.assert_allclose(z/1000.,ocluster.z(),rtol=tol)
+
+	np.testing.assert_allclose(vx,ocluster.vx(),rtol=tol)
+	np.testing.assert_allclose(vy,ocluster.vy(),rtol=tol)
+	np.testing.assert_allclose(vz,ocluster.vz(),rtol=tol)
+
+def test_integrate_orbit(tol=0.1,ro=8.,vo=220.):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	ocluster=cluster.integrate_orbit(tfinal=1.,nt=1000)
+
 	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo))
 
-	ts,ocluster=cluster.integrate_orbit(nt=1000)
-
-	assert len(ts)==1000
 	assert cluster.xgc == o.x()
-	assert cluster.xgc = ocluster.x(ts[0])
+	assert cluster.xgc == ocluster.x(ts[0])
 
 	o.integrate(ts,MWPotential2014)
 
-	assert ocluster.x(ts[-1])==o.x(ts[-1])
+	assert np.fabs(ocluster.x(ts[-1])-o.x(ts[-1])) <= tol
+	assert np.fabs(ocluster.y(ts[-1])-o.y(ts[-1])) <= tol
+	assert np.fabs(ocluster.z(ts[-1])-o.z(ts[-1])) <= tol
+	assert np.fabs(ocluster.vx(ts[-1])-o.vx(ts[-1])) <= tol
+	assert np.fabs(ocluster.vy(ts[-1])-o.vy(ts[-1])) <= tol
+	assert np.fabs(ocluster.vz(ts[-1])-o.vz(ts[-1])) <= tol
 
-def test_integrate_orbits(tol=0.1):
-	pass
+def test_integrate_orbits(tol=0.0001,ro=8,vo=220.):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',mbar=10)
+	cluster.to_galaxy()
+	cluster.to_kpckms()
 
-def test_orbit_interpolate(tol=0.1):
-	pass
+	ocluster=cluster.integrate_orbits(tfinal=1,nt=1000)
+
+	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
+	vxvv=np.column_stack([rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi])
+	o=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo),1000)
+	o.integrate(ts,MWPotential2014)
+
+	np.testing.assert_allclose(ocluster.x(ts[-1]),o.x(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(ocluster.y(ts[-1]),o.y(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(ocluster.z(ts[-1]),o.z(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(ocluster.vx(ts[-1]),o.vx(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(ocluster.vy(ts[-1]),o.vy(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(ocluster.vz(ts[-1]),o.vz(ts[-1]),rtol=tol)
+
+def test_interpolate_orbit(tol=0.1,ro=8.,vo=220.):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	x,y,z,vx,vy,vz=cluster.interpolate_orbit(tfinal=1.,nt=1000)
+
+	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo))
+	o.integrate(ts,MWPotential2014)
+
+
+	assert np.fabs(cluster.xgc-o.x(ts[-1])) <= tol
+	assert np.fabs(cluster.ygc-o.y(ts[-1])) <= tol
+	assert np.fabs(cluster.zgc-o.z(ts[-1])) <= tol
+
+	assert np.fabs(cluster.vxgc-o.vx(ts[-1])) <= tol
+	assert np.fabs(cluster.vygc-o.vy(ts[-1])) <= tol
+	assert np.fabs(cluster.vzgc-o.vz(ts[-1])) <= tol
+
+def test_interpolate_orbits(tol=0.1,ro=8.,vo=220.):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
+	print(cluster.xgc,cluster.ygc,cluster.zgc)
+
+	x,y,z,vx,vy,vz=cluster.interpolate_orbits(tfinal=1.,nt=1000)
+	np.testing.assert_allclose(cluster.x,x,rtol=tol)
+	np.testing.assert_allclose(cluster.y,y,rtol=tol)
+	np.testing.assert_allclose(cluster.z,z,rtol=tol)
+	np.testing.assert_allclose(cluster.vx,vx,rtol=tol)
+	np.testing.assert_allclose(cluster.vy,vy,rtol=tol)
+	np.testing.assert_allclose(cluster.vz,vz,rtol=tol)
+
+	print(cluster.xgc,cluster.ygc,cluster.zgc)
+
+
+	vxvv=np.column_stack([rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi])
+	o=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo))
+	o.integrate(ts,MWPotential2014)
+
+	np.testing.assert_allclose(cluster.x,o.x(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.y,o.y(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.z,o.z(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vx,o.vx(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vy,o.vy(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vz,o.vz(ts[-1]),rtol=tol)
 
 def test_orbital_path(tol=0.1):
 	pass

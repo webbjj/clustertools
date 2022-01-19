@@ -196,7 +196,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             sseindx=np.logical_or(np.logical_or(np.in1d(cluster.id,i_d),np.in1d(cluster.id,i_d1)),np.in1d(cluster.id,i_d2))
 
             if np.sum(sseindx) != cluster.ntot:
-                print('SSE/BSE NBODY6++ ERROR',cluster.ntot-np.sum(sseindx))
+                if verbose: print('SSE/BSE NBODY6++ ERROR',cluster.ntot-np.sum(sseindx))
                 nextra=cluster.ntot-np.sum(sseindx)
                 cluster.add_sse(np.zeros(nextra),np.ones(nextra)*-10,np.ones(nextra))
 
@@ -214,6 +214,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
 def _get_nbody6pp_conf3(f,return_alist_only=False,**kwargs): 
 
+    verbose=kwargs.get('verbose',True)
+
     #Read in header
     try:
         start_header_block_size = struct.unpack('i',f.read(4))[0]
@@ -228,7 +230,7 @@ def _get_nbody6pp_conf3(f,return_alist_only=False,**kwargs):
     end_header_block_size = struct.unpack('i',f.read(4))[0]
     
     if start_header_block_size != end_header_block_size:
-        print('Error reading CONF3')
+        if verbose: print('Error reading CONF3')
         return -1
 
     if ntot > 0:
@@ -278,7 +280,7 @@ def _get_nbody6pp_conf3(f,return_alist_only=False,**kwargs):
         end_data_block_size = struct.unpack('i',f.read(4))[0] #begin data block size
         
         if start_data_block_size != end_data_block_size:
-            print('Error reading CONF3')
+            if verbose: print('Error reading CONF3')
             return -1
 
         if return_alist_only:
@@ -290,6 +292,8 @@ def _get_nbody6pp_conf3(f,return_alist_only=False,**kwargs):
 
 def _get_nbody6pp_ev(bev, sev, **kwargs):
     
+    verbose=kwargs.get('verbose',True)
+
     arg=np.array([])
     i_d=np.array([])
     kw=np.array([])
@@ -328,7 +332,7 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
         for i in range(0,nb):
             data=bev.readline().split()
             if len(data)==0:
-                print('Missing stars in BEV Star')
+                if verbose: print('Missing stars in BEV Star')
                 break
             arg1=int(data[1])
             arg2=int(data[2])
@@ -378,7 +382,7 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
         data=sev.readline().split()
 
         if len(data)==0:
-            print('Missing stars in SEV Star',i,ntot)
+            if verbose: print('Missing stars in SEV Star',i,ntot)
             break
 
         arg=np.append(arg,int(data[1]))

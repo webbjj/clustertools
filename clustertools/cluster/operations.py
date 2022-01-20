@@ -271,7 +271,7 @@ def to_nbody(cluster, ro=8.0, vo=220.0):
 
     cluster.analyze()
 
-def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
+def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Convert to on-sky position, proper motion, and radial velocity of cluster
     
     Parameters
@@ -286,7 +286,8 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
-
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
     Returns
     -------
     None
@@ -297,8 +298,10 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
     """
     if cluster.units != "radec" and cluster.origin != "sky":
 
-        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo)
-        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo)
+        cluster.to_galaxy()
+
+        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo,solarmotion=solarmotion)
+        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
 
         cluster.ra=cluster.orbits.ra()
         cluster.dec=cluster.orbits.dec()
@@ -342,7 +345,7 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
         cluster.origin = "sky"
         cluster.analyze(sortstars=sortstars)
 
-def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
+def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
     Parameters
@@ -357,6 +360,8 @@ def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
 
     Returns
     -------
@@ -369,8 +374,8 @@ def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0):
     """
     if cluster.units == "radec" and cluster.origin == "sky":
 
-        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo)
-        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo)
+        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo,solarmotion=solarmotion)
+        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
 
         cluster.x = cluster.orbits.x()
         cluster.y = cluster.orbits.y()

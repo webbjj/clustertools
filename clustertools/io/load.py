@@ -320,8 +320,12 @@ def load_cluster(
 
         cluster.return_cluster(units0,origin0, rorder0, rorder_origin0 )
     elif initialize:
-        initialize_orbit(cluster)
-
+        origin0=cluster.origin
+        cluster.to_galaxy()
+        solarmotion=kwargs.get('solarmotion',[-11.1, 24.0, 7.25])
+        initialize_orbit(cluster,solarmotion=solarmotion)
+        cluster.to_origin(origin0)
+        
     return cluster
 
 def advance_cluster(

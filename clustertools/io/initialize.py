@@ -121,12 +121,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
                 cluster.to_units(units)
 
             if cluster.origin!=origin:
-                if origin=='centre':
-                    cluster.to_cluster()
-                    cluster.find_centre()
-                    cluster.to_centre()
-                else:
-                    cluster.to_origin(origin)
+                cluster.to_origin(origin)
 
         elif model is not None:
             if model == "woolley":
@@ -143,8 +138,8 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
 
             cluster.units=units
 
-            if origin=='centre':
-                cluster.to_centre()
+            if cluster.origin!=origin:
+                cluster.to_origin(origin)
 
 
         else:
@@ -153,8 +148,8 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
 
             cluster.units=units
 
-            if origin=='centre':
-                cluster.to_centre()
+            if cluster.origin!=origin:
+                cluster.to_origin(origin)
 
     elif ctype=='galpy':
         cluster=_get_galpy(pot,**kwargs)
@@ -163,8 +158,8 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             if units=='nbody': cluster.reset_nbody_scale()
             cluster.to_units(units)
 
-        if origin=='centre':
-            cluster.to_centre()
+        if cluster.origin!=origin:
+            cluster.to_origin(origin)
 
     cluster.ctype=ctype
 

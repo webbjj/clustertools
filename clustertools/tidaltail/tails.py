@@ -88,7 +88,9 @@ def tail_path(
     cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=MWPotential2014, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
     to_path=False,
     do_full=False,
-    ro=8.0, vo=220.0,
+    ro=8.0, 
+    vo=220.0,
+    solarmotion=[-11.1, 24.0, 7.25],
     plot=False,projected=False,
     **kwargs,
 ):
@@ -124,6 +126,8 @@ def tail_path(
         galpy distance scale (Default: 8.)
     vo : float
         galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -174,6 +178,7 @@ def tail_path(
         initialize=False,
         ro=ro,
         vo=vo,
+        solarmotion=solarmotion,
     )
 
     path=(to, xo, yo, zo, vxo, vyo, vzo)
@@ -192,7 +197,7 @@ def tail_path(
 
 
     tstar, dprog, dpath = orbital_path_match(
-        cluster=cluster, dt=dt, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, projected=projected
+        cluster=cluster, dt=dt, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, solarmotion=solarmotion,projected=projected
     )
 
     if dmax is None:
@@ -258,6 +263,7 @@ def tail_path_match(
     do_full=False,
     ro=8.0,
     vo=220.0,
+    solarmotion=[-11.1, 24.0, 7.25],
     plot=False,
     projected=False,
     **kwargs,
@@ -293,6 +299,8 @@ def tail_path_match(
         galpy distance scale (Default: 8.)
     vo : float
         galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -318,4 +326,4 @@ def tail_path_match(
         )
 
     return orbital_path_match(cluster=cluster,dt=dt,nt=no,pot=pot,path=path,from_centre=from_centre,
-        skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,projected=projected,**kwargs)
+        skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)

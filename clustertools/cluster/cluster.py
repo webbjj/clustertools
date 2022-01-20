@@ -499,6 +499,7 @@ class StarCluster(object):
         from_centre=False,
         ro=8.0,
         vo=220.0,
+        solarmotion=[-11.1, 24.0, 7.25],
     ):
         """ add orbit properties to StarCluster
 
@@ -520,6 +521,8 @@ class StarCluster(object):
             galpy position scaling parameter (default: 8.)
         vo: float
             galpy velocity scaling parameter (default: 220.)
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
 
         Returns
         ----------
@@ -532,6 +535,7 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
+        print(ounits)
         if ounits != None and ounits != self.units:
             # First convert to kpckms
             if ounits != "kpckms":
@@ -600,6 +604,7 @@ class StarCluster(object):
             self.pmdec_gc = vygc
             self.vlos_gc = vzgc
 
+
             #Add on orbital parameters for missing data
             if self.origin == 'sky':
                 if np.array_equal(self.ra,np.zeros(len(self.ra))):
@@ -616,7 +621,14 @@ class StarCluster(object):
                     self.vlos += self.vlos_gc
 
         if initialize:
-            self.initialize_orbit(from_centre=from_centre)
+            if self.origin=='galaxy' or self.origin=='sky':
+                self.initialize_orbit(from_centre=from_centre,solarmotion=solarmotion)
+            else:
+                origin0=self.origin
+                self.to_galaxy()
+                self.initialize_orbit(from_centre=from_centre,solarmotion=solarmotion)
+                self.to_origin(origin0)
+
 
     def add_nbody6(
         self,
@@ -1737,33 +1749,33 @@ class StarCluster(object):
 
         return self.rl
 
-    def initialize_orbit(self, from_centre=False, ro=8.0, vo=220.0):
-        self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo)
+    def initialize_orbit(self, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+        self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo, solarmotion=solarmotion)
         return self.orbit
 
-    def initialize_orbits(self,ro=8.0, vo=220.0):
-        self.orbits=initialize_orbits(self,ro=ro, vo=vo)
+    def initialize_orbits(self,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+        self.orbits=initialize_orbits(self,ro=ro, vo=vo, solarmotion=solarmotion)
         return self.orbits
 
     def integrate_orbit(self, pot=MWPotential2014, tfinal=12.0, 
-        nt=1000, from_centre=False, ro=8.0, vo=220.0, plot=False):
+        nt=1000, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25], plot=False):
 
         self.ts,self.orbit=integrate_orbit(self,pot=pot,tfinal=tfinal,
-            nt=nt,from_centre=from_centre, ro=ro,vo=vo,plot=plot)
+            nt=nt,from_centre=from_centre, ro=ro,vo=vo, solarmotion=solarmotion, plot=plot)
 
         return self.orbit
 
     def integrate_orbits(self, pot=MWPotential2014, tfinal=12.0, 
-        nt=1000, ro=8.0, vo=220.0, plot=False):
+        nt=1000, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25], plot=False):
 
         self.ts,self.orbits=integrate_orbits(self,pot=pot,tfinal=tfinal,
-            nt=nt,ro=ro,vo=vo,plot=plot)
+            nt=nt,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot)
 
         return self.orbits
 
-    def interpolate_orbit(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False, ro=8.0,vo=220.0):
+    def interpolate_orbit(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False, ro=8.0,vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
 
-        xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo)
+        xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo, solarmotion=solarmotion)
 
         origin0=self.origin
         self.to_cluster()
@@ -1778,86 +1790,73 @@ class StarCluster(object):
 
         return self.xgc,self.ygc,self.zgc,self.vxgc,self.vygc,self.vzgc
 
-    def orbit_interpolate(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False,ro=8.0,vo=220.0):
-        self.interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre,ro=ro,vo=vo)
+    def orbit_interpolate(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False,ro=8.0,vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+        self.interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre,ro=ro,vo=vo,solarmotion=solarmotion)
 
 
-    def interpolate_orbits(self,pot=None,tfinal=None,nt=1000,ro=8.0,vo=220.0):
+    def interpolate_orbits(self,pot=None,tfinal=None,nt=1000,ro=8.0,vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
 
-        x,y,z,vx,vy,vz=interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=ro,vo=vo)
+        x,y,z,vx,vy,vz=interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=ro,vo=vo, solarmotion=solarmotion)
 
-        origin0=self.origin
-        units0=self.units
-
-        if self.origin=='centre' and units0!='radec':
-            self.to_centre()
+        if (self.origin=='centre' or self.origin=='cluster') and self.units!='radec':
             self.x,self.y,self.z=x,y,z
             self.vx,self.vy,self.vz=vx,vy,vz
-        if self.origin=='cluster' and units0!='radec':
-            self.to_cluster()
-            self.x,self.y,self.z=x,y,z
-            self.vx,self.vy,self.vz=vx,vy,vz
-        elif origin0=='sky' and units0=='radec':
+        elif self.origin=='sky' and self.units=='radec':
             self.to_sky()
             self.ra,self.dec,self.dist=x,y,z
             self.pmra,self.pmdec,self.vlos=vx,vy,vz
             self.x,self.y,self.z=x,y,z
             self.vx,self.vy,self.vz=vx,vy,vz
-        elif units0=='radec' and (self.origin=='centre' or self.origin=='cluster'):
+        elif self.units=='radec' and (self.origin=='centre' or self.origin=='cluster'):
             print('CANT INTEGRATE ORBITS WITH FROM_CENTRE OR FROM_CLUSTER AND RETURN IN SKY COORDINATES')
         else:
-            self.to_galaxy()
             self.x,self.y,self.z=x,y,z
             self.vx,self.vy,self.vz=vx,vy,vz
 
-        self.to_origin(origin0)
 
         if self.origin!='centre' and self.origin!='cluster' :
 
             if pot is None:
-                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=MWPotential2014,tfinal=tfinal,nt=nt, ro=ro,vo=vo)
+                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=MWPotential2014,tfinal=tfinal,nt=nt, ro=ro,vo=vo, solarmotion=solarmotion)
             else:
-                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt, ro=ro,vo=vo)
+                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt, ro=ro,vo=vo,solarmotion=solarmotion)
 
-            self.to_galaxy()
             self.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
             if self.units=='radec' and self.origin=='sky':
                 self.ra_gc,self.dec_gc,self.dist_gc=xgc,ygc,zgc
                 self.pmra_gc,self.pmdec_gc,self.vlos_gc=vxgc,vygc,vzgc
 
-            self.to_origin(origin0)
-
         return self.x,self.y,self.z,self.vx,self.vy,self.vz
 
 
-    def orbits_interpolate(self,pot=None,tfinal=None,nt=1000,ro=8.0,vo=220.0):
+    def orbits_interpolate(self,pot=None,tfinal=None,nt=1000,ro=8.0,vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
         #Legacy function name
-        self.interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,from_cluster=from_cluster,from_centre=from_centre,ro=ro,vo=vo)
+        self.interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=ro,vo=vo,solarmotion=solarmotion)
 
     def orbital_path(self,dt=0.1,nt=1000,pot=MWPotential2014,from_centre=False,
-        skypath=False,initialize=False,ro=8.0,vo=220.0,plot=False,**kwargs):
+        skypath=False,initialize=False,ro=8.0,vo=220.0,solarmotion=[-11.1, 24.0, 7.25], plot=False,**kwargs):
 
         if initialize:
-            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot,**kwargs)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
         else:
-            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot,**kwargs)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
 
         return  self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
     def orbital_path_match(self,dt=0.1,nt=1000,pot=MWPotential2014,path=None,from_centre=False,
-        skypath=False,to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,projected=False,**kwargs):
+        skypath=False,to_path=False,do_full=False,ro=8.0,vo=220.0,solarmotion=[-11.1, 24.0, 7.25],plot=False,projected=False,**kwargs):
 
         self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,path=path,
-        from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,projected=projected,**kwargs)
+        from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)
 
         return self.tstar,self.dprog,self.dpath
 
-    def calc_actions(self, pot=MWPotential2014, ro=8.0, vo=220.0,full=False, **kwargs):
+    def calc_actions(self, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
         if full:
-            JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_actions(self, pot=pot, ro=ro, vo=vo,full=full, **kwargs)
+            JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_actions(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion,full=full, **kwargs)
         else: 
-            JR, Jphi, Jz = calc_actions(self, pot=pot, ro=ro, vo=vo, full=full, **kwargs)
+            JR, Jphi, Jz = calc_actions(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion, full=full, **kwargs)
 
             OR,Ophi,Oz = np.zeros(self.ntot),np.zeros(self.ntot),np.zeros(self.ntot)
             TR,Tphi,Tz = np.zeros(self.ntot),np.zeros(self.ntot),np.zeros(self.ntot)
@@ -1870,25 +1869,25 @@ class StarCluster(object):
         else:
             return JR, Jphi, Jz
 
-    def ttensor(self, pot=MWPotential2014, ro=8.0, vo=220.0, eigenval=False,t=0.):
-        self.tidal_tensor=ttensor(self, pot=pot, ro=ro, vo=vo, eigenval=eigenval,t=t)
+    def ttensor(self, pot=None, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25], eigenval=False,t=0.):
+        self.tidal_tensor=ttensor(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion, eigenval=eigenval,t=t)
         return self.tidal_tensor
 
 
     def tail_path(self,dt=0.1,no=1000,nt=100,ntail=100,pot=MWPotential2014,dmax=None,bintype='fix',from_centre=False,skypath=False,
         to_path=False,
         do_full=False,
-        ro=8.0,vo=220.0,plot=False,**kwargs):
+        ro=8.0,vo=220.0,solarmotion=[-11.1, 24.0, 7.25],plot=False,**kwargs):
 
-        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,no=no,nt=nt,ntail=ntail,pot=pot,dmax=dmax,bintype=bintype,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,**kwargs)
+        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,no=no,nt=nt,ntail=ntail,pot=pot,dmax=dmax,bintype=bintype,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
 
         return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
     def tail_path_match(self,dt=0.1,no=1000,nt=100,ntail=100, pot=MWPotential2014,dmax=None,from_centre=False,
-        to_path=False,do_full=False,ro=8.0,vo=220.0,plot=False,**kwargs,):
+        to_path=False,do_full=False,ro=8.0,vo=220.0,solarmotion=[-11.1, 24.0, 7.25],plot=False,**kwargs,):
 
         self.tstar,self.dprog,self.dpath=tail_path_match(self,dt=dt,no=no,nt=nt,ntail=ntail,pot=pot,dmax=dmax,
-        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,**kwargs)
+        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
 
         return self.tstar,self.dprog,self.dpath
 

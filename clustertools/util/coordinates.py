@@ -22,6 +22,7 @@ try:
     from galpy.util import coords
 except:
     import galpy.util.bovy_coords as coords
+import copy
 
 def sphere_coords(cluster):
     """Get the spherical coordinates of every star in the cluster
@@ -159,11 +160,11 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
     -------
     2018 - Written - Webb (UofT)
     """
-    r, theta, z = coords.rect_to_cyl(x, y, z)
-    vr, vtheta, vz = coords.rect_to_cyl_vec(
+    r, theta, zed = coords.rect_to_cyl(x, y, z)
+    vr, vtheta, vzed = coords.rect_to_cyl_vec(
         vx, vy, vz, x, y, z
     )
-    return r, theta, z, vr, vtheta, vz
+    return r, theta, copy.copy(zed), vr, vtheta, copy.copy(vzed)
 
 def sky_coords(cluster):
     """Get the sky coordinates of every star in the cluster

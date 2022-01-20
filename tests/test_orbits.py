@@ -1,7 +1,7 @@
 import clustertools as ctools
 import numpy as np
 from galpy.orbit import Orbit
-from galpy.potential import MWPotential2014
+from galpy.potential import MWPotential2014,PlummerPotential
 try:
 	from galpy.util import conversion
 except:
@@ -59,7 +59,9 @@ def test_initialize_orbits(tol=0.0001):
 	np.testing.assert_allclose(220.+vy,ocluster.vy(),rtol=tol)
 	np.testing.assert_allclose(vz,ocluster.vz(),rtol=tol)
 
-	ocluster=cluster.initialize_orbits(from_centre=True)
+	cluster.to_centre()
+	print(cluster.xc,cluster.yc,cluster.zc)
+	ocluster=cluster.initialize_orbits()
 
 	np.testing.assert_allclose(x/1000.,ocluster.x()+cluster.xc,rtol=tol)
 	np.testing.assert_allclose(y/1000.,ocluster.y()+cluster.yc,rtol=tol)
@@ -69,7 +71,8 @@ def test_initialize_orbits(tol=0.0001):
 	np.testing.assert_allclose(vy,ocluster.vy()+cluster.vyc,rtol=tol)
 	np.testing.assert_allclose(vz,ocluster.vz()+cluster.vzc,rtol=tol)
 
-	ocluster=cluster.initialize_orbits(from_cluster=True)
+	cluster.to_cluster()
+	ocluster=cluster.initialize_orbits()
 
 	np.testing.assert_allclose(x/1000.,ocluster.x(),rtol=tol)
 	np.testing.assert_allclose(y/1000.,ocluster.y(),rtol=tol)
@@ -137,9 +140,13 @@ def test_interpolate_orbit(tol=0.1,ro=8.,vo=220.):
 	assert np.fabs(cluster.vzgc-o.vz(ts[-1])) <= tol
 
 def test_interpolate_orbits(tol=0.1,ro=8.,vo=220.):
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.interpolate_orbit(tfinal=1.,nt=1000)
+
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	
 	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
-	print(cluster.xgc,cluster.ygc,cluster.zgc)
 
 	x,y,z,vx,vy,vz=cluster.interpolate_orbits(tfinal=1.,nt=1000)
 	np.testing.assert_allclose(cluster.x,x,rtol=tol)
@@ -148,9 +155,6 @@ def test_interpolate_orbits(tol=0.1,ro=8.,vo=220.):
 	np.testing.assert_allclose(cluster.vx,vx,rtol=tol)
 	np.testing.assert_allclose(cluster.vy,vy,rtol=tol)
 	np.testing.assert_allclose(cluster.vz,vz,rtol=tol)
-
-	print(cluster.xgc,cluster.ygc,cluster.zgc)
-
 
 	vxvv=np.column_stack([rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi])
 	o=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
@@ -163,6 +167,79 @@ def test_interpolate_orbits(tol=0.1,ro=8.,vo=220.):
 	np.testing.assert_allclose(cluster.vx,o.vx(ts[-1]),rtol=tol)
 	np.testing.assert_allclose(cluster.vy,o.vy(ts[-1]),rtol=tol)
 	np.testing.assert_allclose(cluster.vz,o.vz(ts[-1]),rtol=tol)
+
+	assert np.fabs(xgc-cluster.xgc) <= tol
+	assert np.fabs(ygc-cluster.ygc) <= tol
+	assert np.fabs(zgc-cluster.zgc) <= tol
+	assert np.fabs(vxgc-cluster.vxgc) <= tol
+	assert np.fabs(vygc-cluster.vygc) <= tol
+	assert np.fabs(vzgc-cluster.vzgc) <= tol
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='cluster',mbar=10)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
+	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
+
+	cluster.to_galpy()
+	pot=PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=ro,vo=vo)
+	cluster.to_kpckms()
+
+	vxvv=np.column_stack([rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi])
+	o=Orbit(vxvv,ro=8.,vo=220.)
+	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo),1000)
+	o.integrate(ts,pot)
+
+	cluster.interpolate_orbits(tfinal=1,nt=1000)
+
+	np.testing.assert_allclose(cluster.x,o.x(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.y,o.y(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.z,o.z(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vx,o.vx(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vy,o.vy(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vz,o.vz(ts[-1]),rtol=tol)
+
+	assert np.fabs(xgc-cluster.xgc) <= tol
+	assert np.fabs(ygc-cluster.ygc) <= tol
+	assert np.fabs(zgc-cluster.zgc) <= tol
+	assert np.fabs(vxgc-cluster.vxgc) <= tol
+	assert np.fabs(vygc-cluster.vygc) <= tol
+	assert np.fabs(vzgc-cluster.vzgc) <= tol	
+
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='pckms',origin='centre',mbar=10)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
+
+	print(cluster.xgc,cluster.ygc,cluster.zgc)
+	print(cluster.xc,cluster.yc,cluster.zc)
+
+	cluster.to_kpckms()
+	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
+	cluster.to_pckms()
+
+	cluster.to_galpy()
+	print(cluster.mtot,cluster.rm)
+	pot=PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=ro,vo=vo)
+	cluster.to_pckms()
+
+	vxvv=np.column_stack([rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi])
+	o=Orbit(vxvv,ro=8.,vo=220.)
+	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo),1000)
+	o.integrate(ts,pot)
+
+	cluster.interpolate_orbits(tfinal=1000,nt=1000)
+
+	np.testing.assert_allclose(cluster.x/1000,o.x(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.y/1000,o.y(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.z/1000,o.z(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vx,o.vx(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vy,o.vy(ts[-1]),rtol=tol)
+	np.testing.assert_allclose(cluster.vz,o.vz(ts[-1]),rtol=tol)
+
+	assert np.fabs(xgc-cluster.xgc) <= tol
+	assert np.fabs(ygc-cluster.ygc) <= tol
+	assert np.fabs(zgc-cluster.zgc) <= tol
+	assert np.fabs(vxgc-cluster.vxgc) <= tol
+	assert np.fabs(vygc-cluster.vygc) <= tol
+	assert np.fabs(vzgc-cluster.vzgc) <= tol
 
 def test_orbital_path(tol=0.1):
 	pass

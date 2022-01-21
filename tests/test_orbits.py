@@ -248,7 +248,9 @@ def test_orbital_path_match(tol=0.1):
 	pass
 
 def test_calc_actions(tol=0.1):
+	#Test internal and external
 	pass
 	
 def test_ttensor(tol=0.1):
+	#Test internal and external
 	pass

@@ -390,7 +390,7 @@ def advance_cluster(
 
     elif cluster.ctype == "nbody6":
         cluster = _get_nbody6(
-            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
+            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs, **kwargs
         )
 
     elif cluster.ctype == "nbody6pp" or cluster.ctype == "nbody6++":
@@ -420,7 +420,7 @@ def advance_cluster(
 
 
                 conf3=None
-                cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs)
+                cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nsnap=nsnap,**advance_kwargs, **kwargs)
                 
                 if nc!=0. and n_p!=0.:
                     cluster.add_nbody6(nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np)
@@ -437,7 +437,7 @@ def advance_cluster(
                     conf3=None
 
                 snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
-                cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs)
+                cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs, **kwargs)
 
         else:
             deltat=kwargs.pop('deltat',1)
@@ -459,12 +459,12 @@ def advance_cluster(
                 sev83=None
 
 
-            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs)
+            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs, **kwargs)
 
     elif cluster.ctype == 'nbody6':
 
         cluster = _get_nbody6(
-            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs
+            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs, **kwargs
         )
 
     elif cluster.ctype == "gyrfalcon" or cluster.ctype=="nemo":
@@ -477,7 +477,8 @@ def advance_cluster(
                 origin="galaxy",
                 ofile=ofile,
                 advance=True,
-                **advance_kwargs
+                **advance_kwargs,
+                **kwargs
             )
 
         else:
@@ -488,7 +489,8 @@ def advance_cluster(
                 origin="galaxy",
                 ofile=ofile,
                 advance=True,
-                **advance_kwargs
+                **advance_kwargs,
+                **kwargs
             )
 
     elif cluster.ctype == "snapshot":
@@ -503,10 +505,11 @@ def advance_cluster(
             origin=cluster.origin_init,
             ofile=ofile,
             advance=True,
-            **advance_kwargs
+            **advance_kwargs,
+            **kwargs
         )
     else:
-        cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs)
+        cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs, **kwargs)
 
     # Check for restart
     if cluster.ntot == 0.0:
@@ -516,17 +519,14 @@ def advance_cluster(
         except:
             wdir = "./cont/"
 
-        try:
+        if ofile is not None:
             ofilename = ofile.name.split('/')[-1]
             ofile=None
-        except:
-            ofile = None
-            ofilename = None
 
         if os.path.exists(wdir):
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
-                ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs
+                ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
             )
 
 

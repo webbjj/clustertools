@@ -266,6 +266,7 @@ def load_cluster(
 
     if ofile is not None:
         cluster.ofilename=ofile.name.split('/')[-1]
+        cluster.ofile=ofile
 
     # Add galpy orbit if given
     if orbit is not None:

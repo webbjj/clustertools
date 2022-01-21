@@ -535,6 +535,10 @@ def advance_cluster(
 
     if cluster.ntot != 0.0:
 
+        if ofile is not None:
+            cluster.ofilename=ofile.name.split('/')[-1]
+            cluster.ofile=ofile
+
         # Add galpy orbit if given
         if orbit != None:
             cluster.orbit = orbit

@@ -375,6 +375,8 @@ def advance_cluster(
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
     filename=_get_filename(filename,**advance_kwargs)
 
+    if ofile is None:
+        ofile=cluster.ofile
 
     wdir = advance_kwargs.get("wdir", "./")
     if wdir[-1] != '/':

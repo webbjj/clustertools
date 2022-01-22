@@ -518,6 +518,9 @@ def advance_cluster(
     else:
         cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,**advance_kwargs, **kwargs)
 
+    print('DEBUG3',ofile,cluster.ofile,cluster.ntot)
+
+
     # Check for restart
     if cluster.ntot == 0.0:
         #print('NTOT = 0',cluster.wdir,advance_kwargs.get('wdir','./'))
@@ -536,11 +539,11 @@ def advance_cluster(
                 ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
             )
 
-    print('DEBUG3',ofile,cluster.ofile)
+    print('DEBUG4',ofile,cluster.ofile)
 
     if cluster.ntot != 0.0:
 
-        print('DEBUG4',ofile,cluster.ofile)
+        print('DEBUG5',ofile,cluster.ofile)
 
         if ofile is not None:
             cluster.ofilename=ofile.name.split('/')[-1]

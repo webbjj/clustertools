@@ -375,10 +375,12 @@ def advance_cluster(
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
     filename=_get_filename(filename,**advance_kwargs)
 
-    print('DEM01:',ofile,cluster.ofile)
+    print('DEBUG1',ofile,cluster.ofile)
+
     if ofile is None:
         ofile=cluster.ofile
-    print('DEM01:',ofile,cluster.ofile)
+
+    print('DEBUG2',ofile,cluster.ofile)
 
     wdir = advance_kwargs.get("wdir", "./")
     if wdir[-1] != '/':
@@ -534,8 +536,11 @@ def advance_cluster(
                 ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
             )
 
+    print('DEBUG3',ofile,cluster.ofile)
 
     if cluster.ntot != 0.0:
+
+        print('DEBUG4',ofile,cluster.ofile)
 
         if ofile is not None:
             cluster.ofilename=ofile.name.split('/')[-1]

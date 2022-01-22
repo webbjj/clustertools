@@ -461,12 +461,7 @@ def advance_cluster(
             else:
                 sev83=None
 
-            print('DEBUG1',ofile,cluster.ofile)
-
             cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs, **kwargs)
-
-
-            print('DEBUG2',ofile,cluster.ofile)
 
     elif cluster.ctype == 'nbody6':
 
@@ -518,8 +513,6 @@ def advance_cluster(
     else:
         cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,**advance_kwargs, **kwargs)
 
-    print('DEBUG3',ofile,cluster.ofile,cluster.ntot)
-
 
     # Check for restart
     if cluster.ntot == 0.0:
@@ -539,11 +532,7 @@ def advance_cluster(
                 ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
             )
 
-    print('DEBUG4',ofile,cluster.ofile)
-
     if cluster.ntot != 0.0:
-
-        print('DEBUG5',ofile,cluster.ofile)
 
         if ofile is not None:
             cluster.ofilename=ofile.name.split('/')[-1]

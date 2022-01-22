@@ -375,12 +375,8 @@ def advance_cluster(
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
     filename=_get_filename(filename,**advance_kwargs)
 
-    print('DEBUG1',ofile,cluster.ofile)
-
     if ofile is None:
         ofile=cluster.ofile
-
-    print('DEBUG2',ofile,cluster.ofile)
 
     wdir = advance_kwargs.get("wdir", "./")
     if wdir[-1] != '/':
@@ -397,7 +393,7 @@ def advance_cluster(
 
     elif cluster.ctype == "nbody6":
         cluster = _get_nbody6(
-            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs, **kwargs
+            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, ofile=ofile, advance=True, **advance_kwargs, **kwargs
         )
 
     elif cluster.ctype == "nbody6pp" or cluster.ctype == "nbody6++":
@@ -465,13 +461,17 @@ def advance_cluster(
             else:
                 sev83=None
 
+            print('DEBUG1',ofile,cluster.ofile)
 
             cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs, **kwargs)
+
+
+            print('DEBUG2',ofile,cluster.ofile)
 
     elif cluster.ctype == 'nbody6':
 
         cluster = _get_nbody6(
-            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, advance=True, **advance_kwargs, **kwargs
+            cluster.sfile, cluster.bfile, cluster.bsefile, cluster.ssefile, ofile=ofile, advance=True, **advance_kwargs, **kwargs
         )
 
     elif cluster.ctype == "gyrfalcon" or cluster.ctype=="nemo":
@@ -516,7 +516,7 @@ def advance_cluster(
             **kwargs
         )
     else:
-        cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,**advance_kwargs, **kwargs)
+        cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,**advance_kwargs, **kwargs)
 
     # Check for restart
     if cluster.ntot == 0.0:

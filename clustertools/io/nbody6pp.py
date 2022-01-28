@@ -109,7 +109,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             alist=_get_nbody6pp_conf3(conf3,nsnap=nsnap,return_alist_only=True,**kwargs)
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
-        elif nbody6list is not None
+        elif nbody6list is not None:
             cluster.add_nbody6(nbody6list)
 
         if binaries:

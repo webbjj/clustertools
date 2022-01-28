@@ -16,7 +16,7 @@ try:
 except:
     pass
 
-def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advance=False, **kwargs):
+def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advance=False, nbody6list=None,  **kwargs):
     """Extract a single snapshot from NBODY6++ output
 
        - Note that for snap40=False, individual binary stars are loaded in the main position, velocity, and mass arrays
@@ -36,6 +36,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         opened file containing orbital information
     advance : bool
         is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
+    nbody6list : float
+        array of nbody6 parameters that need to get passed during an advance
 
     Returns
     -------
@@ -107,7 +109,8 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             alist=_get_nbody6pp_conf3(conf3,nsnap=nsnap,return_alist_only=True,**kwargs)
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, nb, ntot+alist[1])
-
+        elif nbody6list is not None
+            cluster.add_nbody6(nbody6list)
 
         if binaries:
             cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
@@ -129,12 +132,13 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             cluster.pot=pot
 
-        if conf3 is not None or advance:
+        if conf3 is not None or nbody6list is not None:
             cluster.xc*=cluster.rbar
             cluster.yc*=cluster.rbar
             cluster.zc*=cluster.rbar
             cluster.tphys*=cluster.tbar
-        else:
+
+        elif not advance:
             cluster.reset_nbody_scale(rvirial=True)
             cluster.xc*=cluster.rbar
             cluster.yc*=cluster.rbar
@@ -142,7 +146,6 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.tphys*=cluster.tbar
 
         cluster.to_nbody()
-
 
         if binaries: cluster.nb = len(semi)
 

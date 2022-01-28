@@ -241,11 +241,193 @@ def test_interpolate_orbits(tol=0.1,ro=8.,vo=220.):
 	assert np.fabs(vygc-cluster.vygc) <= tol
 	assert np.fabs(vzgc-cluster.vzgc) <= tol
 
-def test_orbital_path(tol=0.1):
-	pass
+def test_orbital_path(tol=0.1,ro=8.,vo=220.):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
 
-def test_orbital_path_match(tol=0.1):
-	pass
+	tfinal=0.1
+
+	t, x, y, z, vx, vy, vz=cluster.orbital_path(
+	    tfinal=tfinal,
+	    nt=1000,
+	    pot=MWPotential2014,
+	    from_centre=False,
+	    skypath=False,
+	    initialize=True,
+	    ro=8.0,
+	    vo=220.0,
+	    solarmotion=[-11.1, 24.0, 7.25],
+	    plot=False,
+	)
+
+	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	o.integrate(ts,MWPotential2014)
+
+	assert np.fabs(x[0]-o.x(ts[-1])) <= tol
+	assert np.fabs(y[0]-o.y(ts[-1])) <= tol
+	assert np.fabs(z[0]-o.z(ts[-1])) <= tol
+	assert np.fabs(vx[0]-o.vx(ts[-1])) <= tol
+	assert np.fabs(vy[0]-o.vy(ts[-1])) <= tol
+	assert np.fabs(vz[0]-o.vz(ts[-1])) <= tol
+
+	assert np.fabs(cluster.xpath[0]-o.x(ts[-1])) <= tol
+	assert np.fabs(cluster.ypath[0]-o.y(ts[-1])) <= tol
+	assert np.fabs(cluster.zpath[0]-o.z(ts[-1])) <= tol
+	assert np.fabs(cluster.vxpath[0]-o.vx(ts[-1])) <= tol
+	assert np.fabs(cluster.vypath[0]-o.vy(ts[-1])) <= tol
+	assert np.fabs(cluster.vzpath[0]-o.vz(ts[-1])) <= tol
+
+	assert np.fabs(cluster.orbit.x(ts[-1])-o.x(ts[-1])) <= tol
+	assert np.fabs(cluster.orbit.y(ts[-1])-o.y(ts[-1])) <= tol
+	assert np.fabs(cluster.orbit.z(ts[-1])-o.z(ts[-1])) <= tol
+	assert np.fabs(cluster.orbit.vx(ts[-1])-o.vx(ts[-1])) <= tol
+	assert np.fabs(cluster.orbit.vy(ts[-1])-o.vy(ts[-1])) <= tol
+	assert np.fabs(cluster.orbit.vz(ts[-1])-o.vz(ts[-1])) <= tol
+
+	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts = np.linspace(0, 1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	o.integrate(ts,MWPotential2014)
+
+	assert np.fabs(x[-1]-o.x(ts[-1])) <= tol
+	assert np.fabs(y[-1]-o.y(ts[-1])) <= tol
+	assert np.fabs(z[-1]-o.z(ts[-1])) <= tol
+	assert np.fabs(vx[-1]-o.vx(ts[-1])) <= tol
+	assert np.fabs(vy[-1]-o.vy(ts[-1])) <= tol
+	assert np.fabs(vz[-1]-o.vz(ts[-1])) <= tol
+
+	#Check skypath
+	t, x, y, z, vx, vy, vz=cluster.orbital_path(
+	    tfinal=tfinal,
+	    nt=1000,
+	    pot=MWPotential2014,
+	    from_centre=False,
+	    skypath=True,
+	    initialize=True,
+	    ro=8.0,
+	    vo=220.0,
+	    solarmotion=[-11.1, 24.0, 7.25],
+	    plot=False,
+	)
+
+	assert np.fabs(x[-1]-o.ra(ts[-1])) <= tol
+	assert np.fabs(y[-1]-o.dec(ts[-1])) <= tol
+	assert np.fabs(z[-1]-o.dist(ts[-1])) <= tol
+	assert np.fabs(vx[-1]-o.pmra(ts[-1])) <= tol
+	assert np.fabs(vy[-1]-o.pmdec(ts[-1])) <= tol
+	assert np.fabs(vz[-1]-o.vlos(ts[-1])) <= tol
+
+	#Check from_centre:
+
+	t, x, y, z, vx, vy, vz=cluster.orbital_path(
+	    tfinal=tfinal,
+	    nt=1000,
+	    pot=MWPotential2014,
+	    from_centre=True,
+	    skypath=False,
+	    initialize=False,
+	    ro=8.0,
+	    vo=220.0,
+	    solarmotion=[-11.1, 24.0, 7.25],
+	    plot=False,
+	)
+
+	xgc,ygc,zgc=cluster.xgc+cluster.xc,cluster.ygc+cluster.yc,cluster.zgc+cluster.zc
+	vxgc,vygc,vzgc=cluster.vxgc+cluster.vxc,cluster.vygc+cluster.vyc,cluster.vzgc+cluster.vzc
+
+	rad,phi,zed,vR,vT,vzed=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
+	vxvv=[rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi]
+
+	o=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	o.integrate(ts,MWPotential2014)
+
+	assert np.fabs(x[0]-o.x(ts[-1])) <= tol
+	assert np.fabs(y[0]-o.y(ts[-1])) <= tol
+	assert np.fabs(z[0]-o.z(ts[-1])) <= tol
+	assert np.fabs(vx[0]-o.vx(ts[-1])) <= tol
+	assert np.fabs(vy[0]-o.vy(ts[-1])) <= tol
+	assert np.fabs(vz[0]-o.vz(ts[-1])) <= tol
+
+def test_orbital_path_match(tol=0.1,ro=8.,vo=220.):
+
+	tfinal=0.1
+	nt=1000
+
+	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts = np.linspace(0, 0.5 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+	o.integrate(ts,MWPotential2014)
+
+	x,y,z=o.x(ts),o.y(ts),o.z(ts)
+	vx,vy,vz=o.vx(ts),o.vy(ts),o.vz(ts)
+
+	cluster=ctools.StarCluster(units='kpckms',origin='galaxy')
+	cluster.add_stars(x,y,z,vx,vy,vz,sortstars=True,analyze=True)
+	cluster.add_orbit(o.x(),o.y(),o.z(),o.vx(),o.vy(),o.vz(),ounits='kpckms')
+
+	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ts = np.linspace(0, -0.5 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+	o.integrate(ts,MWPotential2014)
+
+	x,y,z=o.x(ts),o.y(ts),o.z(ts)
+	vx,vy,vz=o.vx(ts),o.vy(ts),o.vz(ts)
+	cluster.add_stars(x,y,z,vx,vy,vz,sortstars=True,analyze=True)
+
+	t,dprog,dpath=ctools.orbital_path_match(
+    cluster,
+    tfinal=tfinal,
+    nt=10*nt,
+	pot=MWPotential2014,
+    path=None,
+    from_centre=False,
+    skypath=False,
+    to_path=False,
+    do_full=False,
+    ro=8.0,
+    vo=220.0,
+    solarmotion=[-11.1, 24.0, 7.25],
+    plot=False,
+    projected=False,
+	)
+
+	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
+
+	t,dprog,dpath=ctools.orbital_path_match(
+    cluster,
+    tfinal=tfinal,
+    nt=10*nt,
+	pot=MWPotential2014,
+    path=None,
+    from_centre=False,
+    skypath=True,
+    to_path=False,
+    do_full=False,
+    ro=8.0,
+    vo=220.0,
+    solarmotion=[-11.1, 24.0, 7.25],
+    plot=False,
+    projected=False,
+	)
+
+	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
+
+	t,dprog,dpath=ctools.orbital_path_match(
+    cluster,
+    tfinal=tfinal,
+    nt=10*nt,
+	pot=MWPotential2014,
+    path=None,
+    from_centre=False,
+    skypath=False,
+    to_path=False,
+    do_full=False,
+    ro=8.0,
+    vo=220.0,
+    solarmotion=[-11.1, 24.0, 7.25],
+    plot=False,
+    projected=True,
+	)
+
+	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 
 def test_calc_actions(tol=0.1):
 	#Test internal and external

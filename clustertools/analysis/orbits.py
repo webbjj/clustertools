@@ -565,7 +565,7 @@ def orbital_path(
 
     o = initialize_orbit(cluster, from_centre=from_centre, solarmotion=solarmotion)
 
-    ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
+    ts = np.linspace(0, -1.0 * tfinal, nt)
     o.integrate(ts, pot)
 
     R, phi, z = coords.rect_to_cyl(o.x(ts[-1]), o.y(ts[-1]), o.z(ts[-1]))
@@ -579,10 +579,11 @@ def orbital_path(
         solarmotion=solarmotion,
     )
     ts = np.linspace(
-        -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo),
-        tfinal / conversion.time_in_Gyr(ro=ro, vo=vo),
+        -1.0 * tfinal,
+        tfinal,
         nt,
     )
+
     o.integrate(ts, pot)
 
     if skypath:
@@ -596,7 +597,7 @@ def orbital_path(
         if cluster.units == "pckms":
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0
         elif cluster.units == "nbody":
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 / cluster.tbar
         elif cluster.units == "galpy":
             t = ts
         elif cluster.units == "kpckms" or cluster.units == 'radec':
@@ -637,7 +638,7 @@ def orbital_path(
             vx /= cluster.vbar
             vy /= cluster.vbar
             vz /= cluster.vbar
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) / cluster.tbar
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 / cluster.tbar
 
         elif cluster.units == "galpy":
             x /= ro
@@ -651,7 +652,7 @@ def orbital_path(
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
         else:
             print('TIME RETURNED IN GALPY UNITS')
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
+            t = ts 
 
         if plot:
             filename = kwargs.pop("filename", None)
@@ -734,15 +735,6 @@ def orbital_path_match(
 
     #Legacy - allow for dt to be given instead of tfinal
     tfinal=kwargs.get('dt',tfinal)
-
-    if tfinal is None:
-        tfinal=0.1/conversion.time_in_Gyr(ro=ro, vo=vo)
-    elif cluster.units=='pckms':
-        tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
-    elif cluster.units=='kpckms':
-        tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
-    elif cluster.units=='nbody':
-        tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
 
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0

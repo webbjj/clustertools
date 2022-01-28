@@ -129,15 +129,19 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             cluster.pot=pot
 
-        if conf3 is not None:
+        if conf3 is not None or advance:
             cluster.xc*=cluster.rbar
             cluster.yc*=cluster.rbar
             cluster.zc*=cluster.rbar
             cluster.tphys*=cluster.tbar
         else:
             cluster.reset_nbody_scale(rvirial=True)
+            cluster.xc*=cluster.rbar
+            cluster.yc*=cluster.rbar
+            cluster.zc*=cluster.rbar
+            cluster.tphys*=cluster.tbar
 
-        if not advance: cluster.to_nbody()
+        cluster.to_nbody()
 
 
         if binaries: cluster.nb = len(semi)

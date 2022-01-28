@@ -427,7 +427,7 @@ def advance_cluster(
                     nbody6list=None
 
                 conf3=None
-                cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nbody6list=nbody6list,nsnap=nsnap,alist=alist,**advance_kwargs, **kwargs)
+                cluster = _get_nbody6pp(conf3, snap40=cluster.sfile, ofile=ofile, advance=True,nbody6list=nbody6list,nsnap=nsnap,**advance_kwargs, **kwargs)
                 
             else:
                 deltat=kwargs.pop('deltat',1)

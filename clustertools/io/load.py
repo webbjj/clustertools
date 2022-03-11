@@ -127,7 +127,7 @@ def load_cluster(
     give : str
         set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
-    deltat : integer
+    dtout : integer
         number of nbody timesteps forward to advance to next Nbody6++ timestep (default = 1)
     planets : bool
         will planets be added to the system (default:False)
@@ -184,7 +184,9 @@ def load_cluster(
 
     elif ctype == "nbody6pp" or ctype=='nbody6++':
         nsnap = kwargs.get("nsnap", 0)
+        #Include deltat for legacy reasons
         deltat=kwargs.pop('deltat',1)
+        dtout=kwargs.pop('dtout',deltat)
         hdf5=kwargs.pop('hdf5',False)
 
         if hdf5:
@@ -194,7 +196,7 @@ def load_cluster(
                 conf3=None
 
             snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
-            cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=False,deltat=deltat,**kwargs)
+            cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=False,dtout=dtout,**kwargs)
         else:
 
             if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
@@ -212,7 +214,7 @@ def load_cluster(
             else:
                 sev83=None
 
-            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,deltat=deltat,**kwargs)
+            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=False,dtout=dtout,**kwargs)
 
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
@@ -365,7 +367,7 @@ def advance_cluster(
     ----------------
     Same as load_cluster except for:
 
-    deltat : integer
+    dtout : integer
         number of nbody timesteps forward to advance to next Nbody6++ timestep (default = 1)
 
     History
@@ -431,7 +433,9 @@ def advance_cluster(
                 
             else:
                 deltat=kwargs.pop('deltat',1)
-                nsnap = advance_kwargs.pop("nsnap") + deltat - 1
+                dtout=kwargs.pop('dtout',deltat)
+
+                nsnap = advance_kwargs.pop("nsnap") + dtout - 1
                 ngroup= advance_kwargs.pop("ngroup")
 
                 if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
@@ -440,11 +444,13 @@ def advance_cluster(
                     conf3=None
 
                 snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
-                cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs, **kwargs)
+                cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,nsnap=nsnap,dtout=dtout,**advance_kwargs, **kwargs)
 
         else:
             deltat=kwargs.pop('deltat',1)
-            nsnap = advance_kwargs.pop("nsnap") + deltat - 1
+            dtout=kwargs.pop('dtout',deltat)
+
+            nsnap = advance_kwargs.pop("nsnap") + dtout - 1
 
             if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
                 conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
@@ -461,7 +467,7 @@ def advance_cluster(
             else:
                 sev83=None
 
-            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,deltat=deltat,**advance_kwargs, **kwargs)
+            cluster = _get_nbody6pp(conf3, bev82=bev82, sev83=sev83, ofile=ofile, advance=True,nsnap=nsnap,dtout=dtout,**advance_kwargs, **kwargs)
 
     elif cluster.ctype == 'nbody6':
 

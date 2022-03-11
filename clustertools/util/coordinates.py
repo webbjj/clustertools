@@ -63,24 +63,24 @@ def cart_to_sphere(x,y,z,vx,vy,vz):
     """
 
     r=np.sqrt(x**2.+y**2.+z**2.)
-    theta=np.arccos(z/r)
     phi=np.arctan2(y,x)
+    theta=np.arccos(z/r)
     
-    rhatx=x/r
-    rhaty=y/r
-    rhatz=z/r
-    
-    thatx=np.cos(theta)*np.cos(phi)
-    thaty=np.cos(theta)*np.sin(phi)
-    thatz=-1.*np.sin(theta)
+    rhatx=np.cos(phi)*np.sin(theta)
+    rhaty=np.sin(phi)*np.sin(theta)
+    rhatz=np.cos(theta)
     
     phatx=-1.*np.sin(phi)
     phaty=np.cos(phi)
     phatz=0.
+
+    thatx=np.cos(phi)*np.cos(theta)
+    thaty=np.sin(phi)*np.cos(theta)
+    thatz=-1.*np.sin(theta)
     
     vr=vx*rhatx+vy*rhaty+vz*rhatz
-    vtheta=vx*thatx+vy*thaty+vz*thatz
     vphi=vx*phatx+vy*phaty+vz*phatz
+    vtheta=vx*thatx+vy*thaty+vz*thatz
     
     return r,phi,theta,vr,vphi,vtheta
 
@@ -106,13 +106,13 @@ def sphere_to_cart(r,phi,theta,vr,vphi,vtheta):
     y=r*np.sin(phi)*np.sin(theta)
     z=r*np.cos(theta)
 
-    xhatr=np.sin(theta)*np.cos(phi)
-    xhatt=np.cos(theta)*np.cos(phi)
+    xhatr=np.cos(phi)*np.sin(theta)
     xhatp=-1.*np.sin(phi)
+    xhatt=np.cos(phi)*np.cos(theta)
 
-    yhatr=np.sin(theta)*np.sin(phi)
-    yhatt=np.cos(theta)*np.sin(phi)
+    yhatr=np.sin(phi)*np.sin(theta)
     yhatp=np.cos(phi)
+    yhatt=np.sin(phi)*np.cos(theta)
 
     zhatr=np.cos(theta)
     zhatt=-1.*np.sin(theta)

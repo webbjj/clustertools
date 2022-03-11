@@ -117,6 +117,7 @@ def find_centre(
             vystart=vystart,
             vzstart=vzstart,
             indx=indx,
+            nsphere=nsphere,
             rmin=rmin,
             rmax=rmax,
             nmax=nmax,
@@ -164,6 +165,7 @@ def find_centre_of_density(
     vystart=0.0,
     vzstart=0.0,
     indx=None,
+    nsphere=100,
     rmin=0.1,
     rmax=None,
     nmax=100,
@@ -183,6 +185,8 @@ def find_centre_of_density(
         starting velocity for centre (default: 0,0,0)
     indx: bool
         subset of stars to perform centre of density calculation on (default: None)
+    nsphere : int
+        number of stars in centre sphere (default:100)
     rmin : float
         minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
     rmax : float
@@ -241,7 +245,7 @@ def find_centre_of_density(
             vyc = np.sum(m[indx] * vy[indx]) / mc
             vzc = np.sum(m[indx] * vz[indx]) / mc
 
-        if (mc > 0) and (nc > 100):
+        if (mc > 0) and (nc > nsphere):
             x -= xc
             y -= yc
             z -= zc
@@ -1049,6 +1053,7 @@ def mass_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     mcorr=None,
@@ -1075,6 +1080,8 @@ def mass_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1110,6 +1117,7 @@ def mass_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1117,6 +1125,7 @@ def mass_function(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1150,6 +1159,10 @@ def mass_function(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
 
     if mcorr is None: mcorr=np.ones(cluster.ntot)
 
@@ -1212,6 +1225,7 @@ def tapered_mass_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     mcorr=None,
@@ -1238,6 +1252,8 @@ def tapered_mass_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1273,6 +1289,7 @@ def tapered_mass_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1280,6 +1297,7 @@ def tapered_mass_function(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1313,6 +1331,10 @@ def tapered_mass_function(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
 
     if mcorr is None: mcorr=np.ones(cluster.ntot)
 
@@ -1391,6 +1413,7 @@ def eta_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     plot=False,
@@ -1418,6 +1441,8 @@ def eta_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1449,6 +1474,7 @@ def eta_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1456,6 +1482,7 @@ def eta_function(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1489,6 +1516,9 @@ def eta_function(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if np.sum(indx) >= 2 * nmass:
 
@@ -1570,6 +1600,7 @@ def meq_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=1,
     indx=None,
     projected=False,
     plot=False,
@@ -1600,6 +1631,8 @@ def meq_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1644,6 +1677,7 @@ def meq_function(
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            npop=npop,
             indx=indx,
             projected=projected,
             plot=plot,
@@ -1666,6 +1700,7 @@ def ckin(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     **kwargs,
@@ -1691,6 +1726,8 @@ def ckin(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1725,6 +1762,7 @@ def ckin(
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            npop=npop,
             indx=indx,
             projected=projected,
             plot=False,
@@ -1744,6 +1782,7 @@ def ckin(
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            npop=npop,
             indx=indx,
             projected=projected,
             plot=False,
@@ -2366,6 +2405,7 @@ def _rho_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
     normalize=False,
@@ -2390,6 +2430,8 @@ def _rho_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -2437,6 +2479,7 @@ def _rho_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -2470,6 +2513,9 @@ def _rho_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 

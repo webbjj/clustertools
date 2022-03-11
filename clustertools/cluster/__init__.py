@@ -13,6 +13,7 @@ to_units=operations.to_units
 to_sudays=operations.to_sudays
 to_audays=operations.to_audays
 to_centre=operations.to_centre
+to_center=operations.to_center
 to_cluster=operations.to_cluster
 to_galaxy=operations.to_galaxy
 to_sky=operations.to_sky

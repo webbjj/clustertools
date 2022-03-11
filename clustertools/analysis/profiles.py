@@ -43,6 +43,7 @@ def rho_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
     normalize=False,
@@ -67,6 +68,8 @@ def rho_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -114,6 +117,7 @@ def rho_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -147,8 +151,15 @@ def rho_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    if kwargs.pop('bintype','num')=='fix':
+
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -232,6 +243,7 @@ def m_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
     normalize=False,
@@ -257,6 +269,8 @@ def m_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -305,6 +319,7 @@ def m_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -338,6 +353,9 @@ def m_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
@@ -408,6 +426,7 @@ def alpha_prof(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     normalize=True,
@@ -441,6 +460,8 @@ def alpha_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -504,6 +525,7 @@ def alpha_prof(
     aprof = []
     eaprof= []
 
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -511,6 +533,7 @@ def alpha_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -544,6 +567,11 @@ def alpha_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
 
     if r_lower is None:
         if kwargs.pop('bintype','num')=='fix':
@@ -645,6 +673,7 @@ def sigv_prof(
     emax=None,
     kwmin=None,
     kwmax=None,
+    npop=None,
     indx=None,
     projected=False,
     coord=None,
@@ -670,6 +699,8 @@ def sigv_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -716,6 +747,7 @@ def sigv_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -748,6 +780,9 @@ def sigv_prof(
         indx *= cluster.etot >= emin
     if emin is not None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if coord is not None:
 
@@ -839,6 +874,7 @@ def beta_prof(
     emax=None,
     kwmin=None,
     kwmax=None,
+    npop=None,
     indx=None,
     projected=False,
     normalize=False,
@@ -863,6 +899,8 @@ def beta_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -906,6 +944,7 @@ def beta_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -938,6 +977,10 @@ def beta_prof(
         indx *= cluster.etot >= emin
     if emin is not None:
         indx *= cluster.etot <= emax
+
+    """
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
 
     if projected:
         r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
@@ -1017,6 +1060,7 @@ def v_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
     coord=None,
@@ -1042,6 +1086,8 @@ def v_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -1088,6 +1134,7 @@ def v_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1121,6 +1168,9 @@ def v_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if coord is not None:
 
@@ -1217,6 +1267,7 @@ def v2_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
     coord=None,
@@ -1242,6 +1293,8 @@ def v2_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -1288,6 +1341,7 @@ def v2_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1321,6 +1375,9 @@ def v2_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if coord is not None:
 
@@ -1350,7 +1407,11 @@ def v2_prof(
         else:
             ylabel=r"$<v^2>$"
 
-    if kwargs.pop('bintype','num')=='fix':
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -1391,7 +1452,7 @@ def v2_prof(
             lrprofn,
             vprof,
             xlabel=xlabel,
-            ylabel=r"$<v^2>$",
+            ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
@@ -1415,6 +1476,7 @@ def eta_prof(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     normalize=True,
@@ -1442,6 +1504,8 @@ def eta_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -1493,6 +1557,8 @@ def eta_prof(
         r = cluster.r
         v = cluster.v
 
+
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1526,6 +1592,9 @@ def eta_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
@@ -1627,6 +1696,7 @@ def meq_prof(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     normalize=True,
@@ -1654,6 +1724,8 @@ def meq_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -1702,6 +1774,7 @@ def meq_prof(
         emax=emax,
         kwmin=kwmin,
         kwmax=kwmax,
+        npop=npop,
         indx=indx,
         projected=projected,
         normalize=normalize,
@@ -1726,6 +1799,7 @@ def vcirc_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
     normalize=False,
@@ -1759,6 +1833,8 @@ def vcirc_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
@@ -1810,6 +1886,8 @@ def vcirc_prof(
         v = cluster.v[cluster.rorder]
         m = cluster.m[cluster.rorder]
 
+
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1843,6 +1921,9 @@ def vcirc_prof(
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     r = r[indx]
     v = v[indx]

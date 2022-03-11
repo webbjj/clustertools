@@ -494,7 +494,7 @@ def tapered_func(x,A,alpha,xc,beta):
 
     return dx
 
-def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
+def x_hist(x, nx=10, bintype="num", bins=False, x_lower=None, x_mean=None,x_upper=None):
     """Find histogram data using nx bins
 
     Parameters
@@ -505,15 +505,20 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
       number of bins (default : 10)
     bintype : str
       bin with equal number of stars per bin (num) or evenly in x (fix) (default: num)
+    bins : bool
+      return bins
     x_lower,x_mean,x_upper : float
       preset lower limit, mean value, and upper limit bins
 
     Returns
     -------
-    x_mean : float
-      mean value in each bin
-    x_his : float
-      number of stars in each bin
+    if bins:
+        x_lower,x_mean,x_upper,x_hist
+    else:
+        x_mean : float
+          mean value in each bin
+        x_hist : float
+          number of stars in each bin
 
     History
     -------
@@ -531,7 +536,10 @@ def x_hist(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None):
             indx = (x >= x_lower[i]) * (x < x_upper[i])
             x_hist = np.append(x_hist, np.sum(indx))
 
-    return x_mean,x_hist
+    if bins:
+        return x_lower,x_mean,x_upper,x_hist
+    else:
+        return x_mean,x_hist
 
 def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False, x_lower=None, x_mean=None,x_upper=None):
     """ Calculate mean profile of parameter y that depends on x

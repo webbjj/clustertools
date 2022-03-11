@@ -13,8 +13,11 @@ __all__ = [
     "orbits_interpolate",
     "orbital_path",
     "orbital_path_match",
+    "calc_action",
     "calc_actions",
     "ttensor",
+    "ttensors",
+
 ]
 
 from galpy.orbit import Orbit
@@ -558,7 +561,7 @@ def orbital_path(
         tfinal=0.1/conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='pckms':
         tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
-    elif cluster.units=='kpckms':
+    elif cluster.units=='kpckms' or cluster.units=='radec':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
         tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
@@ -741,6 +744,7 @@ def orbital_path_match(
 
     if skypath:
         cluster.to_radec()
+        projected=True
     else:
         cluster.to_galaxy(sortstars=False)
         cluster.to_kpckms()
@@ -901,6 +905,100 @@ def orbital_path_match(
 
     return np.array(tstar), np.array(dprog), np.array(dpath)
 
+def calc_action(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
+    """Calculate action angle values for cluster
+
+    - This is a simple wrapper for calculating actions from an Orbit in galpy (Bovy 2015)
+    -- Bovy J., 2015, ApJS, 216, 29
+    -- 
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    pot : class 
+        GALPY potential used to calculate actions (default: MWPotential)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+    full : bool
+        return orbital frequencies and periods (default : False)
+    Returns
+    -------
+    JR,Jphi,Jz : float
+        orbit actions
+
+    if full:
+        OR,Ophi,Oz : float
+            orbital frequencies
+        TR,Tphi,Tz : float
+            orbital periods
+
+    Other Parameters
+    ----------------
+    type : str
+        method for calculating actions (default: staeckel)
+    delta : float
+        focus for staeckel method (default: 0.45 - optimal for MWPotential2014)
+    c : bool
+        if True, always use C for calculations (default: True)
+    kwargs : str
+        key word arguments can be included for other action calculation methods in galpy
+    History
+    -------
+    2019 - Written - Webb (UofT)
+    """
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if pot is None:
+        pot=MWPotential2014
+
+    os = initialize_orbit(cluster, ro=ro, vo=vo, solarmotion=solarmotion)
+
+    if pot==MWPotential2014:
+        atype = kwargs.pop("type", "staeckel")
+        delta = kwargs.pop("delta", 0.45)
+        c = kwargs.pop("c", True)
+
+        JR = os.jr(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        Jphi = os.jp(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        Jz = os.jz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+        if full:
+            OR = os.Or(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+            Ophi = os.Op(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+            Oz = os.Oz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+            TR = os.Tr(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+            Tphi = os.Tp(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+            Tz = os.Tz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
+
+    else:
+        ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+        os.integrate(ts,pot)
+
+        JR=os.jr()
+        Jphi=os.jp()
+        Jz=os.jz()
+
+        if full:
+            OR = os.Or()
+            Ophi = os.Op()
+            Oz = os.Oz()
+            TR = os.Tr()
+            Tphi = os.Tp()
+            Tz = os.Tz()
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if full:
+        return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+    else:
+        return JR, Jphi, Jz
+
 def calc_actions(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
     """Calculate action angle values for each star
 
@@ -979,7 +1077,7 @@ def calc_actions(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7
             Tz = os.Tz(pot=pot, type=atype, delta=delta, c=c, ro=ro, vo=vo, **kwargs)
 
     else:
-        ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro, vo=vo), 1000.0)
+        ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
         os.integrate(ts,pot)
 
         JR=os.jr()
@@ -1005,6 +1103,61 @@ def calc_actions(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7
 def ttensor(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25], eigenval=False, t=0.):
     """Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
     
+    - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
+    -- Bovy J., 2015, ApJS, 216, 29
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    pot : class 
+        GALPY potential used to calculate actions (default: MWPotential)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+    eigenval : bool
+        return eigenvalues if true (default; False)
+    time : float
+        time (in cluster.units) to evaluate tidal tensor. Necessary if tidal field is time dependent (default: 0.)
+
+    Returns
+    -------
+        Tidal Tensor
+    History
+    -------
+    2018-03-21 - Written - Webb (UofT)
+    """
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if pot is None:
+        pot=MWPotential2014
+
+    o = initialize_orbit(cluster, ro=ro, vo=vo, solarmotion=solarmotion)
+    R=o.R()
+    z=o.z()
+    phi=o.phi()
+
+    if cluster.units=='pckms':
+        t/=1000.
+    elif cluster.units=='kpckms':
+        t/=conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='nbody':
+        t*=(cluster.tbar/1000.)
+
+    tij=potential.ttensor(pot,R/ro,z/ro,phi=phi,t=t/conversion.time_in_Gyr(ro=ro, vo=vo),eigenval=eigenval)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+
+    return tij
+
+def ttensors(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25], eigenval=False, t=0.):
+    """Calculate the tidal tensor Tij=-d(Psi)(dxidxj) acting on all stars in the cluster
+
     - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
     -- Bovy J., 2015, ApJS, 216, 29
     Parameters
@@ -1043,7 +1196,7 @@ def ttensor(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],
         else:
             pot=MWPotential2014
 
-    o = initialize_orbit(cluster, ro, vo, solarmotion=solarmotion)
+    o = initialize_orbits(cluster, ro=ro, vo=vo, solarmotion=solarmotion)
     R=o.R()
     z=o.z()
     phi=o.phi()
@@ -1059,5 +1212,5 @@ def ttensor(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-
     return tij
+

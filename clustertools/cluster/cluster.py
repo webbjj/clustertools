@@ -181,8 +181,7 @@ class StarCluster(object):
         self.vyc = 0.0
         self.vzc = 0.0
 
-        # variable for galpy orbit
-        self.orbit = kwargs.get("orbit",None)
+        # variable for galpy orbits
         self.orbits= None
 
         # variables for orbital position and kinematics
@@ -229,10 +228,14 @@ class StarCluster(object):
             self.dist_gc = self.orbit.dist()
             self.pmra_gc = self.orbit.pmra()
             self.pmdec_gc = self.orbit.pmdec()
-            self.vlos_gc = self.orbit.vlos()           
+            self.vlos_gc = self.orbit.vlos()
 
-        self.orbit=None
-        self.orbits=None
+        self.ra_c = 0.0
+        self.dec_c = 0.0
+        self.dist_c = 0.0
+        self.pmra_c = 0.0
+        self.pmdec_c = 0.0
+        self.vlos_c = 0.0   
 
         # variables for add_nbody6
         # Number of stars in the core
@@ -249,6 +252,9 @@ class StarCluster(object):
         self.xc = 0.
         self.yc = 0.
         self.zc = 0.
+        self.xcn = None
+        self.ycn = None
+        self.zcn = None
         # Mass scaling parameter
         self.zmbar = 1.
         # Velocity scaling parameter
@@ -325,6 +331,9 @@ class StarCluster(object):
         self.rvmax = None
         self.vmax = None
 
+        #For use with multiple populations
+        self.npop = np.array([])
+
         #For use with extended nemo/gyrfalcon output
         if self.give == 'mxvpqael':
             self.gyrpot=np.array([])
@@ -335,7 +344,6 @@ class StarCluster(object):
         elif self.give =='mxve':
             self.eps=np.array([])
 
-
         #For use with HDF5
         self.hdf5=False
         self.ngroups=0
@@ -344,7 +352,7 @@ class StarCluster(object):
         self.planets=False
 
     def add_stars(
-        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,sortstars=False,analyze=False
+        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,npop=None,sortstars=False,analyze=False
     ):
         """Add stars to StarCluster.
 
@@ -362,6 +370,8 @@ class StarCluster(object):
             star id
         m0: float int
             initial stellar mass
+        npop : int
+            population number, for use with multiple populations
         sortstars: bool
             order stars by radius (default: False)
         analyze : bool
@@ -397,6 +407,19 @@ class StarCluster(object):
 
         self.id = np.append(self.id, np.array(id))
         self.id = self.id.astype(int)
+
+        if m0 is not None:
+            self.m0=np.append(self.m0,m0)
+        else:
+            self.m0=np.append(self.m0,np.zeros(len(x)))
+
+        if npop is None:
+            npop=np.ones(len(x),int)
+        elif isinstance(npop,float):
+            npop=np.ones(len(x))*npop
+
+        self.npop=np.append(self.npop,npop).astype(int)
+
         # Check lengths
 
         length_error=False
@@ -410,6 +433,8 @@ class StarCluster(object):
                 len(self.vx),
                 len(self.vy),
                 len(self.vz),
+                len(self.m0),
+                len(self.npop),
             ]
         )
         nmin = np.amin(
@@ -422,6 +447,8 @@ class StarCluster(object):
                 len(self.vx),
                 len(self.vy),
                 len(self.vz),
+                len(self.m0),
+                len(self.npop),
             ]
         )
 
@@ -466,8 +493,19 @@ class StarCluster(object):
             elif len(self.vz) <nmax:
                 length_error=True
 
+            if len(self.m0) == 1:   
+                self.m0 = np.ones(nmax) * self.m0[0]
+            elif len(self.m0) <nmax:
+                length_error=True
+
+            if len(self.npop) == 1:   
+                self.npop = np.ones(nmax) * self.npop[0]
+            elif len(self.npop) <nmax:
+                length_error=True
+
         if length_error:
             print('ONE OR MORE INPUT ARRAY HAS INCORRECT LENGTH: ',nmin,nmax)
+            print(len(self.id),len(self.m),len(self.x),len(self.y),len(self.z),len(self.x),len(self.y),len(self.z),len(self.m0),len(self.npop))
 
         if self.units == "radec" and self.origin == "sky":
             self.ra = np.append(self.ra, np.array(x))
@@ -479,12 +517,46 @@ class StarCluster(object):
 
         if analyze: self.analyze(sortstars=sortstars)
 
-        if m0 is not None:
-            self.m0=np.append(self.m0,m0)
-        else:
-            self.m0=np.append(self.m0,np.zeros(len(x)))
 
         self.ntot = len(self.x)
+
+def add_binary_stars(
+        self, xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2
+    ):
+        """Individually add binary stars to StarCluster.
+        Only an option with Nbody6pp with hdf5=True
+
+        Parameters
+        ----------
+        x,y,z: float
+            stellar positions. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
+            and self.origin=='sky', then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)
+        vx,vy,vz: float
+            atellar velocities. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
+            and self.origin=='sky', then positions are assumed to be pmra,pmdec,vlos (mas/yr, mas/yr, km/s)
+
+        Notes
+        -----
+        History:
+
+            - 2022 - Written - Webb (UofT)
+
+        """
+
+        self.xb1=xb1
+        self.yb1=yb1
+        self.zb1=zb1
+        self.vxb1=vxb1
+        self.vyb1=vyb1
+        self.vzb1=vzb1
+
+        self.xb2=xb2
+        self.yb2=yb2
+        self.zb2=zb2
+        self.vxb2=vxb2
+        self.vyb2=vyb2
+        self.vzb2=vzb2
+
 
     def add_orbit(
         self,
@@ -535,7 +607,6 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        print(ounits)
         if ounits != None and ounits != self.units:
             # First convert to kpckms
             if ounits != "kpckms":
@@ -559,7 +630,7 @@ class StarCluster(object):
                     zgc /= 1000.0
 
                 elif ounits == 'radec':
-                    o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,solarmotion=[-11.1, 24.0, 7.25])
+                    o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,solarmotion=solarmotion)
                     xgc=o.x()
                     ygc=o.y()
                     zgc=o.z()
@@ -700,6 +771,9 @@ class StarCluster(object):
         self.xc = xc
         self.yc = yc
         self.zc = zc
+        self.xcn = xc
+        self.ycn = yc
+        self.zcn = zc
         # Mass scaling parameter
         self.zmbar = zmbar
         # Velocity scaling parameter
@@ -933,7 +1007,7 @@ class StarCluster(object):
         else:
             self.qvir = self.ektot / self.ptot
 
-    def add_actions(self, JR, Jphi, Jz, OR=None, Ophi=None, Oz=None, TR=None, Tphi=None, Tz=None):
+    def add_action(self, JR, Jphi, Jz, OR=None, Ophi=None, Oz=None, TR=None, Tphi=None, Tz=None):
         """ Add action values to the cluster instance
 
         Parameters
@@ -956,6 +1030,30 @@ class StarCluster(object):
         self.JR, self.Jphi, self.Jz = JR, Jphi, Jz
         self.OR, self.Ophi, self.Oz = OR, Ophi, Oz
         self.TR, self.Tphi, self.Tz = TR, Tphi, Tz
+
+    def add_actions(self, JR, Jphi, Jz, OR=None, Ophi=None, Oz=None, TR=None, Tphi=None, Tz=None):
+        """ Add action values to the cluster instance
+
+        Parameters
+        ----------
+        JR,Jphi,Jz : float
+            orbit actions
+        OR,Ophi,Oz : float
+            orbit frequencies
+        TR,Tphi,Tz : float
+            orbit periods
+
+        Returns
+        -------
+        None
+
+        History
+        --------
+        2019 - Written - Webb (UofT)
+        """
+        self.JRs, self.Jphis, self.Jzs = JR, Jphi, Jz
+        self.ORs, self.Ophis, self.Ozs = OR, Ophi, Oz
+        self.TRs, self.Tphis, self.Tzs = TR, Tphi, Tz
 
     def analyze(self, sortstars = True, projected = True):
         """ Calculate properties related to mass, radius, and velocity
@@ -984,7 +1082,6 @@ class StarCluster(object):
         self.rpro = np.sqrt(self.x ** 2.0 + self.y ** 2.0)
         self.v = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0 + self.vz ** 2.0)
         self.vpro = np.sqrt(self.vx ** 2.0 + self.vy ** 2.0)
-        self.vlos = self.vz
 
         self.mtot = np.sum(self.m)
         self.mmean = np.mean(self.m)
@@ -1191,6 +1288,10 @@ class StarCluster(object):
         if self.units!=self.analyze_units or self.analyze_units!=self.units:
             self.analyze(sortstars=sortstars,projected=projected)
 
+    def subset(self,**kwargs):
+        self.indx=_get_subset(self,**kwargs)
+        return self.indx
+
     # Directly call from operations.py (see operations.py files for documenation):
 
     def to_pckms(self):
@@ -1202,8 +1303,8 @@ class StarCluster(object):
     def to_nbody(self, ro=8.0, vo=220.0):
         to_nbody(self, ro=ro, vo=vo)
 
-    def to_radec(self, sortstars=True, ro=8.0, vo=220.0):
-        to_radec(self, sortstars=sortstars, ro=ro, vo=vo)
+    def to_radec(self, sortstars=True,centre_method=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25]):
+        to_radec(self, sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo,solarmotion=solarmotion)
 
     def to_galpy(self, ro=8.0, vo=220.0):
         to_galpy(self, ro=ro, vo=vo)
@@ -1220,25 +1321,25 @@ class StarCluster(object):
     def to_centre(self, sortstars=True, centre_method=None):
         to_centre(self, sortstars=sortstars, centre_method=centre_method)
 
+    def to_center(self, sortstars=True, centre_method=None):
+        to_centre(self, sortstars=sortstars, centre_method=centre_method)
+
     def to_cluster(self, sortstars=True, centre_method=None):
         to_cluster(self, sortstars=sortstars, centre_method=centre_method)
 
     def to_galaxy(self, sortstars=True):
         to_galaxy(self, sortstars=sortstars)
 
-    def to_sky(self, sortstars=True):
-        to_sky(self, sortstars=sortstars)
-
-    def from_sky(self, sortstars=True):
-        from_sky(self, sortstars=sortstars)
+    def to_sky(self, sortstars=True, centre_method=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25]):
+        to_sky(self, sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo,solarmotion=solarmotion)
 
     def to_tail(self, plot=False):
         self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail=to_tail(self, plot=plot)
         self.r_tail = np.sqrt(self.x_tail ** 2.0 + self.y_tail ** 2.0 + self.z_tail ** 2.0)
         self.v_tail = np.sqrt(self.vx_tail ** 2.0 + self.vy_tail ** 2.0 + self.vz_tail ** 2.0)
 
-    def to_origin(self, origin, sortstars=True):
-        to_origin(self, origin, sortstars=sortstars)
+    def to_origin(self, origin, sortstars=True, centre_method=None):
+        to_origin(self, origin, sortstars=sortstars, centre_method=centre_method)
 
     def save_cluster(self):
         self.units0,self.origin0, self.rorder0, self.rorder_origin0=save_cluster(self)
@@ -1359,6 +1460,7 @@ class StarCluster(object):
         vystart=0.0,
         vzstart=0.0,
         indx=None,
+        nsphere=100,
         rmin=0.1,
         rmax=None,
         nmax=100,
@@ -1370,7 +1472,7 @@ class StarCluster(object):
 
         xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-            rmin=rmin,rmax=rma,nmax=nmax,ro=ro,vo=vo)
+            nsphere=nsphere,rmin=rmin,rmax=rma,nmax=nmax,ro=ro,vo=vo)
 
         if self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
@@ -1852,6 +1954,23 @@ class StarCluster(object):
 
         return self.tstar,self.dprog,self.dpath
 
+    def calc_action(self, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
+        if full:
+            JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_action(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion,full=full, **kwargs)
+        else: 
+            JR, Jphi, Jz = calc_action(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion, full=full, **kwargs)
+
+            OR,Ophi,Oz = np.zeros(self.ntot),np.zeros(self.ntot),np.zeros(self.ntot)
+            TR,Tphi,Tz = np.zeros(self.ntot),np.zeros(self.ntot),np.zeros(self.ntot)
+
+
+        self.add_action(JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz)
+
+        if full:
+            return JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz
+        else:
+            return JR, Jphi, Jz
+
     def calc_actions(self, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
         if full:
             JR, Jphi, Jz, OR, Ophi, Oz, TR, Tphi, Tz = calc_actions(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion,full=full, **kwargs)
@@ -1873,6 +1992,9 @@ class StarCluster(object):
         self.tidal_tensor=ttensor(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion, eigenval=eigenval,t=t)
         return self.tidal_tensor
 
+    def ttensors(self, pot=None, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25], eigenval=False,t=0.):
+        self.tidal_tensors=ttensors(self, pot=pot, ro=ro, vo=vo, solarmotion=solarmotion, eigenval=eigenval,t=t)
+        return self.tidal_tensors
 
     def tail_path(self,dt=0.1,no=1000,nt=100,ntail=100,pot=MWPotential2014,dmax=None,bintype='fix',from_centre=False,skypath=False,
         to_path=False,
@@ -1891,6 +2013,121 @@ class StarCluster(object):
 
         return self.tstar,self.dprog,self.dpath
 
+def _get_subset(
+    cluster,
+    rmin=None,
+    rmax=None,
+    mmin=None,
+    mmax=None,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    npop=None,
+    indx=[None],
+    projected=False,
+    **kwargs,
+):
+
+    """Generate a boolean array that corresponds to subset of star cluster members that meet a certain criteria
+
+    Parameters
+    ----------
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    vmin/vmax : float
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : int
+        minimum and maximum stellar type (kw)
+    npop : int
+        population number
+    indx : bool
+        user defined boolean array from which to extract the subset
+    projected : bool 
+        use projected values and constraints (default:False)
+
+    Returns
+    -------
+    indx : bool
+        boolean array that is True for stars that meet the criteria
+
+    History
+    -------
+    2022 - Written - Webb (UofT)
+
+    """    
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    if rmin == None:
+        rmin = np.amin(r)
+    if rmax == None:
+        rmax = np.amax(r)
+    if vmin == None:
+        vmin = np.amin(v)
+    if vmax == None:
+        vmax = np.amax(v)
+    if mmin == None:
+        mmin = np.amin(cluster.m)
+    if mmax == None:
+        mmax = np.amax(cluster.m)
+
+    if npop == None:
+        npopindx = np.ones(cluster.ntot,dtype=bool)
+    else:
+        npopindx=(cluster.npop == npop)
+
+    if emin == None and emax != None:
+        eindx = cluster.etot <= emax
+    elif emin != None and emax == None:
+        eindx = cluster.etot >= emin
+    elif emin != None and emax != None:
+        eindx = (cluster.etot <= emax) * (cluster.etot >= emin)
+    else:
+        eindx = np.ones(cluster.ntot,dtype=bool)
+
+    if len(cluster.kw) > 0:
+        kwindx=((cluster.kw >= kwmin) * (cluster.kw <= kwmax))
+    else:
+        kwindx = np.ones(cluster.ntot,dtype=bool)
+
+    if indx is None:
+        indx = np.ones(cluster.ntot,dtype=bool)
+    elif None in indx:
+        indx = np.ones(cluster.ntot,dtype=bool)
+
+    # Build subcluster containing only stars in the full radial and mass range:
+
+    try:
+
+        indx *= (
+            (r >= rmin)
+            * (r <= rmax)
+            * (cluster.m >= mmin)
+            * (cluster.m <= mmax)
+            * (v >= vmin)
+            * (v <= vmax)
+            * npopindx
+            * kwindx
+            * eindx
+        )
+
+    except:
+        print('SUBSET ERROR: ',rmin,rmax,mmin,mmax,vmin,vmax,np.sum(kwindx),np.sum(eindx))
+        indx=-1
+
+    return indx
+
 def sub_cluster(
     cluster,
     rmin=None,
@@ -1903,6 +2140,7 @@ def sub_cluster(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=[None],
     projected=False,
     sortstars=True,
@@ -1930,6 +2168,8 @@ def sub_cluster(
         minimum and maximum stellar energy
     kwmin/kwmax : int
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : bool
         user defined boolean array from which to extract the subset
     projected : bool 
@@ -1969,6 +2209,7 @@ def sub_cluster(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.amin(r)
     if rmax == None:
@@ -2006,6 +2247,10 @@ def sub_cluster(
 
     if len(cluster.kw) > 0:
         indx*=((cluster.kw >= kwmin) * (cluster.kw <= kwmax))
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
 
     if np.sum(indx) > 0:
 
@@ -2026,6 +2271,8 @@ def sub_cluster(
             cluster.vz[indx],
             cluster.m[indx],
             cluster.id[indx],
+            cluster.m0[indx],
+            cluster.npop[indx],
             sortstars=sortstars,
         )
 
@@ -2166,7 +2413,7 @@ def sub_cluster(
                 cluster.vzc,
             )
 
-            subcluster.ra_gc, subcluster.dec_gc, subcluster.dist_gc - cluster.ra_gc, cluster.dec_gc, cluster.dist_gc
+            subcluster.ra_gc, subcluster.dec_gc, subcluster.dist_gc = cluster.ra_gc, cluster.dec_gc, cluster.dist_gc
             subcluster.pmra_gc, subcluster.pmdec_gc, subcluster.vlos_gc = (
                 cluster.pmra_gc,
                 cluster.pmdec_gc,

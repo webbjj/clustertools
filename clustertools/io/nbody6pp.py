@@ -60,6 +60,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     nsnap = kwargs.pop("nsnap", 0)
     wdir = kwargs.get("wdir", './')
     deltat=kwargs.get('deltat',1)
+    dtout=kwargs.get('dtout',deltat)
 
     planets = kwargs.pop("planets", False)
 
@@ -123,6 +124,20 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.bunits='audays'
 
             cluster.add_sse(kw1,lbtot,np.maximum(r1b,r2b))
+
+            bm1, bm2 = m1b, m2b
+            bm = bm1 + bm2
+            bmr1 =  bm2 / bm
+            bmr2 = -bm1 / bm
+            bmr1a = bmr1 / 206265.0
+            bmr2a = bmr2 / 206265.0
+            xb1, yb1, zb1 = xc1 + bmr1a * xr1, xc2 + bmr1a * xr2, xc3 + bmr1a * xr3
+            vxb1, vyb1, vzb1 = vc1 + bmr1 * vr1,  vc2 + bmr1 * vr2,  vc3 + bmr1 * vr3
+            xb2, yb2, zb2 = xc1 + bmr2a * xr1, xc2 + bmr2a * xr2, xc3 + bmr2a * xr3
+            vxb2, vyb2, vzb2  = vc1 + bmr2 * vr1,  vc2 + bmr2 * vr2,  vc3 + bmr2 * vr3
+
+            cluster.add_binary_stars(xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2)
+
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
         cluster.add_sse(kw,lum,rs)
@@ -217,7 +232,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         cluster.analyze(sortstars=sortstars)
 
     if ofile != None:
-        _get_cluster_orbit(cluster, ofile, advance=advance, nsnap=int(nsnap/deltat),**kwargs)
+        _get_cluster_orbit(cluster, ofile, advance=advance, nsnap=int(nsnap/dtout),**kwargs)
            
 
     return cluster

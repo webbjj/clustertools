@@ -122,22 +122,40 @@ def snapout(cluster, filename, energies=False, radec=False):
                 ),
             )
         else:
-            np.savetxt(
-                filename,
-                np.column_stack(
-                    [
-                        cluster.m,
-                        cluster.x,
-                        cluster.y,
-                        cluster.z,
-                        cluster.vx,
-                        cluster.vy,
-                        cluster.vz,
-                        cluster.id,
-                        cluster.kw,
-                    ]
-                ),
-            )
+
+            if len(cluster.kw)==cluster.ntot:
+                np.savetxt(
+                    filename,
+                    np.column_stack(
+                        [
+                            cluster.m,
+                            cluster.x,
+                            cluster.y,
+                            cluster.z,
+                            cluster.vx,
+                            cluster.vy,
+                            cluster.vz,
+                            cluster.id,
+                            cluster.kw,
+                        ]
+                    ),
+                )
+            else:
+                np.savetxt(
+                    filename,
+                    np.column_stack(
+                        [
+                            cluster.m,
+                            cluster.x,
+                            cluster.y,
+                            cluster.z,
+                            cluster.vx,
+                            cluster.vy,
+                            cluster.vz,
+                            cluster.id,
+                        ]
+                    ),
+                )
 
     return 0
 

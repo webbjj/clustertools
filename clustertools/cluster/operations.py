@@ -26,6 +26,7 @@ __all__ = [
 ]
 
 import numpy as np
+from galpy.orbit import Orbit
 from galpy.util import _rotate_to_arbitrary_vector
 try:
     from galpy.util import coords,conversion
@@ -159,7 +160,7 @@ def to_kpckms(cluster, ro=8.0, vo=220.0):
         cluster.units = "kpckms"
 
     elif cluster.units == "nbody":
-        cluster.tphys *= cluster.tbar * 1000.0
+        cluster.tphys *= cluster.tbar / 1000.0
         cluster.m *= cluster.zmbar
         cluster.x *= cluster.rbar / 1000.0
         cluster.y *= cluster.rbar / 1000.0
@@ -271,7 +272,7 @@ def to_nbody(cluster, ro=8.0, vo=220.0):
 
     cluster.analyze()
 
-def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+def to_radec(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Convert to on-sky position, proper motion, and radial velocity of cluster
     
     Parameters
@@ -280,8 +281,8 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solar
         StarCluster
     sortstars : bool
         sort star by radius after coordinate change (default: False)
-    from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
+    centre_method : str
+        method for shifting coordinates to clustercentric coordinates (see to_cluster). (default: None)
     ro : float
         galpy radius scaling parameter
     vo : float
@@ -296,12 +297,23 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solar
     -------
    2018 - Written - Webb (UofT)
     """
-    if cluster.units != "radec" and cluster.origin != "sky":
 
+    origin0=cluster.origin
+
+    if cluster.units != "radec":
+
+        cluster.to_kpckms()
         cluster.to_galaxy()
 
-        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo,solarmotion=solarmotion)
+        if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
         if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
+
+        R, phi, z = coords.rect_to_cyl(cluster.xgc+cluster.xc, cluster.ygc+cluster.yc, cluster.zgc+cluster.zc)
+        vR, vT, vz = coords.rect_to_cyl_vec(cluster.vxgc+cluster.vxc, cluster.vygc+cluster.vyc, cluster.vzgc+cluster.vzc,cluster.xgc+cluster.xc, cluster.ygc+cluster.yc, cluster.zgc+cluster.zc)
+
+        oc = Orbit(
+            [R/ro, vR/vo, vT/vo, z/ro, vz/vo, phi], ro=ro, vo=vo, solarmotion=solarmotion
+        )
 
         cluster.ra=cluster.orbits.ra()
         cluster.dec=cluster.orbits.dec()
@@ -317,6 +329,13 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solar
         cluster.pmdec_gc=cluster.orbit.pmdec()
         cluster.vlos_gc=cluster.orbit.vlos()
 
+        cluster.ra_c=oc.ra()
+        cluster.dec_c=oc.dec()
+        cluster.dist_c=oc.dist()
+        cluster.pmra_c=oc.pmra()
+        cluster.pmdec_c=oc.pmdec()
+        cluster.vlos_c=oc.vlos()
+
         cluster.x = copy(cluster.ra)
         cluster.y = copy(cluster.dec)
         cluster.z = copy(cluster.dist)
@@ -331,21 +350,24 @@ def to_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solar
         cluster.vygc = copy(cluster.pmdec_gc)
         cluster.vzgc = copy(cluster.vlos_gc)
 
+        cluster.xc = copy(cluster.ra_c)
+        cluster.yc = copy(cluster.dec_c)
+        cluster.zc = copy(cluster.dist_c)
+        cluster.vxc = copy(cluster.pmra_c)
+        cluster.vyc = copy(cluster.pmdec_c)
+        cluster.vzc = copy(cluster.vlos_c)
+
         cluster.units = "radec"
         cluster.origin = "sky"
+
+        if origin0=='cluster':
+            cluster.to_cluster(centre_method=centre_method)
+        elif origin0=='centre':
+            cluster.to_centre(centre_method=centre_method)
+
         cluster.analyze(sortstars=sortstars)
 
-    elif cluster.units=='radec' and (cluster.origin=='cluster' or cluster.origin=='centre'):
-        cluster.x+=cluster.xgc
-        cluster.y+=cluster.ygc
-        cluster.z+=cluster.zgc
-        cluster.vx+=cluster.vxgc
-        cluster.vy+=cluster.vygc
-        cluster.vz+=cluster.vzgc
-        cluster.origin = "sky"
-        cluster.analyze(sortstars=sortstars)
-
-def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+def from_radec(cluster, sortstars=True, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
 
     Parameters
@@ -354,8 +376,6 @@ def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, sol
         StarCluster
     sortstars : bool
         sort star by radius after coordinate change (default: False)
-    from_centre : bool
-        genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     ro : float
         galpy radius scaling parameter
     vo : float
@@ -372,10 +392,36 @@ def from_radec(cluster, sortstars=True, from_centre=False, ro=8.0, vo=220.0, sol
     2018 - Written - Webb (UofT)
 
     """
+
+    if cluster.units=='radec' and cluster.origin!='sky':
+        cluster.to_sky()
+
     if cluster.units == "radec" and cluster.origin == "sky":
 
-        if cluster.orbit is None: cluster.initialize_orbit(from_centre,ro=ro,vo=vo,solarmotion=solarmotion)
+        if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
         if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
+
+
+        if cluster.xcn is not None:
+            cluster.xc,cluster.yc,cluster.zc=cluster.xcn,cluster.ycn,cluster.zcn
+            cluster.xc*=cluster.rbar/1000.
+            cluster.yc*=cluster.rbar/1000.
+            cluster.zc*=cluster.rbar/1000.
+            cluster.vxc=0.
+            cluster.vyc=0.
+            cluster.vzc=0.
+
+        else:
+            oc = Orbit(
+                [cluster.ra_c,cluster.dec_c,cluster.dist_c,cluster.pmra_c,cluster.pmdec_c,cluster.vlos_c], radec=True,ro=ro, vo=vo, solarmotion=solarmotion
+            )
+
+            cluster.xc=oc.x()
+            cluster.yc=oc.y()
+            cluster.zc=oc.z()
+            cluster.vxc=oc.vx()
+            cluster.vyc=oc.vy()
+            cluster.vzc=oc.vz()
 
         cluster.x = cluster.orbits.x()
         cluster.y = cluster.orbits.y()
@@ -478,9 +524,7 @@ def to_units(cluster, units, ro=8.0, vo=220.0):
     elif units == "kpckms":
         cluster.to_kpckms()
     elif units == "radec":
-        origin0 = cluster.origin
         cluster.to_radec(sortstars=False)
-        cluster.to_origin(origin0)
 
 def to_sudays(cluster):
     """ Convert binary star semi-major axis and periods to solar radii and days
@@ -569,26 +613,48 @@ def to_centre(cluster, sortstars=True, centre_method=None):
 
     """
 
-    if cluster.units=='radec':
-        if cluster.origin=='sky':
-            cluster.to_cluster()
-        cluster.origin = "centre"
+    if centre_method is not None:
+        cluster.centre_method = centre_method
 
-    elif cluster.origin != 'centre':
+    if cluster.origin != 'centre':
 
-        if cluster.origin != "cluster":
-            cluster.to_cluster(centre_method=centre_method)
+        if cluster.units=='radec':
+            if cluster.origin!='sky':
+                cluster.to_sky()
 
-        cluster.x -= cluster.xc
-        cluster.y -= cluster.yc
-        cluster.z -= cluster.zc
-        cluster.vx -= cluster.vxc
-        cluster.vy -= cluster.vyc
-        cluster.vz -= cluster.vzc
+            if cluster.centre_method == "orthographic":
+                _get_orthographic_centre(cluster,from_centre=True)
+            else:
+                if cluster.centre_method == "VandeVen":
+                    _get_vandeven_centre(cluster,from_centre=True)
+                else:
+                    cluster.x = (cluster.x - cluster.xc) * np.cos(np.radians(cluster.yc))
+                    cluster.y = cluster.y - cluster.yc
+
+                    cluster.z -= cluster.zc
+
+                    cluster.vx -= cluster.vxc
+                    cluster.vy -= cluster.vyc
+                    cluster.vz -= cluster.vzc
+
+
+        else:
+            if cluster.origin != "cluster":
+                cluster.to_cluster(centre_method=centre_method)
+
+            cluster.x -= cluster.xc
+            cluster.y -= cluster.yc
+            cluster.z -= cluster.zc
+            cluster.vx -= cluster.vxc
+            cluster.vy -= cluster.vyc
+            cluster.vz -= cluster.vzc
 
         cluster.origin = "centre"
 
         cluster.analyze(sortstars=sortstars)
+
+def to_center(cluster, sortstars=True, centre_method=None):
+    to_centre(cluster, sortstars=sortstars, centre_method=centre_method)
 
 
 def to_cluster(cluster, sortstars=True, centre_method=None):
@@ -624,59 +690,26 @@ def to_cluster(cluster, sortstars=True, centre_method=None):
         cluster.centre_method = centre_method
 
     if cluster.origin != "cluster":
-        if cluster.units == "radec" and cluster.origin == "sky":
-            ra = np.radians(cluster.x)
-            dec = np.radians(cluster.y)
-            pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
-            pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
-            ra_gc = np.radians(cluster.xgc)
-            dec_gc = np.radians(cluster.ygc)
+        if cluster.units == "radec":
+
+            if cluster.origin!='sky':
+                cluster.to_sky()
 
             if cluster.centre_method == "orthographic":
-                cluster.x = np.cos(dec) * np.sin(ra - ra_gc)
-                cluster.y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
-                    dec_gc
-                ) * np.cos(ra - ra_gc)
-                cluster.z = np.zeros(len(cluster.x))
-
-                cluster.vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
-                    ra - ra_gc
-                )
-                cluster.vy = pmra * np.sin(dec_gc) * np.sin(
-                    ra - ra_gc
-                ) + cluster.pmdec * (
-                    np.cos(dec) * np.cos(dec_gc)
-                    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
-                )
-
-                cluster.z -= cluster.zgc
-                cluster.vz -= cluster.vzgc
-
-
+                _get_orthographic_centre(cluster)
             else:
                 if cluster.centre_method == "VandeVen":
-                    cluster.x = (
-                        (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
-                    )
-                    cluster.y = (
-                        (10800.0 / np.pi)
-                        * (
-                            np.sin(dec) * np.cos(dec_gc)
-                            - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
-                        )
-                        / 60.0
-                    )
+                    _get_vandeven_centre(cluster)
                 else:
                     cluster.x = (cluster.x - cluster.xgc) * np.cos(np.radians(cluster.ygc))
                     cluster.y = cluster.y - cluster.ygc
 
-                cluster.z -= cluster.zgc
+                    cluster.z -= cluster.zgc
 
-                cluster.vx -= cluster.vxgc
-                cluster.vy -= cluster.vygc
-                cluster.vz -= cluster.vzgc
-        elif cluster.units=='radec' and cluster.origin=='centre':
-            pass
+                    cluster.vx -= cluster.vxgc
+                    cluster.vy -= cluster.vygc
+                    cluster.vz -= cluster.vzgc
+
         elif cluster.origin == "centre":
             cluster.x += cluster.xc
             cluster.y += cluster.yc
@@ -697,6 +730,89 @@ def to_cluster(cluster, sortstars=True, centre_method=None):
 
         cluster.analyze(sortstars=sortstars)
 
+def _get_orthographic_centre(cluster,from_centre=False):
+
+    if cluster.units!='radec' and cluster.origin!='sky':
+        cluster.to_radec()
+    elif cluster.units=='radec' and cluster.origin!='sky':
+        cluster.to_sky()
+
+    ra = np.radians(cluster.x)
+    dec = np.radians(cluster.y)
+    pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
+    pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
+
+    if from_centre:
+        ra_gc = np.radians(cluster.xc)
+        dec_gc = np.radians(cluster.yc)
+    else:
+        ra_gc = np.radians(cluster.xgc)
+        dec_gc = np.radians(cluster.ygc)
+
+    cluster.x = np.cos(dec) * np.sin(ra - ra_gc)
+    cluster.y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
+        dec_gc
+    ) * np.cos(ra - ra_gc)
+
+    cluster.vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
+        ra - ra_gc
+    )
+    cluster.vy = pmra * np.sin(dec_gc) * np.sin(
+        ra - ra_gc
+    ) + cluster.pmdec * (
+        np.cos(dec) * np.cos(dec_gc)
+        + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+    )
+
+    if from_centre:
+        cluster.z -= cluster.zc
+        cluster.vz -= cluster.vzc
+    else:
+        cluster.z -= cluster.zgc
+        cluster.vz -= cluster.vzgc
+
+def _get_vandeven_centre(cluster,from_centre=False):
+    if cluster.units!='radec' and cluster.origin!='sky':
+        cluster.to_radec()
+    elif cluster.units=='radec' and cluster.origin!='sky':
+        cluster.to_sky()
+
+    ra = np.radians(cluster.x)
+    dec = np.radians(cluster.y)
+    pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
+    pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
+
+    if from_centre:
+        ra_gc = np.radians(cluster.xc)
+        dec_gc = np.radians(cluster.yc)
+    else:
+        ra_gc = np.radians(cluster.xgc)
+        dec_gc = np.radians(cluster.ygc)
+
+    cluster.x = (
+        (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
+    )
+    cluster.y = (
+        (10800.0 / np.pi)
+        * (
+            np.sin(dec) * np.cos(dec_gc)
+            - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+        )
+        / 60.0
+    )
+
+    if from_centre:
+        cluster.z -= cluster.zc
+
+        cluster.vx -= cluster.vxc
+        cluster.vy -= cluster.vyc
+        cluster.vz -= cluster.vzc
+    else:
+        cluster.z -= cluster.zgc
+
+        cluster.vx -= cluster.vxgc
+        cluster.vy -= cluster.vygc
+        cluster.vz -= cluster.vzgc
 
 def to_galaxy(cluster, sortstars=True):
     """Shift coordinates to galactocentric reference frame
@@ -717,27 +833,29 @@ def to_galaxy(cluster, sortstars=True):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.units!='galaxy':
-        if cluster.units == "radec" and cluster.origin == "sky":
-            from_radec(cluster)
+    if cluster.units == "radec":
+        if cluster.origin!='sky':
+            cluster.to_sky()
 
-        elif cluster.origin != "galaxy":
-            if cluster.origin == "centre":
-                cluster.to_cluster(sortstars=False)
+        from_radec(cluster)
 
-            cluster.x += cluster.xgc
-            cluster.y += cluster.ygc
-            cluster.z += cluster.zgc
-            cluster.vx += cluster.vxgc
-            cluster.vy += cluster.vygc
-            cluster.vz += cluster.vzgc
+    elif cluster.origin != "galaxy":
+        if cluster.origin == "centre":
+            cluster.to_cluster(sortstars=False)
 
-            cluster.origin = "galaxy"
+        cluster.x += cluster.xgc
+        cluster.y += cluster.ygc
+        cluster.z += cluster.zgc
+        cluster.vx += cluster.vxgc
+        cluster.vy += cluster.vygc
+        cluster.vz += cluster.vzgc
 
-        cluster.analyze(sortstars=sortstars)
+        cluster.origin = "galaxy"
+
+    cluster.analyze(sortstars=sortstars)
 
 
-def to_sky(cluster, sortstars=True,):
+def to_sky(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Calculate on-sky position, proper motion, and radial velocity of cluster
         
     - Also changes units to radec
@@ -748,6 +866,8 @@ def to_sky(cluster, sortstars=True,):
         StarCluster
     sortstars : bool
         sort star by radius after coordinate change (default: False)
+    centre_method : str
+        method for shifting coordinates to clustercentric coordinates. (default: None)
 
     Returns
     -------
@@ -757,33 +877,23 @@ def to_sky(cluster, sortstars=True,):
     -------
     2018 - Written - Webb (UofT)
     """
-    cluster.to_radec()
+    if cluster.units=='radec' and cluster.origin!='sky':
+        cluster.x=copy(cluster.ra)
+        cluster.y=copy(cluster.dec)
+        cluster.z=copy(cluster.dist)
+        cluster.vx=copy(cluster.pmra)
+        cluster.vy=copy(cluster.pmdec)
+        cluster.vz=copy(cluster.vlos)
+
+        cluster.origin='sky'
+
+    elif cluster.units!='radec':
+        cluster.to_galaxy()
+        cluster.to_radec(sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
+
     cluster.analyze(sortstars=sortstars)
 
-def from_sky(cluster):
-    """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
-
-    - Also changes units to kpckms
-
-    Parameters
-    ----------
-    cluster : class
-        StarCluster
-    sortstars : bool
-        sort star by radius after coordinate change (default: False)
-
-    Returns
-    -------
-    None
-
-    History:
-    -------
-    2018 - Written - Webb (UofT)
-
-    """
-    cluster.from_radec()
-
-def to_origin(cluster, origin, sortstars=True):
+def to_origin(cluster, origin, sortstars=True, centre_method=None):
     """Shift cluster to origin as defined by keyword
 
     Parameters
@@ -794,6 +904,8 @@ def to_origin(cluster, origin, sortstars=True):
         origin of coordinate system to be shifted to (centre, cluster, galaxy, sky)
     sortstars : bool
         sort star by radius after coordinate change (default: False)
+    centre_method : str
+        method for shifting coordinates to clustercentric coordinates (see to_cluster). (default: None)
 
     Returns
     -------
@@ -805,13 +917,13 @@ def to_origin(cluster, origin, sortstars=True):
 
     """
     if origin == "centre":
-        cluster.to_centre(sortstars=sortstars)
+        cluster.to_centre(sortstars=sortstars,centre_method=centre_method)
     elif origin == "cluster":
-        cluster.to_cluster(sortstars=sortstars)
+        cluster.to_cluster(sortstars=sortstars,centre_method=centre_method)
     elif origin == "galaxy":
         cluster.to_galaxy(sortstars=sortstars)
     elif origin == "sky":
-        cluster.to_sky(sortstars=sortstars)
+        cluster.to_sky(sortstars=sortstars,centre_method=centre_method)
 
     cluster.analyze(sortstars=sortstars)
 

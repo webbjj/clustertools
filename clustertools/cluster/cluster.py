@@ -520,7 +520,7 @@ class StarCluster(object):
 
         self.ntot = len(self.x)
 
-def add_binary_stars(
+    def add_binary_stars(
         self, xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2
     ):
         """Individually add binary stars to StarCluster.

@@ -539,7 +539,7 @@ def add_binary_stars(
         -----
         History:
 
-            - 2022 - Written - Webb (UofT)
+        - 2022 - Written - Webb (UofT)
 
         """
 
@@ -556,7 +556,6 @@ def add_binary_stars(
         self.vxb2=vxb2
         self.vyb2=vyb2
         self.vzb2=vzb2
-
 
     def add_orbit(
         self,

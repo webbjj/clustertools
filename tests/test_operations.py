@@ -1127,4 +1127,516 @@ def test_to_sky(tol=0.01, ro=8., vo=220.):
 	assert np.all(np.fabs(cluster2.vy-cluster.vy) < tol)
 	assert np.all(np.fabs(cluster2.vz-cluster.vz) < tol)
 
+def test_to_origin(tol=0.01, ro=8., vo=220.):
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100)+xgc,np.random.rand(100)+ygc,np.random.rand(100)+zgc
+	vx,vy,vz=np.random.rand(100)+vxgc,np.random.rand(100)+vygc,np.random.rand(100)+vzgc
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('cluster',sortstars=True)
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xgc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.ygc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zgc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxgc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vygc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzgc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	cluster.to_origin('galaxy')
+	cluster.to_origin('radec',sortstars=True)
+
+	ra,dec,dist=copy(cluster.x),copy(cluster.y),copy(cluster.z)
+	pmra,pmdec,vlos=copy(cluster.vx),copy(cluster.vy),copy(cluster.vz)
+
+	pmdec_deg=copy(pmdec)
+
+	ra = np.radians(ra)
+	dec = np.radians(dec)
+	pmra = np.radians(pmra / (1000.0 * 3600.0))
+	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	ra_gc = np.radians(cluster.xgc)
+	dec_gc = np.radians(cluster.ygc)
+
+	x = np.cos(dec) * np.sin(ra - ra_gc)
+	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
+	    dec_gc
+	) * np.cos(ra - ra_gc)
+
+	z = np.zeros(len(x))
+
+	vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
+	    ra - ra_gc
+	)
+	vy = pmra * np.sin(dec_gc) * np.sin(
+	    ra - ra_gc
+	) + pmdec_deg * (
+	    np.cos(dec) * np.cos(dec_gc)
+	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+	)
+
+	z=cluster.z-cluster.zgc
+	vz=cluster.vz-cluster.vzgc
+
+	cluster.to_origin('cluster',centre_method = "orthographic")
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	cluster.to_origin('galaxy')
+	cluster.to_origin('radec')
+
+	ra,dec,dist=copy(cluster.x),copy(cluster.y),copy(cluster.z)
+	pmra,pmdec,vlos=copy(cluster.vx),copy(cluster.vy),copy(cluster.vz)
+
+	pmdec_deg=copy(pmdec)
+
+	ra = np.radians(ra)
+	dec = np.radians(dec)
+	pmra = np.radians(pmra / (1000.0 * 3600.0))
+	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	ra_gc = np.radians(cluster.xgc)
+	dec_gc = np.radians(cluster.ygc)
+
+	x = (
+	    (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
+	)
+	y = (
+	    (10800.0 / np.pi)
+	    * (
+	        np.sin(dec) * np.cos(dec_gc)
+	        - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+	    )
+	    / 60.0
+	)
+
+	z = cluster.z-cluster.zgc
+
+	vx = cluster.vx-cluster.vxgc
+	vy = cluster.vy-cluster.vygc
+	vz = cluster.vz-cluster.vzgc
+
+	cluster.to_orgin('cluster',centre_method = "VandeVen")
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+	vx,vy,vz=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('centre',sortstars=True)
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.yc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vyc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100)+xgc+xc,np.random.rand(100)+ygc+yc,np.random.rand(100)+zgc+zc
+	vx,vy,vz=np.random.rand(100)+vxgc+vxc,np.random.rand(100)+vygc+vyc,np.random.rand(100)+vzgc+vzc
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('centre',sortstars=True)
+
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xgc+cluster.xc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.ygc+cluster.yc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zgc+cluster.zc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxgc+cluster.vxc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vygc+cluster.vyc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzgc+cluster.vzc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	cluster.to_galaxy()
+	cluster.to_radec()
+
+	ra,dec,dist=copy(cluster.x),copy(cluster.y),copy(cluster.z)
+	pmra,pmdec,vlos=copy(cluster.vx),copy(cluster.vy),copy(cluster.vz)
+
+	pmdec_deg=copy(pmdec)
+
+	ra = np.radians(ra)
+	dec = np.radians(dec)
+	pmra = np.radians(pmra / (1000.0 * 3600.0))
+	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	ra_gc = np.radians(cluster.xc)
+	dec_gc = np.radians(cluster.yc)
+
+	x = np.cos(dec) * np.sin(ra - ra_gc)
+	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
+	    dec_gc
+	) * np.cos(ra - ra_gc)
+
+	z = np.zeros(len(x))
+
+	vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
+	    ra - ra_gc
+	)
+	vy = pmra * np.sin(dec_gc) * np.sin(
+	    ra - ra_gc
+	) + pmdec_deg * (
+	    np.cos(dec) * np.cos(dec_gc)
+	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+	)
+
+	z=cluster.z-cluster.zc
+	vz=cluster.vz-cluster.vzc
+
+	cluster.to_origin('centre',centre_method = "orthographic")
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	cluster.to_galaxy()
+	cluster.to_radec()
+
+	ra,dec,dist=copy(cluster.x),copy(cluster.y),copy(cluster.z)
+	pmra,pmdec,vlos=copy(cluster.vx),copy(cluster.vy),copy(cluster.vz)
+
+	pmdec_deg=copy(pmdec)
+
+	ra = np.radians(ra)
+	dec = np.radians(dec)
+	pmra = np.radians(pmra / (1000.0 * 3600.0))
+	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	ra_gc = np.radians(cluster.xc)
+	dec_gc = np.radians(cluster.yc)
+
+	x = (
+	    (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
+	)
+	y = (
+	    (10800.0 / np.pi)
+	    * (
+	        np.sin(dec) * np.cos(dec_gc)
+	        - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+	    )
+	    / 60.0
+	)
+
+	z = cluster.z-cluster.zc
+
+	vx = cluster.vx-cluster.vxc
+	vy = cluster.vy-cluster.vyc
+	vz = cluster.vz-cluster.vzc
+
+	cluster.to_origin('centre',centre_method = "VandeVen")
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+	vx,vy,vz=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('center',sortstars=True)
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.yc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vyc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100)+xgc+xc,np.random.rand(100)+ygc+yc,np.random.rand(100)+zgc+zc
+	vx,vy,vz=np.random.rand(100)+vxgc+vxc,np.random.rand(100)+vygc+vyc,np.random.rand(100)+vzgc+vzc
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('center',sortstars=True)
+
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xgc+cluster.xc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.ygc+cluster.yc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zgc+cluster.zc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxgc+cluster.vxc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vygc+cluster.vyc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzgc+cluster.vzc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	cluster.to_galaxy()
+	cluster.to_radec()
+
+	ra,dec,dist=copy(cluster.x),copy(cluster.y),copy(cluster.z)
+	pmra,pmdec,vlos=copy(cluster.vx),copy(cluster.vy),copy(cluster.vz)
+
+	pmdec_deg=copy(pmdec)
+
+	ra = np.radians(ra)
+	dec = np.radians(dec)
+	pmra = np.radians(pmra / (1000.0 * 3600.0))
+	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	ra_gc = np.radians(cluster.xc)
+	dec_gc = np.radians(cluster.yc)
+
+	x = np.cos(dec) * np.sin(ra - ra_gc)
+	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
+	    dec_gc
+	) * np.cos(ra - ra_gc)
+
+	z = np.zeros(len(x))
+
+	vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
+	    ra - ra_gc
+	)
+	vy = pmra * np.sin(dec_gc) * np.sin(
+	    ra - ra_gc
+	) + pmdec_deg * (
+	    np.cos(dec) * np.cos(dec_gc)
+	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+	)
+
+	z=cluster.z-cluster.zc
+	vz=cluster.vz-cluster.vzc
+
+	cluster.to_origin('center',centre_method = "orthographic")
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	cluster.to_galaxy()
+	cluster.to_radec()
+
+	ra,dec,dist=copy(cluster.x),copy(cluster.y),copy(cluster.z)
+	pmra,pmdec,vlos=copy(cluster.vx),copy(cluster.vy),copy(cluster.vz)
+
+	pmdec_deg=copy(pmdec)
+
+	ra = np.radians(ra)
+	dec = np.radians(dec)
+	pmra = np.radians(pmra / (1000.0 * 3600.0))
+	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	ra_gc = np.radians(cluster.xc)
+	dec_gc = np.radians(cluster.yc)
+
+	x = (
+	    (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
+	)
+	y = (
+	    (10800.0 / np.pi)
+	    * (
+	        np.sin(dec) * np.cos(dec_gc)
+	        - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+	    )
+	    / 60.0
+	)
+
+	z = cluster.z-cluster.zc
+
+	vx = cluster.vx-cluster.vxc
+	vy = cluster.vy-cluster.vyc
+	vz = cluster.vz-cluster.vzc
+
+	cluster.to_origin('center',centre_method = "VandeVen")
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+	vx,vy,vz=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('galaxy',sortstars=True)
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xgc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.ygc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zgc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxgc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vygc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzgc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+	vx,vy,vz=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='centre')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	rorder=copy(cluster.rorder)
+
+	cluster.to_origin('galaxy',sortstars=True)
+	assert np.all(np.fabs(x-cluster.x)-np.fabs(cluster.xgc+cluster.xc) < tol)
+	assert np.all(np.fabs(y-cluster.y)-np.fabs(cluster.ygc+cluster.yc) < tol)
+	assert np.all(np.fabs(z-cluster.z)-np.fabs(cluster.zgc+cluster.zc) < tol)
+	assert np.all(np.fabs(vx-cluster.vx)-np.fabs(cluster.vxgc+cluster.vxc) < tol)
+	assert np.all(np.fabs(vy-cluster.vy)-np.fabs(cluster.vygc+cluster.vyc) < tol)
+	assert np.all(np.fabs(vz-cluster.vz)-np.fabs(cluster.vzgc+cluster.vzc) < tol)
+	assert np.all(np.not_equal(cluster.rorder,rorder)==1)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100)+xgc,np.random.rand(100)+ygc,np.random.rand(100)+zgc
+	vx,vy,vz=np.random.rand(100)+vxgc,np.random.rand(100)+vygc,np.random.rand(100)+vzgc
+
+	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
+	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
+	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
+	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
+	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
+	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
+	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+
+	cluster.to_radec()
+	cluster.to_galaxy()
+
+	assert np.all(np.fabs(x-cluster.x) < tol)
+	assert np.all(np.fabs(y-cluster.y) < tol)
+	assert np.all(np.fabs(z-cluster.z) < tol)
+	assert np.all(np.fabs(vx-cluster.vx) < tol)
+	assert np.all(np.fabs(vy-cluster.vy) < tol)
+	assert np.all(np.fabs(vz-cluster.vz) < tol)
+
+	t=1.
+	m=np.random.rand(100)
+	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
+	xgc,ygc,zgc,vxgc,vygc,vzgc=10.0*np.random.rand(6)
+
+	x,y,z=np.random.rand(100)+xgc,np.random.rand(100)+ygc,np.random.rand(100)+zgc
+	vx,vy,vz=np.random.rand(100)+vxgc,np.random.rand(100)+vygc,np.random.rand(100)+vzgc
+
+	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
+	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
+	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
+	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
+	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
+	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
+	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+
+	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+	cluster.to_origin('sky')
+
+	cluster2=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
+	cluster2.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+	cluster2.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits='kpckms')
+	cluster2.xc,cluster.yc,cluster.zc=xc,yc,zc
+	cluster2.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+	cluster2.to_radec()
+
+	assert np.all(np.fabs(cluster2.x-cluster.x) < tol)
+	assert np.all(np.fabs(cluster2.y-cluster.y) < tol)
+	assert np.all(np.fabs(cluster2.z-cluster.z) < tol)
+	assert np.all(np.fabs(cluster2.vx-cluster.vx) < tol)
+	assert np.all(np.fabs(cluster2.vy-cluster.vy) < tol)
+	assert np.all(np.fabs(cluster2.vz-cluster.vz) < tol)
 

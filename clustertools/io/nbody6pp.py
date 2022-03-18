@@ -131,10 +131,15 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             bmr2 = -bm1 / bm
             bmr1a = bmr1 / 206265.0
             bmr2a = bmr2 / 206265.0
-            xb1, yb1, zb1 = xc1 + bmr1a * xr1, xc2 + bmr1a * xr2, xc3 + bmr1a * xr3
-            vxb1, vyb1, vzb1 = vc1 + bmr1 * vr1,  vc2 + bmr1 * vr2,  vc3 + bmr1 * vr3
-            xb2, yb2, zb2 = xc1 + bmr2a * xr1, xc2 + bmr2a * xr2, xc3 + bmr2a * xr3
-            vxb2, vyb2, vzb2  = vc1 + bmr2 * vr1,  vc2 + bmr2 * vr2,  vc3 + bmr2 * vr3
+            #xb1, yb1, zb1 = xc1 + bmr1a * xr1, xc2 + bmr1a * xr2, xc3 + bmr1a * xr3
+            #vxb1, vyb1, vzb1 = vc1 + bmr1 * vr1,  vc2 + bmr1 * vr2,  vc3 + bmr1 * vr3
+            #xb2, yb2, zb2 = xc1 + bmr2a * xr1, xc2 + bmr2a * xr2, xc3 + bmr2a * xr3
+            #vxb2, vyb2, vzb2  = vc1 + bmr2 * vr1,  vc2 + bmr2 * vr2,  vc3 + bmr2 * vr3
+
+            xb1, yb1, zb1 =  bmr1 * xr1, bmr1 * xr2, bmr1 * xr3
+            vxb1, vyb1, vzb1 = bmr1 * vr1,  bmr1 * vr2, bmr1 * vr3
+            xb2, yb2, zb2 = bmr2 * xr1, bmr2 * xr2, bmr2 * xr3
+            vxb2, vyb2, vzb2  = bmr2 * vr1,  bmr2 * vr2,  bmr2 * vr3
 
             cluster.add_binary_stars(xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2)
 

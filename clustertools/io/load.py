@@ -379,6 +379,7 @@ def advance_cluster(
 
     if ofile is None:
         ofile=cluster.ofile
+
     if kwargs.get("ofilename", None) is None:
         ofilename=cluster.ofilename
 
@@ -530,11 +531,15 @@ def advance_cluster(
         except:
             wdir = "./cont/"
 
-        if ofile is not None:
-            ofilename = ofile.name.split('/')[-1]
-            ofile=None
-
         if os.path.exists(wdir):
+
+            if ofile is not None:
+                ofilename = ofile.name.split('/')[-1]
+                kwargs.pop('ofilename')
+                ofile=None
+            else:
+                ofilename=kwargs.pop('ofilename',ofilename)
+            
             old_wdir=advance_kwargs.pop('wdir')
             cluster = load_cluster(
                 ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,

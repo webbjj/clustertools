@@ -374,6 +374,7 @@ def advance_cluster(
     -------
     2018 - Written - Webb (UofT)
     """
+    nsnap=None
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
     filename=_get_filename(filename,**advance_kwargs)
 
@@ -525,11 +526,11 @@ def advance_cluster(
 
     # Check for restart
     if cluster.ntot == 0.0:
-        #print('NTOT = 0',cluster.wdir,advance_kwargs.get('wdir','./'))
         try:
             wdir = cluster.wdir + "cont/"
         except:
             wdir = "./cont/"
+
 
         if os.path.exists(wdir):
 
@@ -539,11 +540,19 @@ def advance_cluster(
                 ofile=None
             else:
                 ofilename=kwargs.pop('ofilename',ofilename)
-            
+
             old_wdir=advance_kwargs.pop('wdir')
-            cluster = load_cluster(
-                ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
-            )
+
+            if nsnap is None:
+
+                cluster = load_cluster(
+                    ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
+                )
+
+            else:
+                   cluster = load_cluster(
+                    ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,orbit=orbit,filename=filename,nsnap=nsnap,load_function=load_function,wdir=wdir,ofilename=ofilename,**advance_kwargs, **kwargs,
+                )         
 
     if cluster.ntot != 0.0:
 

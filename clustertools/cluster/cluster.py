@@ -759,7 +759,7 @@ class StarCluster(object):
         """
 
         if isinstance(nc,list):
-            nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np=nc
+            nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,n_p=nc
 
         # Number of stars in the core
         self.nc = nc

@@ -425,7 +425,7 @@ def advance_cluster(
                     zmbar,vbar,tbar,rscale=cluster.zmbar,cluster.vbar,cluster.tbar,cluster.rscale
                     ns,nb,n_p=cluster.ns,cluster.nb,cluster.n_p
 
-                    nbody6list=[nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np]
+                    nbody6list=[nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,n_p]
 
                     if units0!='nbody': cluster.to_units(units0)
 

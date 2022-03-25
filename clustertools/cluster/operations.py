@@ -1057,13 +1057,15 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
 
     return zmbar,rbar,vbar,tbar
 
-def virialize(cluster, specific=True, full=full_default, projected=False):
+def virialize(cluster, qvir=0.5, specific=True, full=full_default, projected=False):
     """ Adjust stellar velocities so cluster is in virial equilibrium
 
     Parameters
     ----------
     cluster : class
         StarCluster
+    qvir : float
+        value you wish to virial parameter to be (default: 0.5)
     specific : bool
         find specific energies (default: True)
     full: bool
@@ -1085,11 +1087,11 @@ def virialize(cluster, specific=True, full=full_default, projected=False):
         cluster.to_centre()
 
     try:
-        qv = np.sqrt(np.abs(0.5 / cluster.qvir))
+        qv = np.sqrt(np.abs(qvir / cluster.qvir))
     except:
         print("NEED TO CALCULATE ENERGIES FIRST")
         cluster.energies(specific=specific, full=full, projected=projected)
-        qv = np.sqrt(np.abs(0.5 / cluster.qvir))
+        qv = np.sqrt(np.abs(qvir / cluster.qvir))
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 

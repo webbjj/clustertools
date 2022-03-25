@@ -758,6 +758,9 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
         """
 
+        if isinstance(nc,list):
+            nc,rc,rbar,rtide,xc,yc,zc,zmbar,vbar,tbar,rscale,ns,nb,np=nc
+
         # Number of stars in the core
         self.nc = nc
         # Core radius
@@ -1363,12 +1366,12 @@ class StarCluster(object):
         self.x,self.y,self.z,self.vx,self.vy,self.vz=add_rotation(self, qrot)
         self.qrot=qrot
 
-    def virialize(self, specific=True, full=True, projected=None):
+    def virialize(self, qvir=0.5,specific=True, full=True, projected=None):
 
         if projected==None:
             projected=self.projected
 
-        self.qv=virialize(self, specific=True, full=True, projected=projected)
+        self.qv=virialize(self, qvir=qvir, specific=True, full=True, projected=projected)
 
         self.save_cluster()
         units0,origin0, rorder0, rorder_origin0 = self.units0,self.origin0, self.rorder0, self.rorder_origin0

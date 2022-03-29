@@ -893,7 +893,7 @@ def to_sky(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarmot
 
     cluster.analyze(sortstars=sortstars)
 
-def to_origin(cluster, origin, sortstars=True, centre_method=None):
+def to_origin(cluster, origin, sortstars=True, centre_method=None,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Shift cluster to origin as defined by keyword
 
     Parameters
@@ -916,14 +916,16 @@ def to_origin(cluster, origin, sortstars=True, centre_method=None):
     2018 - Written - Webb (UofT)
 
     """
-    if origin == "centre":
+    if origin == "centre" or origin=="center":
         cluster.to_centre(sortstars=sortstars,centre_method=centre_method)
     elif origin == "cluster":
         cluster.to_cluster(sortstars=sortstars,centre_method=centre_method)
     elif origin == "galaxy":
         cluster.to_galaxy(sortstars=sortstars)
     elif origin == "sky":
-        cluster.to_sky(sortstars=sortstars,centre_method=centre_method)
+        cluster.to_sky(sortstars=sortstars,centre_method=centre_method, ro=ro, vo=vo, solarmotion=solarmotion)
+    elif origin == "radec":
+        cluster.to_radec(sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
 
     cluster.analyze(sortstars=sortstars)
 

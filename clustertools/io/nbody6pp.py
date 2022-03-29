@@ -339,6 +339,7 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
     header=bev.readline().split()
     nb,tphys=int(header[0]),float(header[1])
 
+    """
     i_d1=np.array([])
     i_d2=np.array([])
     kw1=np.array([])
@@ -404,9 +405,43 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
             zl1=np.append(zl1,zl2b[-1])
             r1=np.append(r1,r1b[-1])
             r1=np.append(r1,r2b[-1])
+    """
+
+    data=np.loadtxt(bev.name,skiprows=1)
+
+    arg1=data[:,1].astype(int)
+    arg2=data[:,2].astype(int)
+    i_d1=data[:,3].astype(int)
+    i_d2=data[:,4].astype(int)
+    kw1=data[:,5].astype(int)
+    kw2=data[:,6].astype(int)
+    kwb=data[:,7].astype(int)
+    rib=data[:,8].astype(float)
+    ecc=data[:,9].astype(float)
+    pb=data[:,10].astype(float)
+    semi=data[:,11].astype(float)
+    m1b=data[:,12].astype(float)
+    m2b=data[:,13].astype(float)
+
+    if len(data)>=14:
+        zl1b=data[:,14].astype(float)
+        zl2b=data[:,15].astype(float)
+        r1b=data[:,16].astype(float)
+        r2b=data[:,17].astype(float)
+        te1=data[:,18].astype(float)
+        te2=data[:,19].astype(float)
+    else:
+        zl1b=np.zeros(len(i_d1))
+        zl2b=np.zeros(len(i_d1))
+        r1b=np.zeros(len(i_d1))
+        r2b=np.zeros(len(i_d1))
+        te1=np.zeros(len(i_d1))
+        te2=np.zeros(len(i_d1))
 
     header=sev.readline().split()
     ntot,tphys=int(header[0]),float(header[1])
+
+    """
 
     for i in range(0,ntot):
         data=sev.readline().split()
@@ -429,6 +464,23 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
             zl1=np.append(zl1,float(data[6]))
             r1=np.append(r1,float(data[7]))
             te=np.append(te,float(data[8]))
+    """
+
+    data=np.loadtxt(sev.name,skiprows=1)
+
+    arg=data[:,1].astype(int)
+    i_d=data[:,2].astype(int)
+    kw=data[:,3].astype(int)
+    ri=data[:,4].astype(float)
+    mi=data[:,5].astype(float)
+    zl1=data[:,6].astype(int)
+    r1=data[:,7].astype(float)
+    te=data[:,8].astype(float)
+
+    np.nan_to_num(zl1,copy=False)
+    np.nan_to_num(r1,copy=False)
+    np.nan_to_num(te,copy=False)
+
 
     return arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
 

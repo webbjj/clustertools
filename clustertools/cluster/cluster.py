@@ -1335,13 +1335,13 @@ class StarCluster(object):
     def to_sky(self, sortstars=True, centre_method=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25]):
         to_sky(self, sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo,solarmotion=solarmotion)
 
-    def to_tail(self, plot=False):
-        self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail=to_tail(self, plot=plot)
+    def to_tail(self):
+        self.x_tail,self.y_tail,self.z_tail,self.vx_tail,self.vy_tail,self.vz_tail=to_tail(self)
         self.r_tail = np.sqrt(self.x_tail ** 2.0 + self.y_tail ** 2.0 + self.z_tail ** 2.0)
         self.v_tail = np.sqrt(self.vx_tail ** 2.0 + self.vy_tail ** 2.0 + self.vz_tail ** 2.0)
 
-    def to_origin(self, origin, sortstars=True, centre_method=None):
-        to_origin(self, origin, sortstars=sortstars, centre_method=centre_method)
+    def to_origin(self, origin, sortstars=True, centre_method=None,ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25]):
+        to_origin(self, origin, sortstars=sortstars, centre_method=centre_method, ro=ro, vo=vo, solarmotion=solarmotion)
 
     def save_cluster(self):
         self.units0,self.origin0, self.rorder0, self.rorder_origin0=save_cluster(self)
@@ -1354,7 +1354,7 @@ class StarCluster(object):
 
         return_cluster(self, units0, origin0, rorder0, rorder_origin0)
 
-    def reset_nbody_scale(self, mass=True, radii=True, rvirial=False, projected=None, **kwargs):
+    def reset_nbody_scale(self, mass=True, radii=True, rvirial=True, projected=None, **kwargs):
         if projected==None:
             projected=self.projected
 

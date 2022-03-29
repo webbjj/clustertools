@@ -3,9 +3,10 @@ import numpy as np
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014,PlummerPotential,IsochronePotential,KeplerPotential
 try:
-	from galpy.util import conversion
+	from galpy.util import conversion,coords
 except:
 	import galpy.util.bovy_conversion as conversion
+	import galpy.util.bovy_coords as coords
 
 from copy import copy
 
@@ -1230,7 +1231,7 @@ def test_to_origin(tol=0.01, ro=8., vo=220.):
 	vy = cluster.vy-cluster.vygc
 	vz = cluster.vz-cluster.vzgc
 
-	cluster.to_orgin('cluster',centre_method = "VandeVen")
+	cluster.to_origin('cluster',centre_method = "VandeVen")
 
 	assert np.all(np.fabs(x-cluster.x) < tol)
 	assert np.all(np.fabs(y-cluster.y) < tol)
@@ -1639,4 +1640,101 @@ def test_to_origin(tol=0.01, ro=8., vo=220.):
 	assert np.all(np.fabs(cluster2.vx-cluster.vx) < tol)
 	assert np.all(np.fabs(cluster2.vy-cluster.vy) < tol)
 	assert np.all(np.fabs(cluster2.vz-cluster.vz) < tol)
+
+def test_save_cluster():
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+
+	units0,origin0,rorder0,rorder_origin0=ctools.save_cluster(cluster)
+	cluster.save_cluster()
+
+	assert units0==cluster.units0
+	assert origin0==cluster.origin0
+	assert np.all(rorder0==cluster.rorder0)
+	assert rorder_origin0==cluster.rorder_origin0
+
+def test_return_cluster():
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	units0,origin0,rorder0,rorder_origin0=ctools.save_cluster(cluster)
+
+	cluster.to_galpy()
+	cluster.to_galaxy()
+
+	cluster.return_cluster(units0,origin0,rorder0,rorder_origin0)
+
+	assert units0==cluster.units
+	assert origin0==cluster.origin
+	assert np.all(rorder0==cluster.rorder)
+	assert rorder_origin0==cluster.rorder_origin
+
+def test_reset_nbody_scale(tol=0.01):
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster.reset_nbody_scale()
+	cluster.to_nbody()
+	cluster.virial_radius()
+
+	assert np.fabs(cluster.mtot-1. <= tol)
+	assert np.fabs(cluster.rv-1. <= tol)
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+
+	mtot0=cluster.mtot
+
+	cluster.reset_nbody_scale(mass=False)
+	cluster.to_nbody()
+	cluster.virial_radius()
+
+	assert np.fabs(cluster.mtot-mtot0 <= tol)
+	assert np.fabs(cluster.rv-1. <= tol)
+
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+
+	rv0=cluster.virial_radius()
+
+	cluster.reset_nbody_scale(radius=False)
+	cluster.to_nbody()
+	cluster.virial_radius()
+
+	assert np.fabs(cluster.mtot-1. <= tol)
+	assert np.fabs(cluster.rv-rv0 <= tol)
+
+def test_add_rotation(tol=0.1):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	vr, vtheta, vz = coords.rect_to_cyl_vec(
+	    cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+	)
+
+	negvtheta0=np.sum(vtheta<0)
+	posvtheta0=np.sum(vtheta>=0)
+
+	qrot=0.5
+
+	cluster.add_rotation(qrot)
+
+	vr, vtheta, vz = coords.rect_to_cyl_vec(
+	    cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+	) 
+
+	negvtheta=np.sum(vtheta<0)
+	posvtheta=np.sum(vtheta>=0)
+
+	assert np.fabs(negvtheta/negvtheta0-qrot) <= tol
+
+
+def test_virialize(tol=0.01):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+
+	cluster.energies()
+
+	qv=np.sqrt(-0.5/cluster.qvir)
+
+	cluster.virialize()
+	cluster.energies()
+
+	assert cluster.qvir==-0.5
+	assert cluster.qv==qv
+
+
 

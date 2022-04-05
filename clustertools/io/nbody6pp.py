@@ -408,7 +408,11 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
     """
 
     if nb>0:
+
         data=np.loadtxt(bev.name,skiprows=1)
+
+        if nb==1:
+            data=data.reshape(1,len(data))
 
         arg1=data[:,1].astype(int)
         arg2=data[:,2].astype(int)

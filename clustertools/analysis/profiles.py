@@ -209,7 +209,12 @@ def rho_prof(
             xlabel=r"$r \ %s$" % xunits
             ylabel=r"$\rho \ %s$" % yunits
 
+
         x, y, n = rprof, pprof, nprof
+
+        if normalize:
+            x/=cluster.rm
+
         _lplot(
             x,
             y,
@@ -226,6 +231,8 @@ def rho_prof(
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if normalize:
+        rprof/=cluster.rm
 
     return rprof, pprof, nprof
 
@@ -308,9 +315,9 @@ def m_prof(
     elif normalize:
         cluster.sortstars()
         
-    rprof = []
-    mprof = []
-    nprof = []
+    rprof = np.array([])
+    mprof = np.array([])
+    nprof = np.array([])
 
     if projected:
         r = cluster.rpro
@@ -357,7 +364,11 @@ def m_prof(
 
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    if kwargs.pop('bintype','num')=='fix':
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -367,10 +378,10 @@ def m_prof(
             rindx = indx * (r < r_upper[i])
         else:
             rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
-        rprof.append(r_mean[i])
+        rprof=np.append(rprof,r_mean[i])
 
-        mprof.append(np.sum(cluster.m[rindx]))
-        nprof.append(np.sum(rindx))
+        mprof=np.append(mprof,np.sum(cluster.m[rindx]))
+        nprof=np.append(nprof,np.sum(rindx))
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -392,6 +403,9 @@ def m_prof(
             xunits = ""
             yunits = ""
 
+        if normalize:
+            x/=cluster.rm
+
         x, y, n = rprof, mprof, nprof
         _lplot(
             x,
@@ -409,6 +423,8 @@ def m_prof(
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if normalize:
+        rprof/=cluster.rm
 
     return rprof, mprof, nprof
 
@@ -521,9 +537,9 @@ def alpha_prof(
     else:
         return_error=True
 
-    lrprofn = []
-    aprof = []
-    eaprof= []
+    lrprofn = np.array([])
+    aprof = np.array([])
+    eaprof= np.array([])
 
 
     if projected:
@@ -604,17 +620,17 @@ def alpha_prof(
         if alpha > -100:
             if normalize:
                 if projected:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rmpro))
                 else:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rm))
             else:
                 if projected:
-                    lrprofn.append(np.log(r_mean[i]))
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i]))
                 else:
-                    lrprofn.append(np.log(r_mean[i]))
+                    lrprofn=np.append(lrprofn,np.log(r_mean[i]))
 
-            aprof.append(alpha)
-            eaprof.append(ealpha)
+            aprof=np.append(aprof,alpha)
+            eaprof=np.append(eaprof,ealpha)
 
     if len(lrprofn) > 3:
         (dalpha, ydalpha), V = np.polyfit(lrprofn, aprof, 1, cov=True)
@@ -813,7 +829,11 @@ def sigv_prof(
             ylabel=r"$\sigma_v$"
 
 
-    if kwargs.pop('bintype','num')=='fix':
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -990,7 +1010,11 @@ def beta_prof(
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
-    if kwargs.pop('bintype','num')=='fix':
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -1201,8 +1225,11 @@ def v_prof(
             ylabel=r"$<v>$"
 
 
-
-    if kwargs.pop('bintype','num')=='fix':
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
@@ -1596,7 +1623,11 @@ def eta_prof(
 
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    if kwargs.pop('bintype','num')=='fix':
+    bins=kwargs.pop('bins',None)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
         r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)

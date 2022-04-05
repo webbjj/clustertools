@@ -215,7 +215,7 @@ class PlanetarySystem(object):
         self.axt=ax
         self.ayt=ay
         self.azt=az
-        self.ecct=ecc
+        self.ecct=ecc #number of timesteps x number planets
         self.inct=inc
         self.at=a
         self.energyt=energy

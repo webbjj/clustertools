@@ -223,11 +223,9 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
     
-            sseindx=np.logical_or(np.logical_or(np.in1d(cluster.id,i_d),np.in1d(cluster.id,i_d1)),np.in1d(cluster.id,i_d2))
-
-            if np.sum(sseindx) != cluster.ntot:
-                if verbose: print('SSE/BSE NBODY6++ ERROR',cluster.ntot-np.sum(sseindx))
-                nextra=cluster.ntot-np.sum(sseindx)
+            if cluster.ntot != len(kw):
+                if verbose: print('SSE/BSE NBODY6++ ERROR',cluster.ntot-len(kw))
+                nextra=cluster.ntot-len(kw)
                 cluster.add_sse(np.zeros(nextra),np.ones(nextra)*-10,np.ones(nextra))
 
 
@@ -442,6 +440,34 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
             r2b=np.zeros(len(i_d1))
             te1=np.zeros(len(i_d1))
             te2=np.zeros(len(i_d1))
+
+        argbs=np.array([])
+        idbs=np.array([])
+        kwbs=np.array([])
+        ribs=np.array([])
+        m1bs=np.array([])
+        zl1bs=np.array([])
+        r1bs=np.array([])
+        tebs=np.array([])
+
+        for i in range(0,len(arg1)):
+            argbs=np.append(argbs,arg1[i])
+            argbs=np.append(argbs,arg2[i])
+            idbs=np.append(idbs,id1[i])
+            idbs=np.append(idbs,id2[i])
+            kwbs=np.append(kwbs,k1[i])
+            kwbs=np.append(kwbs,k2[i])
+            ribs=np.append(ribs,rib[i])
+            ribs=np.append(ribs,rib[i])
+            m1bs=np.append(m1bs,m1b[i])
+            m1bs=np.append(m1bs,m2b[i])
+            zl1bs=np.append(zl1bs,zl1b[i])
+            zl1bs=np.append(zl1bs,zl2b[i])
+            r1bs=np.append(r1bs,r1b[i])
+            r1bs=np.append(r1bs,r2b[i])
+            tebs=np.append(tebs,te1[i])
+            tebs=np.append(tebs,te2[i])
+
     else:
         i_d1=np.array([])
         i_d2=np.array([])
@@ -495,7 +521,7 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
     i_d=data[:,2].astype(int)
     kw=data[:,3].astype(int)
     ri=data[:,4].astype(float)
-    mi=data[:,5].astype(float)
+    m1=data[:,5].astype(float)
     zl1=data[:,6].astype(int)
     r1=data[:,7].astype(float)
     te=data[:,8].astype(float)
@@ -504,6 +530,16 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
     np.nan_to_num(r1,copy=False)
     np.nan_to_num(te,copy=False)
 
+    #Add select parameters to single star array
+    if len(i_d1)>0:
+        arg=np.append(arbs,arg)
+        i_d=np.append(idbs,i_d)
+        kw=np.append(kwbs,kw)
+        ri=np.append(ribs,ri)
+        m1=np.append(m1bs,m1)
+        zl1=np.append(zl1bs,zl1)
+        r1=np.append(r1bs,r1)
+        te=np.append(tebs,te)
 
     return arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2
 

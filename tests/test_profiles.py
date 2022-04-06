@@ -184,5 +184,42 @@ def test_m_prof(tol=0.1):
 	assert np.all(np.fabs(nprof/nprof_ex-1) < tol)
 
 	
+def test_alpha_prof(tol=0.5):
+	#Create a homogenous cluster so rho should be the same everywhere
+	rho0=1.0
 
+	mmin=0.1
+	mmax=1.0
+
+	rlower=np.arange(0,20,1)
+	rupper=np.arange(1,21,1)
+	rmid=(rupper+rlower)/2.
+
+	alphas=np.arange(1,6,0.25)
+
+	x=np.array([])
+	m=np.array([])
+	nbin=1000
+	for i,a in enumerate(alphas):
+		xnew=np.random.uniform(rlower[i],rupper[i],nbin)
+		x=np.append(x,xnew)
+		mnew=mmin + np.random.power(a+1, nbin) * (mmax - mmin)
+		m=np.append(m,mnew)
+
+	n=len(x)
+	y=np.zeros(n)
+	z=np.zeros(n)
+	vx,vy,vz=np.zeros(n),np.zeros(n),np.zeros(n)
+
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m,analyze=True,sortstars=True)
+
+	#Test fixed bin
+	lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = ctools.alpha_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
+
+	print(aprof)
+	print(alphas)
+
+	assert np.all(np.fabs(aprof/alphas-1) < tol)
+	assert np.all(np.fabs(np.exp(lrprofn)/((rlower+rupper)/2.)-1) < tol)
 

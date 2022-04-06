@@ -45,6 +45,7 @@ def rho_prof(
     kwmax=15,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     plot=False,
@@ -72,6 +73,8 @@ def rho_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -154,8 +157,6 @@ def rho_prof(
     """
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -252,6 +253,7 @@ def m_prof(
     kwmax=15,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     cumulative=False,
@@ -280,6 +282,8 @@ def m_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -364,7 +368,6 @@ def m_prof(
 
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -444,8 +447,10 @@ def alpha_prof(
     kwmax=1,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=True,
+    lnr=True,
     r_lower=None,
     r_upper=None,
     aerror=False,
@@ -480,6 +485,8 @@ def alpha_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -549,60 +556,22 @@ def alpha_prof(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw)>0:
-        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-
-    """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-
-    if r_lower is None:
-        if kwargs.pop('bintype','num')=='fix':
-            r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
-        else:
-            r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
-    else:
-        r_mean=np.zeros(len(r_lower))
-        r_hist=np.zeros(len(r_lower))
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+        r_mean=np.zeros(len(r_mean))
 
         for i in range(0,len(r_lower)):
             rindx=(r[indx] >= r_lower[i]) * (r[indx]<r_upper[i])
             r_mean[i]=np.mean(r[rindx])
             r_hist[i]=np.sum(rindx)
 
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     rbinerror=np.zeros(len(r_mean))
 
@@ -619,6 +588,7 @@ def alpha_prof(
 
         if alpha > -100:
             if normalize:
+
                 if projected:
                     lrprofn=np.append(lrprofn,np.log(r_mean[i] / cluster.rmpro))
                 else:
@@ -691,6 +661,7 @@ def sigv_prof(
     kwmax=None,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     coord=None,
     normalize=False,
@@ -719,6 +690,8 @@ def sigv_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     coord : str
@@ -828,8 +801,6 @@ def sigv_prof(
         else:
             ylabel=r"$\sigma_v$"
 
-
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -896,6 +867,7 @@ def beta_prof(
     kwmax=None,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     plot=False,
@@ -923,6 +895,8 @@ def beta_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -1010,7 +984,6 @@ def beta_prof(
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
 
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -1086,6 +1059,7 @@ def v_prof(
     kwmax=15,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     coord=None,
     normalize=False,
@@ -1224,8 +1198,6 @@ def v_prof(
         else:
             ylabel=r"$<v>$"
 
-
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -1296,6 +1268,7 @@ def v2_prof(
     kwmax=15,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     coord=None,
     normalize=False,
@@ -1434,7 +1407,6 @@ def v2_prof(
         else:
             ylabel=r"$<v^2>$"
 
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -1505,6 +1477,7 @@ def eta_prof(
     kwmax=1,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=True,
     plot=False,
@@ -1623,7 +1596,6 @@ def eta_prof(
 
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    bins=kwargs.pop('bins',None)
     if bins is not None:
         r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
         r_hist=np.zeros(len(r_mean))
@@ -1729,6 +1701,7 @@ def meq_prof(
     kwmax=1,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=True,
     plot=False,
@@ -1759,6 +1732,8 @@ def meq_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -1807,6 +1782,7 @@ def meq_prof(
         kwmax=kwmax,
         npop=npop,
         indx=indx,
+        bins=bins,
         projected=projected,
         normalize=normalize,
         plot=plot,

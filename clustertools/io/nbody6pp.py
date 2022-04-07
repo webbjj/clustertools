@@ -532,7 +532,7 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
 
     #Add select parameters to single star array
     if len(i_d1)>0:
-        arg=np.append(arbs,arg)
+        arg=np.append(argbs,arg)
         i_d=np.append(idbs,i_d)
         kw=np.append(kwbs,kw)
         ri=np.append(ribs,ri)

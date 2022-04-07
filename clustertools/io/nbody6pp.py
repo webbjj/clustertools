@@ -453,8 +453,8 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
         for i in range(0,len(arg1)):
             argbs=np.append(argbs,arg1[i])
             argbs=np.append(argbs,arg2[i])
-            idbs=np.append(idbs,id1[i])
-            idbs=np.append(idbs,id2[i])
+            idbs=np.append(idbs,i_d1[i])
+            idbs=np.append(idbs,i_d2[i])
             kwbs=np.append(kwbs,k1[i])
             kwbs=np.append(kwbs,k2[i])
             ribs=np.append(ribs,rib[i])

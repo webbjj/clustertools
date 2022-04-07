@@ -190,21 +190,31 @@ def test_alpha_prof(tol=0.5):
 
 	mmin=0.1
 	mmax=1.0
+	mbins=np.arange(mmin,mmax+0.1,0.1)
 
-	rlower=np.arange(0,20,1)
-	rupper=np.arange(1,21,1)
+	dm=0.1/2
+
+	rlower=np.arange(0,20,2)
+	rupper=np.arange(1,21,2)
 	rmid=(rupper+rlower)/2.
 
-	alphas=np.arange(1,6,0.25)
+	alphas=np.arange(0,1,0.1)
 
 	x=np.array([])
 	m=np.array([])
 	nbin=1000
 	for i,a in enumerate(alphas):
-		xnew=np.random.uniform(rlower[i],rupper[i],nbin)
+		mfrac=mbins**a
+		mfrac/=np.sum(mfrac)
+		mtot=(mfrac*nbin).astype(int)
+		mnew=np.array([])
+		for j in range(0,len(mtot)):
+			mnew=np.append(mnew,np.ones(mtot[j])*mbins[j])
+
+		m=np.append(m,mnew+np.random.uniform(-dm,dm,len(mnew)))
+
+		xnew=np.random.uniform(rlower[i],rupper[i],len(mnew))
 		x=np.append(x,xnew)
-		mnew=mmin + np.random.power(a+1, nbin) * (mmax - mmin)
-		m=np.append(m,mnew)
 
 	n=len(x)
 	y=np.zeros(n)
@@ -215,11 +225,11 @@ def test_alpha_prof(tol=0.5):
 	cluster.add_stars(x,y,z,vx,vy,vz,m,analyze=True,sortstars=True)
 
 	#Test fixed bin
-	lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = ctools.alpha_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
+	lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = ctools.alpha_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),nrad=10,nmass=10,mbintype='fix')
+	assert np.all(np.fabs(alphas-aprof) < tol)
+	assert np.all(np.fabs(cluster.rm*np.exp(lrprofn)/((rlower+rupper)/2.)-1) < tol)
 
-	print(aprof)
-	print(alphas)
-
-	assert np.all(np.fabs(aprof/alphas-1) < tol)
-	assert np.all(np.fabs(np.exp(lrprofn)/((rlower+rupper)/2.)-1) < tol)
+	#Test fixed bin
+	lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = ctools.alpha_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),nrad=10,nmass=10,mbintype='num')
+	assert np.all(np.fabs(alphas-aprof) < tol)
 

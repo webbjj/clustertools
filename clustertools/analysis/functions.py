@@ -1168,7 +1168,10 @@ def mass_function(
 
     if np.sum(indx) >= nmass:
 
-        m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
+        if kwargs.get('bintype','num')=='fix' or kwargs.get('mbintype','num')=='fix':
+            m_lower, m_mean, m_upper, m_hist = binmaker(cluster.m[indx], nmass)
+        else:
+            m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
 
         m_corr_hist = np.zeros(len(m_hist))
         for i in range(0, len(m_hist)):

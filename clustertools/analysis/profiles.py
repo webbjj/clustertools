@@ -1971,22 +1971,19 @@ def vcirc_prof(
         args=np.zeros(len(r_mean))
         for i in range(0,len(args)):
             args[i]=np.argmin(np.fabs(r-r_mean[i]))
-    elif kwargs.get('bintype',None)=='fix':
+    elif kwargs.get('bintype','num')=='fix' and nrad is not None:
         r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
         args=np.zeros(len(r_mean))
         for i in range(0,len(args)):
             args[i]=np.argmin(np.fabs(r-r_mean[i]))
-    elif kwargs.get('bintype',None)=='num':
+    elif kwargs.get('bintype','num')=='num' and nrad is not None:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
         args=np.zeros(len(r_mean))
         for i in range(0,len(args)):
             args[i]=np.argmin(np.fabs(r-r_mean[i]))
-    else:
-        if nrad is None:
-            args=np.arange(0,len(r),1)
-        else:
-            args=np.linspace(1,nrad,nrad)
-            args=(args*len(r))/nrad-1
+    elif nrad is None:
+        args=np.arange(0,len(r),1)
+
 
     args=args.astype(int)
 

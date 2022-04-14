@@ -1,16 +1,9 @@
-from . import cluster
 from . import functions
-from . import initialize
-from . import load
-from . import operations
-from . import orbit
+from . import orbits
 from . import profiles
-from . import tails
 # 
 # Functions
 #
-sub_cluster=cluster.sub_cluster
-overlap_cluster=cluster.overlap_cluster
 
 find_centre=functions.find_centre
 find_centre_of_density=functions.find_centre_of_density
@@ -30,33 +23,9 @@ tapered_mass_function=functions.tapered_mass_function
 eta_function=functions.eta_function
 meq_function=functions.meq_function
 ckin=functions.ckin
+rcore=functions.rcore
 rtidal=functions.rtidal
 rlimiting=functions.rlimiting
-
-setup_cluster=initialize.setup_cluster
-c_to_w0=initialize.c_to_w0
-w0_to_c=initialize.w0_to_c
-
-load_cluster=load.load_cluster
-advance_cluster=load.advance_cluster
-
-to_pckms=operations.to_pckms
-to_kpckms=operations.to_kpckms
-to_nbody=operations.to_nbody
-to_radec=operations.to_radec
-to_galpy=operations.to_galpy
-to_units=operations.to_units
-to_centre=operations.to_centre
-to_cluster=operations.to_cluster
-to_galaxy=operations.to_galaxy
-to_sky=operations.to_sky
-to_origin=operations.to_origin
-save_cluster=operations.save_cluster
-return_cluster=operations.return_cluster
-reset_nbody_scale=operations.reset_nbody_scale
-add_rotation=operations.add_rotation
-virialize=operations.virialize
-
 
 rho_prof=profiles.rho_prof
 m_prof=profiles.m_prof
@@ -64,24 +33,24 @@ alpha_prof=profiles.alpha_prof
 sigv_prof=profiles.sigv_prof
 beta_prof=profiles.beta_prof
 v_prof=profiles.v_prof
+v2_prof=profiles.v2_prof
+
 eta_prof=profiles.eta_prof
 meq_prof=profiles.meq_prof
 vcirc_prof=profiles.vcirc_prof
 
-initialize_orbit=orbit.initialize_orbit
-initialize_orbits=orbit.initialize_orbits
-integrate_orbit=orbit.integrate_orbit
-integrate_orbits=orbit.integrate_orbits
-orbit_interpolate=orbit.orbit_interpolate
-orbital_path=orbit.orbital_path
-orbital_path_match=orbit.orbital_path_match
-calc_actions=orbit.calc_actions
-ttensor=orbit.ttensor
+initialize_orbit=orbits.initialize_orbit
+initialize_orbits=orbits.initialize_orbits
+integrate_orbit=orbits.integrate_orbit
+integrate_orbits=orbits.integrate_orbits
+interpolate_orbit=orbits.interpolate_orbit
+interpolate_orbits=orbits.interpolate_orbits
+orbit_interpolate=orbits.orbit_interpolate
+orbits_interpolate=orbits.orbits_interpolate
+orbital_path=orbits.orbital_path
+orbital_path_match=orbits.orbital_path_match
+calc_actions=orbits.calc_action
+calc_actions=orbits.calc_actions
+ttensor=orbits.ttensor
+ttensors=orbits.ttensors
 
-to_tail=tails.to_tail
-tail_path=tails.tail_path
-tail_path_match=tails.tail_path_match
-
-#
-# Classes
-StarCluster=cluster.StarCluster

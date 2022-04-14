@@ -24,6 +24,7 @@ __all__ = [
     "eta_function",
     "meq_function",
     "ckin",
+    "rcore",
     "rtidal",
     "rlimiting",
 ]
@@ -39,10 +40,8 @@ from galpy import potential
 from galpy.potential import LogarithmicHaloPotential, MWPotential2014, rtide
 from scipy.optimize import curve_fit
 
-from ..util.constants import *
 from ..util.recipes import *
-from .operations import *
-from .operations import _get_grav
+from ..util.constants import _get_grav
 from ..util.plots import _plot,_lplot,_scatter
 
 import matplotlib.pyplot as plt
@@ -118,6 +117,7 @@ def find_centre(
             vystart=vystart,
             vzstart=vzstart,
             indx=indx,
+            nsphere=nsphere,
             rmin=rmin,
             rmax=rmax,
             nmax=nmax,
@@ -165,6 +165,7 @@ def find_centre_of_density(
     vystart=0.0,
     vzstart=0.0,
     indx=None,
+    nsphere=100,
     rmin=0.1,
     rmax=None,
     nmax=100,
@@ -184,6 +185,8 @@ def find_centre_of_density(
         starting velocity for centre (default: 0,0,0)
     indx: bool
         subset of stars to perform centre of density calculation on (default: None)
+    nsphere : int
+        number of stars in centre sphere (default:100)
     rmin : float
         minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
     rmax : float
@@ -242,7 +245,7 @@ def find_centre_of_density(
             vyc = np.sum(m[indx] * vy[indx]) / mc
             vzc = np.sum(m[indx] * vz[indx]) / mc
 
-        if (mc > 0) and (nc > 100):
+        if (mc > 0) and (nc > nsphere):
             x -= xc
             y -= yc
             z -= zc
@@ -321,8 +324,10 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     2020 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -359,7 +364,8 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     # Units of Myr
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     return trelax
 
 def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
@@ -388,8 +394,10 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
        2019 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -412,7 +420,8 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     # Units of Myr
     trh*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     return trh
 
 
@@ -444,8 +453,10 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     2019 - Written - Webb (UofT)
 
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -465,7 +476,8 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     return trc
 
 
@@ -494,8 +506,10 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
     -------
        2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_cluster(sortstars=False)
 
     grav=_get_grav(cluster)
@@ -570,7 +584,8 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
             pot.append(np.sum(gmr))
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return ek, pot
 
@@ -663,7 +678,7 @@ def closest_star(cluster, projected=False):
     return minimum_distance(x)
 
 
-def rlagrange(cluster, nlagrange=10, projected=False):
+def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
     """Calculate lagrange radii of the cluster by mass
 
     Parameters
@@ -672,6 +687,8 @@ def rlagrange(cluster, nlagrange=10, projected=False):
         StarCluster
     nlagrange : int 
         number of lagrange radii bins (default: 10)
+    mfrac : float
+        Exact masss fraction to calculate radius. Will supersede nlagrange if not None (default : None)
     projected : bool
         calculate projected lagrange radii (default: False)
 
@@ -685,8 +702,10 @@ def rlagrange(cluster, nlagrange=10, projected=False):
        2019 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
@@ -704,14 +723,21 @@ def rlagrange(cluster, nlagrange=10, projected=False):
 
     msum = np.cumsum(cluster.m[rorder])
 
-    for i in range(1, nlagrange):
-        indx = msum >= np.sum(cluster.m) * float(i) / float(nlagrange)
-        rn.append(r[rorder[indx][0]])
+    if mfrac is None:
 
-    while len(rn) != nlagrange:
-        rn.append(np.max(r))
+        for i in range(1, nlagrange):
+            indx = msum >= np.sum(cluster.m) * float(i) / float(nlagrange)
+            rn.append(r[rorder[indx][0]])
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+        while len(rn) != nlagrange:
+            rn.append(np.max(r))
+
+    else:
+        indx=(msum/cluster.mtot)>=mfrac
+        rn=r[rorder][indx][0]
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rn
 
@@ -720,7 +746,6 @@ def virial_radius(cluster, method='inverse_distance',
     H=70.0,
     Om=0.3,
     overdens=200.0,
-    nrad=20,
     projected=False,
     plot=False,
     **kwargs):
@@ -733,7 +758,7 @@ def virial_radius(cluster, method='inverse_distance',
     cluster : class
         StarCluster
     method : str
-        method for calculating virial radius (default: 'inverse_distance')
+        method for calculating virial radius (default: 'inverse_distance', alternative: 'critical_density')
 
     Returns
     -------
@@ -750,8 +775,6 @@ def virial_radius(cluster, method='inverse_distance',
         density of matter
     overdens : float
         overdensity constant
-    nrad : int
-        number of radial bins used to calculate cluster density profile
     projected : bool
         calculate projected virial radius (default: False)
     plot : bool
@@ -766,8 +789,8 @@ def virial_radius(cluster, method='inverse_distance',
 
     if method=='inverse_distance':
         rv=virial_radius_inverse_distance(cluster,projected=projected,full=full)
-    else:
-        rv=virial_radius_critical_density(cluster,H,Om,overdens,nrad,projected,plot,**kwargs)
+    elif method=='critical_density':
+        rv=virial_radius_critical_density(cluster,H,Om,overdens,projected,plot,**kwargs)
 
     return rv
 
@@ -795,8 +818,10 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
 
@@ -834,7 +859,8 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
 
     r_v=(np.sum(ms) ** 2) / (2 * partial_sum)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return r_v
 
@@ -871,7 +897,6 @@ def virial_radius_critical_density(
     H=70.0,
     Om=0.3,
     overdens=200.0,
-    nrad=20,
     projected=False,
     plot=False,
     ro=8.,
@@ -894,8 +919,6 @@ def virial_radius_critical_density(
         density of matter
     overdens : float
         overdensity constant
-    nrad : int
-        number of radial bins used to calculate cluster density profile
     projected : bool
         calculate projected virial radius (default: False)
     plot : bool
@@ -920,22 +943,21 @@ def virial_radius_critical_density(
     2019 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
         cluster.sortstars()
 
     cluster.to_pckms()
 
-    H /= 1000000.0  # (km/s) / pc
-    Grav = 4.302e-3  # pc (km/s)^2 / Msun
-
-    rhocrit = 3.0 * (H ** 2.0) / (8.0 * np.pi * Grav)  # Msun/pc^3
+    rhocrit=conversion.dens_in_msolpc3(vo=220.,ro=8.)/conversion.dens_in_criticaldens(vo=220.,ro=8.,H=H)
 
     if projected:
         if not cluster.projected: cluster.analyze(sortstars=True,projected=True)
-        indx - cluster.rproorder
+        indx = cluster.rproorder
     else:
         indx = cluster.rorder
 
@@ -950,32 +972,32 @@ def virial_radius_critical_density(
         pprof = msum / vsum
         rprof = cluster.r[indx]
 
-    # Find radius where maxium density occurs
-    rindx = np.argmax(pprof)
-    rmax = rprof[rindx]
+    rho_local = rhocrit * overdens
 
-    r_v=np.interp(rhocrit * overdens,pprof,rprof)
+    rindx=np.argmin(np.fabs(pprof-rho_local))
 
-    """
-    indx1 = (rprof > rmax) * (pprof > rhocrit * overdens)
-    indx2 = (rprof > rmax) * (pprof < rhocrit * overdens)
-
-    if np.sum(indx2) == 0.0:
-        print("SYSTEM IS NOT VIRIALIZED")
-        r_v = -1.0
+    if rindx==len(pprof)-1 or rindx==0:
+        r_v=rprof[rindx]
+    elif pprof[rindx]==rho_local:
+        r_v=rprof[rindx]
     else:
-        r1 = rprof[indx1][-1]
-        r2 = rprof[indx2][0]
+        if pprof[rindx] < rho_local:
+            r1=rprof[rindx-1]
+            r2=rprof[rindx]
+            p1=pprof[rindx-1]
+            p2=pprof[rindx]
+        elif pprof[rindx] > rho_local:
+            r1=rprof[rindx]
+            r2=rprof[rindx+1]
+            p1=pprof[rindx]
+            p2=pprof[rindx+1]
 
-        rho1 = pprof[indx1][-1]
-        rho2 = pprof[indx2][0]
+        m=(p2-p1)/(r2-r1)
+        b=p2-m*r2
 
-        print(r1, r2, rho1, rho2, rhocrit * overdens)
-        r_v = interpolate([r1, rho1], [r2, rho2], y=rhocrit * overdens)
-    """
+        r_v=(rho_local-b)/m
 
     if plot:
-        rho_local = rhocrit * overdens
 
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
@@ -1003,7 +1025,8 @@ def virial_radius_critical_density(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if units0=='kpckms':
         r_v/=1000.0
@@ -1013,7 +1036,6 @@ def virial_radius_critical_density(
         r_v/=cluster.rbar
     elif units0=='radec':
         print('Conversion of r_v to "radec" no implemented')
-
 
     return r_v
 
@@ -1031,6 +1053,7 @@ def mass_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     mcorr=None,
@@ -1057,6 +1080,8 @@ def mass_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1092,6 +1117,7 @@ def mass_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1099,6 +1125,7 @@ def mass_function(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1123,20 +1150,33 @@ def mass_function(
         * (cluster.m < mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
 
-    if mcorr is None: mcorr=np.ones(cluster.ntot)
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+
+    if mcorr is None: 
+        mcorr=np.ones(cluster.ntot)
+        return_error=False
+    else:
+        return_error=True
+
 
     if np.sum(indx) >= nmass:
 
-        m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
+        if kwargs.get('bintype','num')=='fix' or kwargs.get('mbintype','num')=='fix':
+            m_lower, m_mean, m_upper, m_hist = binmaker(cluster.m[indx], nmass)
+        else:
+            m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
 
         m_corr_hist = np.zeros(len(m_hist))
         for i in range(0, len(m_hist)):
@@ -1167,18 +1207,35 @@ def mass_function(
 
             if filename != None:
                 plt.savefig(filename)
-        return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
+        if return_error:
+            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror
+        else:
+            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
     else:
         print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
-        return (
-            np.zeros(nmass),
-            np.zeros(nmass),
-            np.zeros(nmass),
-            -1000.0,
-            -1000.0,
-            -1000.0,
-            -1000.0,
-        )
+
+        if return_error:
+            return (
+                np.zeros(nmass),
+                np.zeros(nmass),
+                np.zeros(nmass),
+                -1000.0,
+                -1000.0,
+                -1000.0,
+                -1000.0,
+                np.zeros(nmass),
+            )
+        else:
+
+            return (
+                np.zeros(nmass),
+                np.zeros(nmass),
+                np.zeros(nmass),
+                -1000.0,
+                -1000.0,
+                -1000.0,
+                -1000.0,
+            )
 
 def tapered_mass_function(
     cluster,
@@ -1193,6 +1250,7 @@ def tapered_mass_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     mcorr=None,
@@ -1219,6 +1277,8 @@ def tapered_mass_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1254,6 +1314,7 @@ def tapered_mass_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1261,6 +1322,7 @@ def tapered_mass_function(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1285,14 +1347,19 @@ def tapered_mass_function(
         * (cluster.m < mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
 
     if mcorr is None: mcorr=np.ones(cluster.ntot)
 
@@ -1312,8 +1379,10 @@ def tapered_mass_function(
         dm = m_corr_hist / (m_upper - m_lower)
         ldm = np.log10(dm)
 
-        #(A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm),bounds=([0.,np.inf],[0,np.inf],[np.amin(cluster.m),np.amax(cluster.m)],[0.,np.inf]))
-        (A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm) ,bounds=([0.,-1.*np.inf,np.amin(cluster.m),-1.*np.inf],[np.inf,np.inf,np.amax(cluster.m),np.inf]))
+        lower_bounds=kwargs.get('lower_bounds',[0.,-1.*np.inf,np.amin(cluster.m),-1.*np.inf])
+        upper_bounds=kwargs.get('upper_bounds',[np.inf,np.inf,np.amax(cluster.m),np.inf])
+
+        (A, alpha, mc, beta), V=curve_fit(tpl_func,10.0**np.array(lm_mean),10.0**np.array(ldm) ,bounds=(lower_bounds,upper_bounds))
 
         eA = np.sqrt(V[0][0])
         ealpha = np.sqrt(V[1][1])
@@ -1369,6 +1438,7 @@ def eta_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     plot=False,
@@ -1396,6 +1466,8 @@ def eta_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1427,6 +1499,7 @@ def eta_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1434,6 +1507,7 @@ def eta_function(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1458,14 +1532,18 @@ def eta_function(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if np.sum(indx) >= 2 * nmass:
 
@@ -1490,7 +1568,7 @@ def eta_function(
 
         if plot:
             filename = kwargs.get("filename", None)
-            _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$\sigma_v$", **kwargs)
+            _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$\log_{10} \\ \sigma_v$", **kwargs)
             mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
 
             if meq:
@@ -1547,6 +1625,7 @@ def meq_function(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=1,
     indx=None,
     projected=False,
     plot=False,
@@ -1577,6 +1656,8 @@ def meq_function(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1621,6 +1702,7 @@ def meq_function(
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            npop=npop,
             indx=indx,
             projected=projected,
             plot=plot,
@@ -1643,6 +1725,7 @@ def ckin(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
     projected=False,
     **kwargs,
@@ -1668,6 +1751,8 @@ def ckin(
         specific energy range
     kwmin/kwmax : int
         specific stellar evolution type range
+    npop : int
+        population number
     indx : bool 
         specific subset of stars
     projected : bool 
@@ -1702,6 +1787,7 @@ def ckin(
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            npop=npop,
             indx=indx,
             projected=projected,
             plot=False,
@@ -1721,6 +1807,7 @@ def ckin(
             emax=emax,
             kwmin=kwmin,
             kwmax=kwmax,
+            npop=npop,
             indx=indx,
             projected=projected,
             plot=False,
@@ -1731,6 +1818,213 @@ def ckin(
     ck=meq/meq50
 
     return ck
+
+def rcore(
+    cluster,
+    method='isothermal',
+    mfrac=0.1,
+    projected=False,
+    plot=False,
+    ro=8.,
+    vo=220.,
+    **kwargs
+):
+    """Calculate core radius of the cluster
+    - The core radius can be calculated using two different methods
+    -- Isothermal (method=='isothermal') - if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
+    --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
+    --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
+    -- Heggie and Hut 2003 (method=='heggie2003') - where 4 pi G/3 rho_c r_c^2 = v_c^2 and v_c^2 = 3 sigma_c^2
+    ---Note that the inner mass fraction of stars used to calculate v_c an rho_c is set by mfrac (default 0.1 = 10%)
+
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster instance
+    method : str
+        method for calculating the core radius (default: isothermal)
+    projected : bool
+        use projected values (default: False)
+    plot : bool
+        plot the density profile and mark the core radius of the cluster (default: False)
+    Returns
+    -------
+    rc : float
+        core radius
+
+    Other Parameters
+    ----------------
+    None
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    mo=conversion.mass_in_msol(ro=ro,vo=vo)
+    dens_in_msolpc2=(mo/ro**2.)/(1000.0**2.)
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
+        cluster.to_centre(sortstars=False)
+
+    cluster.to_pckms()
+
+    if projected:
+        r=cluster.rpro
+        rorder=cluster.rproorder
+        v=cluster.vpro
+    else:
+        r=cluster.r
+        rorder=cluster.rorder
+        v=cluster.v
+
+    rcentral=rlagrange(cluster,mfrac=mfrac,projected=projected)
+
+    if method=='heggie2003':
+
+        rindx=(r<rcentral)
+
+        if projected:
+            rho_c=np.sum(cluster.m[rindx])/(np.pi*(rcentral**2.))
+        else:
+            rho_c=np.sum(cluster.m[rindx])/(4.*np.pi*(rcentral**3.)/3.)
+
+        v_c2=np.mean(v[rindx]**2.)
+
+        grav=_get_grav(cluster)
+
+        rc=np.sqrt((3.*v_c2)/(4.*np.pi*grav*rho_c))
+
+        if plot:
+            nrad=int(np.ceil(1./mfrac))
+            rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+
+    elif method=='isothermal':
+        nrad=int(np.ceil(1./mfrac))
+
+        rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+
+
+        #interpolate
+
+        if projected:
+            rho_c=0.5*pprof[0]
+        else:
+            rho_c=pprof[0]/3.
+
+        rindx=pprof < rho_c
+
+        r1=rprof[np.invert(rindx)][-1]
+        r2=rprof[rindx][0]
+
+        p1=pprof[np.invert(rindx)][-1]
+        p2=pprof[rindx][0]
+       
+        m=(p2-p1)/(r2-r1)
+        b=p2-m*r2
+
+        rc=(rho_c-b)/m
+
+    if units0 == "kpckms":
+        rc /= 1000.0
+    elif units0 == "nbody":
+        rc /= cluster.rbar
+    elif units0=='galpy':
+        rc /= (1000.0*ro)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if plot:
+
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if cluster.units == "nbody":
+            rprof /= cluster.rbar
+
+            if projected:
+                pprof *= (
+                    (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+                rho_c *= (
+                    (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+            else:
+                pprof *= (
+                    (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
+                rho_c *= (
+                    (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
+            xunits = " (NBODY)"
+            yunits = " (NBODY)"
+
+        elif cluster.units == "kpckms":
+            rprof /=1000.0
+            if projected:
+                pprof *= (1000.0 ** 2.0)
+                rho_c *= (1000.0 ** 2.0)
+            else:
+                pprof *= (1000.0 ** 3.0)
+                rho_c *= (1000.0 ** 3.0)
+
+            xunits = " (kpc)"
+            if projected:
+                yunits = " Msun/kpc^2"
+            else:
+                yunits = " Msun/kpc^3"
+
+        elif cluster.units=='galpy':
+            rprof /=(1000.0*ro)
+
+            if projected:
+                pprof /= dens_in_msolpc2
+                rho_c /= dens_in_msolpc2
+            else:
+                pprof /= conversion.dens_in_msolpc3(ro=ro, vo=vo) 
+                rho_c /= conversion.dens_in_msolpc3(ro=ro, vo=vo)               
+
+            xunits = "(GALPY)"
+            yunits = "(GALPY)"
+
+        elif cluster.units == "pckms":
+            xunits = " (pc)"
+            if projected:
+                yunits = " Msun/ppc^2"
+            else:
+                yunits = " Msun/ppc^3"
+
+        else:
+            xunits = ""
+            yunits = ""
+
+        x, y, n = rprof, pprof, nprof
+        _lplot(
+            x,
+            y,
+            xlabel=r"$R %s$" % (xunits),
+            ylabel=r"$\rho %s$" % (yunits),
+            title="Time = %f" % cluster.tphys,
+            log=True,
+            overplot=overplot,
+            filename=filename,
+        )
+        _lplot(x, np.ones(len(x)) * rho_c, "--", overplot=True)
+        _lplot(np.ones(len(y)) * rc, y, "--", overplot=True)
+
+        if filename != None:
+            plt.savefig(filename)
+    return rc
 
 def rtidal(
     cluster,
@@ -1794,10 +2088,10 @@ def rtidal(
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-
-    if origin0 != 'cluster' and origin0 != 'centre':
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
 
@@ -1861,7 +2155,7 @@ def rtidal(
     elif units0 == "nbody":
         rt *= 1000.0 * ro / cluster.rbar
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     if plot:
 
@@ -1900,14 +2194,14 @@ def rtidal(
         x=np.append(x,x)
         y=np.append(y,-y)
 
-        if origin0=='galaxy':
+        if cluster.origin0=='galaxy':
             if from_centre:
                 x+=(cluster.xgc+cluster.xc)
                 y+=(cluster.ygc+cluster.yc)
             else:
                 x+=cluster.xgc
                 y+=cluster.ygc
-        elif origin0=='cluster' and from_centre:
+        elif cluster.origin0=='cluster' and from_centre:
             x+=cluster.xc
             y+=cluster.yc
 
@@ -1973,9 +2267,12 @@ def rlimiting(
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    mo=conversion.mass_in_msol(ro=ro,vo=vo)
+    dens_in_msolpc2=(mo/ro**2.)/(1000.0**2.)
 
-    if origin0 != 'cluster' and origin0 != 'centre':
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
     cluster.to_galpy()
@@ -1999,9 +2296,13 @@ def rlimiting(
     # Calculate local density:
     rho_local = potential.evaluateDensities(
         pot, R, z, ro=ro, vo=vo, use_physical=False
-    ) / conversion.dens_in_msolpc3(ro=ro, vo=vo)
+     )
+
 
     rprof, pprof, nprof = _rho_prof(cluster, nrad=nrad, projected=projected)
+
+    #Approximate projected local density across entire area of cluster
+    if projected: rho_local*=(4.*rprof[-1]/3)
 
     if pprof[-1] > rho_local:
         rl = rprof[-1]
@@ -2021,7 +2322,8 @@ def rlimiting(
     elif units0 == "nbody":
         rl *= 1000.0 * ro / cluster.rbar
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if plot:
 
@@ -2030,22 +2332,45 @@ def rlimiting(
 
         if cluster.units == "nbody":
             rprof *= ro * 1000.0 / cluster.rbar
-            pprof *= (
-                conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
-            rho_local *= (
-                conversion.dens_in_msolpc3(ro=ro, vo=vo)
-                * (cluster.rbar ** 3.0)
-                / cluster.zmbar
-            )
+
+            if projected:
+                pprof *= (
+                    dens_in_msolpc2
+                    * (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+                rho_local *= (
+                    dens_in_msolpc2
+                    * (cluster.rbar ** 2.0)
+                    / cluster.zmbar
+                )
+
+            else:
+                pprof *= (
+                    conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                    * (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
+                rho_local *= (
+                    conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                    * (cluster.rbar ** 3.0)
+                    / cluster.zmbar
+                )
+
             xunits = " (NBODY)"
             yunits = " (NBODY)"
         elif cluster.units == "pckms":
             rprof *= ro * 1000.0
-            pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
-            rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+
+            if projected:
+                pprof *= dens_in_msolpc2
+                rho_local *= dens_in_msolpc2
+            else:
+                pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+                rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo)
+
             xunits = " (pc)"
             if projected:
                 yunits = " Msun/pc^2"
@@ -2053,8 +2378,12 @@ def rlimiting(
                 yunits = " Msun/pc^3"
         elif cluster.units == "kpckms":
             rprof *= ro
-            pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
-            rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+            if projected:
+                pprof *= dens_in_msolpc2 * (1000.0 ** 2.0)
+                rho_local *= dens_in_msolpc2 * (1000.0 ** 2.0)
+            else:
+                pprof *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
+                rho_local *= conversion.dens_in_msolpc3(ro=ro, vo=vo) * (1000.0 ** 3.0)
 
             xunits = " (kpc)"
             if projected:
@@ -2101,8 +2430,10 @@ def _rho_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
     projected=False,
+    normalize=False,
     plot=False,
     **kwargs
 ):
@@ -2124,10 +2455,14 @@ def _rho_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
     projected : bool
         use projected values and constraints (default:False)
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
         plot the density profile (default: False)
 
@@ -2150,9 +2485,13 @@ def _rho_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
-        cluster.to_centre(sortstars=False)
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
 
     rprof = np.array([])
     pprof = np.array([])
@@ -2165,6 +2504,7 @@ def _rho_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -2189,14 +2529,18 @@ def _rho_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
@@ -2242,8 +2586,8 @@ def _rho_prof(
         _lplot(
             x,
             y,
-            xlabel=r"$R %s$" % xunits,
-            ylabel=r"$\rho %s$" % yunits,
+            xlabel=r"$R \ %s$" % xunits,
+            ylabel=r"$\rho \ %s$" % yunits,
             title="Time = %f" % cluster.tphys,
             log=True,
             overplot=overplot,
@@ -2253,6 +2597,7 @@ def _rho_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rprof, pprof, nprof

@@ -47,16 +47,13 @@ def test_add_stars_default():
 
 	assert cluster.ntot == nstar
 
-	np.testing.assert_array_equal(cluster.kw,np.zeros(nstar))
-
-
 def test_add_stars_custom():
 	nstar=100
 	cluster=ctools.StarCluster()
 	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
 	vx,vy,vz=np.ones(nstar),np.ones(nstar),np.ones(nstar)
 	m=np.ones(nstar)*0.1
-	id=np.linspace(0,nstar,nstar)
+	id=np.linspace(0,nstar,nstar+1)
 	cluster.add_stars(x,y,z,vx,vy,vz,m,id)
 
 	np.testing.assert_array_equal(m,cluster.m)
@@ -162,7 +159,7 @@ def test_add_orbit_radec():
 
 def test_add_nbody6():
 	cluster=ctools.StarCluster()
-	cluster.add_nbody6(1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.)
+	cluster.add_nbody6(1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.,1.)
 
 	assert cluster.nc == 1.
 	assert cluster.rc == 1.
@@ -173,10 +170,11 @@ def test_add_nbody6():
 	assert cluster.zc == 1.
 	assert cluster.zmbar == 1.
 	assert cluster.vbar == 1.
+	assert cluster.tbar == 1.
 	assert cluster.rscale == 1.
 	assert cluster.ns == 1.
 	assert cluster.nb == 1.
-	assert cluster.np == 1.
+	assert cluster.n_p == 1.
 
 
 def test_add_nbody6():
@@ -218,13 +216,13 @@ def test_add_energies_etot():
 	cluster.add_energies(kin,pot,etot)
 	np.testing.assert_array_equal(etot,cluster.etot)
 
-def test_add_actions():
+def test_add_action():
 	cluster=ctools.StarCluster()
-	JR,Jphi,Jz=np.ones(100),np.ones(100),np.ones(100)
-	OR,Ophi,Oz=np.ones(100),np.ones(100),np.ones(100)
-	TR,Tphi,Tz=np.ones(100),np.ones(100),np.ones(100)
+	JR,Jphi,Jz=1.,1.,1.
+	OR,Ophi,Oz=1.,1.,1.
+	TR,Tphi,Tz=1.,1.,1.
 
-	cluster.add_actions(JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz)
+	cluster.add_action(JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz)
 	np.testing.assert_array_equal(JR,cluster.JR)
 	np.testing.assert_array_equal(Jphi,cluster.Jphi)
 	np.testing.assert_array_equal(Jz,cluster.Jz)
@@ -235,9 +233,27 @@ def test_add_actions():
 	np.testing.assert_array_equal(Tphi,cluster.Tphi)
 	np.testing.assert_array_equal(Tz,cluster.Tz)
 
+def test_add_actions():
+	cluster=ctools.StarCluster()
+	JR,Jphi,Jz=np.ones(100),np.ones(100),np.ones(100)
+	OR,Ophi,Oz=np.ones(100),np.ones(100),np.ones(100)
+	TR,Tphi,Tz=np.ones(100),np.ones(100),np.ones(100)
+
+	cluster.add_actions(JR,Jphi,Jz,OR,Ophi,Oz,TR,Tphi,Tz)
+	np.testing.assert_array_equal(JR,cluster.JRs)
+	np.testing.assert_array_equal(Jphi,cluster.Jphis)
+	np.testing.assert_array_equal(Jz,cluster.Jzs)
+	np.testing.assert_array_equal(OR,cluster.ORs)
+	np.testing.assert_array_equal(Ophi,cluster.Ophis)
+	np.testing.assert_array_equal(Oz,cluster.Ozs)
+	np.testing.assert_array_equal(TR,cluster.TRs)
+	np.testing.assert_array_equal(Tphi,cluster.Tphis)
+	np.testing.assert_array_equal(Tz,cluster.Tzs)
+
 def test_analyze(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='king',phi0=5.,rh=3.,M=10000,N=10000)
-	assert cluster.ctype == 'king'
+	cluster=ctools.setup_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
+	assert cluster.ctype == 'limepy'
+
 	assert float(np.fabs(cluster.ntot-10000)/10000) <= tol
 
 	assert np.fabs(cluster.rm-3.)/3. <= tol
@@ -280,15 +296,77 @@ def test_analyze(tol=0.01):
 	assert np.fabs(cluster.rh10pro-rpro[np.argsort(rpro)][1000])/rpro[np.argsort(rpro)][5000] <= tol
 
 def test_sortstars():
-	cluster=ctools.setup_cluster(ctype='king',phi0=5.,rh=3.,M=10000,N=10000)
+	cluster=ctools.setup_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
 	np.testing.assert_array_equal(np.argsort(cluster.r),cluster.rorder)
 	np.testing.assert_array_equal(np.argsort(cluster.rpro),cluster.rproorder)
 
+def test_subset(tol=0.001):
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster.to_cluster()
+
+	kin=np.random.rand(cluster.ntot)
+	pot=np.random.rand(cluster.ntot)
+	cluster.add_energies(kin,pot)
+	cluster.m=np.random.rand(cluster.ntot)
+	cluster.kw=np.random.rand(cluster.ntot)
+	cluster.npop=(np.ones(cluster.ntot)*2).astype(int)
+	cluster.analyze()
+
+	#Assert different cuts are working
+
+	indx=cluster.subset(rmin=cluster.rm)
+	assert np.amin(cluster.r[indx]) == np.amin(cluster.r[cluster.r>=cluster.rm])
+
+	indx=cluster.subset(vmin=np.mean(cluster.v))
+	assert np.sum(indx) == np.sum(cluster.v >= np.mean(cluster.v))
+
+	indx=cluster.subset(vmax=np.mean(cluster.v))
+	assert np.sum(indx) == np.sum(cluster.v <= np.mean(cluster.v))
+
+	indx=cluster.subset(emin=np.mean(cluster.etot))
+	assert np.sum(indx) == np.sum(cluster.etot >= np.mean(cluster.etot))
+
+	indx=cluster.subset(emax=np.mean(cluster.etot))
+	assert np.sum(indx) == np.sum(cluster.etot <= np.mean(cluster.etot))
+
+	indx=cluster.subset(mmin=np.mean(cluster.m))
+	assert np.sum(indx) == np.sum(cluster.m >= np.mean(cluster.m))
+
+	indx=cluster.subset(mmax=np.mean(cluster.m))
+	assert np.sum(indx) == np.sum(cluster.m <= np.mean(cluster.m))
+
+	indx=cluster.subset(kwmin=np.mean(cluster.kw))
+	assert np.sum(indx) == np.sum(cluster.kw >= np.mean(cluster.kw))
+
+	indx=cluster.subset(kwmax=np.mean(cluster.kw))
+	assert np.sum(indx) == np.sum(cluster.kw <= np.mean(cluster.kw))
+
+	indx=np.append(np.ones(int(cluster.ntot/2),dtype=bool),np.zeros(int(cluster.ntot/2),dtype=bool))
+	newindx=cluster.subset(indx=indx)
+	assert np.sum(newindx) == cluster.ntot/2
+
+	indx=cluster.subset(npop=1)
+	assert np.sum(indx)==0
+	indx=cluster.subset(npop=2)
+	assert np.sum(indx)==cluster.ntot
+
+	#Assert projected cuts are working
+	indx=cluster.subset(rmin=cluster.rm, projected=True)
+	assert np.amin(cluster.r[indx]) == np.amin(cluster.r[cluster.rpro>=cluster.rm])
+
+	indx=cluster.subset(vmin=np.mean(cluster.v),projected=True)
+	assert np.sum(indx) == np.sum(cluster.vpro >= np.mean(cluster.v))
+	
 def test_subcluster():
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+
 	cluster.to_radec()
+
 	cluster.to_cluster(sortstars=True)
+
 	cluster.find_centre()
+
+
 	cluster.reset_nbody_scale()
 
 	subcluster=ctools.sub_cluster(cluster,rmax=cluster.rm)
@@ -316,7 +394,7 @@ def test_subcluster():
 	assert subcluster.vzc == cluster.vzc
 
 	#Assert subset of stars is correct
-	assert subcluster.ntot == cluster.ntot/2
+	assert subcluster.ntot == np.sum(cluster.r <= cluster.rm)
 	assert np.amin(subcluster.r) == np.amin(cluster.r)
 	assert subcluster.r[subcluster.rorder[0]] == cluster.r[cluster.rorder[0]]
 
@@ -325,6 +403,7 @@ def test_subcluster():
 	cluster.add_energies(kin,pot)
 	cluster.m=np.random.rand(cluster.ntot)
 	cluster.kw=np.random.rand(cluster.ntot)
+	cluster.analyze()
 
 	#Assert different cuts are working
 	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm)
@@ -366,7 +445,7 @@ def test_subcluster():
 	assert subcluster.ntot == np.sum(cluster.vpro >= np.mean(cluster.v))
 
 	#Assert that Nbody conversion can be rescaled and centre recalculated
-	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm,reset_nbody_scale=True,reset_centre=True)
+	subcluster=ctools.sub_cluster(cluster,rmin=cluster.rm,reset_nbody=True,reset_centre=True)
 
 	print(np.sum(subcluster.m),subcluster.mtot,np.sum(cluster.m[cluster.r>=cluster.rm]))
 
@@ -401,7 +480,7 @@ def test_subcluster():
 	assert subcluster.pmdec_gc==cluster.pmdec_gc
 	assert subcluster.vlos_gc==cluster.vlos_gc
 
-	cluster.add_nbody6(nc=100,rc=cluster.r10,rbar=2.,rtide=100.,xc=cluster.xc, yc=cluster.yc,zc=cluster.zc,zmbar=cluster.mtot,vbar=5.,rscale=2.,ns=cluster.ntot,nb=2,np=1.)
+	cluster.add_nbody6(nc=100,rc=cluster.r10,rbar=2.,rtide=100.,xc=cluster.xc, yc=cluster.yc,zc=cluster.zc,zmbar=cluster.mtot,vbar=5.,tbar=2.,rscale=2.,ns=cluster.ntot,nb=2,n_p=1.)
 	subcluster=ctools.sub_cluster(cluster,indx=indx)
 
 	assert subcluster.nc==cluster.nc
@@ -413,12 +492,13 @@ def test_subcluster():
 	assert subcluster.zc==cluster. zc
 	assert subcluster.zmbar==cluster.zmbar
 	assert subcluster.vbar==cluster.vbar
+	assert subcluster.tbar==cluster.tbar
 	assert subcluster.rscale==cluster.rscale
 	assert subcluster.ns==cluster.ns
 	assert subcluster.nb==cluster.nb
-	assert subcluster.np==cluster.np
+	assert subcluster.n_p==cluster.n_p
 
-	cluster=ctools.setup_cluster(ctype='NGC6101')
+	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_cluster(sortstars=True)
 
 	kw=np.random.randint(0,10,cluster.ntot)

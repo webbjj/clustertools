@@ -27,8 +27,8 @@ try:
 except:
     pass
 
-from .cluster import StarCluster
-from .profiles import m_prof
+from ..cluster.cluster import StarCluster
+from ..analysis.profiles import m_prof
 
 def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, **kwargs):
     """ Setup an N-body realization of a StarCluster with specific parameters
@@ -76,9 +76,9 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     phi0/W0 : float
         central potential model parameter for LIMEPY
     M : float
-        Mass of cluster 
+        Mass of cluster
     rh/rt : float 
-        half-mass radius or tidal radius of cluster
+        half-mass radius or tidal radius of cluster in parsecs
     source : str
         Source for extracting Galactic GC parameters (Harris 1996 (2010 Edition) or de Boer et al. 2019). The default checks 
             de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found
@@ -113,8 +113,15 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
 
         if gcname is not None:
             source = kwargs.pop("source", "default")
-            mbar = kwargs.pop("mbar", 0.4)
-            cluster = _get_cluster(gcname, source, mbar, **kwargs)   
+            mbar = kwargs.pop("mbar", 1.)
+            cluster = _get_cluster(gcname, source, mbar, **kwargs)
+
+            if cluster.units!=units:
+                if units=='nbody': cluster.reset_nbody_scale(rvirial=True)
+                cluster.to_units(units)
+
+            if cluster.origin!=origin:
+                cluster.to_origin(origin)
 
         elif model is not None:
             if model == "woolley":
@@ -129,13 +136,30 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             else:
                 cluster = _get_limepy(model=model, **kwargs)
 
+            cluster.units=units
+
+            if cluster.origin!=origin:
+                cluster.to_origin(origin)
+
+
         else:
             g = kwargs.pop("g")
             cluster = _get_limepy(g=g, **kwargs)
 
+            cluster.units=units
+
+            if cluster.origin!=origin:
+                cluster.to_origin(origin)
+
     elif ctype=='galpy':
         cluster=_get_galpy(pot,**kwargs)
 
+        if cluster.units!=units:
+            if units=='nbody': cluster.reset_nbody_scale()
+            cluster.to_units(units)
+
+        if cluster.origin!=origin:
+            cluster.to_origin(origin)
 
     cluster.ctype=ctype
 
@@ -152,6 +176,10 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             orbit.vz(t),
             "kpckms",
         )
+
+
+        if origin=='galaxy':
+            cluster.to_galaxy()
 
     cluster.analyze(sortstars=True)
 
@@ -197,10 +225,9 @@ def _get_limepy(g=1,model=None,**kwargs):
         else:
             phi0=float(phi0)
 
-        project = bool(kwargs.get("project", False))
+        project = bool(kwargs.get("projected", False))
 
         if "M" in kwargs:
-            units = "pckms"
             M = float(kwargs.get("M"))
             if "rt" in kwargs:
                 rt = float(kwargs.get("rt"))
@@ -214,23 +241,24 @@ def _get_limepy(g=1,model=None,**kwargs):
             elif "rm" in kwargs:
                 rh = float(kwargs.get("rm"))
                 lmodel = limepy(phi0, g, M=M, rh=rh, project=project)
-            elif "ro" in kwargs:
-                ro = float(kwargs.get("ro"))
-                lmodel = limepy(phi0, g, M=M, ro=ro, project=project)
+            elif "r0" in kwargs:
+                r0 = float(kwargs.get("r0"))
+                lmodel = limepy(phi0, g, M=M, r0=r0, project=project)
+            elif "rc" in kwargs:
+                r0 = float(kwargs.get("rc"))
+                lmodel = limepy(phi0, g, M=M, r0=r0, project=project)
             else:
-                lmodel = limepy(phi0, g, M=M, ro=1.0, project=project)
+                lmodel = limepy(phi0, g, M=M, rv=1.0, project=project)
         else:
-            units = "nbody"
             M=1.
             lmodel = limepy(phi0, g, G=1, M=1, rv=1, project=project)
 
-    mbar = kwargs.get("mbar", 0.4)
+    mbar = kwargs.get("mbar", 1.)
     N = int(kwargs.get("N", M/mbar))
 
-    print('N = ',N)
     ldata = sample(lmodel, N=N)
 
-    cluster = StarCluster(units=units, origin="cluster")
+    cluster = StarCluster(units=None, origin="cluster")
     cluster.add_stars(
         ldata.x,
         ldata.y,
@@ -715,7 +743,7 @@ def w0_to_c(w0):
     return c_to_w0(w0, invert=True)
 
 
-def _get_cluster(gcname, source="default", mbar=0.4, params=False, **kwargs):
+def _get_cluster(gcname, source="default", mbar=1., params=False, **kwargs):
     """Generate a StarCluster based on a Galactic Globular Cluster
 
     By default, the functio looks for the best LIMEPY model fit to the cluster from de Boer et al. 2019. Since
@@ -731,7 +759,7 @@ def _get_cluster(gcname, source="default", mbar=0.4, params=False, **kwargs):
     source : str
         source of model parameters to generate cluster. 
     mbar : float
-        mean mass of stars in model (default: 0.3 Msun)
+        mean mass of stars in model (default: 1. Msun)
     params : bool
         return mass and size of clusters generate (default: False)
 
@@ -838,6 +866,9 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4, **kwargs):
 
         cluster = _get_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
 
+    cluster.units='pckms'
+    cluster.origin='cluster'
+
     cluster.orbit = _get_cluster_orbit(gcname)
 
     if cluster.orbit != -1:
@@ -894,6 +925,10 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
     N = int(kwargs.get("N", mgc / mbar))
 
     cluster = _get_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
+
+    cluster.units='pckms'
+    cluster.origin='cluster'
+
     cluster.orbit = _get_cluster_orbit(gcname)
 
     if cluster.orbit != -1:

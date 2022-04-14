@@ -89,7 +89,7 @@ Bianchini, P. et al. 2016, MNRAS, 458, 3644 - ``meq_function``
 
 Bianchini et al. 2018, MNRAS, 475, 96 - ``ckin``
 
-Bovy J., 2015, ApJS, 216, 29 - ``initialize_orbit``, ``initialize_orbits``, ``integrate_orbit``, ``integrate_orbits``, ``orbit_interpolation``, ``orbital_path``, ``orbital_path_match``, ``calc_actions``, ``ttensor``, ``tail_path``, ``tail_path_match``, ``rtidal``, ``rlimiting``,``virial_radius(method='virial_radius_critical_density')``
+Bovy J., 2015, ApJS, 216, 29 - ``initialize_orbit``, ``initialize_orbits``, ``integrate_orbit``, ``integrate_orbits``, ``orbit_interpolation``, ``orbital_path``, ``orbital_path_match``, ``calc_actions``, ``ttensor``, ``tail_path``, ``tail_path_match``, ``rtidal``, ``rlimiting``,``virial_radius(method='critical_density')``
 
 Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
 
@@ -103,7 +103,7 @@ Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357 - ``find_cen
 
 Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - ``setup_cluster('gcname', source='harris')``
 
-Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9 - ``load_cluster('amuse'``,``virial_radius(method=virial_radius_inverse_distance)``
+Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9 - ``load_cluster('amuse'``,``virial_radius(method=inverse_distance)``
 
 Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 - ``relaxation_time``
 

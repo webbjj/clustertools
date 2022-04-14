@@ -9,6 +9,7 @@ __all__ = [
     "sigv_prof",
     "beta_prof",
     "v_prof",
+    "v2_prof",
     "eta_prof",
     "vcirc_prof",
 ]
@@ -21,8 +22,7 @@ except:
 
 from ..util.constants import *
 from ..util.recipes import *
-from .operations import *
-from .operations import _get_grav
+from ..util.constants import _get_grav
 from ..util.plots import _lplot,_plot
 from ..util.coordinates import sphere_coords
 from .functions import mass_function, eta_function
@@ -43,7 +43,9 @@ def rho_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     plot=False,
@@ -67,8 +69,12 @@ def rho_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -95,8 +101,10 @@ def rho_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -112,6 +120,7 @@ def rho_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -136,16 +145,25 @@ def rho_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
@@ -185,22 +203,38 @@ def rho_prof(
             xunits = ""
             yunits = ""
 
+        if projected:
+            xlabel=r"$R \ %s$" % xunits
+            ylabel=r"$\Sigma \ %s$" % yunits
+        else:
+            xlabel=r"$r \ %s$" % xunits
+            ylabel=r"$\rho \ %s$" % yunits
+
+
         x, y, n = rprof, pprof, nprof
+
+        if normalize:
+            x/=cluster.rm
+
         _lplot(
             x,
             y,
-            xlabel=r"$R \ %s$" % xunits,
-            ylabel=r"$\rho \ %s$" % yunits,
+            xlabel=xlabel,
+            ylabel=ylabel,
             title="Time = %f" % cluster.tphys,
-            log=True,
+            log=kwargs.pop('log',True),
             overplot=overplot,
             filename=filename,
+            **kwargs,
         )
 
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if normalize:
+        rprof/=cluster.rm
 
     return rprof, pprof, nprof
 
@@ -218,7 +252,9 @@ def m_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     cumulative=False,
@@ -243,8 +279,12 @@ def m_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -272,15 +312,17 @@ def m_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
         
-    rprof = []
-    mprof = []
-    nprof = []
+    rprof = np.array([])
+    mprof = np.array([])
+    nprof = np.array([])
 
     if projected:
         r = cluster.rpro
@@ -289,6 +331,7 @@ def m_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -313,26 +356,36 @@ def m_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw)>0:
+        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         if cumulative:
             rindx = indx * (r < r_upper[i])
         else:
             rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
-        rprof.append(r_mean[i])
+        rprof=np.append(rprof,r_mean[i])
 
-        mprof.append(np.sum(cluster.m[rindx]))
-        nprof.append(np.sum(rindx))
+        mprof=np.append(mprof,np.sum(cluster.m[rindx]))
+        nprof=np.append(nprof,np.sum(rindx))
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -354,6 +407,9 @@ def m_prof(
             xunits = ""
             yunits = ""
 
+        if normalize:
+            x/=cluster.rm
+
         x, y, n = rprof, mprof, nprof
         _lplot(
             x,
@@ -361,15 +417,19 @@ def m_prof(
             xlabel=r"$R %s $" % xunits,
             ylabel=r"$M %s $" % yunits,
             title="Time = %f" % cluster.tphys,
-            log=True,
+            log=kwargs.pop('log',True),
             overplot=overplot,
             filename=filename,
+            **kwargs,
         )
 
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if normalize:
+        rprof/=cluster.rm
 
     return rprof, mprof, nprof
 
@@ -387,9 +447,11 @@ def alpha_prof(
     emax=None,
     kwmin=0,
     kwmax=1,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
-    normalize=True,
+    normalize=False,
     r_lower=None,
     r_upper=None,
     aerror=False,
@@ -420,8 +482,12 @@ def alpha_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -432,14 +498,14 @@ def alpha_prof(
         upper limits to radial bins
     aerror : bool
         return error in alpha calculations (default:True)
-    mcorr : bool
+    mcorr : float
         completeness correction for masses (default: None)
     plot : bool 
         plot the alpha profile (default: False)
 
     Returns
     -------
-    lrprofn : float
+    rprofn : float
         natural log of each radius bin (normalized by half-mass radius)
     aprof : float
         slope of the mass function in each bin
@@ -464,8 +530,10 @@ def alpha_prof(
     2018 - Written - Webb (UofT)
     """
 
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
@@ -477,9 +545,6 @@ def alpha_prof(
     else:
         return_error=True
 
-    lrprofn = []
-    aprof = []
-    eaprof= []
 
     if projected:
         r = cluster.rpro
@@ -488,52 +553,35 @@ def alpha_prof(
         r = cluster.r
         v = cluster.v
 
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
-    )
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-
-    if r_lower is None:
-        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
-    else:
-        r_mean=np.zeros(len(r_lower))
-        r_hist=np.zeros(len(r_lower))
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+        r_mean=np.zeros(len(r_mean))
 
         for i in range(0,len(r_lower)):
-            rindx=(r[indx] >= r_lower[i]) * (r[indx]<r_upper[i])
+            rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
             r_mean[i]=np.mean(r[rindx])
             r_hist[i]=np.sum(rindx)
 
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     rbinerror=np.zeros(len(r_mean))
+    rprofn=np.zeros(len(r_mean))
+    aprof=np.zeros(len(r_mean))
+    eaprof=np.zeros(len(r_mean))
+
+    if normalize:
+        if projected:
+            rprofn=r_mean / cluster.rmpro
+        else:
+            rprofn=r_mean / cluster.rm
+    else:
+        rprofn=r_mean
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
@@ -543,26 +591,19 @@ def alpha_prof(
             m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
             rbinerror[i]=np.amin(mbinerror)
         else:
-            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
+            m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=None,plot=False,**kwargs)
             rbinerror[i]=1.
 
         if alpha > -100:
-            if normalize:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
-                else:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
-            else:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i]))
-                else:
-                    lrprofn.append(np.log(r_mean[i]))
+            aprof[i]=alpha
+            eaprof[i]=ealpha
 
-            aprof.append(alpha)
-            eaprof.append(ealpha)
+    if len(rprofn) > 3:
+        if projected:
+            (dalpha, ydalpha), V = np.polyfit(np.log(r_mean/cluster.rmpro), aprof, 1, cov=True)
+        else:
+            (dalpha, ydalpha), V = np.polyfit(np.log(r_mean/cluster.rm), aprof, 1, cov=True)
 
-    if len(lrprofn) > 3:
-        (dalpha, ydalpha), V = np.polyfit(lrprofn, aprof, 1, cov=True)
         edalpha = np.sqrt(V[0][0])
         eydalpha = np.sqrt(V[1][1])
     else:
@@ -581,27 +622,32 @@ def alpha_prof(
             xlabel=r"$\ln(r)$"
 
         _plot(
-            lrprofn,
+            np.log(rprofn),
             aprof,
             xlabel=xlabel,
             ylabel=r"$\alpha$",
             overplot=overplot,
             **kwargs
         )
-        rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
-        afit = dalpha * rfit + ydalpha
-        _lplot(rfit, afit, overplot=True, label=(r"d$\alpha$ = %f" % dalpha))
+        if projected:
+            rfit=r_mean/cluster.rmpro
+        else:
+            rfit=r_mean/cluster.rm
+
+        afit = dalpha * np.log(rfit) + ydalpha
+        _lplot(np.log(rprofn), afit, overplot=True, label=(r"d$\alpha$ = %f" % dalpha))
         plt.legend()
 
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     if aerror:
-        return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, eaprof
+        return rprofn, aprof, dalpha, edalpha, ydalpha, eydalpha, eaprof
     else:
-        return lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha
+        return rprofn, aprof, dalpha, edalpha, ydalpha, eydalpha
 
 
 def sigv_prof(
@@ -615,9 +661,11 @@ def sigv_prof(
     vmax=None,
     emin=None,
     emax=None,
-    kwmin=None,
-    kwmax=None,
+    kwmin=0,
+    kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
     coord=None,
     normalize=False,
@@ -642,8 +690,12 @@ def sigv_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     coord : str
@@ -656,7 +708,7 @@ def sigv_prof(
 
     Returns
     -------
-    lrprofn : float
+    rprofn : float
         natural log of radius (normalized by half-mass radius)
     sigvprof : float
         velocity dispersion
@@ -670,14 +722,13 @@ def sigv_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
-
-    lrprofn = []
-    sigvprof = []
 
     if projected:
         r = cluster.rpro
@@ -686,6 +737,7 @@ def sigv_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -709,75 +761,105 @@ def sigv_prof(
         * (v <= vmax)
     )
 
-    if kwmin is not None:
+    if kwmin is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw >= kwmin)
-    if kwmax is not None:
+    if kwmax is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw <= kwmax)
 
     if emin is not None:
         indx *= cluster.etot >= emin
     if emin is not None:
         indx *= cluster.etot <= emax
+    """
 
-    # Convert to cylindrical or spherical coordinates:
-    if projected:
-        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = coords.rect_to_cyl_vec(
-            cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
-        )
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+    if coord is not None:
+
+        if projected:
+            r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+            vr, vp, vz = coords.rect_to_cyl_vec(
+                cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+            )
+        else:
+            r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+        if coord =='r' or coord=='vr':
+            v=vr
+            ylabel=r"$\sigma_{v_r}$"
+        elif coord=='phi' or coord=='vp' or coord=='vphi':
+            v=vp
+            ylabel=r"$\sigma_{v_p}$"
+        elif coord=='theta' or coord=='vt' or coord=='vtheta' :
+            v=vt
+            ylabel=r"$\sigma_{v_t}$"
+        elif coord=='x' or coord=='vx':
+            v=cluster.vx
+            ylabel=r"$\sigma_{v_x}$"
+        elif coord=='y' or coord=='vy':
+            v=cluster.vy
+            ylabel=r"$\sigma_{v_y}$"
+        elif coord=='z' or coord=='vz':
+            v=vz
+            ylabel=r"$\sigma_{v_z}$"
+        elif coord=='v':
+            if projected:
+                v=cluster.vpro
+            else:
+                v=cluster.v
     else:
-        r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+        if projected:
+            ylabel=r"$\sigma_{v_{pro}}$"
+        else:
+            ylabel=r"$\sigma_v$"
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    if normalize:
+        if projected:
+            rprofn=r_mean / cluster.rmpro
+        else:
+            rprofn=r_mean / cluster.rm
+    else:
+        rprofn=r_mean
+
+    sigvprof = np.zeros(len(rprofn))
+
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        if bins is not None: r_hist[i]=np.sum(rindx)
 
         if np.sum(rindx) > 3.0:
 
-            sigr = np.std(vr[rindx])
-            sigt = np.std(vt[rindx])
+            sigv = np.std(v[rindx])
 
-            if projected:
-                sigp = np.zeros(len(vr))
-            else:
-                sigp = np.std(vp[rindx])
+            sigvprof[i]=sigv
 
-            if coord is None:
-                sigv = np.sqrt(sigr ** 2.0 + sigt ** 2.0 + sigp ** 2.0)
-            elif coord=='r':
-                sigv=sigr
-            elif coord=='phi':
-                sigv=sigp
-            elif coord=='theta':
-                sigv=sigt 
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-            if normalize:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
-                else:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
-            else:
-                lrprofn.append(np.log(r_mean[i]))
-
-            sigvprof.append(sigv)
-
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
         if normalize:
-            xlabel=r"$\ln(r/r_m)$"
+            xlabel=r"$r/r_m$"
         else:
-            xlabel=r"$\ln(r)$"
+            xlabel=r"$r$"
 
         _plot(
-            lrprofn,
+            rprofn,
             sigvprof,
             xlabel=xlabel,
-            ylabel=r"$\sigma_v$",
+            ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
@@ -785,7 +867,7 @@ def sigv_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return lrprofn, sigvprof
+    return rprofn, sigvprof
 
 def beta_prof(
     cluster,
@@ -798,9 +880,11 @@ def beta_prof(
     vmax=None,
     emin=None,
     emax=None,
-    kwmin=None,
-    kwmax=None,
+    kwmin=0,
+    kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     plot=False,
@@ -824,8 +908,12 @@ def beta_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -835,7 +923,7 @@ def beta_prof(
 
     Returns
     -------
-    lrprofn : float
+    rprofn : float
         natural log of radius (normalized by half-mass radius)
     betaprof : float
         orbital anisotropy parameter beta
@@ -849,22 +937,15 @@ def beta_prof(
     -------
     2020 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
 
-    lrprofn = []
-    betaprof = []
-
-    if projected:
-        r = cluster.rpro
-        v = cluster.vpro
-    else:
-        r = cluster.r
-        v = cluster.v
-
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -888,9 +969,9 @@ def beta_prof(
         * (v <= vmax)
     )
 
-    if kwmin is not None:
+    if kwmin is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw >= kwmin)
-    if kwmax is not None:
+    if kwmax is not None and len(cluster.kw) > 0:
         indx*=(cluster.kw <= kwmax)
 
     if emin is not None:
@@ -898,55 +979,70 @@ def beta_prof(
     if emin is not None:
         indx *= cluster.etot <= emax
 
-    # Convert to cylindrical or spherical coordinates:
+    """
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+
     if projected:
-        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = coords.rect_to_cyl_vec(
+        r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+        vr, vp, vz = coords.rect_to_cyl_vec(
             cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
         )
+        v=cluster.vpro
     else:
         r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+        v=cluster.v
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    if normalize:
+        if projected:
+            rprofn=r_mean / cluster.rmpro
+        else:
+            rprofn=r_mean / cluster.rm
+    else:
+        rprofn=r_mean
+
+    betaprof=np.zeros(len(rprofn))
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        if bins is not None: r_hist[i]=np.sum(rindx)
 
         if np.sum(rindx) > 3.0:
 
             sigr = np.std(vr[rindx])
-            sigt = np.std(vt[rindx])
+            sigp = np.std(vp[rindx])
 
             if projected:
-                sigp = np.zeros(len(vr))
-                beta = sigt / sigr - 1.0
+                sigt = np.zeros(len(vr))
+                beta = sigp / sigr - 1.0
             else:
-                sigp = np.std(vp[rindx])
+                sigt = np.std(vt[rindx])
                 beta = 1.0 - (sigt ** 2.0 + sigp ** 2.0) / (2.0 * (sigr ** 2.0))
 
-            if normalize:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
-                else:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
-            else:
-                lrprofn.append(np.log(r_mean[i]))
+            betaprof[i]=beta
 
-            betaprof.append(beta)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
         if normalize:
-            xlabel=r"$\ln(r/r_m)$"
+            xlabel=r"$r/r_m$"
         else:
-            xlabel=r"$\ln(r)$"
+            xlabel=r"$r$"
 
         _plot(
-            lrprofn,
+            rprofn,
             betaprof,
             xlabel=xlabel,
             ylabel=r"$\beta$",
@@ -957,7 +1053,7 @@ def beta_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return lrprofn, betaprof
+    return rprofn, betaprof
 
 
 def v_prof(
@@ -973,8 +1069,11 @@ def v_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
+    coord=None,
     normalize=False,
     plot=False,
     **kwargs,
@@ -997,10 +1096,17 @@ def v_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
+    coord : str
+        choose what coordinate the mean velocity profile is to be returned in (default None returns (vx**2.+vy**2.+vz**2.)^1/2).
+        Alternatively can ask for 'vr', 'vphi', or 'vtheta' for spherical coordinate velocity dispersions.
     normalize : bool
         normalize radial bins by cluster's half-mass radius (default: False)
     plot : bool 
@@ -1008,7 +1114,7 @@ def v_prof(
 
     Returns
     -------
-    lrprofn : float
+    rprofn : float
         natural log of radius (normalized by half-mass radius)
     vprof : float
         mean velocity
@@ -1022,14 +1128,13 @@ def v_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
-
-    lrprofn = []
-    vprof = []
 
     if projected:
         r = cluster.rpro
@@ -1038,6 +1143,7 @@ def v_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1062,70 +1168,102 @@ def v_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
 
-    # Convert to cylindrical or spherical coordinates:
-    if projected:
-        r, theta, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
-        vr, vtheta, vz = coords.rect_to_cyl_vec(
-            cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
-        )
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+    if coord is not None:
+
+        if projected:
+            r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+            vr, vp, vz = coords.rect_to_cyl_vec(
+                cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+            )
+        else:
+            r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+        if coord =='r':
+            v=vr
+            ylabel=r"$<v_r>$"
+        elif coord=='phi':
+            v=vp
+            ylabel=r"$<v_p>$"
+        elif coord=='theta':
+            v=vt
+            ylabel=r"$<v_t>$"
+        elif coord=='x' or coord=='vx':
+            v=cluster.vx
+            ylabel=r"$\sigma_{v_x}$"
+        elif coord=='y' or coord=='vy':
+            v=cluster.vy
+            ylabel=r"$\sigma_{v_y}$"
+        elif coord=='z' or coord=='vz':
+            v=vz
+            ylabel=r"$\sigma_{v_z}$"
+        elif coord=='v':
+            if projected:
+                v=cluster.vpro
+            else:
+                v=cluster.v
     else:
-        r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+        if projected:
+            ylabel=r"$<v_{pro}>$"
+        else:
+            ylabel=r"$<v>$"
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+
+    if normalize:
+        if projected:
+            rprofn=r_mean / cluster.rmpro
+        else:
+            rprofn=r_mean / cluster.rm
+    else:
+        rprofn=r_mean
+
+    vprof=np.zeros(len(rprofn))
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
 
         if np.sum(rindx) > 3.0:
 
-            vrmean = np.mean(vr[rindx])
-            vtmean = np.mean(vt[rindx])
+            vmean = np.mean(v[rindx])
+            vprof[i]=vmean
 
-            if projected:
-                vpmean = np.zeros(len(vr))
-            else:
-                vpmean = np.mean(vp[rindx])
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-            vmean = np.sqrt(vrmean ** 2.0 + vtmean ** 2.0 + vpmean ** 2.0)
-
-            if normalize:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
-                else:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
-            else:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i]))
-                else:
-                    lrprofn.append(np.log(r_mean[i]))
-
-            vprof.append(vmean)
-
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
 
     if plot:
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
         if normalize:
-            xlabel=r"$\ln(r/r_m)$"
+            xlabel=r"$r/r_m$"
         else:
-            xlabel=r"$\ln(r)$"
+            xlabel=r"$r$"
 
         _plot(
-            lrprofn,
+            rprofn,
             vprof,
             xlabel=xlabel,
-            ylabel=r"$<v>$",
+            ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
@@ -1133,8 +1271,215 @@ def v_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return lrprofn, vprof
+    return rprofn, vprof
 
+
+def v2_prof(
+    cluster,
+    mmin=None,
+    mmax=None,
+    rmin=None,
+    rmax=None,
+    nrad=20,
+    vmin=None,
+    vmax=None,
+    emin=None,
+    emax=None,
+    kwmin=0,
+    kwmax=15,
+    npop=None,
+    indx=None,
+    bins=None,
+    projected=False,
+    coord=None,
+    normalize=False,
+    plot=False,
+    **kwargs,
+):
+    """Measure the radial variation in the mean squared velocity 
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    mmin/mmax : float
+        minimum and maximum stellar mass
+    rmin/rmax : float
+        minimum and maximum stellar radii
+    nrad : int
+        number of radial bins
+    vmin/vmax : float 
+        minimum and maximum stellar velocity
+    emin/emax : float
+        minimum and maximum stellar energy
+    kwmin/kwmax : float
+        minimum and maximum stellar type (kw)
+    npop : int
+        population number
+    indx : float
+        user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
+    projected : bool
+        use projected values and constraints (default:False)
+    coord : str
+        choose what coordinate the mean velocity profile is to be returned in (default None returns (vx**2.+vy**2.+vz**2.)^1/2).
+        Alternatively can ask for 'vr', 'vphi', or 'vtheta' for spherical coordinate velocity dispersions.
+    normalize : bool
+        normalize radial bins by cluster's half-mass radius (default: False)
+    plot : bool 
+        plot the velocity disperions profile (default: False)
+
+    Returns
+    -------
+    rprofn : float
+        natural log of radius (normalized by half-mass radius)
+    vprof : float
+        mean velocity
+
+    Other Parameters
+    ----------------
+    kwrags : str
+        key word arguments for plotting
+
+    History
+    -------
+    2018 - Written - Webb (UofT)
+    """
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
+        cluster.to_centre(sortstars=normalize)
+    elif normalize:
+        cluster.sortstars()
+
+    vprof = np.array([])
+
+    if projected:
+        r = cluster.rpro
+        v = cluster.vpro
+    else:
+        r = cluster.r
+        v = cluster.v
+
+    """
+    if rmin == None:
+        rmin = np.min(r)
+    if rmax == None:
+        rmax = np.max(r)
+    if vmin == None:
+        vmin = np.min(v)
+    if vmax == None:
+        vmax = np.max(v)
+    if mmin == None:
+        mmin = np.min(cluster.m)
+    if mmax == None:
+        mmax = np.max(cluster.m)
+
+    if indx is None:
+        indx = cluster.id > -1
+
+    # Build subcluster containing only stars in the full radial and mass range:
+    indx *= (
+        (r >= rmin)
+        * (r <= rmax)
+        * (cluster.m >= mmin)
+        * (cluster.m <= mmax)
+        * (v >= vmin)
+        * (v <= vmax)
+    )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
+
+    if emin != None:
+        indx *= cluster.etot >= emin
+    if emin != None:
+        indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+    if coord is not None:
+
+        if projected:
+            r, phi, z = coords.rect_to_cyl(cluster.x, cluster.y, cluster.z)
+            vr, vp, vz = coords.rect_to_cyl_vec(
+                cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
+            )
+        else:
+            r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+
+        if coord =='r':
+            v=vr
+            ylabel=r"$<v_r^2>$"
+        elif coord=='phi':
+            v=vp
+            ylabel=r"$<v_p^2>$"
+        elif coord=='theta':
+            v=vt
+            ylabel=r"$<v_t^2>$"
+        elif coord=='z':
+            v=vz
+            ylabel=r"$<v_z^2>$"
+    else:
+        if projected:
+            ylabel=r"$<v_{pro}^2>$"
+        else:
+            ylabel=r"$<v^2>$"
+
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    if normalize:
+        if projected:
+            rprofn=r_mean / cluster.rmpro
+        else:
+            rprofn=r_mean / cluster.rm
+    else:
+        rprofn=r_mean
+
+    vprof=np.zeros(len(rprofn))
+
+    for i in range(0, len(r_mean)):
+        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+
+        if np.sum(rindx) > 3.0:
+
+            vmean = np.mean(v[rindx]**2.)
+            vprof[i]=vmean
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+
+    if plot:
+        filename = kwargs.pop("filename", None)
+        overplot = kwargs.pop("overplot", False)
+
+        if normalize:
+            xlabel=r"$r/r_m$"
+        else:
+            xlabel=r"$r$"
+
+        _plot(
+            rprofn,
+            vprof,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            overplot=overplot,
+            **kwargs
+        )
+
+        if filename != None:
+            plt.savefig(filename)
+
+    return rprofn, vprof
 
 def eta_prof(
     cluster,
@@ -1149,10 +1494,12 @@ def eta_prof(
     emin=None,
     emax=None,
     kwmin=0,
-    kwmax=1,
+    kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
-    normalize=True,
+    normalize=False,
     plot=False,
     meq=False,
     **kwargs,
@@ -1177,8 +1524,12 @@ def eta_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -1188,7 +1539,7 @@ def eta_prof(
 
     Returns
     -------
-    lrprofn : float
+    rprofn : float
         natural log of each radius bin (normalized by half-mass radius)
     eprof : float
         slope of the sigma_v-mass function
@@ -1210,14 +1561,13 @@ def eta_prof(
     -------
     2018 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
         cluster.sortstars()
-
-    lrprofn = []
-    eprof = []
 
     if projected:
         r = cluster.rpro
@@ -1226,6 +1576,7 @@ def eta_prof(
         r = cluster.r
         v = cluster.v
 
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1250,16 +1601,36 @@ def eta_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
+
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
+
+    if normalize:
+        if projected:
+            rprofn=r_mean / cluster.rmpro
+        else:
+            rprofn=r_mean / cluster.rm
+    else:
+        rprofn=r_mean
+
+    eprof=np.zeros(len(rprofn))
 
     for i in range(0, len(r_mean)):
 
@@ -1280,21 +1651,13 @@ def eta_prof(
         )
 
         if eta > -100:
-            if normalize:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rmpro))
-                else:
-                    lrprofn.append(np.log(r_mean[i] / cluster.rm))
-            else:
-                if projected:
-                    lrprofn.append(np.log(r_mean[i]))
-                else:
-                    lrprofn.append(np.log(r_mean[i]))
+            eprof[i]=eta
 
-            eprof.append(eta)
-
-    if len(lrprofn) > 3:
-        (deta, ydeta), V = np.polyfit(lrprofn, eprof, 1, cov=True)
+    if len(rprofn) > 3:
+        if projected:
+            (deta, ydeta), V = np.polyfit(np.log(r_mean/cluster.rmpro), eprof, 1, cov=True)
+        else:
+            (deta, ydeta), V = np.polyfit(np.log(r_mean/cluster.rm), eprof, 1, cov=True)
         edeta = np.sqrt(V[0][0])
         eydeta = np.sqrt(V[1][1])
     else:
@@ -1319,27 +1682,33 @@ def eta_prof(
 
 
         _plot(
-            lrprofn,
+            np.log(rprofn),
             eprof,
             xlabel=xlabel,
             ylabel=ylabel,
             overplot=overplot,
             **kwargs
         )
-        rfit = np.linspace(np.min(lrprofn), np.max(lrprofn), nrad)
-        efit = deta * rfit + ydeta
-        if meq:
-            _lplot(rfit, efit, overplot=True, label=(r"d$m_{eq}$ = %f" % deta))
+
+        if projected:
+            rfit=r_mean/cluster.rmpro
         else:
-            _lplot(rfit, efit, overplot=True, label=(r"d$\eta$ = %f" % deta))
+            rfit=r_mean/cluster.rm
+
+        efit = deta * np.log(rfit) + ydeta
+        if meq:
+            _lplot(np.log(rprofn), efit, overplot=True, label=(r"d$m_{eq}$ = %f" % deta))
+        else:
+            _lplot(np.log(rprofn), efit, overplot=True, label=(r"d$\eta$ = %f" % deta))
         plt.legend()
 
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-    return lrprofn, eprof, deta, edeta, ydeta, eydeta
+
+    return rprofn, eprof, deta, edeta, ydeta, eydeta
 
 def meq_prof(
     cluster,
@@ -1354,10 +1723,12 @@ def meq_prof(
     emin=None,
     emax=None,
     kwmin=0,
-    kwmax=1,
+    kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
-    normalize=True,
+    normalize=False,
     plot=False,
     meq=False,
     **kwargs,
@@ -1382,8 +1753,12 @@ def meq_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -1393,7 +1768,7 @@ def meq_prof(
 
     Returns
     -------
-    lrprofn : float
+    rprofn : float
         natural log of each radius bin (normalized by half-mass radius)
     eprof : float
         slope of the sigma_v-mass function
@@ -1416,7 +1791,7 @@ def meq_prof(
     2020 - Written - Webb (UofT)
     """
 
-    lrprofn, meqprof, dmeq, edmeq, ydmeq, eymeq=eta_prof(
+    rprofn, meqprof, dmeq, edmeq, ydmeq, eymeq=eta_prof(
         cluster,
         mmin=mmin,
         mmax=mmax,
@@ -1430,7 +1805,9 @@ def meq_prof(
         emax=emax,
         kwmin=kwmin,
         kwmax=kwmax,
+        npop=npop,
         indx=indx,
+        bins=bins,
         projected=projected,
         normalize=normalize,
         plot=plot,
@@ -1438,7 +1815,7 @@ def meq_prof(
         **kwargs,
     )
 
-    return lrprofn, meqprof, dmeq, edmeq, ydmeq, eymeq
+    return rprofn, meqprof, dmeq, edmeq, ydmeq, eymeq
  
 
 def vcirc_prof(
@@ -1454,7 +1831,9 @@ def vcirc_prof(
     emax=None,
     kwmin=0,
     kwmax=15,
+    npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     plot=False,
@@ -1487,8 +1866,12 @@ def vcirc_prof(
         minimum and maximum stellar energy
     kwmin/kwmax : float
         minimum and maximum stellar type (kw)
+    npop : int
+        population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -1516,16 +1899,15 @@ def vcirc_prof(
     -------
     2019 - Written - Webb (UofT)
     """
-    units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
-    if origin0 != 'cluster' and origin0 != 'centre':
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
-    elif normalize:
+    else:
         cluster.sortstars()
 
     grav=_get_grav(cluster)
-
-    rprof = np.array([])
-    vcprof = np.array([])
 
     if projected:
         r = cluster.rpro[cluster.rproorder]
@@ -1536,6 +1918,8 @@ def vcirc_prof(
         v = cluster.v[cluster.rorder]
         m = cluster.m[cluster.rorder]
 
+
+    """
     if rmin == None:
         rmin = np.min(r)
     if rmax == None:
@@ -1560,14 +1944,18 @@ def vcirc_prof(
         * (cluster.m <= mmax)
         * (v >= vmin)
         * (v <= vmax)
-        * (cluster.kw >= kwmin)
-        * (cluster.kw <= kwmax)
     )
+
+    if len(cluster.kw) > 0:
+        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
 
     if emin != None:
         indx *= cluster.etot >= emin
     if emin != None:
         indx *= cluster.etot <= emax
+    """
+
+    indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     r = r[indx]
     v = v[indx]
@@ -1578,8 +1966,29 @@ def vcirc_prof(
     vmax = np.amax(vcirc)
     rvmax = r[np.argmax(vcirc)]
 
-    rprof = r
-    vcprof = vcirc
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        args=np.zeros(len(r_mean))
+        for i in range(0,len(args)):
+            args[i]=np.argmin(np.fabs(r-r_mean[i]))
+    elif kwargs.get('bintype','num')=='fix' and nrad is not None:
+        r_lower, r_mean, r_upper, r_hist = binmaker(cluster.r[indx], nrad)
+        args=np.zeros(len(r_mean))
+        for i in range(0,len(args)):
+            args[i]=np.argmin(np.fabs(r-r_mean[i]))
+    elif kwargs.get('bintype','num')=='num' and nrad is not None:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(cluster.r[indx], nrad)
+        args=np.zeros(len(r_mean))
+        for i in range(0,len(args)):
+            args[i]=np.argmin(np.fabs(r-r_mean[i]))
+    elif nrad is None:
+        args=np.arange(0,len(r),1)
+
+
+    args=args.astype(int)
+
+    rprof = r[args]
+    vcprof = vcirc[args]
 
     if normalize:
         if projected:
@@ -1621,9 +2030,10 @@ def vcirc_prof(
             xlabel=r"$R \ %s$" % xunits,
             ylabel=r"$v_c \ %s $" % yunits,
             title="Time = %f" % cluster.tphys,
-            log=True,
+            log=kwargs.pop('log',True),
             overplot=overplot,
             filename=filename,
+            **kwargs,
         )
         _lplot([rvmax, rvmax], [np.amin(y), np.amax(y)], "--", overplot=True)
         _lplot([np.amin(x), np.amax(x)], [vmax, vmax], "--", overplot=True)
@@ -1631,6 +2041,7 @@ def vcirc_prof(
         if filename != None:
             plt.savefig(filename)
 
-    return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return rprof, vcprof, rvmax, vmax

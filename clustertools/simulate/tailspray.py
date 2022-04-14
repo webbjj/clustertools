@@ -18,9 +18,9 @@ from matplotlib import animation
 
 from ..util.recipes import *
 from ..util.coordinates import *
-from ..analysis.cluster import StarCluster
-from ..analysis.tails import *
-from ..analysis.orbit import orbital_path
+from ..cluster.cluster import StarCluster
+from ..tidaltail.tails import *
+from ..analysis.orbits import orbital_path
 
 from streamtools.df import streamspraydf
 
@@ -125,6 +125,7 @@ class tailspray(object):
 		initialize=False,
 		ro=None, 
 		vo=None,
+		solarmotion=[-11.1, 24.0, 7.25],
 		plot=False,
 		**kwargs):
 
@@ -132,7 +133,7 @@ class tailspray(object):
 			if ro is None: ro=self.ro
 			if vo is None: vo=self.vo
 
-			self.torbit, self.xorbit, self.yorbit, self.zorbit, self.vxorbit, self.vyorbit, self.vzorbit=orbital_path(self.cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,plot=plot,**kwargs)
+			self.torbit, self.xorbit, self.yorbit, self.zorbit, self.vxorbit, self.vyorbit, self.vzorbit=orbital_path(self.cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
 
 	def tail_path(self, 
 		dt=0.1, 
@@ -142,6 +143,7 @@ class tailspray(object):
 		skypath=False, 
 		ro=None, 
 		vo=None,
+		solarmotion=[-11.1, 24.0, 7.25],
 		plot=False,
 		**kwargs):
 
@@ -149,7 +151,7 @@ class tailspray(object):
 			if ro is None: ro=self.ro
 			if vo is None: vo=self.vo
 
-			self.ttail, self.xtail, self.ytail, self.ztail, self.vxtail, self.vytail, self.vztail=tail_path(self.cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,ro=ro,vo=vo,plot=plot,**kwargs)
+			self.ttail, self.xtail, self.ytail, self.ztail, self.vxtail, self.vytail, self.vztail=tail_path(self.cluster,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
 
 	def tail_path_match(self,
 	    dt=0.1,
@@ -162,6 +164,7 @@ class tailspray(object):
 	    do_full=False,
 	    ro=None,
 	    vo=None,
+		solarmotion=[-11.1, 24.0, 7.25],
 	    plot=False,
 	    projected=False,
 	    **kwargs,
@@ -171,7 +174,7 @@ class tailspray(object):
 			if ro is None: ro=self.ro
 			if vo is None: vo=self.vo
 
-			self.tstar,self.dprog,self.dpath=tail_path_match(self.cluster,dt=dt,nt=nt,pot=pot,path=path,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,plot=plot,projected=projected,**kwargs)
+			self.tstar,self.dprog,self.dpath=tail_path_match(self.cluster,dt=dt,nt=nt,pot=pot,path=path,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)
 
 	def _init_fig(self,xlim=(-20,20),ylim=(-20,20)):
 	    self.fig = plt.figure()
@@ -215,7 +218,7 @@ class tailspray(object):
 		return self.line,self.pt
 
 
-	def animate(self,frames=100,interval=50,xlim=(-20,20),ylim=(-20,20)):
+	def animate(self,frames=100,interval=50,xlim=(-20,20),ylim=(-20,20),solarmotion=[-11.1, 24.0, 7.25]):
 
 		self._init_fig(xlim,ylim)
 
@@ -232,7 +235,7 @@ class tailspray(object):
 
 		sdata=np.zeros(shape=(frames,2,int(2*self.nstar)))
 
-		self.oe=self.cluster.initialize_orbits()
+		self.oe=self.cluster.initialize_orbits(solarmotion=solarmotion)
 		self.oe.integrate(tsint,self.pot)
 
 		for i in range(0,frames):
@@ -242,9 +245,9 @@ class tailspray(object):
 
 		self.anim = animation.FuncAnimation(self.fig, self._ani_update, init_func=self._ani_init, frames=frames, interval=interval, blit=False)
 
-	def snapout(self,filename='corespray.dat'):
+	def snapout(self,filename='corespray.dat',solarmotion=[-11.1, 24.0, 7.25]):
 		#Need positions, velocities, and escape times!
-		self.oe=self.cluster.initialize_orbits()
+		self.oe=self.cluster.initialize_orbits(solarmotion=solarmotion)
 
 		R=np.append(self.o.R(0.),self.oe.R(0.))
 		vR=np.append(self.o.vR(0.),self.oe.vR(0.))

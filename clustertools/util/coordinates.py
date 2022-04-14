@@ -13,6 +13,7 @@ __all__ = [
     "sphere_to_cart",
     "cyl_coords",
     "cart_to_cyl",
+    "cyl_to_cart",
     "sky_coords",
     "cart_to_sky"
 ]
@@ -165,6 +166,30 @@ def cart_to_cyl(x,y,z,vx,vy,vz):
         vx, vy, vz, x, y, z
     )
     return r, theta, copy.copy(zed), vr, vtheta, copy.copy(vzed)
+
+def cyl_to_cart(r,theta,zed,vr,vtheta,vz):
+    """Convert cylindrical coordinates to cartesian coordinates 
+
+    Parameters
+    ----------
+    r, theta, z, vr, vtheta, vz : float
+      stellar positions and velocities in cylindrical coordinates
+
+    Returns
+    -------
+    x,y,z,vx,vy,vz : float
+      positions and velocities in cartesian coordinates
+
+    History
+    -------
+    2022 - Written - Webb (UofT)
+    """
+
+    x,y,z=coords.cyl_to_rect(r,theta,zed)
+    vx,vy,vz=coords.cyl_to_rect_vec(vr,vtheta,vz,theta)
+
+
+    return x, y, copy.copy(z), vx, vy, copy.copy(vz)
 
 def sky_coords(cluster):
     """Get the sky coordinates of every star in the cluster

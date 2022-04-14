@@ -1164,7 +1164,12 @@ def mass_function(
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
 
-    if mcorr is None: mcorr=np.ones(cluster.ntot)
+    if mcorr is None: 
+        mcorr=np.ones(cluster.ntot)
+        return_error=False
+    else:
+        return_error=True
+
 
     if np.sum(indx) >= nmass:
 
@@ -1202,18 +1207,35 @@ def mass_function(
 
             if filename != None:
                 plt.savefig(filename)
-        return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
+        if return_error:
+            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror
+        else:
+            return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
     else:
         print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
-        return (
-            np.zeros(nmass),
-            np.zeros(nmass),
-            np.zeros(nmass),
-            -1000.0,
-            -1000.0,
-            -1000.0,
-            -1000.0,
-        )
+
+        if return_error:
+            return (
+                np.zeros(nmass),
+                np.zeros(nmass),
+                np.zeros(nmass),
+                -1000.0,
+                -1000.0,
+                -1000.0,
+                -1000.0,
+                np.zeros(nmass),
+            )
+        else:
+
+            return (
+                np.zeros(nmass),
+                np.zeros(nmass),
+                np.zeros(nmass),
+                -1000.0,
+                -1000.0,
+                -1000.0,
+                -1000.0,
+            )
 
 def tapered_mass_function(
     cluster,

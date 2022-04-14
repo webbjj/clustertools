@@ -144,6 +144,7 @@ def rho_prof_out(cluster, fileout, **kwargs):
 def alpha_prof_out(
     cluster,
     fileout,
+    normalize=True,
     **kwargs,
 ):
     """Write alpha profile and delta_alpha to file
@@ -173,10 +174,13 @@ def alpha_prof_out(
         cluster,
         **kwargs,
     )
-    lrprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = alpha_prof(
+    rprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = alpha_prof(
         cluster,
+        normalize=normalize,
         **kwargs,
     )
+
+    lrprofn=np.log(rprofn)
 
     fileout.write("%f %f %f %f %f " % (cluster.tphys, alpha, ealpha, yalpha, eyalpha))
     for i in range(0, len(m_mean)):
@@ -217,7 +221,8 @@ def sigv_prof_out(cluster, fileout,**kwargs,
     """
     fileout.write("%f %f " % (cluster.tphys, cluster.mtot))
 
-    lrprofn, sigvprof=sigv_prof(cluster, **kwargs)
+    rprofn, sigvprof=sigv_prof(cluster, **kwargs)
+    lrprofn=np.log(rprofn)
 
     for lr in lrprofn:
         fileout.write("%f " % lr)
@@ -259,10 +264,12 @@ def eta_prof_out(
         cluster,
         **kwargs,
     )
-    lrprofn, eprof, deta, edeta, ydeta, eydeta = eta_prof(
+    rprofn, eprof, deta, edeta, ydeta, eydeta = eta_prof(
         cluster,
         **kwargs,
     )
+
+    lrprofn=np.log(rprofn)
 
     fileout.write("%f %f %f %f %f " % (cluster.tphys, eta, eeta, yeta, eyeta))
     for i in range(0, len(m_mean)):

@@ -6,7 +6,6 @@ except:
 
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
-from ..planet.clusterwplanets import StarClusterwPlanets
 from .orbit import _get_cluster_orbit
 
 import os, struct

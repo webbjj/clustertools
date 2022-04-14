@@ -29,6 +29,8 @@ from .functions import mass_function, eta_function
 
 import matplotlib.pyplot as plt
 
+import warnings
+warnings.warn('all profiles are setup such that the returned radial bins and profile values are in linear space and not normalized by the effective radius. Previously select profiles had unique returns.',FutureWarning)
 
 def rho_prof(
     cluster,

@@ -2432,6 +2432,7 @@ def _rho_prof(
     kwmax=15,
     npop=None,
     indx=None,
+    bins=None,
     projected=False,
     normalize=False,
     plot=False,
@@ -2459,6 +2460,8 @@ def _rho_prof(
         population number
     indx : float
         user defined boolean array from which to extract the subset
+    bins : float
+        User defined bins in the form of (rlower,rmean,rupper) (default: None)
     projected : bool
         use projected values and constraints (default:False)
     normalize : bool
@@ -2539,10 +2542,15 @@ def _rho_prof(
     if emin != None:
         indx *= cluster.etot <= emax
     """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
-    r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+    if bins is not None:
+        r_lower, r_mean, r_upper=bins[0],bins[1],bins[2]
+        r_hist=np.zeros(len(r_mean))
+    elif kwargs.pop('bintype','num')=='fix':
+        r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
+    else:
+        r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
     for i in range(0, len(r_mean)):
         rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
@@ -2582,16 +2590,29 @@ def _rho_prof(
             xunits = ""
             yunits = ""
 
+        if projected:
+            xlabel=r"$R \ %s$" % xunits
+            ylabel=r"$\Sigma \ %s$" % yunits
+        else:
+            xlabel=r"$r \ %s$" % xunits
+            ylabel=r"$\rho \ %s$" % yunits
+
+
         x, y, n = rprof, pprof, nprof
+
+        if normalize:
+            x/=cluster.rm
+
         _lplot(
             x,
             y,
-            xlabel=r"$R \ %s$" % xunits,
-            ylabel=r"$\rho \ %s$" % yunits,
+            xlabel=xlabel,
+            ylabel=ylabel,
             title="Time = %f" % cluster.tphys,
-            log=True,
+            log=kwargs.pop('log',True),
             overplot=overplot,
             filename=filename,
+            **kwargs,
         )
 
         if filename != None:
@@ -2599,5 +2620,7 @@ def _rho_prof(
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if normalize:
+        rprof/=cluster.rm
 
     return rprof, pprof, nprof

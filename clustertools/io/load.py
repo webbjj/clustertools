@@ -17,7 +17,6 @@ except:
 import os, struct
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
-from ..planet.clusterwplanets import StarClusterwPlanets
 
 #Import loaders for different code
 from .gyrfalcon import _get_gyrfalcon
@@ -129,8 +128,6 @@ def load_cluster(
         Currently only accepts 'mxvpqael' as an alternative.
     dtout : integer
         number of nbody timesteps forward to advance to next Nbody6++ timestep (default = 1)
-    planets : bool
-        will planets be added to the system (default:False)
 
     History
     _______

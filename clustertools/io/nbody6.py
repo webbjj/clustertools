@@ -7,7 +7,6 @@ except:
 import os, struct
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
-from ..planet.clusterwplanets import StarClusterwPlanets
 from .orbit import _get_cluster_orbit
 
 def _get_nbody6(out3, out33=None, fort82=None, fort83=None, ofile=None, advance=False, **kwargs):

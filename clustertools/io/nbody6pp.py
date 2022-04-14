@@ -7,7 +7,6 @@ except:
 import os, struct
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
-from ..planet.clusterwplanets import StarClusterwPlanets
 from .orbit import _get_cluster_orbit
 
 #Try importing hdf5. Only necessary with Nbody6++ and hdf5 output
@@ -62,7 +61,6 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     deltat=kwargs.get('deltat',1)
     dtout=kwargs.get('dtout',deltat)
 
-    planets = kwargs.pop("planets", False)
 
 
     if snap40 is not None:
@@ -78,29 +76,15 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         else:
             nb=0
 
-        if planets:
-
-            cluster = StarClusterwPlanets(
-                tphys,
-                units="pckms",
-                origin="cluster",
-                ctype="nbody6++",
-                sfile=snap40,
-                nsnap=nsnap,
-                wdir=wdir,
-            )
-
-        else:
-
-            cluster = StarCluster(
-                tphys,
-                units="pckms",
-                origin="cluster",
-                ctype="nbody6++",
-                sfile=snap40,
-                nsnap=nsnap,
-                wdir=wdir,
-            )
+        cluster = StarCluster(
+            tphys,
+            units="pckms",
+            origin="cluster",
+            ctype="nbody6++",
+            sfile=snap40,
+            nsnap=nsnap,
+            wdir=wdir,
+        )
 
         cluster.hdf5=True
         cluster.ngroups=len(snap40)
@@ -174,29 +158,15 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
 
 
-        if planets:
-
-            cluster = StarClusterwPlanets(
-                alist[0],
-                units="nbody",
-                origin="cluster",
-                ctype="nbody6++",
-                sfile=conf3,
-                nsnap=nsnap,
-                wdir=wdir,
-            )
-
-        else:
-
-            cluster = StarCluster(
-                alist[0],
-                units="nbody",
-                origin="cluster",
-                ctype="nbody6++",
-                sfile=conf3,
-                nsnap=nsnap,
-                wdir=wdir,
-            )
+        cluster = StarCluster(
+            alist[0],
+            units="nbody",
+            origin="cluster",
+            ctype="nbody6++",
+            sfile=conf3,
+            nsnap=nsnap,
+            wdir=wdir,
+        )
 
         if ntot > 0:
             cluster.add_nbody6(

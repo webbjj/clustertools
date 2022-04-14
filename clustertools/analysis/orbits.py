@@ -38,7 +38,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from ..util.recipes import interpolate, binmaker
-from .profiles import rho_prof
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 
 import astropy.coordinates as coord

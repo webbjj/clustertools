@@ -20,7 +20,6 @@ from textwrap import dedent
 from galpy.potential import MWPotential2014
 from ..analysis.orbits import *
 from ..analysis.functions import *
-from ..analysis.profiles import *
 from .operations import *
 from ..tidaltail.tails import *
 from copy import copy
@@ -348,8 +347,6 @@ class StarCluster(object):
         self.hdf5=False
         self.ngroups=0
         self.ngroup=0
-
-        self.planets=False
 
     def add_stars(
         self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,npop=None,sortstars=False,analyze=False

@@ -10,12 +10,8 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 1
 
-   clustertools.analysis.cluster
    clustertools.analysis.functions
-   clustertools.analysis.initialize
-   clustertools.analysis.load
-   clustertools.analysis.operations
-   clustertools.analysis.orbit
+   clustertools.analysis.orbits
    clustertools.analysis.profiles
-   clustertools.analysis.tails

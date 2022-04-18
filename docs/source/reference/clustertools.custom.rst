@@ -10,6 +10,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 1
 
    clustertools.custom.custom_loaders
    clustertools.custom.custom_outputs

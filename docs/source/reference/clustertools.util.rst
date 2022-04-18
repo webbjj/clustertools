@@ -10,6 +10,7 @@ Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 1
 
    clustertools.util.constants
    clustertools.util.coordinates

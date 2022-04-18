@@ -34,10 +34,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     
     -Relies heavily on LIMEPY/SPES models (Woolley 1954, King 1966, Wilson, 1975, Gieles & Zocchi 2015, Claydon et al. 2019)
     - When setting up a specific Galactic cluster, makes use of de Boer et al. 2019 and Harris 1996 (2010 Edition). Cluster is also assigned an orbit based on Vasiliev 2019
-    - When setting up a cluster based on galpy potential, relies on Galpy (Bovy 2015)
 
-    Bovy J., 2015, ApJS, 216, 29
-    Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
     de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906
     Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
     Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487
@@ -49,7 +46,7 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     Parameters
     ----------
     ctype : str
-        Type of model used to generate cluster (LIMEPY','galpy')
+        Type of model used to generate cluster (LIMEPY')
     units : str
         units of generated model (default: 'pckms')
     origin : str
@@ -85,20 +82,6 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
         mean mass of stars in the cluster (only single mass models available at the moment)
     kwargs : str
         Additional key word arguments needed by limepy and spes models can be passed. See https://readthedocs.org/projects/limepy/
-
-    if ctype=='galpy':
-        pot : class
-            galpy potential
-        rmin : float
-            minimum stellar radius (default: 0.01)
-        rmax : float
-            maximnum stellar radius (default: 100.)
-        ro : float
-            galpy distance scaling parameter
-        vo : float
-            galpy velocity scaling parameter
-        coordinates : str
-            coordinate system to return (default: cartesian)
 
     History
     -------
@@ -149,16 +132,6 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
 
             if cluster.origin!=origin:
                 cluster.to_origin(origin)
-
-    elif ctype=='galpy':
-        cluster=_get_galpy(pot,**kwargs)
-
-        if cluster.units!=units:
-            if units=='nbody': cluster.reset_nbody_scale()
-            cluster.to_units(units)
-
-        if cluster.origin!=origin:
-            cluster.to_origin(origin)
 
     cluster.ctype=ctype
 
@@ -944,144 +917,6 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
         cluster.orbit = None
 
     return cluster
-
-def _get_galpy(pot,**kwargs):
-    """Generate a StarCluster instance based on a galpy potentail
-
-    Parameters
-    ----------
-    pot : class
-        galpy potential
-
-    Returns
-    -------
-    cluster : class
-        StarCluster
-
-    Other Parameters
-    ----------
-    N : int
-        number of stars in the cluster (default: 1000)
-    rmin : float
-        minimum stellar radius (default: 0.01)
-    rmax : float
-        maximnum stellar radius (default: 100.)
-    coordinates : str
-        coordinate system to return (default: cartesian)
-    ro : float
-        galpy distance scaling parameter
-    vo : float
-        galpy velocity scaling parameter
-
-    History
-    -------
-    2020 - Written - Webb (UofT)
-    """
-    N = int(kwargs.get("N", 1000))
-    rmin=kwargs.get('rmin',0.01)
-    rmax=kwargs.get('rmax',100.)
-    coordinates=kwargs.get('coordinates','cartesian')
-    ro=kwargs.get('ro',8.)
-    vo=kwargs.get('vo',220.)
-
-    x,y,z,vx,vy,vz=_sample_galpy_potential(pot,N,rmin,rmax,ro=ro,vo=vo,coordinates=coordinates)
-
-    mbar = kwargs.get("mbar", 1.)
-    m=np.ones(N)*mbar
-
-    cluster = StarCluster(units='kpckms', origin="cluster")
-    cluster.ctype = "galpy"
-    cluster.add_stars(
-        x,
-        y,
-        z,
-        vx,
-        vy,
-        vz,
-        np.linspace(1, N, N, dtype=int),
-        m,
-    )
-    cluster.find_centre()
-
-    return cluster
-
-def _sample_galpy_potential(pot,n,rmin,rmax,nres=100,ro=8.,vo=220.,coordinates='cartesian'):
-    """Generate positions and velocities from galpy potentail
-
-    Parameters
-    ----------
-    pot : class
-        galpy potential
-    N : int
-        number of stars in the cluster (default: 1000)
-    rmin : float
-        minimum stellar radius (default: 0.01)
-    rmax : float
-        maximum stellar radius (default: 100.)
-    nres : int
-        resolution of radius array between rmin/rmax, where 
-        high resolution minimizes dependence on interpolation (default: 100)
-    ro : float
-        galpy distance scaling parameter
-    vo : float
-        galpy velocity scaling parameter
-    coordinates : str
-        coordinate system to return (default: cartesian)
-
-    Returns
-    -------
-    x,y,z,vx,vy,vz : float
-        positions and velocities of generated points
-
-    History
-    -------
-    2020 - Written - Webb (UofT)
-    """
-    ran=np.random.rand(n)
-    rad=np.linspace(rmin,rmax,nres)
-    
-    try:
-        menc=pot.mass(rad/ro,z=0,t=0,forceint=False)
-    except:
-        vc= potential.vcirc(pot,rad/ro,phi=0,t=0.,ro=ro,vo=vo,use_physical=False)
-        menc=vc**2.*(rad/ro)
-
-    menc*=conversion.mass_in_msol(ro=ro,vo=vo)       
-    
-    r=np.interp(ran, menc/menc[-1], rad)
-    phi=2.0*np.pi*np.random.rand(n)
-    theta=np.arccos(1.0-2.0*np.random.rand(n))
-    
-    x=r*np.sin(theta)*np.cos(phi)
-    y=r*np.sin(theta)*np.sin(phi)
-    z=r*np.cos(theta)
-    
-    sigma_v_1d=vo*potential.vcirc(pot,rad/ro,phi=0,t=0.,ro=ro,vo=vo,use_physical=False)/np.sqrt(3.)
-
-    vx=np.random.normal(0.,sigma_v_1d,n)        
-    vy=np.random.normal(0.,sigma_v_1d,n)        
-    vz=np.random.normal(0.,sigma_v_1d,n) 
-    
-    if coordinates=='spherical':
-        vr = (vx * np.sin(theta) * np.cos(phi)
-            + vy * np.sin(theta) * np.sin(phi)
-            + vz * np.cos(theta)
-        )
-        vtheta = (
-            vx * np.cos(theta) * np.cos(phi)
-            + vy * np.cos(theta) * np.sin(phi)
-            - vz * np.sin(theta)
-        )
-        vphi = vx * -np.sin(phi) + vy * np.cos(phi)
-        
-        x,y,z=r,phi,theta
-        vx,vy,vz=vr,vphi,vtheta
-        
-    elif coordinates=='cylindrical':
-        x,y,z=coords.rect_to_cyl(x,y,z)
-        vx,vy,vz=coords.rect_to_cyl_vec(vx,vy,vz,x,y,z,True)
-    
-    return x,y,z,vx,vy,vz
 
 def _get_cluster_orbit(gcname,ro=8.0, vo=220.0):
     """Get the measured orbital parameters of a Galactic globular cluster

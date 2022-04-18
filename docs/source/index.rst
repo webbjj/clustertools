@@ -11,20 +11,19 @@ The package contains methods for loading data from commonly used N-body codes, g
 Supported N-Body Simulation Codes
 -----------------
 
-AMUSE <https://amusecode.github.io/>
+AMUSE <https://amusecode.github.io/> (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
 
-NBODY6 <https://people.ast.cam.ac.uk/~sverre/web/pages/nbody.htm>
+ASTROPY_TABLE <https://docs.astropy.org/en/latest/> (Astropy Collaboration 2013, A&A, 558, A33)
 
-NBODY6++GPU <https://github.com/nbodyx/Nbody6ppGPU>
+GALPY <https://docs.galpy.org/en/v1.7.2/index.html> (Bovy J., 2015, ApJS, 216, 29)
 
-NEMO/GYRFALCON <https://astronemo.readthedocs.io/en/latest/>
+LIMEPY <https://limepy.readthedocs.io/en/latest/> (Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576)
 
-Supported Initial Condition Generation Codes
------------------
+NBODY6 <https://people.ast.cam.ac.uk/~sverre/web/pages/nbody.htm> (Aarseth S. J., 2003, Gravitational N-Body Simulations)
 
-galpy <https://docs.galpy.org/en/v1.6.0/index.html> - Very simple version, will be updated soon with Galpy's own distribution function generator
+NBODY6++GPU <https://github.com/nbodyx/Nbody6ppGPU> (Wang L., Spurzem R., Aarseth S., Nitadori K., Berczik P., Kouwenhoven M. B. N., Naab T., 2015, MNRAS, 450, 4070)
 
-limepy <https://limepy.readthedocs.io/en/latest/>
+NEMO/GYRFALCON <https://astronemo.readthedocs.io/en/latest/> (Teuben P., 1995, The Stellar Dynamics Toolbox NEMO. p. 398)
 
 Guide
 -----------------
@@ -79,43 +78,46 @@ For specific functions, it is recomended to check that specific functions docume
 References
 -----------------
 
-Aarseth S. J., 2003, Gravitational N-Body Simulations - ``load_cluster('nbody6')``, ``load_cluster('nbody6se')``
 
-Astropy Collaboration 2013, A&A, 558, A33 - ``load_cluster('astropy_table')``
+``calc_actions`` - Binney, J. 2012, MNRAS, 426, 1324 - Bovy, J. & Rix, H.W. 2013, ApJ, 779, 115 - Bovy J., 2015, ApJS, 216, 29
 
-Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - ``rtidal``
+``ckin`` - Bianchini et al. 2018, MNRAS, 475, 96
 
-Bianchini, P. et al. 2016, MNRAS, 458, 3644 - ``meq_function``
+``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357
 
-Bianchini et al. 2018, MNRAS, 475, 96 - ``ckin``
+``half_mass_relaxation_time`` - Spitzer, L. 1987, Dynamical evolution of globular clusters
 
-Binney, J. 2012, MNRAS, 426, 1324 - ``calc_actions``
+``initialize_orbit``, ``initialize_orbits``, ``integrate_orbit``, ``integrate_orbits`` - Bovy J., 2015, ApJS, 216, 29
 
-Bovy, J. & Rix, H.W. 2013, ApJ, 779, 115 - ``calc_actions``
+``meq_function``, ``meq_prof`` - Bianchini, P. et al. 2016, MNRAS, 458, 3644 
 
-Bovy J., 2015, ApJS, 216, 29 - ``initialize_orbit``, ``initialize_orbits``, ``integrate_orbit``, ``integrate_orbits``, ``orbit_interpolation``, ``orbital_path``, ``orbital_path_match``, ``calc_actions``, ``ttensor``, ``tail_path``, ``tail_path_match``, ``rtidal``, ``rlimiting``,``virial_radius(method='critical_density')``
+``orbit_interpolation``, ``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
 
-Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
+``relaxation_time`` - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
 
-de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 - ``setup_cluster('limepy','gcname')`` (default)
+``rlimiting`` - Bovy J., 2015, ApJS, 216, 29 
 
-GAIA Collaboration, 2018, A&A, 616, A12 - ``to_cluster(method='orthonormal')``
+``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
 
-Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - ``setup_cluster(ctype='limepy')``
+``setup_cluster(ctype='limepy')`` - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
 
-Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357 - ``find_centre(density=True)`` (default)
+``setup_cluster('limepy','gcname')`` (default) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906
 
-Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - ``setup_cluster('gcname', source='harris')``
+``setup_cluster('limepy',gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
 
-Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9 - ``load_cluster('amuse'``,``virial_radius(method=inverse_distance)``
+``tail_path``, ``tail_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
 
-Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 - ``relaxation_time``
+``to_cluster(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 
 
-Spitzer, L. 1987, Dynamical evolution of globular clusters - ``half_mass_relaxation_time``
+``ttensor`` - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
 
-Stone, N.C. & Ostriker, J.P. 2015, ApJ, 806, 28 - ``core_relaxation_time``
+``virial_radius(method='critical_density')`` - Bovy J., 2015, ApJS, 216, 29 -
 
-Teuben P., 1995, The Stellar Dynamics Toolbox NEMO. p. 398 = ``load_cluster('nemo')``, ``load_cluster('gyrfalcon')``
+``virial_radius(method=inverse_distance)`` - Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9
+
+
+``core_relaxation_time`` - Stone, N.C. & Ostriker, J.P. 2015, ApJ, 806, 28
+
 
 van de Ven, G. 2005, PhD Thesis, Leiden University, https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract - ``to_cluster(method='VandeVen')``
 
@@ -126,6 +128,7 @@ Wang L., Spurzem R., Aarseth S., Nitadori K., Berczik P., Kouwenhoven M. B. N., 
 Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383 - ``alpha_prof``
 
 Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4 - ``ttensor``
+
 
 Library Reference
 -----------------

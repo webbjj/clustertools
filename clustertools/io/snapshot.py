@@ -16,8 +16,8 @@ def _get_snapshot(
     ctype="snapshot",
     col_names=["m", "x", "y", "z", "vx", "vy", "vz"],
     col_nums=[0, 1, 2, 3, 4, 5, 6],
-    units="pckms",
-    origin="cluster",
+    units=None,
+    origin=None,
     ofile=None,
     advance=False,
     **kwargs
@@ -68,16 +68,6 @@ def _get_snapshot(
     snapbase = kwargs.get("snapbase", "")
     snapend = kwargs.get("snapend", ".dat")
     skiprows = kwargs.get("skiprows", 0)
-
-    if units == "WDunits":
-        vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
-        mcon = 222288.4543021174
-        units = "kpckms"
-        units0 = "WDunits"
-    else:
-        vcon = 1.0
-        mcon = 1.0
-        units0 = units
 
     if filename != None:
         if os.path.isfile("%s%s%s" % (wdir, snapdir, filename)):
@@ -138,7 +128,7 @@ def _get_snapshot(
 
     if "m" in col_names:
         mindx = np.argwhere(col_names == "m")[0][0]
-        m = data[:, col_nums[mindx]] * mcon
+        m = data[:, col_nums[mindx]]
     else:
         m=1.
 
@@ -162,19 +152,19 @@ def _get_snapshot(
 
     if "vx" in col_names:
         vxindx = np.argwhere(col_names == "vx")[0][0]
-        vx = data[:, col_nums[vxindx]] * vcon
+        vx = data[:, col_nums[vxindx]]
     else:
         vx=0.
 
     if "vy" in col_names:
         vyindx = np.argwhere(col_names == "vy")[0][0]
-        vy = data[:, col_nums[vyindx]] * vcon
+        vy = data[:, col_nums[vyindx]]
     else:
         vy=0.
 
     if "vz" in col_names:
         vzindx = np.argwhere(col_names == "vz")[0][0]
-        vz = data[:, col_nums[vzindx]] * vcon
+        vz = data[:, col_nums[vzindx]]
     else:
         vz=0.
 
@@ -191,8 +181,6 @@ def _get_snapshot(
         kwindx=True
     else:
         kwindx=False
-
-
 
     cluster = StarCluster(
         tphys, units=units, origin=origin, ctype=ctype, **kwargs
@@ -221,14 +209,12 @@ def _get_snapshot(
 
     elif origin == "cluster" or origin=='centre':
         if kwargs.get("analyze", True):
+            cluster.find_centre()
             sortstars=kwargs.get("sortstars", True)
             cluster.analyze(sortstars=sortstars)
 
         if ofile != None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
-
-
-    if units0=='WDunits': cluster.units_init='WDunits'
 
     return cluster
 

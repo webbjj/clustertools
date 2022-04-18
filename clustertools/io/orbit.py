@@ -53,7 +53,7 @@ def _get_cluster_orbit(cluster, ofile, advance=False, ocol_names=["t", "x", "y",
 
         for i in range(0,len(ocol_names)):
             if ocol_names[i]=="t":
-                t=float(data[ocol_nums[i]])
+                tphys=float(data[ocol_nums[i]])
             elif ocol_names[i]=="x":
                 xgc=float(data[ocol_nums[i]])
             elif ocol_names[i]=="y":
@@ -75,9 +75,9 @@ def _get_cluster_orbit(cluster, ofile, advance=False, ocol_names=["t", "x", "y",
         vygc = float(data[5])
         vzgc = float(data[6])
 
-    if cluster.tphys == 0.0 or otime:
-        cluster.tphys = tphys
-
-    cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc, ounits)
+    if otime:
+        cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc, ounits , tphys=tphys)
+    else:
+        cluster.add_orbit(xgc, ygc, zgc, vxgc, vygc, vzgc, ounits)
 
     return

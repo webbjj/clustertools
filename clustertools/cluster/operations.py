@@ -10,6 +10,7 @@ __all__ = [
     "to_nbody",
     "to_radec",
     "to_galpy",
+    "to_WDunits",
     "to_units",
     "to_sudays",
     "to_audays",
@@ -59,55 +60,58 @@ def to_pckms(cluster):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.units == "galpy" or cluster.units == "radec":
-        cluster.to_kpckms()
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units == "galpy" or cluster.units == "radec" or cluster.units =="WDunits":
+            cluster.to_kpckms()
 
-    if cluster.units == "nbody":
-        cluster.tphys *= cluster.tbar
-        cluster.m *= cluster.zmbar
-        cluster.x *= cluster.rbar
-        cluster.y *= cluster.rbar
-        cluster.z *= cluster.rbar
-        cluster.vx *= cluster.vbar
-        cluster.vy *= cluster.vbar
-        cluster.vz *= cluster.vbar
+        if cluster.units == "nbody":
+            cluster.tphys *= cluster.tbar
+            cluster.m *= cluster.zmbar
+            cluster.x *= cluster.rbar
+            cluster.y *= cluster.rbar
+            cluster.z *= cluster.rbar
+            cluster.vx *= cluster.vbar
+            cluster.vy *= cluster.vbar
+            cluster.vz *= cluster.vbar
 
-        cluster.xc *= cluster.rbar
-        cluster.yc *= cluster.rbar
-        cluster.zc *= cluster.rbar
-        cluster.vxc *= cluster.vbar
-        cluster.vyc *= cluster.vbar
-        cluster.vzc *= cluster.vbar
+            cluster.xc *= cluster.rbar
+            cluster.yc *= cluster.rbar
+            cluster.zc *= cluster.rbar
+            cluster.vxc *= cluster.vbar
+            cluster.vyc *= cluster.vbar
+            cluster.vzc *= cluster.vbar
 
-        cluster.xgc *= cluster.rbar
-        cluster.ygc *= cluster.rbar
-        cluster.zgc *= cluster.rbar
-        cluster.vxgc *= cluster.vbar
-        cluster.vygc *= cluster.vbar
-        cluster.vzgc *= cluster.vbar
+            cluster.xgc *= cluster.rbar
+            cluster.ygc *= cluster.rbar
+            cluster.zgc *= cluster.rbar
+            cluster.vxgc *= cluster.vbar
+            cluster.vygc *= cluster.vbar
+            cluster.vzgc *= cluster.vbar
 
-        cluster.units = "pckms"
+            cluster.units = "pckms"
 
 
-    elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms":
 
-        cluster.tphys *= 1000.0
+            cluster.tphys *= 1000.0
 
-        cluster.x *= 1000.0
-        cluster.y *= 1000.0
-        cluster.z *= 1000.0
+            cluster.x *= 1000.0
+            cluster.y *= 1000.0
+            cluster.z *= 1000.0
 
-        cluster.xgc *= 1000.0
-        cluster.ygc *= 1000.0
-        cluster.zgc *= 1000.0
+            cluster.xgc *= 1000.0
+            cluster.ygc *= 1000.0
+            cluster.zgc *= 1000.0
 
-        cluster.xc *= 1000.0
-        cluster.yc *= 1000.0
-        cluster.zc *= 1000.0
+            cluster.xc *= 1000.0
+            cluster.yc *= 1000.0
+            cluster.zc *= 1000.0
 
-        cluster.units = "pckms"
+            cluster.units = "pckms"
 
-    cluster.analyze()
+        cluster.analyze()
 
 def to_kpckms(cluster, ro=8.0, vo=220.0):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s
@@ -130,80 +134,100 @@ def to_kpckms(cluster, ro=8.0, vo=220.0):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.units == "radec":
-        from_radec(cluster)
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units == "radec":
+            from_radec(cluster)
 
-    if cluster.units == "galpy":
-        cluster.tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
-        cluster.m *= conversion.mass_in_msol(ro=ro, vo=vo)
-        cluster.x *= ro
-        cluster.y *= ro
-        cluster.z *= ro
-        cluster.vx *= vo
-        cluster.vy *= vo
-        cluster.vz *= vo
+        if cluster.units == "galpy":
+            cluster.tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
+            cluster.m *= conversion.mass_in_msol(ro=ro, vo=vo)
+            cluster.x *= ro
+            cluster.y *= ro
+            cluster.z *= ro
+            cluster.vx *= vo
+            cluster.vy *= vo
+            cluster.vz *= vo
 
-        cluster.xc *= ro
-        cluster.yc *= ro
-        cluster.zc *= ro
-        cluster.vxc *= vo
-        cluster.vyc *= vo
-        cluster.vzc *= vo
+            cluster.xc *= ro
+            cluster.yc *= ro
+            cluster.zc *= ro
+            cluster.vxc *= vo
+            cluster.vyc *= vo
+            cluster.vzc *= vo
 
-        cluster.xgc *= ro
-        cluster.ygc *= ro
-        cluster.zgc *= ro
-        cluster.vxgc *= vo
-        cluster.vygc *= vo
-        cluster.vzgc *= vo
+            cluster.xgc *= ro
+            cluster.ygc *= ro
+            cluster.zgc *= ro
+            cluster.vxgc *= vo
+            cluster.vygc *= vo
+            cluster.vzgc *= vo
 
-        cluster.units = "kpckms"
+            cluster.units = "kpckms"
 
-    elif cluster.units == "nbody":
-        cluster.tphys *= cluster.tbar / 1000.0
-        cluster.m *= cluster.zmbar
-        cluster.x *= cluster.rbar / 1000.0
-        cluster.y *= cluster.rbar / 1000.0
-        cluster.z *= cluster.rbar / 1000.0
-        cluster.vx *= cluster.vbar
-        cluster.vy *= cluster.vbar
-        cluster.vz *= cluster.vbar
+        elif cluster.units == "nbody":
+            cluster.tphys *= cluster.tbar / 1000.0
+            cluster.m *= cluster.zmbar
+            cluster.x *= cluster.rbar / 1000.0
+            cluster.y *= cluster.rbar / 1000.0
+            cluster.z *= cluster.rbar / 1000.0
+            cluster.vx *= cluster.vbar
+            cluster.vy *= cluster.vbar
+            cluster.vz *= cluster.vbar
 
-        cluster.xc *= cluster.rbar / 1000.0
-        cluster.yc *= cluster.rbar / 1000.0
-        cluster.zc *= cluster.rbar / 1000.0
-        cluster.vxc *= cluster.vbar
-        cluster.vyc *= cluster.vbar
-        cluster.vzc *= cluster.vbar
+            cluster.xc *= cluster.rbar / 1000.0
+            cluster.yc *= cluster.rbar / 1000.0
+            cluster.zc *= cluster.rbar / 1000.0
+            cluster.vxc *= cluster.vbar
+            cluster.vyc *= cluster.vbar
+            cluster.vzc *= cluster.vbar
 
-        cluster.xgc *= cluster.rbar / 1000.0
-        cluster.ygc *= cluster.rbar / 1000.0
-        cluster.zgc *= cluster.rbar / 1000.0
-        cluster.vxgc *= cluster.vbar
-        cluster.vygc *= cluster.vbar
-        cluster.vzgc *= cluster.vbar
+            cluster.xgc *= cluster.rbar / 1000.0
+            cluster.ygc *= cluster.rbar / 1000.0
+            cluster.zgc *= cluster.rbar / 1000.0
+            cluster.vxgc *= cluster.vbar
+            cluster.vygc *= cluster.vbar
+            cluster.vzgc *= cluster.vbar
 
-        cluster.units = "kpckms"
+            cluster.units = "kpckms"
 
-    elif cluster.units == "pckms":
+        elif cluster.units == "pckms":
 
-        cluster.tphys /= 1000.0
+            cluster.tphys /= 1000.0
 
-        cluster.x /= 1000.0
-        cluster.y /= 1000.0
-        cluster.z /= 1000.0
+            cluster.x /= 1000.0
+            cluster.y /= 1000.0
+            cluster.z /= 1000.0
 
-        cluster.xgc /= 1000.0
-        cluster.ygc /= 1000.0
-        cluster.zgc /= 1000.0
+            cluster.xgc /= 1000.0
+            cluster.ygc /= 1000.0
+            cluster.zgc /= 1000.0
 
-        cluster.xc /= 1000.0
-        cluster.yc /= 1000.0
-        cluster.zc /= 1000.0
+            cluster.xc /= 1000.0
+            cluster.yc /= 1000.0
+            cluster.zc /= 1000.0
 
-        cluster.units = "kpckms"
+            cluster.units = "kpckms"
 
-    cluster.analyze()
+        elif cluster.units == 'WDunits':
+            vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
+            mcon = 222288.4543021174
+
+            cluster.m*=mcon
+            cluster.vx*=vcon
+            cluster.vy*=vcon
+            cluster.vz*=vcon
+            cluster.vxc*=vcon
+            cluster.vyc*=vcon
+            cluster.vzc*=vcon
+            cluster.vxgc*=vcon
+            cluster.vygc*=vcon
+            cluster.vzgc*=vcon
+            cluster.units = "kpckms"
+
+
+        cluster.analyze()
 
 def to_nbody(cluster, ro=8.0, vo=220.0):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
@@ -228,49 +252,53 @@ def to_nbody(cluster, ro=8.0, vo=220.0):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.units != "pckms":
-        cluster.to_pckms()
 
-    if cluster.units == "pckms":
-        cluster.tphys /= cluster.tbar
-        cluster.m /= cluster.zmbar
-        cluster.x /= cluster.rbar
-        cluster.y /= cluster.rbar
-        cluster.z /= cluster.rbar
-        cluster.vx /= cluster.vbar
-        cluster.vy /= cluster.vbar
-        cluster.vz /= cluster.vbar
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units != "pckms" and cluster.units != "nbody":
+            cluster.to_pckms()
 
-        cluster.xc /= cluster.rbar
-        cluster.yc /= cluster.rbar
-        cluster.zc /= cluster.rbar
-        cluster.vxc /= cluster.vbar
-        cluster.vyc /= cluster.vbar
-        cluster.vzc /= cluster.vbar
+        if cluster.units != "nbody":
+            cluster.tphys /= cluster.tbar
+            cluster.m /= cluster.zmbar
+            cluster.x /= cluster.rbar
+            cluster.y /= cluster.rbar
+            cluster.z /= cluster.rbar
+            cluster.vx /= cluster.vbar
+            cluster.vy /= cluster.vbar
+            cluster.vz /= cluster.vbar
 
-        cluster.xgc /= cluster.rbar
-        cluster.ygc /= cluster.rbar
-        cluster.zgc /= cluster.rbar
-        cluster.vxgc /= cluster.vbar
-        cluster.vygc /= cluster.vbar
-        cluster.vzgc /= cluster.vbar
+            cluster.xc /= cluster.rbar
+            cluster.yc /= cluster.rbar
+            cluster.zc /= cluster.rbar
+            cluster.vxc /= cluster.vbar
+            cluster.vyc /= cluster.vbar
+            cluster.vzc /= cluster.vbar
 
-        cluster.units = "nbody"
+            cluster.xgc /= cluster.rbar
+            cluster.ygc /= cluster.rbar
+            cluster.zgc /= cluster.rbar
+            cluster.vxgc /= cluster.vbar
+            cluster.vygc /= cluster.vbar
+            cluster.vzgc /= cluster.vbar
 
-    if cluster.bunits == 'audays' and cluster.nb>0:
-        cluster.semi/=cluster.rbar_au
-        cluster.pb/=cluster.tbar_days
-        cluster.m1/=cluster.zmbar
-        cluster.m2/=cluster.zmbar
-        cluster.bunits='nbody'
-    elif cluster.bunits == 'sudays' and cluster.nb>0:
-        cluster.semi/=cluster.rbar_su
-        cluster.pb/=cluster.tbar_days
-        cluster.m1/=cluster.zmbar
-        cluster.m2/=cluster.zmbar
-        cluster.bunits='nbody'
+            cluster.units = "nbody"
 
-    cluster.analyze()
+        if cluster.bunits == 'audays' and cluster.nb>0:
+            cluster.semi/=cluster.rbar_au
+            cluster.pb/=cluster.tbar_days
+            cluster.m1/=cluster.zmbar
+            cluster.m2/=cluster.zmbar
+            cluster.bunits='nbody'
+        elif cluster.bunits == 'sudays' and cluster.nb>0:
+            cluster.semi/=cluster.rbar_su
+            cluster.pb/=cluster.tbar_days
+            cluster.m1/=cluster.zmbar
+            cluster.m2/=cluster.zmbar
+            cluster.bunits='nbody'
+
+        cluster.analyze()
 
 def to_radec(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Convert to on-sky position, proper motion, and radial velocity of cluster
@@ -297,75 +325,78 @@ def to_radec(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarm
     -------
    2018 - Written - Webb (UofT)
     """
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
 
-    origin0=cluster.origin
+        origin0=cluster.origin
 
-    if cluster.units != "radec":
+        if cluster.units != "radec":
 
-        cluster.to_kpckms()
-        cluster.to_galaxy()
+            cluster.to_kpckms()
+            cluster.to_galaxy()
 
-        if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
-        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
+            if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
+            if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
 
-        R, phi, z = coords.rect_to_cyl(cluster.xgc+cluster.xc, cluster.ygc+cluster.yc, cluster.zgc+cluster.zc)
-        vR, vT, vz = coords.rect_to_cyl_vec(cluster.vxgc+cluster.vxc, cluster.vygc+cluster.vyc, cluster.vzgc+cluster.vzc,cluster.xgc+cluster.xc, cluster.ygc+cluster.yc, cluster.zgc+cluster.zc)
+            R, phi, z = coords.rect_to_cyl(cluster.xgc+cluster.xc, cluster.ygc+cluster.yc, cluster.zgc+cluster.zc)
+            vR, vT, vz = coords.rect_to_cyl_vec(cluster.vxgc+cluster.vxc, cluster.vygc+cluster.vyc, cluster.vzgc+cluster.vzc,cluster.xgc+cluster.xc, cluster.ygc+cluster.yc, cluster.zgc+cluster.zc)
 
-        oc = Orbit(
-            [R/ro, vR/vo, vT/vo, z/ro, vz/vo, phi], ro=ro, vo=vo, solarmotion=solarmotion
-        )
+            oc = Orbit(
+                [R/ro, vR/vo, vT/vo, z/ro, vz/vo, phi], ro=ro, vo=vo, solarmotion=solarmotion
+            )
 
-        cluster.ra=cluster.orbits.ra()
-        cluster.dec=cluster.orbits.dec()
-        cluster.dist=cluster.orbits.dist()
-        cluster.pmra=cluster.orbits.pmra()
-        cluster.pmdec=cluster.orbits.pmdec()
-        cluster.vlos=cluster.orbits.vlos()
+            cluster.ra=cluster.orbits.ra()
+            cluster.dec=cluster.orbits.dec()
+            cluster.dist=cluster.orbits.dist()
+            cluster.pmra=cluster.orbits.pmra()
+            cluster.pmdec=cluster.orbits.pmdec()
+            cluster.vlos=cluster.orbits.vlos()
 
-        cluster.ra_gc=cluster.orbit.ra()
-        cluster.dec_gc=cluster.orbit.dec()
-        cluster.dist_gc=cluster.orbit.dist()
-        cluster.pmra_gc=cluster.orbit.pmra()
-        cluster.pmdec_gc=cluster.orbit.pmdec()
-        cluster.vlos_gc=cluster.orbit.vlos()
+            cluster.ra_gc=cluster.orbit.ra()
+            cluster.dec_gc=cluster.orbit.dec()
+            cluster.dist_gc=cluster.orbit.dist()
+            cluster.pmra_gc=cluster.orbit.pmra()
+            cluster.pmdec_gc=cluster.orbit.pmdec()
+            cluster.vlos_gc=cluster.orbit.vlos()
 
-        cluster.ra_c=oc.ra()
-        cluster.dec_c=oc.dec()
-        cluster.dist_c=oc.dist()
-        cluster.pmra_c=oc.pmra()
-        cluster.pmdec_c=oc.pmdec()
-        cluster.vlos_c=oc.vlos()
+            cluster.ra_c=oc.ra()
+            cluster.dec_c=oc.dec()
+            cluster.dist_c=oc.dist()
+            cluster.pmra_c=oc.pmra()
+            cluster.pmdec_c=oc.pmdec()
+            cluster.vlos_c=oc.vlos()
 
-        cluster.x = copy(cluster.ra)
-        cluster.y = copy(cluster.dec)
-        cluster.z = copy(cluster.dist)
-        cluster.vx = copy(cluster.pmra)
-        cluster.vy = copy(cluster.pmdec)
-        cluster.vz = copy(cluster.vlos)
+            cluster.x = copy(cluster.ra)
+            cluster.y = copy(cluster.dec)
+            cluster.z = copy(cluster.dist)
+            cluster.vx = copy(cluster.pmra)
+            cluster.vy = copy(cluster.pmdec)
+            cluster.vz = copy(cluster.vlos)
 
-        cluster.xgc = copy(cluster.ra_gc)
-        cluster.ygc = copy(cluster.dec_gc)
-        cluster.zgc = copy(cluster.dist_gc)
-        cluster.vxgc = copy(cluster.pmra_gc)
-        cluster.vygc = copy(cluster.pmdec_gc)
-        cluster.vzgc = copy(cluster.vlos_gc)
+            cluster.xgc = copy(cluster.ra_gc)
+            cluster.ygc = copy(cluster.dec_gc)
+            cluster.zgc = copy(cluster.dist_gc)
+            cluster.vxgc = copy(cluster.pmra_gc)
+            cluster.vygc = copy(cluster.pmdec_gc)
+            cluster.vzgc = copy(cluster.vlos_gc)
 
-        cluster.xc = copy(cluster.ra_c)
-        cluster.yc = copy(cluster.dec_c)
-        cluster.zc = copy(cluster.dist_c)
-        cluster.vxc = copy(cluster.pmra_c)
-        cluster.vyc = copy(cluster.pmdec_c)
-        cluster.vzc = copy(cluster.vlos_c)
+            cluster.xc = copy(cluster.ra_c)
+            cluster.yc = copy(cluster.dec_c)
+            cluster.zc = copy(cluster.dist_c)
+            cluster.vxc = copy(cluster.pmra_c)
+            cluster.vyc = copy(cluster.pmdec_c)
+            cluster.vzc = copy(cluster.vlos_c)
 
-        cluster.units = "radec"
-        cluster.origin = "sky"
+            cluster.units = "radec"
+            cluster.origin = "sky"
 
-        if origin0=='cluster':
-            cluster.to_cluster(centre_method=centre_method)
-        elif origin0=='centre':
-            cluster.to_centre(centre_method=centre_method)
+            if origin0=='cluster':
+                cluster.to_cluster(centre_method=centre_method)
+            elif origin0=='centre':
+                cluster.to_centre(centre_method=centre_method)
 
-        cluster.analyze(sortstars=sortstars)
+            cluster.analyze(sortstars=sortstars)
 
 def from_radec(cluster, sortstars=True, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
@@ -392,53 +423,55 @@ def from_radec(cluster, sortstars=True, ro=8.0, vo=220.0, solarmotion=[-11.1, 24
     2018 - Written - Webb (UofT)
 
     """
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units=='radec' and cluster.origin!='sky':
+            cluster.to_sky()
 
-    if cluster.units=='radec' and cluster.origin!='sky':
-        cluster.to_sky()
+        if cluster.units == "radec" and cluster.origin == "sky":
 
-    if cluster.units == "radec" and cluster.origin == "sky":
-
-        if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
-        if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
+            if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
+            if cluster.orbits is None: cluster.initialize_orbits(ro=ro,vo=vo,solarmotion=solarmotion)
 
 
-        if cluster.xcn is not None:
-            cluster.xc,cluster.yc,cluster.zc=cluster.xcn,cluster.ycn,cluster.zcn
-            cluster.xc*=cluster.rbar/1000.
-            cluster.yc*=cluster.rbar/1000.
-            cluster.zc*=cluster.rbar/1000.
-            cluster.vxc=0.
-            cluster.vyc=0.
-            cluster.vzc=0.
+            if cluster.xcn is not None:
+                cluster.xc,cluster.yc,cluster.zc=cluster.xcn,cluster.ycn,cluster.zcn
+                cluster.xc*=cluster.rbar/1000.
+                cluster.yc*=cluster.rbar/1000.
+                cluster.zc*=cluster.rbar/1000.
+                cluster.vxc=0.
+                cluster.vyc=0.
+                cluster.vzc=0.
 
-        else:
-            oc = Orbit(
-                [cluster.ra_c,cluster.dec_c,cluster.dist_c,cluster.pmra_c,cluster.pmdec_c,cluster.vlos_c], radec=True,ro=ro, vo=vo, solarmotion=solarmotion
-            )
+            else:
+                oc = Orbit(
+                    [cluster.ra_c,cluster.dec_c,cluster.dist_c,cluster.pmra_c,cluster.pmdec_c,cluster.vlos_c], radec=True,ro=ro, vo=vo, solarmotion=solarmotion
+                )
 
-            cluster.xc=oc.x()
-            cluster.yc=oc.y()
-            cluster.zc=oc.z()
-            cluster.vxc=oc.vx()
-            cluster.vyc=oc.vy()
-            cluster.vzc=oc.vz()
+                cluster.xc=oc.x()
+                cluster.yc=oc.y()
+                cluster.zc=oc.z()
+                cluster.vxc=oc.vx()
+                cluster.vyc=oc.vy()
+                cluster.vzc=oc.vz()
 
-        cluster.x = cluster.orbits.x()
-        cluster.y = cluster.orbits.y()
-        cluster.z = cluster.orbits.z()
-        cluster.vx = cluster.orbits.vx()
-        cluster.vy = cluster.orbits.vy()
-        cluster.vz = cluster.orbits.vz()
+            cluster.x = cluster.orbits.x()
+            cluster.y = cluster.orbits.y()
+            cluster.z = cluster.orbits.z()
+            cluster.vx = cluster.orbits.vx()
+            cluster.vy = cluster.orbits.vy()
+            cluster.vz = cluster.orbits.vz()
 
-        cluster.xgc = cluster.orbit.x()
-        cluster.ygc = cluster.orbit.y()
-        cluster.zgc = cluster.orbit.z()
-        cluster.vxgc = cluster.orbit.vx()
-        cluster.vygc = cluster.orbit.vy()
-        cluster.vzgc = cluster.orbit.vz()
+            cluster.xgc = cluster.orbit.x()
+            cluster.ygc = cluster.orbit.y()
+            cluster.zgc = cluster.orbit.z()
+            cluster.vxgc = cluster.orbit.vx()
+            cluster.vygc = cluster.orbit.vy()
+            cluster.vzgc = cluster.orbit.vz()
 
-        cluster.origin = "galaxy"
-        cluster.units = "kpckms"
+            cluster.origin = "galaxy"
+            cluster.units = "kpckms"
 
 def to_galpy(cluster, ro=8.0, vo=220.0):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
@@ -461,36 +494,83 @@ def to_galpy(cluster, ro=8.0, vo=220.0):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.units != "kpckms" and cluster.units != "galpy":
-        cluster.to_kpckms()
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units != "kpckms" and cluster.units != "galpy":
+            cluster.to_kpckms()
 
-    if cluster.units == "kpckms":
-        cluster.tphys /= conversion.time_in_Gyr(ro=ro, vo=vo)
-        cluster.m = cluster.m / conversion.mass_in_msol(ro=ro, vo=vo)
-        cluster.x /= ro
-        cluster.y /= ro
-        cluster.z /= ro
-        cluster.vx /= vo
-        cluster.vy /= vo
-        cluster.vz /= vo
+        if cluster.units == "kpckms":
+            cluster.tphys /= conversion.time_in_Gyr(ro=ro, vo=vo)
+            cluster.m = cluster.m / conversion.mass_in_msol(ro=ro, vo=vo)
+            cluster.x /= ro
+            cluster.y /= ro
+            cluster.z /= ro
+            cluster.vx /= vo
+            cluster.vy /= vo
+            cluster.vz /= vo
 
-        cluster.xc /= ro
-        cluster.yc /= ro
-        cluster.zc /= ro
-        cluster.vxc /= vo
-        cluster.vyc /= vo
-        cluster.vzc /= vo
+            cluster.xc /= ro
+            cluster.yc /= ro
+            cluster.zc /= ro
+            cluster.vxc /= vo
+            cluster.vyc /= vo
+            cluster.vzc /= vo
 
-        cluster.xgc /= ro
-        cluster.ygc /= ro
-        cluster.zgc /= ro
-        cluster.vxgc /= vo
-        cluster.vygc /= vo
-        cluster.vzgc /= vo
+            cluster.xgc /= ro
+            cluster.ygc /= ro
+            cluster.zgc /= ro
+            cluster.vxgc /= vo
+            cluster.vygc /= vo
+            cluster.vzgc /= vo
 
-        cluster.units = "galpy"
+            cluster.units = "galpy"
 
-    cluster.analyze()
+        cluster.analyze()
+
+def to_WDunits(cluster,ro=8.,vo=220.):
+    """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Walter Dehnen Units
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+
+    Returns
+    -------
+    None
+
+    History:
+    -------
+    2022 - Written - Webb (UofT)
+
+    """
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        vcon = 220.0 / conversion.velocity_in_kpcGyr(vo=vo,ro=ro)
+        mcon = 222288.4543021174
+
+        if cluster.units!='kpckms' and cluster.units!="WDunits":
+            cluster.to_kpckms(ro=ro,vo=vo)
+
+        if cluster.units!="WDunits":
+
+            cluster.m/=mcon
+            cluster.vx/=vcon
+            cluster.vy/=vcon
+            cluster.vz/=vcon
+            cluster.vxc/=vcon
+            cluster.vyc/=vcon
+            cluster.vzc/=vcon
+            cluster.vxgc/=vcon
+            cluster.vygc/=vcon
+            cluster.vzgc/=vcon
+
+            cluster.units = "WDunits"
+
+            cluster.analyze()
+
 
 def to_units(cluster, units, ro=8.0, vo=220.0):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units
@@ -515,16 +595,21 @@ def to_units(cluster, units, ro=8.0, vo=220.0):
     2018 - Written - Webb (UofT)
 
     """
-    if units == "nbody":
-        cluster.to_nbody()
-    elif units == "galpy":
-        cluster.to_galpy(ro=ro, vo=vo)
-    elif units == "pckms":
-        cluster.to_pckms()
-    elif units == "kpckms":
-        cluster.to_kpckms()
-    elif units == "radec":
-        cluster.to_radec(sortstars=False)
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if units == "nbody":
+            cluster.to_nbody()
+        elif units == "galpy":
+            cluster.to_galpy(ro=ro, vo=vo)
+        elif units == "pckms":
+            cluster.to_pckms()
+        elif units == "kpckms":
+            cluster.to_kpckms()
+        elif units == "radec":
+            cluster.to_radec(sortstars=False)
+        elif units == "WDunits":
+            cluster.to_WDunits()
 
 def to_sudays(cluster):
     """ Convert binary star semi-major axis and periods to solar radii and days
@@ -544,20 +629,22 @@ def to_sudays(cluster):
     2022 - Written - Webb (UofT)
 
     """
-    
-    if cluster.bunits == 'audays':
-        cluster.semi/=cluster.rbar_au
-        cluster.pb/=cluster.tbar_days
-        cluster.m1/=cluster.zmbar
-        cluster.m2/=cluster.zmbar
-        cluster.bunits='nbody'
+    if cluster.bunits is not None:
+        if cluster.bunits == 'audays':
+            cluster.semi/=cluster.rbar_au
+            cluster.pb/=cluster.tbar_days
+            cluster.m1/=cluster.zmbar
+            cluster.m2/=cluster.zmbar
+            cluster.bunits='nbody'
 
-    if cluster.bunits == 'nbody':
-        cluster.semi*=cluster.rbar_su
-        cluster.pb*=cluster.tbar_days
-        cluster.m1*=cluster.zmbar
-        cluster.m2*=cluster.zmbar
+        if cluster.bunits == 'nbody':
+            cluster.semi*=cluster.rbar_su
+            cluster.pb*=cluster.tbar_days
+            cluster.m1*=cluster.zmbar
+            cluster.m2*=cluster.zmbar
         cluster.bunits='sudays'
+    else:
+        print("NO UNITS SPECIFIED")
 
 def to_audays(cluster):
     """ Convert binary star semi-major axis and periods to solar radii and days
@@ -576,20 +663,22 @@ def to_audays(cluster):
     2022 - Written - Webb (UofT)
 
     """
-    
-    if cluster.bunits == 'sudays':
-        cluster.semi/=cluster.rbar_su
-        cluster.pb/=cluster.tbar_days
-        cluster.m1/=cluster.zmbar
-        cluster.m2/=cluster.zmbar
-        cluster.bunits='nbody'
+    if cluster.bunits is not None:
+        if cluster.bunits == 'sudays':
+            cluster.semi/=cluster.rbar_su
+            cluster.pb/=cluster.tbar_days
+            cluster.m1/=cluster.zmbar
+            cluster.m2/=cluster.zmbar
+            cluster.bunits='nbody'
 
-    if cluster.bunits == 'nbody':
-        cluster.semi*=cluster.rbar_au
-        cluster.pb*=cluster.tbar_days
-        cluster.m1*=cluster.zmbar
-        cluster.m2*=cluster.zmbar
-        cluster.bunits='audays'
+        if cluster.bunits == 'nbody':
+            cluster.semi*=cluster.rbar_au
+            cluster.pb*=cluster.tbar_days
+            cluster.m1*=cluster.zmbar
+            cluster.m2*=cluster.zmbar
+            cluster.bunits='audays'
+    else:
+        print("NO UNITS SPECIFIED")
 
 def to_centre(cluster, sortstars=True, centre_method=None):
     """Shift coordinates such that origin is the centre of mass
@@ -612,46 +701,49 @@ def to_centre(cluster, sortstars=True, centre_method=None):
     2018 - Written - Webb (UofT)
 
     """
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
+    else:
 
-    if centre_method is not None:
-        cluster.centre_method = centre_method
+        if centre_method is not None:
+            cluster.centre_method = centre_method
 
-    if cluster.origin != 'centre':
+        if cluster.origin != 'centre':
 
-        if cluster.units=='radec':
-            if cluster.origin!='sky':
-                cluster.to_sky()
+            if cluster.units=='radec':
+                if cluster.origin!='sky':
+                    cluster.to_sky()
 
-            if cluster.centre_method == "orthographic":
-                _get_orthographic_centre(cluster,from_centre=True)
-            else:
-                if cluster.centre_method == "VandeVen":
-                    _get_vandeven_centre(cluster,from_centre=True)
+                if cluster.centre_method == "orthographic":
+                    _get_orthographic_centre(cluster,from_centre=True)
                 else:
-                    cluster.x = (cluster.x - cluster.xc) * np.cos(np.radians(cluster.yc))
-                    cluster.y = cluster.y - cluster.yc
+                    if cluster.centre_method == "VandeVen":
+                        _get_vandeven_centre(cluster,from_centre=True)
+                    else:
+                        cluster.x = (cluster.x - cluster.xc) * np.cos(np.radians(cluster.yc))
+                        cluster.y = cluster.y - cluster.yc
 
-                    cluster.z -= cluster.zc
+                        cluster.z -= cluster.zc
 
-                    cluster.vx -= cluster.vxc
-                    cluster.vy -= cluster.vyc
-                    cluster.vz -= cluster.vzc
+                        cluster.vx -= cluster.vxc
+                        cluster.vy -= cluster.vyc
+                        cluster.vz -= cluster.vzc
 
 
-        else:
-            if cluster.origin != "cluster":
-                cluster.to_cluster(centre_method=centre_method)
+            else:
+                if cluster.origin != "cluster":
+                    cluster.to_cluster(centre_method=centre_method)
 
-            cluster.x -= cluster.xc
-            cluster.y -= cluster.yc
-            cluster.z -= cluster.zc
-            cluster.vx -= cluster.vxc
-            cluster.vy -= cluster.vyc
-            cluster.vz -= cluster.vzc
+                cluster.x -= cluster.xc
+                cluster.y -= cluster.yc
+                cluster.z -= cluster.zc
+                cluster.vx -= cluster.vxc
+                cluster.vy -= cluster.vyc
+                cluster.vz -= cluster.vzc
 
-        cluster.origin = "centre"
+            cluster.origin = "centre"
 
-        cluster.analyze(sortstars=sortstars)
+            cluster.analyze(sortstars=sortstars)
 
 def to_center(cluster, sortstars=True, centre_method=None):
     to_centre(cluster, sortstars=sortstars, centre_method=centre_method)
@@ -686,133 +778,147 @@ def to_cluster(cluster, sortstars=True, centre_method=None):
     2018 - Written - Webb (UofT)
 
     """
-    if centre_method is not None:
-        cluster.centre_method = centre_method
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
+    else:
 
-    if cluster.origin != "cluster":
-        if cluster.units == "radec":
+        if centre_method is not None:
+            cluster.centre_method = centre_method
 
-            if cluster.origin!='sky':
-                cluster.to_sky()
+        if cluster.origin != "cluster":
+            if cluster.units == "radec":
 
-            if cluster.centre_method == "orthographic":
-                _get_orthographic_centre(cluster)
-            else:
-                if cluster.centre_method == "VandeVen":
-                    _get_vandeven_centre(cluster)
+                if cluster.origin!='sky':
+                    cluster.to_sky()
+
+                if cluster.centre_method == "orthographic":
+                    _get_orthographic_centre(cluster)
                 else:
-                    cluster.x = (cluster.x - cluster.xgc) * np.cos(np.radians(cluster.ygc))
-                    cluster.y = cluster.y - cluster.ygc
+                    if cluster.centre_method == "VandeVen":
+                        _get_vandeven_centre(cluster)
+                    else:
+                        cluster.x = (cluster.x - cluster.xgc) * np.cos(np.radians(cluster.ygc))
+                        cluster.y = cluster.y - cluster.ygc
 
-                    cluster.z -= cluster.zgc
+                        cluster.z -= cluster.zgc
 
-                    cluster.vx -= cluster.vxgc
-                    cluster.vy -= cluster.vygc
-                    cluster.vz -= cluster.vzgc
+                        cluster.vx -= cluster.vxgc
+                        cluster.vy -= cluster.vygc
+                        cluster.vz -= cluster.vzgc
 
-        elif cluster.origin == "centre":
-            cluster.x += cluster.xc
-            cluster.y += cluster.yc
-            cluster.z += cluster.zc
-            cluster.vx += cluster.vxc
-            cluster.vy += cluster.vyc
-            cluster.vz += cluster.vzc
-        elif cluster.origin == "galaxy":
-            cluster.x -= cluster.xgc
-            cluster.y -= cluster.ygc
-            cluster.z -= cluster.zgc
-            cluster.vx -= cluster.vxgc
-            cluster.vy -= cluster.vygc
-            cluster.vz -= cluster.vzgc
+            elif cluster.origin == "centre":
+                cluster.x += cluster.xc
+                cluster.y += cluster.yc
+                cluster.z += cluster.zc
+                cluster.vx += cluster.vxc
+                cluster.vy += cluster.vyc
+                cluster.vz += cluster.vzc
+            elif cluster.origin == "galaxy":
+                cluster.x -= cluster.xgc
+                cluster.y -= cluster.ygc
+                cluster.z -= cluster.zgc
+                cluster.vx -= cluster.vxgc
+                cluster.vy -= cluster.vygc
+                cluster.vz -= cluster.vzgc
 
 
-        cluster.origin = "cluster"
+            cluster.origin = "cluster"
 
-        cluster.analyze(sortstars=sortstars)
+            cluster.analyze(sortstars=sortstars)
 
 def _get_orthographic_centre(cluster,from_centre=False):
 
-    if cluster.units!='radec' and cluster.origin!='sky':
-        cluster.to_radec()
-    elif cluster.units=='radec' and cluster.origin!='sky':
-        cluster.to_sky()
-
-    ra = np.radians(cluster.x)
-    dec = np.radians(cluster.y)
-    pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
-    pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
-
-    if from_centre:
-        ra_gc = np.radians(cluster.xc)
-        dec_gc = np.radians(cluster.yc)
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
     else:
-        ra_gc = np.radians(cluster.xgc)
-        dec_gc = np.radians(cluster.ygc)
 
-    cluster.x = np.cos(dec) * np.sin(ra - ra_gc)
-    cluster.y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
-        dec_gc
-    ) * np.cos(ra - ra_gc)
 
-    cluster.vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
-        ra - ra_gc
-    )
-    cluster.vy = pmra * np.sin(dec_gc) * np.sin(
-        ra - ra_gc
-    ) + cluster.pmdec * (
-        np.cos(dec) * np.cos(dec_gc)
-        + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
-    )
+        if cluster.units!='radec' and cluster.origin!='sky':
+            cluster.to_radec()
+        elif cluster.units=='radec' and cluster.origin!='sky':
+            cluster.to_sky()
 
-    if from_centre:
-        cluster.z -= cluster.zc
-        cluster.vz -= cluster.vzc
-    else:
-        cluster.z -= cluster.zgc
-        cluster.vz -= cluster.vzgc
+        ra = np.radians(cluster.x)
+        dec = np.radians(cluster.y)
+        pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
+        pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
+
+        if from_centre:
+            ra_gc = np.radians(cluster.xc)
+            dec_gc = np.radians(cluster.yc)
+        else:
+            ra_gc = np.radians(cluster.xgc)
+            dec_gc = np.radians(cluster.ygc)
+
+        cluster.x = np.cos(dec) * np.sin(ra - ra_gc)
+        cluster.y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
+            dec_gc
+        ) * np.cos(ra - ra_gc)
+
+        cluster.vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
+            ra - ra_gc
+        )
+        cluster.vy = pmra * np.sin(dec_gc) * np.sin(
+            ra - ra_gc
+        ) + cluster.pmdec * (
+            np.cos(dec) * np.cos(dec_gc)
+            + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+        )
+
+        if from_centre:
+            cluster.z -= cluster.zc
+            cluster.vz -= cluster.vzc
+        else:
+            cluster.z -= cluster.zgc
+            cluster.vz -= cluster.vzgc
 
 def _get_vandeven_centre(cluster,from_centre=False):
-    if cluster.units!='radec' and cluster.origin!='sky':
-        cluster.to_radec()
-    elif cluster.units=='radec' and cluster.origin!='sky':
-        cluster.to_sky()
 
-    ra = np.radians(cluster.x)
-    dec = np.radians(cluster.y)
-    pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
-    pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
-
-    if from_centre:
-        ra_gc = np.radians(cluster.xc)
-        dec_gc = np.radians(cluster.yc)
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
     else:
-        ra_gc = np.radians(cluster.xgc)
-        dec_gc = np.radians(cluster.ygc)
 
-    cluster.x = (
-        (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
-    )
-    cluster.y = (
-        (10800.0 / np.pi)
-        * (
-            np.sin(dec) * np.cos(dec_gc)
-            - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+        if cluster.units!='radec' and cluster.origin!='sky':
+            cluster.to_radec()
+        elif cluster.units=='radec' and cluster.origin!='sky':
+            cluster.to_sky()
+
+        ra = np.radians(cluster.x)
+        dec = np.radians(cluster.y)
+        pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
+        pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
+
+        if from_centre:
+            ra_gc = np.radians(cluster.xc)
+            dec_gc = np.radians(cluster.yc)
+        else:
+            ra_gc = np.radians(cluster.xgc)
+            dec_gc = np.radians(cluster.ygc)
+
+        cluster.x = (
+            (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
         )
-        / 60.0
-    )
+        cluster.y = (
+            (10800.0 / np.pi)
+            * (
+                np.sin(dec) * np.cos(dec_gc)
+                - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
+            )
+            / 60.0
+        )
 
-    if from_centre:
-        cluster.z -= cluster.zc
+        if from_centre:
+            cluster.z -= cluster.zc
 
-        cluster.vx -= cluster.vxc
-        cluster.vy -= cluster.vyc
-        cluster.vz -= cluster.vzc
-    else:
-        cluster.z -= cluster.zgc
+            cluster.vx -= cluster.vxc
+            cluster.vy -= cluster.vyc
+            cluster.vz -= cluster.vzc
+        else:
+            cluster.z -= cluster.zgc
 
-        cluster.vx -= cluster.vxgc
-        cluster.vy -= cluster.vygc
-        cluster.vz -= cluster.vzgc
+            cluster.vx -= cluster.vxgc
+            cluster.vy -= cluster.vygc
+            cluster.vz -= cluster.vzgc
 
 def to_galaxy(cluster, sortstars=True):
     """Shift coordinates to galactocentric reference frame
@@ -833,26 +939,30 @@ def to_galaxy(cluster, sortstars=True):
     2018 - Written - Webb (UofT)
 
     """
-    if cluster.units == "radec":
-        if cluster.origin!='sky':
-            cluster.to_sky()
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
+    else:
 
-        from_radec(cluster)
+        if cluster.units == "radec":
+            if cluster.origin!='sky':
+                cluster.to_sky()
 
-    elif cluster.origin != "galaxy":
-        if cluster.origin == "centre":
-            cluster.to_cluster(sortstars=False)
+            from_radec(cluster)
 
-        cluster.x += cluster.xgc
-        cluster.y += cluster.ygc
-        cluster.z += cluster.zgc
-        cluster.vx += cluster.vxgc
-        cluster.vy += cluster.vygc
-        cluster.vz += cluster.vzgc
+        elif cluster.origin != "galaxy":
+            if cluster.origin == "centre":
+                cluster.to_cluster(sortstars=False)
 
-        cluster.origin = "galaxy"
+            cluster.x += cluster.xgc
+            cluster.y += cluster.ygc
+            cluster.z += cluster.zgc
+            cluster.vx += cluster.vxgc
+            cluster.vy += cluster.vygc
+            cluster.vz += cluster.vzgc
 
-    cluster.analyze(sortstars=sortstars)
+            cluster.origin = "galaxy"
+
+        cluster.analyze(sortstars=sortstars)
 
 
 def to_sky(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
@@ -877,21 +987,25 @@ def to_sky(cluster, sortstars=True,centre_method=None,ro=8.0, vo=220.0, solarmot
     -------
     2018 - Written - Webb (UofT)
     """
-    if cluster.units=='radec' and cluster.origin!='sky':
-        cluster.x=copy(cluster.ra)
-        cluster.y=copy(cluster.dec)
-        cluster.z=copy(cluster.dist)
-        cluster.vx=copy(cluster.pmra)
-        cluster.vy=copy(cluster.pmdec)
-        cluster.vz=copy(cluster.vlos)
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
+    else:
 
-        cluster.origin='sky'
+        if cluster.units=='radec' and cluster.origin!='sky':
+            cluster.x=copy(cluster.ra)
+            cluster.y=copy(cluster.dec)
+            cluster.z=copy(cluster.dist)
+            cluster.vx=copy(cluster.pmra)
+            cluster.vy=copy(cluster.pmdec)
+            cluster.vz=copy(cluster.vlos)
 
-    elif cluster.units!='radec':
-        cluster.to_galaxy()
-        cluster.to_radec(sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
+            cluster.origin='sky'
 
-    cluster.analyze(sortstars=sortstars)
+        elif cluster.units!='radec':
+            cluster.to_galaxy()
+            cluster.to_radec(sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
+
+        cluster.analyze(sortstars=sortstars)
 
 def to_origin(cluster, origin, sortstars=True, centre_method=None,ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
     """Shift cluster to origin as defined by keyword
@@ -916,18 +1030,22 @@ def to_origin(cluster, origin, sortstars=True, centre_method=None,ro=8.0, vo=220
     2018 - Written - Webb (UofT)
 
     """
-    if origin == "centre" or origin=="center":
-        cluster.to_centre(sortstars=sortstars,centre_method=centre_method)
-    elif origin == "cluster":
-        cluster.to_cluster(sortstars=sortstars,centre_method=centre_method)
-    elif origin == "galaxy":
-        cluster.to_galaxy(sortstars=sortstars)
-    elif origin == "sky":
-        cluster.to_sky(sortstars=sortstars,centre_method=centre_method, ro=ro, vo=vo, solarmotion=solarmotion)
-    elif origin == "radec":
-        cluster.to_radec(sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
+    if cluster.origin is None:
+        print('NO ORIGIN SPECIFIED')
+    else:
+        if origin == "centre" or origin=="center":
+            cluster.to_centre(sortstars=sortstars,centre_method=centre_method)
+        elif origin == "cluster":
+            cluster.to_cluster(sortstars=sortstars,centre_method=centre_method)
+        elif origin == "galaxy":
+            cluster.to_galaxy(sortstars=sortstars)
+        elif origin == "sky":
+            cluster.to_sky(sortstars=sortstars,centre_method=centre_method, ro=ro, vo=vo, solarmotion=solarmotion)
+        elif origin == "radec":
+            cluster.to_radec(sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
 
-    cluster.analyze(sortstars=sortstars)
+
+        cluster.analyze(sortstars=sortstars)
 
 
 def save_cluster(cluster):

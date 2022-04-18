@@ -23,7 +23,7 @@ except:
 
 
 def _get_amuse_particles(
-    particles, units="kpckms", origin="galaxy", ofile=None, **kwargs
+    particles, units=None, origin=None, ofile=None, **kwargs
 ):
     """Convert AMUSE particle dataset to a StarCluster instance
 
@@ -32,9 +32,9 @@ def _get_amuse_particles(
     particles : particles
         AMUSE particle dataset
     units : str
-        units of input data (default: kpckms)
+        units of input data (default: None)
     origin : str
-        origin of input data (default: cluster)
+        origin of input data (default: None)
     ofile : file
         opened file containing orbital information
     Returns
@@ -79,25 +79,34 @@ def _get_amuse_particles(
         vz = particles.vz.value_in(u.kms)
 
     else:
-        print("PLEASE SPECIFY UNITS")
-        return 0
+        x = particles.x
+        y = particles.y
+        z = particles.z
+        vx = particles.vx
+        vy = particles.vy
+        vz = particles.vz
 
     cluster.add_stars(x, y, z, vx, vy, vz, m, i_d, sortstars=False)
 
     if origin == "galaxy":
-        if ofile == None:
-            cluster.find_centre()
-        else:
+        if ofile is not None:
             _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+        else:
+            cluster.find_centre()
 
         if kwargs.get("analyze", True):
             sortstars=kwargs.get("sortstars", True)
-            cluster.to_cluster(sortstars=False)
-            cluster.find_centre()
-            cluster.to_centre(sortstars=sortstars)
-            cluster.to_galaxy()
+            if cluster.origin is not None:
+                cluster.to_cluster(sortstars=False)
+                cluster.find_centre()
+                cluster.to_centre(sortstars=sortstars)
+                cluster.to_origin(origin)
+            else:
+                cluster.find_centre()
+                cluster.analyze(sortstars=sortstars)
 
     elif origin == "cluster" or origin=='centre':
+        cluster.find_centre()
         if kwargs.get("analyze", True):
             sortstars=kwargs.get("sortstars", True)
             cluster.analyze(sortstars=sortstars)

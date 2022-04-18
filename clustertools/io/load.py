@@ -42,8 +42,8 @@ except:
 
 def load_cluster(
     ctype="snapshot",
-    units = "pckms",
-    origin = "cluster",
+    units = None,
+    origin = None,
     ofile=None,
     orbit=None,
     filename=None,
@@ -70,9 +70,9 @@ def load_cluster(
             - astropy_table
 
     units : str
-        units of input data (default: kpckms)
+        units of input data (default: None)
     origin : str
-        origin of input data (default: cluster)
+        origin of input data (default: None)
     ofile : file
         an already opened file containing orbit information (default: None)
     orbit : class
@@ -137,7 +137,7 @@ def load_cluster(
     if wdir[-1] != '/':
         wdir+='/'
 
-    filename=_get_filename(filename,**kwargs)
+    #filename=_get_filename(filename,**kwargs)
 
     initialize = kwargs.get("initialize", False)
 
@@ -216,12 +216,15 @@ def load_cluster(
 
     elif ctype == "gyrfalcon" or ctype=='nemo':
         # Read in snapshot from gyrfalcon.
+        filename=_get_filename(filename,**kwargs)
 
         filein = open(filename, "r")
 
-        cluster = _get_gyrfalcon(filein, "WDunits", "galaxy", advance=False, **kwargs)
+        cluster = _get_gyrfalcon(filein, units=units, origin=origin, advance=False, **kwargs)
 
     elif ctype=='amuse':
+        filename=_get_filename(filename,**kwargs)
+
         if filename is not None:
             filetype=kwargs.pop("filetype","hdf5")
             particles = read_set_from_file(filename, filetype)
@@ -315,10 +318,12 @@ def load_cluster(
         cluster.save_cluster()
         units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-        cluster.to_cluster(sortstars=False)
-        cluster.find_centre()
-
-        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0 )
+        if cluster.origin is not None: 
+            cluster.to_cluster(sortstars=False)
+            cluster.find_centre()
+            cluster.return_cluster(units0,origin0, rorder0, rorder_origin0 )
+        else:
+            cluster.find_centre()
     elif initialize:
         origin0=cluster.origin
         cluster.to_galaxy()
@@ -373,7 +378,7 @@ def advance_cluster(
     """
     nsnap=None
     advance_kwargs, kwargs = _get_advanced_kwargs(cluster, **kwargs)
-    filename=_get_filename(filename,**advance_kwargs)
+    #filename=_get_filename(filename,**advance_kwargs)
 
     if ofile is None:
         ofile=cluster.ofile
@@ -478,12 +483,13 @@ def advance_cluster(
 
     elif cluster.ctype == "gyrfalcon" or cluster.ctype=="nemo":
 
+        filename=_get_filename(filename,**advance_kwargs)
 
         if filename is None:
             cluster = _get_gyrfalcon(
                 cluster.sfile,
-                units="WDunits",
-                origin="galaxy",
+                units=cluster.units_init,
+                origin=cluster.origin_init,
                 ofile=ofile,
                 advance=True,
                 **advance_kwargs,
@@ -494,8 +500,8 @@ def advance_cluster(
             filein = open(filename, "r")
             cluster = _get_gyrfalcon(
                 filein,
-                units="WDunits",
-                origin="galaxy",
+                units=cluster.units_init,
+                origin=cluster.origin_init,
                 ofile=ofile,
                 advance=True,
                 **advance_kwargs,
@@ -517,6 +523,14 @@ def advance_cluster(
             **advance_kwargs,
             **kwargs
         )
+    elif ctype=='amuse':
+        filename=_get_filename(filename,**advance_kwargs)
+
+        if filename is not None:
+            filetype=kwargs.pop("filetype","hdf5")
+            particles = read_set_from_file(filename, filetype)
+            cluster = _get_amuse_particles(particles, units=cluster.units_init, origin=cluster.origin_init, ofile=ofile,**advance_kwargs,**kwargs)
+
     else:
         cluster = StarCluster(ctype=cluster.ctype,units=cluster.units_init,origin=cluster.origin_init,ofile=ofile,**advance_kwargs, **kwargs)
 

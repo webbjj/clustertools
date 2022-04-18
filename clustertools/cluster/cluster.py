@@ -568,6 +568,7 @@ class StarCluster(object):
         ro=8.0,
         vo=220.0,
         solarmotion=[-11.1, 24.0, 7.25],
+        tphys=None,
     ):
         """ add orbit properties to StarCluster
 
@@ -591,6 +592,8 @@ class StarCluster(object):
             galpy velocity scaling parameter (default: 220.)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        tphys : float
+            physical time as per the orbit file
 
         Returns
         ----------
@@ -603,6 +606,13 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
+
+        if tphys is not None:
+            otime=True
+        else:
+            tphys=0.
+            otime=False
+
         if ounits != None and ounits != self.units:
             # First convert to kpckms
             if ounits != "kpckms":
@@ -613,6 +623,7 @@ class StarCluster(object):
                     vxgc *= self.vbar
                     vygc *= self.vbar
                     vzgc *= self.vbar
+                    tphys *= self.tbar
                 elif ounits == "galpy":
                     xgc *= ro
                     ygc *= ro
@@ -620,10 +631,12 @@ class StarCluster(object):
                     vxgc *= vo
                     vygc *= vo
                     vzgc *= vo
+                    tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
                 elif ounits == "pckms":
                     xgc /= 1000.0
                     ygc /= 1000.0
                     zgc /= 1000.0
+                    tphys /= 1000.0
 
                 elif ounits == 'radec':
                     o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,solarmotion=solarmotion)
@@ -640,6 +653,7 @@ class StarCluster(object):
                 xgc *= 1000.0
                 ygc *= 1000.0
                 zgc *= 1000.0
+                tphys *= 1000.0
             elif self.units == "nbody":
                 xgc *= 1000.0 / self.rbar
                 ygc *= 1000.0 / self.rbar
@@ -647,6 +661,7 @@ class StarCluster(object):
                 vxgc /= self.vbar
                 vygc /= self.vbar
                 vzgc /= self.vbar
+                tphys *= 1000.0/self.tbar
             elif self.units == "galpy":
                 xgc /= ro
                 ygc /= ro
@@ -654,6 +669,8 @@ class StarCluster(object):
                 vxgc /= vo
                 vygc /= vo
                 vzgc /= vo
+                tphys /= conversion.time_in_Gyr(ro=ro,vo=vo)
+
 
         self.xgc = xgc
         self.ygc = ygc
@@ -662,6 +679,9 @@ class StarCluster(object):
         self.vxgc = vxgc
         self.vygc = vygc
         self.vzgc = vzgc
+
+        if otime:
+            self.tphys=tphys
 
         if self.units == "radec":
             self.ra_gc = xgc
@@ -1308,6 +1328,9 @@ class StarCluster(object):
     def to_galpy(self, ro=8.0, vo=220.0):
         to_galpy(self, ro=ro, vo=vo)
 
+    def to_WDunits(self, ro=8.0, vo=220.0):
+        to_WDunits(self, ro=ro, vo=vo)
+
     def to_units(self, units, ro=8.0, vo=220.0):
         to_units(self, units=units, ro=ro, vo=vo)
 
@@ -1446,6 +1469,11 @@ class StarCluster(object):
             else:
                 print('No Cluster Variables Set')
                 return xc,yc,zc,vxc,vyc,vzc
+        elif self.origin is None:
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+
+            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
         else:
             print('No Cluster Variables Set')
             return xc,yc,zc,vxc,vyc,vzc

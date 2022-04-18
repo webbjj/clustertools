@@ -1,4 +1,7 @@
 import numpy as np
+
+from ..cluster.cluster import StarCluster
+from ..analysis.orbits import initialize_orbit
 from .orbit import _get_cluster_orbit
 
 def _get_astropy_table(
@@ -7,6 +10,7 @@ def _get_astropy_table(
     units  = None,
     origin = None,
     ofile = None,
+    advance = False,
     verbose = False,
     **kwargs,
 ):
@@ -36,11 +40,13 @@ def _get_astropy_table(
             - vy : "pm_dec" or "pmdec"
             - vz : "radial_velocity" or "rvel" or "v_los" or "vlos"
     units : str
-        units of input data (default: kpckms)
+        units of input data (default: None)
     origin : str
-        origin of input data (default: cluster)
+        origin of input data (default: None)
     ofile : file
         opened file containing orbital information
+    advance : bool
+        is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
 
     Returns
     -------
@@ -129,7 +135,7 @@ def _get_astropy_table(
         ID = table[cm.pop("id")] if "id" in cm else None
 
     cluster = StarCluster(
-        0., units=units, origin=origin, ctype='table', **kwargs
+        0., units=units, origin=origin, ctype='astropy_table', **kwargs
     )
 
     cluster.add_stars(x, y, z, vx, vy, vz, m, ID, sortstars=False)

@@ -10,7 +10,7 @@ from .orbit import _get_cluster_orbit
 
 #Get StarCluster from Gyrfalcon output
 def _get_gyrfalcon(
-    filein, units="WDunits", origin="galaxy", ofile=None, advance=False, **kwargs
+    filein, units=None, origin=None, ofile=None, advance=False, **kwargs
 ):
     """Extract a single snapshot from an ascii file output from a gyrfalcon simulation
 
@@ -19,7 +19,9 @@ def _get_gyrfalcon(
     filein : file
         opened nemo/gyrfalcon file
     units : str
-        units of data (default:'WDunits')
+        units of input data (default: None)
+    origin : str
+        origin of input data (default: None)
     ofile : file
         opened file containing orbital information
     advance : bool
@@ -46,15 +48,12 @@ def _get_gyrfalcon(
     2018 - Written - Webb (UofT)
     """
 
-    if units == "WDunits":
+    if units=='WDunits':
         vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
         mcon = 222288.4543021174
-        units = "kpckms"
-        units0 = "WDunits"
     else:
-        vcon = 1.0
-        mcon = 1.0
-        units0 = units
+        vcon=1.
+        mcon=1.
 
     # Default **kwargs
     skiprows = kwargs.pop("skiprows", 13)
@@ -150,10 +149,14 @@ def _get_gyrfalcon(
 
         if kwargs.get("analyze", True):
             sortstars=kwargs.get("sortstars", True)
-            cluster.to_cluster(sortstars=False)
-            cluster.find_centre()
-            cluster.to_centre(sortstars=sortstars)
-            cluster.to_galaxy()
+            if cluster.origin is not None:
+                cluster.to_cluster(sortstars=False)
+                cluster.find_centre()
+                cluster.to_centre(sortstars=sortstars)
+                cluster.to_origin(origin)
+            else:
+                cluster.find_centre()
+                cluster.analyze(sortstars=sortstars)
 
         if give == 'mxvpqael':
             cluster.gyrpot=np.array(gyrpot)
@@ -163,8 +166,6 @@ def _get_gyrfalcon(
             cluster.gyrlev=np.array(gyrlev)
         elif give== 'mxve':
             cluster.eps=np.array(gyreps)
-
-        if units0=='WDunits': cluster.units_init='WDunits'
 
 
     return cluster

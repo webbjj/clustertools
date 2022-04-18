@@ -10,7 +10,7 @@ from ..analysis.orbits import initialize_orbit
 from .orbit import _get_cluster_orbit
 
 def _get_galpy_orbits(
-    orbits, units="kpckms", origin="galaxy", ofile=None,ro=8.,vo=220.,**kwargs
+    orbits, units=None, origin=None, ofile=None,ro=8.,vo=220.,**kwargs
 ):
     """Convert galpy orbits to a StarCluster instance
 
@@ -21,9 +21,9 @@ def _get_galpy_orbits(
     masses : float
         mass of stars (default: None)
     units : str
-        units of input data (default: kpckms)
+        units of input data (default: None)
     origin : str
-        origin of input data (default: cluster)
+        origin of input data (default: None)
     ofile : file
         opened file containing orbital information
     Returns
@@ -52,25 +52,23 @@ def _get_galpy_orbits(
         **kwargs
     )
 
-    mo=conversion.mass_in_msol(ro=ro, vo=vo)
+    if units=='galpy':
+        mo=conversion.mass_in_msol(ro=ro, vo=vo)
+    else:
+        mo=1.
 
     i_d = np.linspace(1, len(orbits), len(orbits), dtype="int")
-
     masses=kwargs.get('m',None)
 
     if masses is None:
-        masses = np.ones(len(orbits))/mo
+        masses = np.ones(len(orbits))
     elif isinstance(masses,float):
         masses = np.ones(len(orbits))*masses
 
-    if units=='kpckms':
-        cluster.add_stars(orbits.x(), orbits.y(), orbits.z(), orbits.vx(), orbits.vy(), orbits.vz(), masses*mo, i_d, sortstars=False)
-    elif units=='pckms':
-        cluster.add_stars(orbits.x()*1000.0, orbits.y()*1000.0, orbits.z()*1000.0, orbits.vx(), orbits.vy(), orbits.vz(), masses*mo, i_d, sortstars=False)
-    elif units=='radec' and origin=='sky':
-        cluster.add_stars(orbits.ra(), orbits.dec(), orbits.dist(), orbits.pmra(), orbits.pmdec(), orbits.vlos(), masses*mo, i_d, sortstars=False)
-    elif units=='galpy':
-        cluster.add_stars(orbits.x(use_physical=False), orbits.y(use_physical=False), orbits.z(use_physical=False), orbits.vx(use_physical=False), orbits.vy(use_physical=False), orbits.vz(use_physical=False), masses, i_d, sortstars=False)
+    if units=='galpy' and (ro != 1. or vo != 1.):
+            print('WARNING - YOU HAVE SELECTED GALPY UNITS BUT RO AND/OR VO ARE NOT 1')
+
+    cluster.add_stars(orbits.x(ro=ro,vo=vo), orbits.y(ro=ro,vo=vo), orbits.z(ro=ro,vo=vo), orbits.vx(ro=ro,vo=vo), orbits.vy(ro=ro,vo=vo), orbits.vz(ro=ro,vo=vo), masses/mo, i_d, sortstars=False)
 
     if origin == "galaxy":
         if ofile == None:
@@ -86,6 +84,7 @@ def _get_galpy_orbits(
             cluster.to_galaxy()
 
     elif origin == "cluster" or origin=='centre':
+        cluster.find_centre()
         if kwargs.get("analyze", True):
             sortstars=kwargs.get("sortstars", True)
             cluster.analyze(sortstars=sortstars)

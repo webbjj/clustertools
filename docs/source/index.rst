@@ -89,6 +89,10 @@ Bianchini, P. et al. 2016, MNRAS, 458, 3644 - ``meq_function``
 
 Bianchini et al. 2018, MNRAS, 475, 96 - ``ckin``
 
+Binney, J. 2012, MNRAS, 426, 1324 - ``calc_actions``
+
+Bovy, J. & Rix, H.W. 2013, ApJ, 779, 115 - ``calc_actions``
+
 Bovy J., 2015, ApJS, 216, 29 - ``initialize_orbit``, ``initialize_orbits``, ``integrate_orbit``, ``integrate_orbits``, ``orbit_interpolation``, ``orbital_path``, ``orbital_path_match``, ``calc_actions``, ``ttensor``, ``tail_path``, ``tail_path_match``, ``rtidal``, ``rlimiting``,``virial_radius(method='critical_density')``
 
 Claydon, I., Gieles, M., Varri, A.L., Heggie, D.C., Zocchi, A. 2019, MNRAS, 487, 147
@@ -121,6 +125,7 @@ Wang L., Spurzem R., Aarseth S., Nitadori K., Berczik P., Kouwenhoven M. B. N., 
 
 Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383 - ``alpha_prof``
 
+Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4 - ``ttensor``
 
 Library Reference
 -----------------
@@ -133,6 +138,8 @@ Library Reference
 Planned Future Additions
 ----------------------------------
 
+* Add PeTar to list of readable codes (in progress)
+
 * Allow for the use of astropy units
 
 * Be able to initialize orbits and clusters based on Holger Baumgardt's Galactic Globular Clusters Database (https://people.smp.uq.edu.au/HolgerBaumgardt/globular/)
@@ -144,3 +151,7 @@ Planned Future Additions
 * Allow for stars to be tagged as members of different subpopulations for the study of multiple populations
 
 * More analysis features that are comparable to standard techniques used by observers
+
+* Include options for planetary systems around individual stars
+
+* A simulation class that reads in all timesteps of a simulation

@@ -28,7 +28,7 @@ As mentioned above, ``ctype`` can also be set to ``'nbody6'``, ``'nbody6se'``,``
 It should be noted that ``load_cluster`` has an input ``load_function``. This feature allows for a custom load function to be passed to ``load_cluster``. I have created a /custom directory to store custom load functions and easily import them. A sample file named ``custom_loaders.py``demonstrates two load_functions that I used to read in customized NBODY6 output files.
 
 
-.. automodapi:: clustertools.analysis.load
+.. automodapi:: clustertools.io.load
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
@@ -61,7 +61,7 @@ Plotting mass as a function of time would then return:
 .. image:: /images/mevolve.png
 
 
-.. automodapi:: clustertools.analysis.load
+.. automodapi:: clustertools.io.load
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
@@ -84,7 +84,7 @@ Since setting up a star cluster is not associated with a given star cluster evol
 
 * ``'gcname'`` - this features allows for a specific Galactic globular cluster to be initialized with ``limepy``. For example to initialize a cluster that is representive of Pal 5, one would call ``cluster=setup_cluster('limepy',gcname='Pal5')``. If the named cluster has had its density profile fit by de Boer et al 2019 with a LIMEPY model, then those parameters will be used to initialize the cluster. It is important to note that de Boer et al. 2019 find that their SPES models fit observed clusters better than LIMEPY models, however a sampler for SPES models has not been implemented. If the cluster was not studied by de Boer et al. 2019, King model parameters from Harris et al 1996 (2010 update) will be used. Note that ``source`` can be set manually to ``Harris`` if Harris et al 1996 (2010 update) is preferred over de Boer et al. 2019. The cluster is also assigned orbital parameters using the ``Orbit.from_name()`` feature in ``galpy``, which first searches Vasiliev 2019 for globular cluster orbital parameters before looking to SIMBAD.
 
-.. automodapi:: clustertools.analysis.initialize
+.. automodapi:: clustertools.io.initialize
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:

@@ -1291,40 +1291,7 @@ class StarCluster(object):
         return_cluster(self, units0, origin0, rorder0, rorder_origin0)
 
     def reset_nbody_scale(self, mass=True, radii=True, rvirial=True, projected=None, **kwargs):
-        """ Assign new conversions for real mass, size, and velocity to Nbody units
-        
-        - kwargs are passed to the virial_radius function. See the virial_radius documenation in functions.py
 
-        Parameters
-        ----------
-
-        cluster : class
-            StarCluster instance
-        mass : bool
-            find new mass conversion (default: True)
-        radii : bool
-            find new radius conversion (default: True)
-        rvirial : bool (default: True)
-            use virial radius to set conversion rate for radii as opposed to the approximation that rbar=4/3 rm
-        projected : bool
-            use projected values to calculate radius conversion (default: False)
-
-        Returns
-        -------
-
-        zmbar : float
-            mass conversion
-        rbar : float
-            radius conversion
-        vbar : float
-            velocity conversion
-        tbar : float
-            time conversion
-
-        History:
-
-        2018 - Written - Webb (UofT)
-        """
        if projected==None:
             projected=self.projected
 
@@ -1332,52 +1299,12 @@ class StarCluster(object):
             rvirial=rvirial,projected=projected,**kwargs)
 
     def add_rotation(self, qrot):
-        """Add a degree of rotation to an already generated StarCluster
 
-        Parameters
-        ----------
-        cluster : class
-            StarCluster
-        qrot : float
-            fraction of stars with v_phi < 0 that are switched to vphi > 0
-
-        Returns
-        -------
-        x,y,z,vx,vy,vz : float
-            stellar positions and velocities (now with rotation)
-
-        History
-        -------
-        2019 - Written - Webb (UofT)
-        """
         self.x,self.y,self.z,self.vx,self.vy,self.vz=add_rotation(self, qrot)
         self.qrot=qrot
 
     def virialize(self, qvir=0.5,specific=True, full=True, projected=None):
-        """ Adjust stellar velocities so cluster is in virial equilibrium
 
-        Parameters
-        ----------
-        cluster : class
-            StarCluster
-        qvir : float
-            value you wish to virial parameter to be (default: 0.5)
-        specific : bool
-            find specific energies (default: True)
-        full: bool
-            do full array of stars at once with numba (default: full_default)
-        projected : bool
-            use projected values when calculating energies (default: False)
-
-        Returns
-        -------
-        qv : float
-            scaling factor used to adjust velocities
-
-        History
-        -------
-        2019 - Written - Webb (UofT)
-        """
         if projected==None:
             projected=self.projected
 

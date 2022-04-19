@@ -149,7 +149,7 @@ By default, all stars are simply shifted so the cluster is centred on its new ga
 
 A complete list of all functions related to a cluster's orbit can be found below.
 
-.. automodapi:: clustertools.analysis.orbit
+.. automodapi:: clustertools.analysis.orbits
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
@@ -175,7 +175,7 @@ Secondly, since stars that escape the cluster do so with velocities slightly lar
 
 A complete list of all functions related to a cluster's orbit can be found below.
 
-.. automodapi:: clustertools.tidaltails.tails
+.. automodapi:: clustertools.tidaltail.tails
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:

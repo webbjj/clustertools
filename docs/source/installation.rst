@@ -1,6 +1,9 @@
 Installation
 ===============
 
+github and pip install
+------------
+
 To install ``clustertools``, simply clone the GitrHub repository and install via setup tools:
 
 >>> git clone https://github.com/webbjj/clustertools.git
@@ -19,7 +22,7 @@ Requirements
 
 ``clustertools`` requires the following python packages:
 
-* galpy (https://docs.galpy.org/en/v1.6.0/)
+* galpy (https://docs.galpy.org/en/v1.7.2/index.html)
 * matplotlib
 * numpy
 * scipy

@@ -349,7 +349,7 @@ class StarCluster(object):
         self.ngroup=0
 
     def add_stars(
-        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,npop=None,sortstars=False,analyze=False
+        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,npop=None,sortstars=False,analyze=True
     ):
         """Add stars to StarCluster.
 
@@ -570,7 +570,7 @@ class StarCluster(object):
         solarmotion=[-11.1, 24.0, 7.25],
         tphys=None,
     ):
-        """ add orbit properties to StarCluster
+        """ Add orbit properties to StarCluster
 
         Parameters
         ----------
@@ -985,7 +985,7 @@ class StarCluster(object):
         self.nb=len(self.id1)
 
     def add_energies(self, kin, pot, etot=None):
-        """ add energy information for stars 
+        """ Add energy information for stars 
 
         - total energy and Q for the cluster are also calculated
         - values are never adjusted during unit or coordinate changes
@@ -1107,8 +1107,8 @@ class StarCluster(object):
 
         self.rmean = np.mean(self.r)
         self.rmax = np.max(self.r)
-        self.rpromean = np.mean(self.rpro)
-        self.rpromax = np.max(self.rpro)
+        self.rmeanpro = np.mean(self.rpro)
+        self.rmaxpro = np.max(self.rpro)
 
         if sortstars: self.sortstars(projected=projected)
 
@@ -1147,7 +1147,7 @@ class StarCluster(object):
                 self.rh10pro = 0.0
 
     def analyse(self, sortstars = True, projected=True):
-        """call analyze with alternative spelling
+        """Call analyze with alternative spelling
 
         Parameters
         ----------
@@ -1169,7 +1169,7 @@ class StarCluster(object):
         analyze(self, sortstars = sortstars, projected=projected)
 
     def key_params(self, do_order=True, projected=True):
-        """call analyze with key_params for backwards compatibility
+        """Call analyze with key_params for backwards compatibility
 
         Parameters
         ----------
@@ -1218,90 +1218,6 @@ class StarCluster(object):
 
         if (self. rproorder is None or self.rorder_origin!=self.origin or len(self.rpro)!=len(self.rproorder)) and (projected or self.projected):
             self.rproorder = np.argsort(self.rpro)
-
-    """ Directly call parameters from analyze:
-
-    def r(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.r
-
-    def rpro(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rpro
-
-    def v(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.v
-
-    def vpro(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.vpro
-
-    def mtot(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.mtot
-
-    def mmean(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.mmean
-
-    def rmean(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rmean
-
-    def rmax(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rmax
-
-    def rpromean(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rpromean
-
-    def rpromax(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rpromax
-
-    def rorder(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rorder
-
-    def rm(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rm
-
-    def r10(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.r10
-
-    def rh(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rh
-
-    def rh10(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rh10
-
-    def rproorder(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rproorder
-
-    def rmpro(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rmpro
-
-    def r10pro(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.r10pro
-
-    def rhpro(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rhpro
-
-    def rh10pro(self,sortstars=True,projected=False):
-        _analysis_check(self,sortstars=sortstars,projected=projected)
-        return self.rh10pro
-
-    """
 
     def _analysis_check(self,sortstars=True,projected=False):
         if self.units!=self.analyze_units or self.analyze_units!=self.units:
@@ -1375,19 +1291,93 @@ class StarCluster(object):
         return_cluster(self, units0, origin0, rorder0, rorder_origin0)
 
     def reset_nbody_scale(self, mass=True, radii=True, rvirial=True, projected=None, **kwargs):
-        if projected==None:
+        """ Assign new conversions for real mass, size, and velocity to Nbody units
+        
+        - kwargs are passed to the virial_radius function. See the virial_radius documenation in functions.py
+
+        Parameters
+        ----------
+
+        cluster : class
+            StarCluster instance
+        mass : bool
+            find new mass conversion (default: True)
+        radii : bool
+            find new radius conversion (default: True)
+        rvirial : bool (default: True)
+            use virial radius to set conversion rate for radii as opposed to the approximation that rbar=4/3 rm
+        projected : bool
+            use projected values to calculate radius conversion (default: False)
+
+        Returns
+        -------
+
+        zmbar : float
+            mass conversion
+        rbar : float
+            radius conversion
+        vbar : float
+            velocity conversion
+        tbar : float
+            time conversion
+
+        History:
+
+        2018 - Written - Webb (UofT)
+        """
+       if projected==None:
             projected=self.projected
 
         self.zmbar,self.rbar,self.vbar,self.tbar=reset_nbody_scale(self, mass=mass, radii=radii, 
             rvirial=rvirial,projected=projected,**kwargs)
 
     def add_rotation(self, qrot):
+        """Add a degree of rotation to an already generated StarCluster
 
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+        qrot : float
+            fraction of stars with v_phi < 0 that are switched to vphi > 0
+
+        Returns
+        -------
+        x,y,z,vx,vy,vz : float
+            stellar positions and velocities (now with rotation)
+
+        History
+        -------
+        2019 - Written - Webb (UofT)
+        """
         self.x,self.y,self.z,self.vx,self.vy,self.vz=add_rotation(self, qrot)
         self.qrot=qrot
 
     def virialize(self, qvir=0.5,specific=True, full=True, projected=None):
+        """ Adjust stellar velocities so cluster is in virial equilibrium
 
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+        qvir : float
+            value you wish to virial parameter to be (default: 0.5)
+        specific : bool
+            find specific energies (default: True)
+        full: bool
+            do full array of stars at once with numba (default: full_default)
+        projected : bool
+            use projected values when calculating energies (default: False)
+
+        Returns
+        -------
+        qv : float
+            scaling factor used to adjust velocities
+
+        History
+        -------
+        2019 - Written - Webb (UofT)
+        """
         if projected==None:
             projected=self.projected
 

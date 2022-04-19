@@ -8,7 +8,7 @@ The package contains methods for loading data from commonly used N-body codes, g
 
 ``clustertools`` is developed on Github. Please go to https://github.com/webbjj/clustertools to report issues or contribute to the code. 
 
-Supported N-Body Simulation Codes
+Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 -----------------
 
 AMUSE <https://amusecode.github.io/> (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)

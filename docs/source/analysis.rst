@@ -17,7 +17,7 @@ It is important to note that the operation ``analyze`` is called after a change 
 
 All available operations are listed below.
 
-.. automodapi:: clustertools.analysis.operations
+.. automodapi:: clustertools.cluster.operations
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
@@ -175,7 +175,7 @@ Secondly, since stars that escape the cluster do so with velocities slightly lar
 
 A complete list of all functions related to a cluster's orbit can be found below.
 
-.. automodapi:: clustertools.analysis.tails
+.. automodapi:: clustertools.tidaltails.tails
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:

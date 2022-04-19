@@ -1295,8 +1295,7 @@ class StarCluster(object):
        if projected==None:
             projected=self.projected
 
-        self.zmbar,self.rbar,self.vbar,self.tbar=reset_nbody_scale(self, mass=mass, radii=radii, 
-            rvirial=rvirial,projected=projected,**kwargs)
+        self.zmbar,self.rbar,self.vbar,self.tbar=reset_nbody_scale(self, mass=mass, radii=radii, rvirial=rvirial,projected=projected,**kwargs)
 
     def add_rotation(self, qrot):
 

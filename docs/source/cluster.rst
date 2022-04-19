@@ -29,7 +29,7 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
 * sortstars
 * subset
 
-.. automodapi:: clustertools.analysis.cluster
+.. automodapi:: clustertools.cluster.cluster
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
@@ -145,7 +145,7 @@ where ``projected=True`` would use the projected radii and velocities to define 
 
 In this example, ``new_cluster`` will contain all the same information as ``cluster`` but only for stars within ``cluster.rm``. Please consult the ``sub_cluster`` documentation for the complete list of criteria that can be given to ``sub_cluster``.
 
-.. automodapi:: clustertools.analysis.cluster
+.. automodapi:: clustertools.cluster.cluster
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:

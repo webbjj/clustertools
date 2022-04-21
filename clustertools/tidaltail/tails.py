@@ -24,6 +24,7 @@ from ..analysis.orbits import orbital_path, orbital_path_match
 from ..cluster.operations import *
 from ..util.recipes import binmaker,nbinmaker,roaming_binmaker,roaming_nbinmaker
 from ..util.coordinates import cart_to_sky
+from ..util.constants import *
 
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 
@@ -88,9 +89,9 @@ def tail_path(
     cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=MWPotential2014, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
     to_path=False,
     do_full=False,
-    ro=8.0, 
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro, 
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,projected=False,
     **kwargs,
 ):
@@ -127,7 +128,7 @@ def tail_path(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -261,9 +262,9 @@ def tail_path_match(
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
     **kwargs,
@@ -300,7 +301,7 @@ def tail_path_match(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool

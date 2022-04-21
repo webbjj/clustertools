@@ -10,8 +10,12 @@ from galpy.potential import KingPotential
 from galpy.util import conversion
 from galpy.df import kingdf
 from limepy import limepy
-ro,vo=8.,220.
-mo=conversion.mass_in_msol(ro=ro,vo=vo)
+
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
+
+mo=conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
 def check_params(cluster,ctype,units,origin,projected,**kwargs):
 

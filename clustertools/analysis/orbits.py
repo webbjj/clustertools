@@ -39,11 +39,12 @@ import matplotlib.pyplot as plt
 
 from ..util.recipes import interpolate, binmaker
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
+from ..util.constants import *
 
 import astropy.coordinates as coord
 import astropy.units as u
 
-def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+def initialize_orbit(cluster, from_centre=False, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """ Initialize a galpy orbit instance for the cluster
 
     Parameters
@@ -57,7 +58,7 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0, solarmotion=[
     vo : float
         galpy velocity scale (default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -115,7 +116,7 @@ def initialize_orbit(cluster, from_centre=False, ro=8.0, vo=220.0, solarmotion=[
     return o
 
 
-def initialize_orbits(cluster, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]):
+def initialize_orbits(cluster, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """Initialize a galpy orbit for every star in the cluster
 
     Parameters
@@ -127,7 +128,7 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]
     vo : float
         galpy velocity scale (default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -180,7 +181,7 @@ def initialize_orbits(cluster, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25]
 
 
 def integrate_orbit(
-    cluster, pot=MWPotential2014, tfinal=None, nt=1000, from_centre=False, ro=8.0, vo=220.0, solarmotion=[-11.1, 24.0, 7.25], plot=False
+    cluster, pot=MWPotential2014, tfinal=None, nt=1000, from_centre=False, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion, plot=False
 ):
     """Integrate a galpy orbit instance for the cluster
 
@@ -201,7 +202,7 @@ def integrate_orbit(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     plot : float
         show plot of cluster's orbit
 
@@ -236,7 +237,7 @@ def integrate_orbit(
     return ts, o
 
 def integrate_orbits(
-    cluster, pot=None, tfinal=None, nt=1000, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25], plot=False
+    cluster, pot=None, tfinal=None, nt=1000, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion, plot=False
 ):
     """Integrate a galpy orbit instance for each star
 
@@ -256,7 +257,7 @@ def integrate_orbits(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     plot : float
         show plot of cluster's orbit
 
@@ -310,9 +311,9 @@ def interpolate_orbit(
     tfinal=None,
     nt=1000,
     from_centre=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
 ):
     """
     Interpolate past or future position of cluster and escaped stars
@@ -337,7 +338,7 @@ def interpolate_orbit(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -393,9 +394,9 @@ def interpolate_orbits(
     pot=None,
     tfinal=None,
     nt=1000,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25]
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion
 ):
     """
     Interpolate past or future position of stars within the cluster
@@ -416,7 +417,7 @@ def interpolate_orbits(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -479,10 +480,48 @@ def orbit_interpolate(
     pot=MWPotential2014,
     tfinal=None,
     nt=1000,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
 ):
+    """
+    Interpolate past or future position of cluster and escaped stars
+
+    - same as interpolate_orbit, but included for legacy purposes
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    cluster_pot : class
+        Galpy potential for host cluster that orbit is to be integrated in
+        if None, assume a Plumme Potential
+    pot : class
+        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    from_centre : bool
+        intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+
+    Returns
+    -------
+    x,y,z : float
+        interpolated positions of each star
+    vx,vy,vz : float
+        interpolated velocities of each star    
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
     return interpolate_orbit(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo,solarmotion=solarmotion,plot=False)
 
 def orbits_interpolate(
@@ -490,10 +529,44 @@ def orbits_interpolate(
     pot=None,
     tfinal=None,
     nt=1000,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
 ):
+    """
+    Interpolate past or future position of stars within the cluster
+
+    - same as interpolate_orbits, but kept for legacy purposes
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    pot : class
+        Galpy potential for host cluster that orbit is to be integrated in
+        if None, assume a Plumme Potential
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+
+    Returns
+    -------
+    x,y,z : float
+        interpolated positions of each star
+    vx,vy,vz : float
+        interpolated velocities of each star    
+
+    History
+    -------
+    2021 - Written - Webb (UofT)
+    """
     return interpolate_orbits(cluster, cluster_pot=cluster_pot, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo,solarmotion=solarmotion,plot=False)
 
 
@@ -505,9 +578,9 @@ def orbital_path(
     from_centre=False,
     skypath=False,
     initialize=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     **kwargs,
 ):
@@ -534,7 +607,7 @@ def orbital_path(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
 
@@ -680,9 +753,9 @@ def orbital_path_match(
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
     **kwargs,
@@ -715,7 +788,7 @@ def orbital_path_match(
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -904,7 +977,7 @@ def orbital_path_match(
 
     return np.array(tstar), np.array(dprog), np.array(dpath)
 
-def calc_action(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
+def calc_action(cluster, pot=None, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion,full=False, **kwargs):
     """Calculate action angle values for cluster
 
     - This is a simple wrapper for calculating actions from an Orbit in galpy (Bovy 2015)
@@ -922,7 +995,7 @@ def calc_action(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     full : bool
         return orbital frequencies and periods (default : False)
     Returns
@@ -998,7 +1071,7 @@ def calc_action(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.
     else:
         return JR, Jphi, Jz
 
-def calc_actions(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],full=False, **kwargs):
+def calc_actions(cluster, pot=None, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion,full=False, **kwargs):
     """Calculate action angle values for each star
 
     - This is a simple wrapper for calculating actions from an Orbit in galpy (Bovy 2015)
@@ -1016,7 +1089,7 @@ def calc_actions(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     full : bool
         return orbital frequencies and periods (default : False)
     Returns
@@ -1099,11 +1172,12 @@ def calc_actions(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7
         return JR, Jphi, Jz
 
 
-def ttensor(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25], eigenval=False, t=0.):
+def ttensor(cluster, pot=None, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion, eigenval=False, t=0.):
     """Calculate the tidal tensor Tij=-d(Psi)(dxidxj)
     
     - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
     -- Bovy J., 2015, ApJS, 216, 29
+    -- Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
     Parameters
     ----------
     cluster : class
@@ -1115,7 +1189,7 @@ def ttensor(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     eigenval : bool
         return eigenvalues if true (default; False)
     time : float
@@ -1154,11 +1228,12 @@ def ttensor(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25],
 
     return tij
 
-def ttensors(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25], eigenval=False, t=0.):
+def ttensors(cluster, pot=None, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion, eigenval=False, t=0.):
     """Calculate the tidal tensor Tij=-d(Psi)(dxidxj) acting on all stars in the cluster
 
     - This is a simple wrapper for calculating the tidal tensor in a potential in galpy (Bovy 2015)
     -- Bovy J., 2015, ApJS, 216, 29
+    -- Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
     Parameters
     ----------
     cluster : class
@@ -1170,7 +1245,7 @@ def ttensors(cluster, pot=None, ro=8.0, vo=220.0,solarmotion=[-11.1, 24.0, 7.25]
     vo : float
         galpy velocity scale (Default: 220.)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=[-11.1, 24.0, 7.25])
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     eigenval : bool
         return eigenvalues if true (default; False)
     time : float

@@ -7,10 +7,11 @@ except:
 import os, struct
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
+from ..util.constants import *
 from .orbit import _get_cluster_orbit
 
 def _get_galpy_orbits(
-    orbits, units=None, origin=None, ofile=None,ro=8.,vo=220.,**kwargs
+    orbits, units=None, origin=None, ofile=None,ro=solar_ro,vo=solar_vo,**kwargs
 ):
     """Convert galpy orbits to a StarCluster instance
 

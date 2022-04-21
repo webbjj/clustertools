@@ -7,6 +7,10 @@ try:
 except:
 	import galpy.util.bovy_conversion as conversion
 
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
+
 def test_to_tail(tol=0.1):
 	
 	x=np.arange(-5,5,0.1)
@@ -58,7 +62,7 @@ def test_to_tail(tol=0.1):
 	np.testing.assert_allclose(z,-cluster.x_tail,rtol=tol,atol=1.)
 
 
-def test_tail_path(tol=0.1,ro=8.,vo=220.):
+def test_tail_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
 
 	tfinal=0.1
@@ -70,16 +74,16 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	    from_centre=False,
 	    skypath=False,
 	    initialize=True,
-	    ro=8.0,
-	    vo=220.0,
-	    solarmotion=[-11.1, 24.0, 7.25],
+	    ro=solar_ro,
+	    vo=solar_vo,
+	    solarmotion=solar_motion,
 	    plot=False,
 	)
 
 	cluster=ctools.StarCluster(units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz)
 
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 	ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
 	o.integrate(ts,MWPotential2014)
 	cluster.add_orbit(o.x(),o.y(),o.z(),o.vx(),o.vy(),o.vz())
@@ -91,9 +95,9 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	    from_centre=False,
 	    skypath=False,
 	    initialize=True,
-	    ro=8.0,
-	    vo=220.0,
-	    solarmotion=[-11.1, 24.0, 7.25],
+	    ro=solar_ro,
+	    vo=solar_vo,
+	    solarmotion=solar_motion,
 	    plot=False,
 	)
 
@@ -113,7 +117,7 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	assert np.fabs(cluster.vzpath[0]-o.vz(ts[-1])) <= tol
 
 
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 	ts = np.linspace(0, 1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
 	o.integrate(ts,MWPotential2014)
 
@@ -133,9 +137,9 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	    from_centre=False,
 	    skypath=True,
 	    initialize=True,
-	    ro=8.0,
-	    vo=220.0,
-	    solarmotion=[-11.1, 24.0, 7.25],
+	    ro=solar_ro,
+	    vo=solar_vo,
+	    solarmotion=solar_motion,
 	    plot=False,
 	)
 
@@ -158,9 +162,9 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	    from_centre=True,
 	    skypath=False,
 	    initialize=False,
-	    ro=8.0,
-	    vo=220.0,
-	    solarmotion=[-11.1, 24.0, 7.25],
+	    ro=solar_ro,
+	    vo=solar_vo,
+	    solarmotion=solar_motion,
 	    plot=False,
 	)
 
@@ -170,7 +174,7 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	rad,phi,zed,vR,vT,vzed=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi]
 
-	o=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 	ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
 	o.integrate(ts,MWPotential2014)
 
@@ -181,12 +185,12 @@ def test_tail_path(tol=0.1,ro=8.,vo=220.):
 	assert np.fabs(vy[0]-o.vy(ts[-1])) <= tol
 	assert np.fabs(vz[0]-o.vz(ts[-1])) <= tol
 
-def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
+def test_tail_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
 
 	tfinal=0.1
 	nt=1000
 
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 	ts = np.linspace(0, 0.5 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
 	o.integrate(ts,MWPotential2014)
 
@@ -197,7 +201,7 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
 	cluster.add_stars(x,y,z,vx,vy,vz,sortstars=True,analyze=True)
 	cluster.add_orbit(o.x(),o.y(),o.z(),o.vx(),o.vy(),o.vz(),ounits='kpckms')
 
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 	ts = np.linspace(0, -0.5 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), nt)
 	o.integrate(ts,MWPotential2014)
 
@@ -217,9 +221,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
 	)
@@ -235,9 +239,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
 	)
@@ -253,9 +257,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=True,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
 	)
@@ -271,9 +275,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=True,
 	)
@@ -308,9 +312,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
 	)
@@ -327,9 +331,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=False,
     to_path=True,
     do_full=False,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
 	)
@@ -346,9 +350,9 @@ def test_tail_path_match(tol=0.1,ro=8.,vo=220.):
     skypath=False,
     to_path=False,
     do_full=True,
-    ro=8.0,
-    vo=220.0,
-    solarmotion=[-11.1, 24.0, 7.25],
+    ro=solar_ro,
+    vo=solar_vo,
+    solarmotion=solar_motion,
     plot=False,
     projected=False,
 	)

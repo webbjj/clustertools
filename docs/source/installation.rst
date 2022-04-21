@@ -4,7 +4,7 @@ Installation
 github and pip install
 ------------
 
-To install ``clustertools``, simply clone the GitrHub repository and install via setup tools:
+To install ``clustertools``, simply clone the GitHub repository and install via setup tools:
 
 >>> git clone https://github.com/webbjj/clustertools.git
 >>> cd clustertools
@@ -14,7 +14,7 @@ It has recently become possible to install ``clustertools`` using pip:
 
 >>> pip install clustertools
 
-however please note this has not been thoroughly tested.
+however please note this version is not updated as frequently as the GitHub repository.
 
 
 Requirements

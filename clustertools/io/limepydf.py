@@ -10,6 +10,7 @@ __all__ = [
 ]
 
 import numpy as np
+from ..util.constants import *
 
 try:
     from galpy.util import coords,conversion
@@ -29,7 +30,7 @@ except:
 
 from ..cluster.cluster import StarCluster
 
-def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, **kwargs):
+def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance=False, **kwargs):
     """ Setup an N-body realization of a StarCluster with specific parameters
     
     -Relies heavily on LIMEPY/SPES models (Woolley 1954, King 1966, Wilson, 1975, Gieles & Zocchi 2015, Claydon et al. 2019)
@@ -45,14 +46,16 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
 
     Parameters
     ----------
-    ctype : str
-        Type of model used to generate cluster (LIMEPY')
     units : str
         units of generated model (default: 'pckms')
     origin : str
         origin of generated model (default: 'cluster')
     orbit : class
         Galpy orbit of cluster to be generated
+    ofile : file
+        opened file containing orbital information
+    advance : bool
+        is this a snapshot that has been advanced to from initial  load_cluster? (default: False)
 
     Returns
     -------
@@ -88,57 +91,55 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
     2019 - Written - Webb (UofT)
     """
 
-    if ctype == "limepy":
+    gcname=kwargs.pop("gcname",None)
+    model=kwargs.pop("model",None)
 
-        gcname=kwargs.pop("gcname",None)
-        model=kwargs.pop("model",None)
+    if gcname is not None:
+        source = kwargs.pop("source", "default")
+        mbar = kwargs.pop("mbar", 1.)
+        cluster = _get_cluster(gcname, source, mbar, **kwargs)
 
-        if gcname is not None:
-            source = kwargs.pop("source", "default")
-            mbar = kwargs.pop("mbar", 1.)
-            cluster = _get_cluster(gcname, source, mbar, **kwargs)
+        if cluster.units!=units:
+            if units=='nbody': cluster.reset_nbody_scale(rvirial=True)
+            cluster.to_units(units)
 
-            if cluster.units!=units:
-                if units=='nbody': cluster.reset_nbody_scale(rvirial=True)
-                cluster.to_units(units)
+        if cluster.origin!=origin:
+            cluster.to_origin(origin)
 
-            if cluster.origin!=origin:
-                cluster.to_origin(origin)
-
-        elif model is not None:
-            if model == "woolley":
-                g = kwargs.pop("g", 0)
-                cluster = _get_limepy(g=g, **kwargs)
-            elif model == "king":
-                g = kwargs.pop("g", 1)
-                cluster = _get_limepy(g=g, **kwargs)
-            elif model == "wilson":
-                g = kwargs.pop("g", 2)
-                cluster = _get_limepy(g=g, **kwargs)
-            else:
-                cluster = _get_limepy(model=model, **kwargs)
-
-            cluster.units=units
-
-            if cluster.origin!=origin:
-                cluster.to_origin(origin)
-
-
+    elif model is not None:
+        if model == "woolley":
+            g = kwargs.pop("g", 0)
+            cluster = _sample_limepy(g=g, **kwargs)
+        elif model == "king":
+            g = kwargs.pop("g", 1)
+            cluster = _sample_limepy(g=g, **kwargs)
+        elif model == "wilson":
+            g = kwargs.pop("g", 2)
+            cluster = _sample_limepy(g=g, **kwargs)
         else:
-            g = kwargs.pop("g")
-            cluster = _get_limepy(g=g, **kwargs)
+            cluster = _sample_limepy(model=model, **kwargs)
 
-            cluster.units=units
+        cluster.units=units
 
-            if cluster.origin!=origin:
-                cluster.to_origin(origin)
+        if cluster.origin!=origin:
+            cluster.to_origin(origin)
 
-    cluster.ctype=ctype
+
+    else:
+        g = kwargs.pop("g")
+        cluster = _sample_limepy(g=g, **kwargs)
+
+        cluster.units=units
+
+        if cluster.origin!=origin:
+            cluster.to_origin(origin)
+
+    cluster.ctype='limepy'
 
     # Add galpy orbit if given
     if orbit != None:
         cluster.orbit = orbit
-        t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=8.0, vo=220.0)
+        t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=solar_ro, vo=solar_vo)
         cluster.add_orbit(
             orbit.x(t),
             orbit.y(t),
@@ -149,16 +150,18 @@ def setup_cluster(ctype, units="pckms", origin="cluster", orbit=None, pot=None, 
             "kpckms",
         )
 
+    elif ofile != None:
+        _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-        if origin=='galaxy':
-            cluster.to_galaxy()
+    if origin=='galaxy':
+        cluster.to_galaxy()
 
     cluster.analyze(sortstars=True)
 
     return cluster
 
 
-def _get_limepy(g=1,model=None,**kwargs):
+def _sample_limepy(g=1,model=None,**kwargs):
     """Get an Nbody realization of a LIMEPY model cluster
 
     Parameters
@@ -836,7 +839,7 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4, **kwargs):
         M_lime = data[i_d, 7].astype(float)
         N = M_lime / mbar
 
-        cluster = _get_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
+        cluster = _sample_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
 
     cluster.units='pckms'
     cluster.origin='cluster'
@@ -896,7 +899,7 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
     w0 = c_to_w0(c)
     N = int(kwargs.get("N", mgc / mbar))
 
-    cluster = _get_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
+    cluster = _sample_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
 
     cluster.units='pckms'
     cluster.origin='cluster'
@@ -918,7 +921,7 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
 
     return cluster
 
-def _get_cluster_orbit(gcname,ro=8.0, vo=220.0):
+def _get_cluster_orbit(gcname,ro=solar_ro, vo=solar_vo):
     """Get the measured orbital parameters of a Galactic globular cluster
     - This is a simply wrapper for Orbit.from_name in galpy (Bovy 2015), which uses orbits measured by Vasiliev 2019 using Gaia DR2 via Galpy
     -- Bovy J., 2015, ApJS, 216, 29
@@ -941,5 +944,5 @@ def _get_cluster_orbit(gcname,ro=8.0, vo=220.0):
     2019 - Written - Webb (UofT)
 
     """
-    return Orbit.from_name(gcname,ro=ro, vo=vo, solarmotion=[-11.1, 24.0, 7.25])
+    return Orbit.from_name(gcname,ro=ro, vo=vo, solarmotion=solar_motion)
 

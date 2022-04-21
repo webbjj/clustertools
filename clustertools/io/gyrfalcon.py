@@ -7,6 +7,7 @@ except:
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
 from .orbit import _get_cluster_orbit
+from ..util.constants import *
 
 #Get StarCluster from Gyrfalcon output
 def _get_gyrfalcon(

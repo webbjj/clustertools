@@ -1,5 +1,9 @@
 """A list of commonly used constants
 """
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
+# Note vo is set so solar_vo+solar_motion[1] = solar_ro*30.39, where 30.39 is the proper motoin of Sag A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1)
 
 kmperpc = 3.086e13
 kmperkpc = 3.086e16

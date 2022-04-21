@@ -1,3 +1,4 @@
+.. _analysis
 Analysis
 ===============
 
@@ -35,7 +36,7 @@ where the variable ``cluster.trh`` now represents the half-mass relaxation time.
 
 When called externally, cluster.trh is not set.
 
-Some functions, including ``mass_function`` and ``eta_function`` can be applied to only a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster's half-mass radius one can call:
+Some functions, including ``mass_function`` and ``eta_function`` can be applied to a sub-population of the cluster. They have an array of input parameters that allow for only certain stars to be used. For example, to measure the mass function of stars between 0.1 and 0.8 Msun within the cluster's half-mass radius one can call:
 
 >> cluster.mass_function(mmin=0.1,mmax=0.8,rmin=0.,rmax=cluster.rm)
 
@@ -46,25 +47,26 @@ Note that, due to the internal call, the slope of the mass function will be retu
 
 Other constraints include velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
-Finally, cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a potential using the ``pot`` variable where applicable.
+Finally, cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a differnt ``galpy`` potential using the ``pot`` variable where applicable.
 
 For example, the limiting radius of a cluster (radius where the density falls to background) can be measured via:
 
 >> cluster.rlimiting(plot=True)
 
-Since ``plot=True``, a figure showing the cluster's density profile and the background density in MWPotential at the cluster's position is returned in order to view exactly where the limiting radius is. cluster.rl is now set equal to the the measured limiting radius.
+Since ``plot=True``, a figure showing the cluster's density profile and the background density in MWPotential at the cluster's position is returned in order to view exactly where the limiting radius is. cluster.rl is now set equal to the the measured limiting radius. See the full list of functions and their input parameters to see what other functions have the ``plot`` option as well.
 
 .. image:: /images/rlplot.png
 
-Alternatively, one can define a different potential and make the calculation again:
+Alternatively, one can define a different ``galpy`` potential and make the calculation again:
 
+>> from galpy.potential import LogarithmicHaloPotential
 >> cluster.rlimiting(pot=LogarithmicHaloPotential,plot=True)
 
 .. image:: /images/rlplot_log.png
 
-If the cluster's orbit is not know it is possible to a galactocentric distance using ``rgc``.
+If the cluster's orbit is not known it is possible to set a galactocentric distance using ``rgc``.
 
-All functions, with the exception of calculating the cluster's tidal radius, can be called using projected valeus using ``projected=True``. When called internally, a function call will default to whatever ``StarCluster.projected`` is set to if ``projected`` is not given.
+All functions, with the exception of calculating the cluster's tidal radius, can be called using projected valeus with ``projected=True``. When called internally, a function call will default to whatever ``StarCluster.projected`` is set to if ``projected`` is not given.
 
 The complete list of available functions are tabulated below in their external form.
 
@@ -76,7 +78,7 @@ The complete list of available functions are tabulated below in their external f
 Profiles
 --------
 
-A common measurement to make when analysing star clusters is to determine how a certain parameter varies with clustercentric distance. Therefore a list of commonly measured profiles can be measured via ``clustertools``. Unlike operations and functions, profiles can only be called externally. For example, the density profile of a cluster can be measured via:
+A common measurement to make when analysing star clusters is to determine how a certain parameter varies with clustercentric distance. Therefore a list of commonly measured profiles can be measured via ``clustertools``. Unlike operations and functions, profiles can ONLY be called externally. For example, the density profile of a cluster can be measured via:
 
 >>> rprof, pprof, nprof= rho_prof(cluster)
 
@@ -84,7 +86,7 @@ where the radial bins ``rprof``, the density in each radial bin ``pprof``, and t
 
 >>> rprof, pprof, nprof= rho_prof(cluster,normalize=True)
 
-Note, by default. ``noramlize=True`` when measuring the radial variation in the mass function or the degree of energy equipartition as per the definintion of ``delta_alpha`` and ``delta_eta``.
+Note, when measuring the radial variation in the mass function or the degree of energy equipartition, ``delta_alpha`` and ``delta_eta`` are calculated with clustercentric radii normalized by the effective radius. Whether or not ``normalization`` is True of False only affects whether the returned radial bins are normalized or not.
 
 One feature that is available for all profiles is the ability to plot the profile using ``plot=True``. For example, calling
 
@@ -108,14 +110,16 @@ All available profiles are listed below.
 Orbit
 -----
 
-In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyise the cluster's orbital properties.
+In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyse the cluster's orbital properties.
 
-The majority of the orbital analysis performed in ``clusertools`` is just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class, especially ``calc_actions``,``get_cluster_orbit``, and ``ttensor``. Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and integrate a cluster's orbit, given its galactocentric coordinates are known, using:
+It is important to note that the orbital analysis performed in ``clusertools`` is simply just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class. The only role that ``clustertools`` plays is to extract the necessary information from the simulated data and handle any necessary unit or coordinate changes before calling ``galpy``. Hence Bovy (2015) must be cited anytime a ``clusertools`` function makes use of the external tidal field and/or the cluster's orbit. Furthermore, the default value for the solar distance (``ro``) is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest (``vo``) is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1).
+
+Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and integrate a cluster's orbit, given its galactocentric coordinates are known, using:
 
 >> cluster.initialize_orbit()
 >> cluster.integrate_orbit(tfinal=12)
 
-where ``tfinal=12`` means that the orbit is being integrated 12 Gyr into the future. The returned orbit is also stored in ``cluster.orbit`` while the array self.ts is set which lists the times (in galpy units) for which the orbit was integrated for. If you are familiar with ``galpy`` and prefer to just extract the galpy orbit, you can use:
+where ``tfinal=12`` means that the orbit is being integrated 12 time units into the future. The units on time will depend on what ``cluster.units`` are set to. The returned ``galpy`` orbit is also stored in ``cluster.orbit`` while the array self.ts is set which lists the times (in internal ``galpy`` units) for which the orbit was integrated for. If you are familiar with ``galpy`` and prefer to just extract the galpy orbit, you can use:
 
 >> o=initialize_orbit(cluster)
 
@@ -124,7 +128,7 @@ or
 >> ts,o=integrate_orbit(cluster,tfinal=12)
 
 
-``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits(``, however this feature is likely only of interest for tail stars that are no longer bound to the cluster as orbit integration does not account for the cluster's potential. 
+``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits()``. If ``cluster.origin`` is ``centre`` or ``cluster``, the orbits are initialized with clustercentric coordinates. If ``cluster.origin='galaxy'`` then each stars position in the galaxy is used to initialize the orbit.
 
 It may also be helpful to have the cluster's orbital path within +/- dt, especially if looking at escaped stars. Arrays for the cluster's past and future coordinates can be generated via:
 
@@ -141,11 +145,13 @@ Stars can also be matched to a point along the orbital path, where each stars di
 Since ``plot=True``, a figure showing ``dpath`` vs ``dprog`` is returned.
 
 
-Finally,cClusters can be interpolated to past or future points in time. To interpolate a cluster 1 Gyr forward in time use:
+Finally,Clusters can be interpolated to past or future points in time. To interpolate a cluster 1 Gyr forward in time use:
 
 >> cluster.orbit_interpolate(1.0,do_tails=True,rmax=0.1)
 
 By default, all stars are simply shifted so the cluster is centred on its new galactocentric position. If one wishes to identify tail stars that have their own orbits interpolated, set ``do_tails=True`` as above and provide a criteria for what defines a tail star. In the above example, any star beyond 0.1 ``cluster.units`` is a tail star. Other criteria include velocity, energy, kwtype, or a custom boolean array (similar to defining subsets for profiles as disussed above).
+
+If one wishes to interpolate the orbits of stars within the cluster, then use ``orbits_interpolate`` with ``cluster.origin`` equal to centre or cluster. In this case the ``galpy`` potential of the cluster should be provided. If its not provided, the cluster is assumed to be a Plummer Sphere with the scale radius calculated from the cluster's half-mass radius. 
 
 A complete list of all functions related to a cluster's orbit can be found below.
 

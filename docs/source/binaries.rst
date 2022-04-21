@@ -1,8 +1,19 @@
 Binaries
 ===============
 
-At the moment, ``clustertools`` has minimal support for analysing binary stars in a ``StarCluster``. The only function designed specifically designed for binaries is ``convert_binary_units``, where one can convert orbital period ``pb`` to units days,years, or Nbody units, semi-major axis ``semi`` to units of pc, solar units (su), astronomical units (au), or Nbody units, and mass ``mass`` to units of solar masses or Nbody units. An example of this step would be:
+At the moment, NBODY6 and NBODY6++GPU are the only supported codes that have a separate treatment for binary stars. In both cases, the main array of stars contain the centre of mass position and velocity of each binary. The masses are then the total mass of the binary star. Separate parameters are used that contain properties of the individual binaries themselves. These include, but are not limited to:
 
->>> cluster.convert_binary_units(['pb','semi','mass'],from_units=['nbody','nbody','nbody')],to_units=['years','su','Msun']
+* ids ``i_d1`` and ``i_d2``
+* kwtypes ``kw1`` and ``kw2``
+* eccentricity ``ecc``
+* orbital period ``pb``
+* semi-major axis ``semi``
+* masses ``m1`` and ``m2``
+* luminosities ``logl1`` and ``logl2``
 
-Of course, knowing which stars are binary stars in your datasets allows for them to be extracted using ``sub_cluster`` and analysed individually. More support for binary stars is planned for future releases.
+It is possible to add binary star properties manually using ``StarCluster.add_bse``, however ``clustertools`` will always assume the binary's centre of mass positions and velocities, total mass, and primary star ID were added via ``StarCluster.add_stars``.
+
+Generally speaking, unit and coordinate transformations do not act on these parameters. They are saved in the event an experienced NBODY6 user would like to view these parameters (see ``StarCluster.add_bse`` for the full list of saved parameters). The only functions designed specifically designed for binaries are ``to_audays`` and ``to_sudays``. These unit conversion function convert orbital period ``pb`` to units days, semi-major axis ``semi`` to units of solar units (su) or astronomical units (au). When these are called, the masses of individual binary stars (``m1`` and ``m2``) are converted to solar masses. When ``to_nbody`` is called, all of these values are returned to nbody units.
+
+
+More support for binary stars is planned for future releases.

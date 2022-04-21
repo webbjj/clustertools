@@ -1,6 +1,10 @@
 import clustertools as ctools
 import numpy as np
 
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
+
 units=['pckms','kpckms','nbody','galpy']
 
 def test_init_default():
@@ -272,8 +276,8 @@ def test_analyze(tol=0.01):
 
 	assert np.mean(r) == cluster.rmean
 	assert np.amax(r) == cluster.rmax
-	assert np.mean(rpro) == cluster.rpromean
-	assert np.amax(rpro) == cluster.rpromax
+	assert np.mean(rpro) == cluster.rmeanpro
+	assert np.amax(rpro) == cluster.rmaxpro
 	np.testing.assert_array_equal(np.argsort(r),cluster.rorder)
 	np.testing.assert_array_equal(np.argsort(rpro),cluster.rproorder)
 

@@ -1,6 +1,7 @@
 import clustertools as ctools
 from clustertools.analysis.functions import tpl_func
 from scipy.optimize import curve_fit
+from ..util.constants import *
 
 import numpy as np
 from galpy.orbit import Orbit
@@ -8,11 +9,15 @@ from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 from galpy.util import bovy_conversion
 
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
+
 def test_find_centre_of_density(tol=0.01):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	xc, yc, zc, vxc, vyc, vzc=ctools.find_centre_of_density(cluster)
 
@@ -29,7 +34,7 @@ def test_find_centre_of_mass(tol=0.01):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	xc, yc, zc, vxc, vyc, vzc=ctools.find_centre_of_mass(cluster)
 
@@ -46,7 +51,7 @@ def test_find_centre(tol=0.01):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster.find_centre()
 
@@ -274,11 +279,11 @@ def test_virial_radius(tol=0.01):
 	#Generate GALPY NFW Halo and calculate virial radius via critical density method
 	mhalo=2562109.8143978487
 	chalo=24.31377803
-	mo=bovy_conversion.mass_in_msol(ro=8.,vo=220.)
+	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
-	nfw=NFWPotential(mvir=mhalo/1e12,conc=chalo,wrtcrit=True,ro=8.,vo=220.)
-	rvnfw=nfw.rvir(wrtcrit=True,ro=8.,vo=220.)
-	ndf= isotropicNFWdf(pot=nfw,rmax=rvnfw/8.,ro=8.,vo=220.) 
+	nfw=NFWPotential(mvir=mhalo/1e12,conc=chalo,wrtcrit=True,ro=solar_ro,vo=solar_vo)
+	rvnfw=nfw.rvir(wrtcrit=True,ro=solar_ro,vo=solar_vo)
+	ndf= isotropicNFWdf(pot=nfw,rmax=rvnfw/8.,ro=solar_ro,vo=solar_vo) 
 	os= ndf.sample(n=100000)
 	msub=nfw.mass(rvnfw/8.)/100000
 	cluster=ctools.StarCluster(units='kpckms',origin='cluster')

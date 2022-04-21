@@ -16,7 +16,7 @@ Submodules
    clustertools.io.astropy_table
    clustertools.io.galpydf
    clustertools.io.gyrfalcon
-   clustertools.io.initialize
+   clustertools.io.limepydf
    clustertools.io.load
    clustertools.io.nbody6
    clustertools.io.nbody6pp

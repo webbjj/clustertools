@@ -17,6 +17,7 @@ except:
     import galpy.util.bovy_conversion as conversion
 
 from .coordinates import sky_coords
+from .constants import *
 
 def snapout(cluster, filename, energies=False, radec=False):
     """Output a snapshot in clustertools format
@@ -284,7 +285,7 @@ def fortout(
     return 0
 
 
-def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=8.):
+def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=solar_ro):
     """Output a snapshot in gyrfalcon/NEMO format
 
     - Note that units are converted to Walter Dehnen units (WDunits in GYRFALCON)

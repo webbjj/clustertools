@@ -26,7 +26,7 @@ It is of course possible to include custom output functions, which for simplicit
 Coordinates
 -----------
 
-While coordinate transformations to a ``StarCluster``  are handled via :ref:`Operations <operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions are wrappers around ``galpy`` coordinate transformations.
+While coordinate transformations to a ``StarCluster``  are handled via :ref:`Operations <operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions (``cart_to_cyl``,``sky_coords``,``cart_to_sky``) are wrappers around ``galpy`` coordinate transformations.
 
 .. automodapi:: clustertools.util.coordinates
         :no-inheritance-diagram:

@@ -1,5 +1,5 @@
 .. _cluster:
-Introduction
+Initialization
 ============
 
 The StarCluster Class
@@ -13,7 +13,7 @@ To initialize a ``StarCluster``, one can simply start with:
 
 >>> cluster=StarCluster()
 
-``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``,``'galpy'``,``'gyrfalcon'``,``'limepy'``, ``'nbody6'``,``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Load or Setup <load_or_setup>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
+``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``,``'galpy'``,``'gyrfalcon'``,``'limepy'``, ``'nbody6'``,``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Loading and Advancing <_load_and_advance>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
 
 Once a ``StarCluster`` is initialized, there are a large number of arrays and variables that correspond to individual stars, global properties of the cluster, and information related to the software used to generate the data. However, several functions have then been written to more easily populate ``StarCluster`` with information and carry out helpful calculations. They are:
 
@@ -33,7 +33,7 @@ Once a ``StarCluster`` is initialized, there are a large number of arrays and va
         :no-inheritance-diagram:
         :no-main-docstr:
         :no-heading:
-        :skip: sub_cluster
+        :skip: sub_cluster, overlap_cluster
         :noindex:
 
 The ``add_stars`` function is the intended way to actually add stars to ``cluster``. Assuming stellar positions (x,y,z) and velocities (vx,vy,vz) have already been read in via a snapshot, one can call:
@@ -60,7 +60,7 @@ If the cluster's galactocentric positiion (xgc,ygc,zgc) and velocity (vxgc,vygc,
 
 >>> cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
-It is beneficial to use ``add_orbit`` as opposed to setting variables like ``cluster.xgc`` manually because additional arguments that can be passed. These arguments, and their default values, include ``ounits=None``, ``initialize=False``, ``ro=8.``, and ``vo=220.``. ``ounits`` informs ``StarCluster`` of the units of the galactocentric coordinates that are being provided. If they differ from ``cluster.units``, the unit conversion will be handled internally. ``intialize`` is an example of how strongly ``clustertools`` relies on ``galpy``, for if ``intialize=True`` a ``galpy`` orbit is initialized using the galactocentric coordinates provided, ro (distance from vantage point to the cluster (kpc)), vo (the circular velocity at ro (km/s)) and the Sun's motion (``solarmotion``). The ``galpy`` orbit can be accessed via ``cluster.orbit``.
+It is beneficial to use ``add_orbit`` as opposed to setting variables like ``cluster.xgc`` manually because additional arguments that can be passed. These arguments, and their default values, include ``ounits=None``, ``initialize=False``, ``ro=solar_ro``, and ``vo=solar_vo``. ``ounits`` informs ``StarCluster`` of the units of the galactocentric coordinates that are being provided. If they differ from ``cluster.units``, the unit conversion will be handled internally. ``intialize`` is an example of how strongly ``clustertools`` relies on ``galpy``, for if ``intialize=True`` a ``galpy`` orbit is initialized using the galactocentric coordinates provided, ro (distance from vantage point to the cluster (kpc)), vo (the circular velocity at ro (km/s)) and the Sun's motion (``solarmotion``). The ``galpy`` orbit can be accessed via ``cluster.orbit``.
 
 ``add_nbody6``, ``add_sse``, and ``add_bse`` are tailored to the standard output from ``NBODY6``. They are simple functions of convenience for adding information that ``NBODY6`` provides regarding the simulations itself, single star evolution, and binary star evolution. They would be called via:
 
@@ -135,15 +135,17 @@ Finally, it is also possible within ``clustertools`` to define a subset of stars
 
 where ``projected=True`` would use the projected radii and velocities to define the subset. Once called, ``cluster.indx`` will be a boolean array that is true only for stars that meet the criteria. Other parameters that can be passed to ``subset`` include npop (population number being studied) and indx (a custom boolean array).
 
-
-
-
-
- extract a subset of stars from a ``StarCluster`` to form a new ``StarCluster`` using the ``sub_cluster`` function. For example, to extrct only stars within the cluster's half-mass radius one can call:
+Instead of using ``subset``, its also possible to extract a subset of stars from a ``StarCluster`` to form a new ``StarCluster`` using the ``sub_cluster`` function. For example, to extrct only stars within the cluster's half-mass radius one can call:
 
 >>> new_cluster=ctools.sub_cluster(cluster,rmin=0,rmax=cluster.rm)
 
 In this example, ``new_cluster`` will contain all the same information as ``cluster`` but only for stars within ``cluster.rm``. Please consult the ``sub_cluster`` documentation for the complete list of criteria that can be given to ``sub_cluster``.
+
+Finally, it is also possible to determine where two different ``StarCluster``s overlap. This function is usefull when trying to compare two different systems. The comparison can be done via:
+
+>>> overlap_cluster(cluster1,cluster2,tol=0.1,projected=False,return_cluster=True)
+
+Here, ``tol`` represents the distance tolerance. If a star in ``cluster1`` is within ``tol`` of a star in ``cluster2`` then these regions of the cluster are deemed to overlap. If ``return_cluster=True`` then a ``sub_cluster`` of ``cluster1`` that overlaps with ``cluster2`` is returned. Otherwise a boolean array that is ``True`` for overlapping stars is returned.
 
 .. automodapi:: clustertools.cluster.cluster
         :no-inheritance-diagram:
@@ -155,7 +157,7 @@ In this example, ``new_cluster`` will contain all the same information as ``clus
 Units
 -----
 
-When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. At present, ``clustertools`` supports 5 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
+When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. For most functions, it is necessary to set units in order for calculations to be carried out. At present, ``clustertools`` supports 6 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
 
 .. list-table:: Table 1 - Units available in ``clustertools``
    :widths: 25 25 25 25 25
@@ -191,6 +193,11 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - kpc/ro
      - kms/vo
      - Msun/90027307126.905106
+   * - WDunits
+     - Walter Dehnen units used by NEMO
+     - kpc
+     - pc/Myr
+     - Msun/222288.4543021174
 
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one set of units to another.
 
@@ -214,7 +221,7 @@ Similar to ``StarCluster.units``, when a ``StarCluster`` is initialized the defa
    * - sky
      - sky coordinate system, used when units are set to degrees
 
-For clarity, it is worth expanding on the difference between ``StarCluster.origin='cluster'`` and ``StarCluster.origin='centre'``. The motivation for the two separate reference frames stems from codes like NBODY6 where the orbital evolution of the cluster in the external tidal field is handled separately from the internal cluster evolution. Hence the cluster's orbital position is integrated forwards in time from its initial conditions while the cluster's centre of density (or mass) will wander slightly due to internal cluster evolution. The true centre may in fact wander a lot of tidal tail stars are kept in the simulation or the cluster reaches dissolution. Codes like NBODY6 provide snapshots where the origin is at the cluster's orbital position (``StarCluster.origin='cluster'``) and then provide the location of the cluster's true centre separately to change to ``StarCluster.origin='centre'``.
+For clarity, it is worth expanding on the difference between ``StarCluster.origin='cluster'`` and ``StarCluster.origin='centre'``. The motivation for the two separate reference frames stems from codes like NBODY6 where the orbital evolution of the cluster in the external tidal field is handled separately from the internal cluster evolution. Hence the cluster's orbital position is integrated forwards in time from its initial conditions while the cluster's centre of density (or mass) will wander slightly due to internal cluster evolution. The true centre may in fact wander a lot if tidal tail stars are kept in the simulation or the cluster reaches dissolution. Codes like NBODY6 provide snapshots where the origin is at the cluster's orbital position (``StarCluster.origin='cluster'``) and then provide the location of the cluster's true centre separately to change to ``StarCluster.origin='centre'``.
 
 
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one coordinate system to another.

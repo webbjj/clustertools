@@ -42,6 +42,7 @@ from scipy.optimize import curve_fit
 
 from ..util.recipes import *
 from ..util.constants import _get_grav
+from ..util.constants import *
 from ..util.plots import _plot,_lplot,_scatter
 
 import matplotlib.pyplot as plt
@@ -61,8 +62,8 @@ def find_centre(
     rmin=0.1,
     rmax=None,
     nmax=100,
-    ro=8.0,
-    vo=220.0,
+    ro=solar_ro,
+    vo=solar_vo,
 ):
     """Find the cluster's centre
 
@@ -899,8 +900,8 @@ def virial_radius_critical_density(
     overdens=200.0,
     projected=False,
     plot=False,
-    ro=8.,
-    vo=220.,
+    ro=solar_ro,
+    vo=solar_vo,
     **kwargs
 ):
     """Calculate virial radius of the cluster
@@ -953,7 +954,7 @@ def virial_radius_critical_density(
 
     cluster.to_pckms()
 
-    rhocrit=conversion.dens_in_msolpc3(vo=220.,ro=8.)/conversion.dens_in_criticaldens(vo=220.,ro=8.,H=H)
+    rhocrit=conversion.dens_in_msolpc3(vo=solar_vo,ro=solar_ro)/conversion.dens_in_criticaldens(vo=solar_vo,ro=solar_ro,H=H)
 
     if projected:
         if not cluster.projected: cluster.analyze(sortstars=True,projected=True)
@@ -1825,8 +1826,8 @@ def rcore(
     mfrac=0.1,
     projected=False,
     plot=False,
-    ro=8.,
-    vo=220.,
+    ro=solar_ro,
+    vo=solar_vo,
     **kwargs
 ):
     """Calculate core radius of the cluster
@@ -2033,8 +2034,8 @@ def rtidal(
     rtconverge=0.9,
     rgc=None,
     zgc=None,
-    ro=8.0,
-    vo=220.0,
+    ro=solar_ro,
+    vo=solar_vo,
     from_centre=False,
     plot=False,
     verbose=False,
@@ -2216,8 +2217,8 @@ def rlimiting(
     pot=MWPotential2014,
     rgc=None,
     zgc=None,
-    ro=8.0,
-    vo=220.0,
+    ro=solar_ro,
+    vo=solar_vo,
     nrad=20,
     projected=False,
     plot=False,

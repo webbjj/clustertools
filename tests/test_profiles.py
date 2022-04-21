@@ -8,6 +8,10 @@ from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 from galpy.util import bovy_conversion
 
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
+
 def test_rho_prof(tol=0.1):
 	#Create a homogenous cluster so rho should be the same everywhere
 	rho0=1.0

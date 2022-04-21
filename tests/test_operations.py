@@ -10,6 +10,9 @@ except:
 
 from copy import copy
 
+solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
+solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
+solar_vo=solar_ro*30.39-solar_motion[1]
 
 def scale_test(init,final,tscale,mscale,xscale,vscale):
 	#assume arrays are t,mass,x,y,z,vx,vy,vz,xc,yc,zc,vxc,vyc,vzc,xgc,ygc,zgc,vxgc,vygc,vzgc
@@ -24,7 +27,7 @@ def scale_test(init,final,tscale,mscale,xscale,vscale):
 		elif (i>=5 and i<=7) or (i>=11 and i<=13) or (i>=17 and i<=19):
 			assert np.all(np.fabs(final[i]/init[i]-vscale) < 1e-10)
 
-def test_to_pckms(tol=0.0001,ro=8.,vo=220.):
+def test_to_pckms(tol=0.0001,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
@@ -57,7 +60,7 @@ def test_to_pckms(tol=0.0001,ro=8.,vo=220.):
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
 
 
-def test_to_kpckms(tol=0.0001,ro=8.,vo=220.):
+def test_to_kpckms(tol=0.0001,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
@@ -89,7 +92,7 @@ def test_to_kpckms(tol=0.0001,ro=8.,vo=220.):
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
 
-def test_to_galpy(tol=0.0001,ro=8.,vo=220.):
+def test_to_galpy(tol=0.0001,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
@@ -121,7 +124,7 @@ def test_to_galpy(tol=0.0001,ro=8.,vo=220.):
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
 
-def test_to_nbody(tol=0.0001,ro=8.,vo=220.):
+def test_to_nbody(tol=0.0001,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
@@ -153,7 +156,7 @@ def test_to_nbody(tol=0.0001,ro=8.,vo=220.):
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
 
-def test_to_wdunits(tol=0.01,ro=8,vo=220.):
+def test_to_wdunits(tol=0.01,ro=solar_ro,vo=solar_vo):
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
 	vcon=220./conversion.velocity_in_kpcGyr(220.0, 8.0)
@@ -185,7 +188,7 @@ def test_to_wdunits(tol=0.01,ro=8,vo=220.):
 
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
-def test_to_radec(tol=0.0001,ro=8.,vo=220.):
+def test_to_radec(tol=0.0001,ro=solar_ro,vo=solar_vo):
 	t=1.
 	m=np.random.rand(100)
 	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
@@ -196,15 +199,15 @@ def test_to_radec(tol=0.0001,ro=8.,vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -264,15 +267,15 @@ def test_to_radec(tol=0.0001,ro=8.,vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x+xgc,y+ygc,z+zgc,vx+vxgc,vy+vygc,vz+vzgc)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='cluster')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -306,15 +309,15 @@ def test_to_radec(tol=0.0001,ro=8.,vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x+xgc+xc,y+ygc+yc,z+zgc+zc,vx+vxgc+vxc,vy+vygc+vyc,vz+vzgc+vzc)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -338,7 +341,7 @@ def test_to_radec(tol=0.0001,ro=8.,vo=220.):
 	assert np.all(np.fabs(newpmdec/cluster.vy-1) < 1e-10)
 	assert np.all(np.fabs(newvlos/cluster.vz-1) < 1e-10)
 
-def test_to_units(tol=0.01,ro=8.,vo=220.):
+def test_to_units(tol=0.01,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
@@ -470,15 +473,15 @@ def test_to_units(tol=0.01,ro=8.,vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -1029,7 +1032,7 @@ def test_to_center(tol=0.01):
 	assert np.all(np.fabs(vy-cluster.vy) < tol)
 	assert np.all(np.fabs(vz-cluster.vz) < tol)
 
-def test_to_galaxy(tol=0.01, ro=8., vo=220.):
+def test_to_galaxy(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 	t=1.
 	m=np.random.rand(100)
@@ -1091,15 +1094,15 @@ def test_to_galaxy(tol=0.01, ro=8., vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -1117,7 +1120,7 @@ def test_to_galaxy(tol=0.01, ro=8., vo=220.):
 	assert np.all(np.fabs(vy-cluster.vy) < tol)
 	assert np.all(np.fabs(vz-cluster.vz) < tol)
 
-def test_to_sky(tol=0.01, ro=8., vo=220.):
+def test_to_sky(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 	t=1.
 	m=np.random.rand(100)
@@ -1129,15 +1132,15 @@ def test_to_sky(tol=0.01, ro=8., vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -1160,7 +1163,7 @@ def test_to_sky(tol=0.01, ro=8., vo=220.):
 	assert np.all(np.fabs(cluster2.vy-cluster.vy) < tol)
 	assert np.all(np.fabs(cluster2.vz-cluster.vz) < tol)
 
-def test_to_origin(tol=0.01, ro=8., vo=220.):
+def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 	t=1.
 	m=np.random.rand(100)
 	xc,yc,zc,vxc,vyc,vzc=0.01*np.random.rand(6)
@@ -1606,15 +1609,15 @@ def test_to_origin(tol=0.01, ro=8., vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
@@ -1642,15 +1645,15 @@ def test_to_origin(tol=0.01, ro=8., vo=220.):
 
 	rads,phis,zeds,vrads,vphis,vzeds=ctools.cart_to_cyl(x,y,z,vx,vy,vz)
 	vxvvs=np.column_stack([rads/ro,vrads/vo,vphis/vo,zeds/ro,vzeds/vo,phis])
-	os=Orbit(vxvvs,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	os=Orbit(vxvvs,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radgc,phigc,zedgc,vradgc,vphigc,vzedgc=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
 	vxvv=[radgc/ro,vradgc/vo,vphigc/vo,zedgc/ro,vzedgc/vo,phigc]
-	ogc=Orbit(vxvv,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	ogc=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	radc,phic,zedc,vradc,vphic,vzedc=ctools.cart_to_cyl(xgc+xc,ygc+yc,zgc+zc,vxgc+vxc,vygc+vyc,vzgc+vzc)
 	vxvvc=[radc/ro,vradc/vo,vphic/vo,zedc/ro,vzedc/vo,phic]
-	oc=Orbit(vxvvc,ro=8.,vo=220.,solarmotion=[-11.1, 24.0, 7.25])
+	oc=Orbit(vxvvc,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster=ctools.StarCluster(tphys=t,units='kpckms',origin='galaxy')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)

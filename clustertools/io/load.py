@@ -17,6 +17,7 @@ except:
 import os, struct
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
+from ..util.constants import *
 
 #Import loaders for different code
 from .gyrfalcon import _get_gyrfalcon
@@ -26,6 +27,7 @@ from .snapshot import _get_snapshot
 from .amuse import _get_amuse_particles
 from .astropy_table import _get_astropy_table
 from .galpydf import _get_galpy_orbits
+from .limepydf import _get_limepy
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
@@ -59,15 +61,14 @@ def load_cluster(
         Type of file being loaded
         Currently supports:
 
+            - amuse
+            - astropy_table
+            - limepy
             - nbody6
             - nbody6se
             - nbody6pp or nbody6++
             - nemo or gyrfalcon
-            - snaptrim
-            - snapauto
-            - clustertools
             - snapshot
-            - astropy_table
 
     units : str
         units of input data (default: None)
@@ -262,6 +263,9 @@ def load_cluster(
 
         cluster = _get_galpy_orbits(particles, units=units, origin=origin, ofile=ofile, **kwargs)
 
+    elif ctype == 'limepy':
+        cluster = _get_limepy(units=units, origin=origin, orbit=orbit, ofile=ofile, **kwargs)
+
     else:
         print("NO CTYPE GIVEN")
         return 0
@@ -274,7 +278,7 @@ def load_cluster(
     if orbit is not None:
         cluster.orbit = orbit
         if cluster.units == "pckms":
-            t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=8.0, vo=220.0)
+            t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=solar_ro, vo=solar_vo)
             cluster.add_orbit(
                 orbit.x(t) * 1000.0,
                 orbit.y(t) * 1000.0,
@@ -294,7 +298,7 @@ def load_cluster(
             )
         elif cluster.units == "nbody":
             t = (cluster.tphys * cluster.tbar / 1000.0) / conversion.time_in_Gyr(
-                ro=8.0, vo=220.0
+                ro=solar_ro, vo=solar_vo
             )
             cluster.add_orbit(
                 orbit.x(t) * 1000.0 / cluster.rbar,
@@ -576,12 +580,12 @@ def advance_cluster(
             cluster.orbit = orbit
             if cluster.units == "pckms" or cluster.units == "kpckms":
                 t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(
-                    ro=8.0, vo=220.0
+                    ro=solar_ro, vo=solar_vo
                 )
             elif cluster.units == "nbody":
                 t = (
                     cluster.tphys * cluster.tbar / 1000.0
-                ) / conversion.time_in_Gyr(ro=8.0, vo=220.0)
+                ) / conversion.time_in_Gyr(ro=solar_ro, vo=solar_vo)
             elif cluster.units == "galpy":
                 t = cluster.tphys
 

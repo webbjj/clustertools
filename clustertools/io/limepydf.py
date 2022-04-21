@@ -193,6 +193,7 @@ def _sample_limepy(g=1,model=None,**kwargs):
 
     if model is not None:
         lmodel=model
+        M=lmodel._MS
     else:
         phi0=kwargs.get("W0",None)
         if phi0 is None:

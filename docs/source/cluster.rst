@@ -56,29 +56,29 @@ One other features in ``add_stars`` that is by default set to ``True`` is ``sort
 
 at a later point in time if the cluster was populated manually. For computational efficiency, ``sortstars`` can be set to ``False`` when sorting is not required. The full list of parameters calculated by ``analyze`` is:
 
-* r - clustercentric or galactocentric radius
-* rpro - projeced clustercentric or galactocentric radius
-* v - total velocity
-* vpro - projected total velocity
-* mtot - total mass
-* mmean - mean mass
-* rmean - mean radius
-* rmeanpro - mean projected radius
-* rmax - maximum radius
-* rmaxpro - maximum projected radius
-* rorder - indices of stars sorted by radius
-* rproorder - indices of stars sorted by projected radius
-* rm - half-mass radius
-* rmpro - projected half-mass radius
-* r10 - 10% lagrange radius
-* r10pro - projected 10% lagrange radius
+* ``r`` - clustercentric or galactocentric radius
+* ``rpro`` - projeced clustercentric or galactocentric radius
+* ``v`` - total velocity
+* ``vpro`` - projected total velocity
+* ``mtot`` - total mass
+* ``mmean`` - mean mass
+* ``rmean`` - mean radius
+* ``rmeanpro`` - mean projected radius
+* ``rmax`` - maximum radius
+* ``rmaxpro`` - maximum projected radius
+* ``rorder`` - indices of stars sorted by radius
+* ``rproorder`` - indices of stars sorted by projected radius
+* ``rm`` - half-mass radius
+* ``rmpro`` - projected half-mass radius
+* ``r10`` - 10% lagrange radius
+* ``r10pro`` - projected 10% lagrange radius
 
 If luminosities have been provided:
 
-* rh - half-light radius
-* rhpro - projected half-light radius
-* rh10 - radius containing inner 10% of the cluster's light
-* rh10pro - projected radius containing inner 10% of the cluster's light
+* ``rh`` - half-light radius
+* ``rhpro`` - projected half-light radius
+* ``rh10`` - radius containing inner 10% of the cluster's light
+* ``rh10pro`` - projected radius containing inner 10% of the cluster's light
 
 
 If the cluster's galactocentric positiion (xgc,ygc,zgc) and velocity (vxgc,vygc,vzgc) are known, then orbital information can be added via:

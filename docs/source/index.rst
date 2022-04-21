@@ -86,6 +86,8 @@ References
 
 ``ckin`` - Bianchini et al. 2018, MNRAS, 475, 96
 
+``cyl_coords`` ,``cart_to_cy``,``cyl_to_cart`` - Bovy J., 2015, ApJS, 216, 29
+
 ``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357
 
 ``half_mass_relaxation_time`` - Spitzer, L. 1987, Dynamical evolution of globular clusters
@@ -110,7 +112,7 @@ References
 
 ``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
 
-``tail_path``, ``tail_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
+``tail_path``, ``tail_path_match`` - Bovy J., 2015, ApJS, 216, 29
 
 ``to_centre(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 
 
@@ -119,6 +121,8 @@ References
 ``to_cluster(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 
 
 ``to_cluster(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University
+
+``to_sky``,``sky_coords``,``cart_to_sky`` - Bovy J., 2015, ApJS, 216, 29 
 
 ``ttensor`` - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
 

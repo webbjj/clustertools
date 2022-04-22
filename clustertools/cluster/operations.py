@@ -212,7 +212,7 @@ def to_kpckms(cluster, ro=solar_ro, vo=solar_vo):
             cluster.units = "kpckms"
 
         elif cluster.units == 'WDunits':
-            vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
+            vcon = vo / conversion.velocity_in_kpcGyr(vo, ro)
             mcon = 222288.4543021174
 
             cluster.m*=mcon
@@ -552,7 +552,7 @@ def to_WDunits(cluster,ro=solar_ro,vo=solar_vo):
     if cluster.units is None:
         print('NO UNITS SPECIFIED')
     else:
-        vcon = 220.0 / conversion.velocity_in_kpcGyr(vo=vo,ro=ro)
+        vcon = vo / conversion.velocity_in_kpcGyr(vo=vo,ro=ro)
         mcon = 222288.4543021174
 
         if cluster.units!='kpckms' and cluster.units!="WDunits":

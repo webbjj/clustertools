@@ -106,7 +106,7 @@ def test_add_orbit():
 	assert cluster.vzgc == 0.
 	assert cluster.orbit.r() == cluster.rgc
 
-def test_add_orbit_from_centre():
+def test_add_orbit_from_centre(tol=0.01):
 	nstar=100
 	cluster=ctools.StarCluster(units='kpckms',origin='cluster')
 	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
@@ -115,10 +115,10 @@ def test_add_orbit_from_centre():
 	cluster.xc,cluster.yc,cluster.zc=1.,0.0,0.
 	cluster.vxc,cluster.vyc,cluster.vzc=10.,0.0,0.
 
-	cluster.add_orbit(8.,0.,0.,220.,0.,0.,initialize=True,from_centre=True)
+	cluster.add_orbit(solar_ro,0.,0.,solar_vo,0.,0.,initialize=True,from_centre=True)
 
-	assert cluster.orbit.x() == 9.
-	assert cluster.orbit.vx() == 230.
+	assert np.fabs(cluster.orbit.x() / (solar_ro+1)) - 1. <=tol
+	assert cluster.orbit.vx() == solar_vo+10
 
 def test_add_orbit_units():
 	for u in units:
@@ -129,22 +129,22 @@ def test_add_orbit_units():
 		cluster.add_stars(x,y,z,vx,vy,vz)
 
 		if u == 'pckms':
-			cluster.add_orbit(8.,0.,0.,220.,0.,0.,ounits=u)
-			assert cluster.xgc == 8.
-			assert cluster.vxgc == 220.
+			cluster.add_orbit(solar_ro,0.,0.,solar_vo,0.,0.,ounits=u)
+			assert cluster.xgc == solar_ro
+			assert cluster.vxgc == solar_vo
 		elif u=='kpckms':
-			cluster.add_orbit(8.,0.,0.,220.,0.,0.,ounits=u)
-			assert cluster.xgc == 8000.
-			assert cluster.vxgc == 220.
+			cluster.add_orbit(solar_ro,0.,0.,solar_vo,0.,0.,ounits=u)
+			assert cluster.xgc == solar_ro*1000.0
+			assert cluster.vxgc == solar_vo
 		elif u=='nbody':
-			cluster.add_orbit(8.,0.,0.,220.,0.,0.,ounits=u)
-			assert cluster.xgc == 8.
-			assert cluster.vxgc == 220.
+			cluster.add_orbit(solar_ro,0.,0.,solar_vo,0.,0.,ounits=u)
+			assert cluster.xgc == solar_ro
+			assert cluster.vxgc == solar_vo
 		elif u=='galpy':
 			cluster.add_orbit(1.,0.,0.,1.,0.,0.,ounits=u)
 
-			assert cluster.xgc == 8000.
-			assert cluster.vxgc == 220.
+			assert cluster.xgc == solar_ro*1000.0
+			assert cluster.vxgc == solar_vo
 
 def test_add_orbit_radec():
 	nstar=100
@@ -152,12 +152,12 @@ def test_add_orbit_radec():
 	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
 	vx,vy,vz=np.ones(nstar),np.ones(nstar),np.ones(nstar)
 	cluster.add_stars(x,y,z,vx,vy,vz)
-	cluster.add_orbit(8.,0.,0.,220.,0.,0.,initialize=True)
+	cluster.add_orbit(solar_ro,0.,0.,solar_vo,0.,0.,initialize=True)
 
-	assert cluster.ra_gc == 8.
+	assert cluster.ra_gc == solar_ro
 	assert cluster.dec_gc == 0.
 	assert cluster.dist_gc == 0.
-	assert cluster.pmra_gc == 220.
+	assert cluster.pmra_gc == solar_vo
 	assert cluster.pmdec_gc == 0.
 	assert cluster.vlos_gc == 0.
 

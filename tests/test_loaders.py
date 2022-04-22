@@ -455,8 +455,8 @@ def test_galpy(tol=0.01):
 	gcluster=ctools.load_cluster('galpy',particles=sam,units='galpy',origin='cluster',ro=1.,vo=1.,)
 	assert check_params(gcluster,'galpy','galpy','cluster',False)
 
-	assert np.all(np.fabs(cluster.r/gcluster.r-8.) < tol)
-	assert np.all(np.fabs(cluster.v/gcluster.v-220.) < tol)
+	assert np.all(np.fabs(cluster.r/gcluster.r-solar_ro) < tol)
+	assert np.all(np.fabs(cluster.v/gcluster.v-solar_vo) < tol)
 
 def test_astropy_table():
 	wdir='../docs/source/notebooks/'

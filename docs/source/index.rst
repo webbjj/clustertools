@@ -104,8 +104,6 @@ References
 
 ``orbit_interpolation``, ``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
 
-``rcore`` - Heggie, D. & Hut, P. Cambridge University Press, 2003
-
 ``relaxation_time`` - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
 
 ``rlimiting`` - Bovy J., 2015, ApJS, 216, 29 

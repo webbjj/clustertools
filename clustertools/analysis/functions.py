@@ -1835,9 +1835,6 @@ def rcore(
     -- Isothermal (method=='isothermal') - if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
     --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
     --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
-    -- Heggie and Hut 2003 (method=='heggie2003') - where 4 pi G/3 rho_c r_c^2 = v_c^2 and v_c^2 = 3 sigma_c^2
-    ---Note that the inner mass fraction of stars used to calculate v_c an rho_c is set by mfrac (default 0.1 = 10%)
-
 
     Parameters
     ----------
@@ -1883,26 +1880,7 @@ def rcore(
 
     rcentral=rlagrange(cluster,mfrac=mfrac,projected=projected)
 
-    if method=='heggie2003':
-
-        rindx=(r<rcentral)
-
-        if projected:
-            rho_c=np.sum(cluster.m[rindx])/(np.pi*(rcentral**2.))
-        else:
-            rho_c=np.sum(cluster.m[rindx])/(4.*np.pi*(rcentral**3.)/3.)
-
-        v_c2=np.mean(v[rindx]**2.)
-
-        grav=_get_grav(cluster)
-
-        rc=np.sqrt((3.*v_c2)/(4.*np.pi*grav*rho_c))
-
-        if plot:
-            nrad=int(np.ceil(1./mfrac))
-            rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
-
-    elif method=='isothermal':
+    if method=='isothermal':
         nrad=int(np.ceil(1./mfrac))
 
         rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)

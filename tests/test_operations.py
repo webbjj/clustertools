@@ -25,6 +25,7 @@ def scale_test(init,final,tscale,mscale,xscale,vscale):
 		elif (i>=2 and i<=4) or (i>=8 and i<=10) or (i>=14 and i<=16):
 			assert np.all(np.fabs(final[i]/init[i]-xscale) < 1e-10)
 		elif (i>=5 and i<=7) or (i>=11 and i<=13) or (i>=17 and i<=19):
+			print(i,final[i],init[i],vscale)
 			assert np.all(np.fabs(final[i]/init[i]-vscale) < 1e-10)
 
 def test_to_pckms(tol=0.0001,ro=solar_ro,vo=solar_vo):
@@ -159,7 +160,7 @@ def test_to_nbody(tol=0.0001,ro=solar_ro,vo=solar_vo):
 def test_to_wdunits(tol=0.01,ro=solar_ro,vo=solar_vo):
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
-	vcon=220./conversion.velocity_in_kpcGyr(220.0, 8.0)
+	vcon=vo/conversion.velocity_in_kpcGyr(vo, ro)
 
 	init_units=['pckms','galpy','nbody','kpckms']
 	tscales=[1./1000,conversion.time_in_Gyr(ro=ro,vo=vo),tbar/1000,1.]
@@ -188,6 +189,7 @@ def test_to_wdunits(tol=0.01,ro=solar_ro,vo=solar_vo):
 
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
+
 def test_to_radec(tol=0.0001,ro=solar_ro,vo=solar_vo):
 	t=1.
 	m=np.random.rand(100)

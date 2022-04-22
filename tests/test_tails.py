@@ -143,6 +143,14 @@ def test_tail_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	    plot=False,
 	)
 
+	print(x[-5:],o.ra(ts)[-5:])
+	print(y[-5:],o.dec(ts)[-5:])
+	print(z[-5:],o.dist(ts)[-5:])
+	print(vx[-5:],o.pmra(ts)[-5:])
+	print(vy[-5:],o.pmdec(ts)[-5:])
+	print(vz[-5:],o.vlos(ts)[-5:])
+
+
 	assert np.fabs(x[-1]-o.ra(ts[-1])) <= tol
 	assert np.fabs(y[-1]-o.dec(ts[-1])) <= tol
 	assert np.fabs(z[-1]-o.dist(ts[-1])) <= tol

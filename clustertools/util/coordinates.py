@@ -23,7 +23,11 @@ try:
     from galpy.util import coords
 except:
     import galpy.util.bovy_coords as coords
+from galpy.orbit import Orbit
+
 import copy
+
+from ..util.constants import *
 
 def sphere_coords(cluster):
     """Get the spherical coordinates of every star in the cluster
@@ -42,7 +46,19 @@ def sphere_coords(cluster):
     -------
     2018 - Written - Webb (UofT)
     """
-    return cart_to_sphere(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if origin0=='sky':
+        cluster.to_galaxy(ro=ro,vo=vo,solarmotion=solar_motion)
+
+    x,y,z,vx,vy,vz=cart_to_sphere(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+
+    return x,y,z,vx,vy,vz
 
 
 def cart_to_sphere(x,y,z,vx,vy,vz):
@@ -142,7 +158,18 @@ def cyl_coords(cluster):
     -------
     2018 - Written - Webb (UofT)
     """
-    return cart_to_cyl(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if origin0=='sky':
+        cluster.to_galaxy(ro=ro,vo=vo,solarmotion=solar_motion)
+
+    R,phi,z,vR,vT,vz=cart_to_cyl(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    return R,phi,z,vR,vT,vz
 
 def cart_to_cyl(x,y,z,vx,vy,vz):
     """Convert cartesian coordinates to cylindrical coordinates
@@ -191,7 +218,7 @@ def cyl_to_cart(r,theta,zed,vr,vtheta,vz):
 
     return x, y, copy.copy(z), vx, vy, copy.copy(vz)
 
-def sky_coords(cluster):
+def sky_coords(cluster,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion,zo=solar_zo):
     """Get the sky coordinates of every star in the cluster
 
     Parameters
@@ -211,34 +238,15 @@ def sky_coords(cluster):
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-    if origin0 != "galaxy":
-        cluster.to_galaxy(starsort=False)
+    cluster.to_radec(ro=ro,vo=vo,solarmotion=solar_motion)
 
-    x0, y0, z0 = coords.galcenrect_to_XYZ(
-        cluster.x, cluster.y, cluster.z, Xsun=8.0, Zsun=0.025
-    ).T
-    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
-        cluster.vx,
-        cluster.vy,
-        cluster.vz,
-        Xsun=8.0,
-        Zsun=0.025,
-        vsun=[-11.1, 244.0, 7.25],
-    ).T
-
-    l0, b0, d0 = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
-    ra, dec = coords.lb_to_radec(l0, b0, degree=True).T
-
-    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
-        vx0, vy0, vz0, l0, b0, d0, degree=True
-    ).T
-    pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
+    ra,dec,d0,pmra,pmdec,vr0=cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return ra, dec, d0, pmra, pmdec, vr0
 
-def cart_to_sky(x,y,z,vx,vy,vz):
+def cart_to_sky(x,y,z,vx,vy,vz,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion):
     """Convert cartesian coordinates to sky coordinates
 
     Parameters
@@ -256,24 +264,19 @@ def cart_to_sky(x,y,z,vx,vy,vz):
     2021 - Written - Webb (UofT)
     """
 
-    x0, y0, z0 = coords.galcenrect_to_XYZ(
-        x, y, z, Xsun=8.0, Zsun=0.025
-    ).T
-    vx0, vy0, vz0 = coords.galcenrect_to_vxvyvz(
-        vx,
-        vy,
-        vz,
-        Xsun=8.0,
-        Zsun=0.025,
-        vsun=[-11.1, 244.0, 7.25],
-    ).T
+    R, phi, z = coords.rect_to_cyl(x,y,z)
+    vR, vT, vz = coords.rect_to_cyl_vec(vx,vy,vz,x,y,z)
 
-    l0, b0, d0 = coords.XYZ_to_lbd(x0, y0, z0, degree=True).T
-    ra, dec = coords.lb_to_radec(l0, b0, degree=True).T
+    if isinstance(R,float):
+        o = Orbit(
+            [R/ro, vR/vo, vT/vo, z/ro, vz/vo, phi], ro=ro, vo=vo, solarmotion=solarmotion
+        )
+    else:
 
-    vr0, pmll0, pmbb0 = coords.vxvyvz_to_vrpmllpmbb(
-        vx0, vy0, vz0, l0, b0, d0, degree=True
-    ).T
-    pmra, pmdec = coords.pmllpmbb_to_pmrapmdec(pmll0, pmbb0, l0, b0, degree=True).T
+        vxvv=np.column_stack([R/ro, vR/vo, vT/vo, z/ro, vz/vo, phi])
 
-    return ra, dec, d0, pmra, pmdec, vr0
+        o = Orbit(
+            vxvv, ro=ro, vo=vo, solarmotion=solarmotion
+        )
+
+    return o.ra(),o.dec(),o.dist(),o.pmra(),o.pmdec(),o.vlos()

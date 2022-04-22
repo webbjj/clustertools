@@ -49,8 +49,4 @@ orbit_interpolate=orbits.orbit_interpolate
 orbits_interpolate=orbits.orbits_interpolate
 orbital_path=orbits.orbital_path
 orbital_path_match=orbits.orbital_path_match
-calc_actions=orbits.calc_action
-calc_actions=orbits.calc_actions
-ttensor=orbits.ttensor
-ttensors=orbits.ttensors
 

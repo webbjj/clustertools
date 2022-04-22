@@ -1,7 +1,6 @@
 import clustertools as ctools
 from clustertools.analysis.functions import tpl_func
 from scipy.optimize import curve_fit
-from ..util.constants import *
 
 import numpy as np
 from galpy.orbit import Orbit
@@ -12,6 +11,7 @@ from galpy.util import bovy_conversion
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]
+solar_zo=0.0208 #Bennett & Bovy 2019
 
 def test_find_centre_of_density(tol=0.01):
 	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
@@ -429,18 +429,12 @@ def test_ckin(tol=0.1):
 
 def test_rcore(tol=0.2):
 	cluster=ctools.setup_cluster('limepy',model='king',phi0=3.,r0=2.,M=1e4)
-	rc=ctools.rcore(cluster,method='isothermal')
-
-	assert np.fabs(rc-2.) <= tol
-
-	rc=ctools.rcore(cluster,method='heggie2003')
-
+	rc=ctools.rcore(cluster)
 	assert np.fabs(rc-2.) <= tol
 
 def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates
-	ro,vo=8.,220.
-	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
+	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
 	cluster=ctools.setup_cluster('limepy',gcname='NGC5466')
 	m=cluster.mtot
@@ -449,7 +443,7 @@ def test_rtide(tol=0.1):
 
 	pot=MWPotential2014
 
-	rtgalpy=rtide(pot,Rgc/ro,zgc/ro,M=m/mo,ro=ro,vo=vo)*1000.0
+	rtgalpy=rtide(pot,Rgc/solar_ro,zgc/solar_ro,M=m/mo,ro=solar_ro,vo=solar_vo)*1000.0
 	rtctools=ctools.rtidal(cluster)
 
 	assert np.fabs(rtgalpy-rtctools) < tol

@@ -80,8 +80,6 @@ References
 
 ``alpha_prof`` - Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383
 
-``calc_actions`` - Binney, J. 2012, MNRAS, 426, 1324 - Bovy, J. & Rix, H.W. 2013, ApJ, 779, 115 - Bovy J., 2015, ApJS, 216, 29
-
 ``core_relaxation_time`` - Stone, N.C. & Ostriker, J.P. 2015, ApJ, 806, 28
 
 ``ckin`` - Bianchini et al. 2018, MNRAS, 475, 96
@@ -92,7 +90,7 @@ References
 
 ``half_mass_relaxation_time`` - Spitzer, L. 1987, Dynamical evolution of globular clusters
 
-``initialize_orbit``, ``initialize_orbits``, ``integrate_orbit``, ``integrate_orbits`` - Bovy J., 2015, ApJS, 216, 29
+``initialize_orbit``, ``initialize_orbits``, ``interpolate_orbit``, ``interpolate_orbits`` - Bovy J., 2015, ApJS, 216, 29
 
 ``load_cluster(ctype='limepy')`` - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
 
@@ -102,7 +100,7 @@ References
 
 ``meq_function``, ``meq_prof`` - Bianchini, P. et al. 2016, MNRAS, 458, 3644 
 
-``orbit_interpolation``, ``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
+``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
 
 ``relaxation_time`` - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
 
@@ -121,8 +119,6 @@ References
 ``to_cluster(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University
 
 ``to_sky``,``sky_coords``,``cart_to_sky`` - Bovy J., 2015, ApJS, 216, 29 
-
-``ttensor`` - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
 
 ``virial_radius(method='critical_density')`` - Bovy J., 2015, ApJS, 216, 29 -
 

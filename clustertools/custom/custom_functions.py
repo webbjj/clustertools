@@ -22,6 +22,131 @@ from ..util.constants import *
 import astropy.coordinates as coord
 import astropy.units as u
 
+def integrate_orbit(
+    cluster, pot=MWPotential2014, tfinal=None, nt=1000, from_centre=False, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion, plot=False
+):
+    """Integrate a galpy orbit instance for the cluster
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    pot : class
+        Galpy potential that orbit is to be integrate in (default: MWPotential2014)
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    from_centre : bool
+        intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+    plot : float
+        show plot of cluster's orbit
+
+    Returns
+    -------
+    ts : float
+        timesteps
+    o : class
+        galpy orbit
+
+    History
+    -------
+       2018 - Written - Webb (UofT)
+    """
+    o = initialize_orbit(cluster,from_centre=from_centre,solarmotion=solarmotion)
+
+    if tfinal is None:
+        tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='pckms':
+        tfinal/=1000.
+    elif cluster.units=='kpckms':
+        tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='nbody':
+        tfinal*=(cluster.tbar/1000.)
+
+    ts = np.linspace(0, tfinal, nt)
+    o.integrate(ts, pot)
+
+    if plot:
+        o.plot()
+
+    return ts, o
+
+def integrate_orbits(
+    cluster, pot=None, tfinal=None, nt=1000, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion, plot=False
+):
+    """Integrate a galpy orbit instance for each star
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    pot : class
+        Galpy potential for host cluster that orbit is to be integrated in
+        if None, assume a Plumme Potential
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
+    nt : int
+        number of timesteps
+    ro :float 
+        galpy distance scale (Default: 8.)
+    vo : float
+        galpy velocity scale (Default: 220.)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+    plot : float
+        show plot of cluster's orbit
+
+    Returns
+    -------
+    ts : float
+        timesteps
+    o : class
+        galpy orbit
+
+    History
+    -------
+       2018 - Written - Webb (UofT)
+    """
+
+    if tfinal is None:
+        tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='pckms':
+        tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
+    elif cluster.units=='kpckms':
+        tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
+    elif cluster.units=='nbody':
+        tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
+
+    if pot is None:
+
+        if cluster.origin=='cluster' or cluster.origin=='centre':
+            cluster.save_cluster()
+            units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+            cluster.to_galpy()
+            pot=potential.PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=ro,vo=vo)
+            cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+        else:
+            pot=MWPotential2014
+
+    os = initialize_orbits(cluster, ro=ro,vo=vo, solarmotion=solarmotion)
+    ts = np.linspace(0, tfinal, nt)
+
+    #integrate orbits of stars in combined potential of GC and galaxy
+    os.integrate(ts, pot)
+
+    if plot:
+        os.plot()
+
+    return ts, os
+
 def calc_action(cluster, pot=None, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion,full=False, **kwargs):
     """Calculate action angle values for cluster
 

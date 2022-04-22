@@ -41,8 +41,6 @@ vcirc_prof=profiles.vcirc_prof
 
 initialize_orbit=orbits.initialize_orbit
 initialize_orbits=orbits.initialize_orbits
-integrate_orbit=orbits.integrate_orbit
-integrate_orbits=orbits.integrate_orbits
 interpolate_orbit=orbits.interpolate_orbit
 interpolate_orbits=orbits.interpolate_orbits
 orbit_interpolate=orbits.orbit_interpolate

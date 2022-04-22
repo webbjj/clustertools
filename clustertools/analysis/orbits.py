@@ -5,8 +5,6 @@ __author__ = "Jeremy J Webb"
 __all__ = [
     "initialize_orbit",
     "initialize_orbits",
-    "integrate_orbit",
-    "integrate_orbits",
     "interpolate_orbit",
     "interpolate_orbits",
     "orbit_interpolate",
@@ -175,7 +173,7 @@ def initialize_orbits(cluster, ro=solar_ro, vo=solar_vo, solarmotion=solar_motio
     return os
 
 
-def integrate_orbit(
+def _integrate_orbit(
     cluster, pot=MWPotential2014, tfinal=None, nt=1000, from_centre=False, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion, plot=False
 ):
     """Integrate a galpy orbit instance for the cluster
@@ -231,7 +229,7 @@ def integrate_orbit(
 
     return ts, o
 
-def integrate_orbits(
+def _integrate_orbits(
     cluster, pot=None, tfinal=None, nt=1000, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion, plot=False
 ):
     """Integrate a galpy orbit instance for each star
@@ -350,7 +348,7 @@ def interpolate_orbit(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-    ts,o=integrate_orbit(cluster, pot=pot, tfinal=tfinal, nt=nt, from_centre=from_centre, ro=ro, vo=vo,solarmotion=solarmotion, plot=False)
+    ts,o=_integrate_orbit(cluster, pot=pot, tfinal=tfinal, nt=nt, from_centre=from_centre, ro=ro, vo=vo,solarmotion=solarmotion, plot=False)
 
     if cluster.units=='radec':
         if cluster.origin!='sky':
@@ -430,11 +428,11 @@ def interpolate_orbits(
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
     if cluster.origin=='centre':
-        ts,o=integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
+        ts,o=_integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
     elif cluster.origin=='cluster':
-        ts,o=integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
+        ts,o=_integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, plot=False)
     else:
-        ts,o=integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo,solarmotion=solarmotion,plot=False)
+        ts,o=_integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo,solarmotion=solarmotion,plot=False)
 
     if cluster.units=='radec' and cluster.origin=='sky':
         x,y,z=o.ra(ts[-1]),o.dec(ts[-1]),o.dist(ts[-1])

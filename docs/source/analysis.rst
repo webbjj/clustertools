@@ -114,21 +114,14 @@ In cases where the ``StarCluster`` does not evolve in isolation, it is possible 
 
 It is important to note that the orbital analysis performed in ``clusertools`` is simply just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class. The only role that ``clustertools`` plays is to extract the necessary information from the simulated data and handle any necessary unit or coordinate changes before calling ``galpy``. Hence Bovy (2015) must be cited anytime a ``clusertools`` function makes use of the external tidal field and/or the cluster's orbit. Furthermore, the default value for the solar distance (``ro``) is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest (``vo``) is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1).
 
-Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and integrate a cluster's orbit, given its galactocentric coordinates are known, using:
+Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and a cluster's ``galpy`` orbit, given its galactocentric coordinates are known, using:
 
 >> cluster.initialize_orbit()
->> cluster.integrate_orbit(tfinal=12)
 
-where ``tfinal=12`` means that the orbit is being integrated 12 time units into the future. The units on time will depend on what ``cluster.units`` are set to. The returned ``galpy`` orbit is also stored in ``cluster.orbit`` while the array self.ts is set which lists the times (in internal ``galpy`` units) for which the orbit was integrated for. If you are familiar with ``galpy`` and prefer to just extract the galpy orbit, you can use:
-
->> o=initialize_orbit(cluster)
-
-or
-
->> ts,o=integrate_orbit(cluster,tfinal=12)
+The returned ``galpy`` orbit is also stored in ``cluster.orbit``.
 
 
-``galpy`` orbits can be initialized and integrated for individual stars as well, via ``cluster.initialize_orbits()`` and ``cluster.integrate_orbits()``. If ``cluster.origin`` is ``centre`` or ``cluster``, the orbits are initialized with clustercentric coordinates. If ``cluster.origin='galaxy'`` then each stars position in the galaxy is used to initialize the orbit.
+``galpy`` orbits can be initialized for individual stars as well via ``cluster.initialize_orbits()``. If ``cluster.origin`` is ``centre`` or ``cluster``, the orbits are initialized with clustercentric coordinates. If ``cluster.origin='galaxy'`` then each stars position in the galaxy is used to initialize the orbit.
 
 It may also be helpful to have the cluster's orbital path within +/- dt, especially if looking at escaped stars. Arrays for the cluster's past and future coordinates can be generated via:
 

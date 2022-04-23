@@ -47,7 +47,12 @@ Note that, due to the internal call, the slope of the mass function will be retu
 
 Other constraints include velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
-Finally, cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external potential is always the MWPotential2014 model from ``galpy``, which is an observationally motived represetnation of the Milky Way. However it is always possible to define a differnt ``galpy`` potential using the ``pot`` variable where applicable.
+Finally, cluster properties that depend on the external tidal field, like its tidal radius (also referred to as the Jacobi radius) or limiting radius (also referred to as the King tidal radius), can be calculated when the orbit and external tidal field are given. The defualt external ``galpy`` potential is always ``None``. A simple Galactic model to use would be  ``MWPotential2014`` model, which is an observationally motived represetnation of the Milky Way that can be imported via:
+
+>>> from galpy.potential import MWPotential2014
+>>> pot = MWPotential2014
+
+It is always possible to define a differnt ``galpy`` potential using the ``pot`` variable where applicable. See https://docs.galpy.org/en/latest/reference/potential.html for a list of potentials in ``galpy``.
 
 For example, the limiting radius of a cluster (radius where the density falls to background) can be measured via:
 

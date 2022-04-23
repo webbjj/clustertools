@@ -14,7 +14,7 @@ solar_vo=solar_ro*30.39-solar_motion[1]
 solar_zo=0.0208 #Bennett & Bovy 2019
 
 def test_find_centre_of_density(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -31,7 +31,7 @@ def test_find_centre_of_density(tol=0.01):
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
 def test_find_centre_of_mass(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -48,7 +48,7 @@ def test_find_centre_of_mass(tol=0.01):
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
 def test_find_centre(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -269,7 +269,7 @@ def test_rlagrange(tol=0.01):
 	assert rn[0]==r10
 
 def test_virial_radius(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',g=1.,phi0=1.,rv=1.,m=1.,N=10000)
+	cluster=ctools.load_cluster(ctype='limepy',g=1.,phi0=1.,rv=1.,m=1.,N=10000)
 
 	rv=ctools.virial_radius(cluster,method='inverse_distance')
 	assert np.fabs(rv-1.)<=tol
@@ -428,7 +428,7 @@ def test_ckin(tol=0.1):
 	assert np.fabs(ck-1.)<=tol
 
 def test_rcore(tol=0.2):
-	cluster=ctools.setup_cluster('limepy',model='king',phi0=3.,r0=2.,M=1e4)
+	cluster=ctools.load_cluster('limepy',model='king',phi0=3.,r0=2.,M=1e4)
 	rc=ctools.rcore(cluster)
 	assert np.fabs(rc-2.) <= tol
 
@@ -436,15 +436,13 @@ def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates
 	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
-	cluster=ctools.setup_cluster('limepy',gcname='NGC5466')
+	cluster=ctools.load_cluster('limepy',gcname='NGC5466')
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
 	zgc=cluster.zgc/1000.
 
-	pot=MWPotential2014
-
-	rtgalpy=rtide(pot,Rgc/solar_ro,zgc/solar_ro,M=m/mo,ro=solar_ro,vo=solar_vo)*1000.0
-	rtctools=ctools.rtidal(cluster)
+	rtgalpy=rtide(MWPotential2014,Rgc/solar_ro,zgc/solar_ro,M=m/mo,ro=solar_ro,vo=solar_vo)*1000.0
+	rtctools=ctools.rtidal(cluster,MWPotential2014)
 
 	assert np.fabs(rtgalpy-rtctools) < tol
 
@@ -453,9 +451,7 @@ def test_rlimiting(tol=0.1):
 	ro,vo=8.,220.
 	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
 
-	cluster=ctools.setup_cluster('limepy',gcname='NGC5466')
-
-
+	cluster=ctools.load_cluster('limepy',gcname='NGC5466')
 
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
@@ -464,7 +460,7 @@ def test_rlimiting(tol=0.1):
 
 	rholocal=evaluateDensities(pot,Rgc/ro,zgc/ro,ro=ro,vo=vo)
 
-	rl=ctools.rlimiting(cluster)
+	rl=ctools.rlimiting(cluster,MWPotential2014)
 
 	rprof, pprof, nprof = ctools.rho_prof(cluster, nrad=20, projected=False)
 
@@ -477,7 +473,7 @@ def test_rlimiting(tol=0.1):
 		assert pprof[rlarg] > rholocal
 		assert pprof[rlarg+1] < rholocal
 
-	rl=ctools.rlimiting(cluster,projected=True)
+	rl=ctools.rlimiting(cluster,MWPotential2014,projected=True)
 
 	rprof, pprof, nprof = ctools.rho_prof(cluster, nrad=20, projected=True)
 

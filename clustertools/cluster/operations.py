@@ -44,13 +44,19 @@ except:
     full_default=False
     pass
 
-def to_pckms(cluster):
+def to_pckms(cluster, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
 
     Parameters
     ----------
     cluster : class
         StarCluster
+    ro : float
+        galpy radius scaling parameter
+    vo : float
+        galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -65,7 +71,7 @@ def to_pckms(cluster):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units == "galpy" or cluster.units == "radec" or cluster.units =="WDunits":
-            cluster.to_kpckms()
+            cluster.to_kpckms(ro=ro,vo=vo, solarmotion=solarmotion)
 
         if cluster.units == "nbody":
             cluster.tphys *= cluster.tbar
@@ -114,7 +120,7 @@ def to_pckms(cluster):
 
         cluster.analyze()
 
-def to_kpckms(cluster, ro=solar_ro, vo=solar_vo):
+def to_kpckms(cluster, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s
 
     Parameters
@@ -125,6 +131,8 @@ def to_kpckms(cluster, ro=solar_ro, vo=solar_vo):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -139,7 +147,7 @@ def to_kpckms(cluster, ro=solar_ro, vo=solar_vo):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units == "radec":
-            from_radec(cluster)
+            from_radec(cluster,ro=ro, vo=vo, solarmotion=solarmotion)
 
         if cluster.units == "galpy":
             cluster.tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
@@ -212,7 +220,7 @@ def to_kpckms(cluster, ro=solar_ro, vo=solar_vo):
             cluster.units = "kpckms"
 
         elif cluster.units == 'WDunits':
-            vcon = vo / conversion.velocity_in_kpcGyr(vo, ro)
+            vcon = vo / conversion.velocity_in_kpcGyr(vo=vo, ro=ro)
             mcon = 222288.4543021174
 
             cluster.m*=mcon
@@ -230,7 +238,7 @@ def to_kpckms(cluster, ro=solar_ro, vo=solar_vo):
 
         cluster.analyze()
 
-def to_nbody(cluster, ro=solar_ro, vo=solar_vo):
+def to_nbody(cluster, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
        
     - requires that cluster.zmbar, cluster.rbar, cluster.vbar are set (defaults are 1)
@@ -243,6 +251,8 @@ def to_nbody(cluster, ro=solar_ro, vo=solar_vo):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -258,7 +268,7 @@ def to_nbody(cluster, ro=solar_ro, vo=solar_vo):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units != "pckms" and cluster.units != "nbody":
-            cluster.to_pckms()
+            cluster.to_pckms(ro=ro,vo=vo,solarmotion=solarmotion)
 
         if cluster.units != "nbody":
             cluster.tphys /= cluster.tbar
@@ -334,7 +344,7 @@ def to_radec(cluster, sortstars=True,centre_method=None,ro=solar_ro, vo=solar_vo
 
         if cluster.units != "radec":
 
-            cluster.to_kpckms()
+            cluster.to_kpckms(ro=ro,vo=vo,solarmotion=solarmotion)
             cluster.to_galaxy()
 
             if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,solarmotion=solarmotion)
@@ -428,7 +438,7 @@ def from_radec(cluster, sortstars=True, ro=solar_ro, vo=solar_vo, solarmotion=so
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units=='radec' and cluster.origin!='sky':
-            cluster.to_sky()
+            cluster.to_sky(ro=ro,vo=vo,solarmotion=solarmotion)
 
         if cluster.units == "radec" and cluster.origin == "sky":
 
@@ -474,7 +484,7 @@ def from_radec(cluster, sortstars=True, ro=solar_ro, vo=solar_vo, solarmotion=so
             cluster.origin = "galaxy"
             cluster.units = "kpckms"
 
-def to_galpy(cluster, ro=solar_ro, vo=solar_vo):
+def to_galpy(cluster, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
     
     Parameters
@@ -485,6 +495,8 @@ def to_galpy(cluster, ro=solar_ro, vo=solar_vo):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -499,7 +511,7 @@ def to_galpy(cluster, ro=solar_ro, vo=solar_vo):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units != "kpckms" and cluster.units != "galpy":
-            cluster.to_kpckms()
+            cluster.to_kpckms(ro=ro,vo=vo,solarmotion=solarmotion)
 
         if cluster.units == "kpckms":
             cluster.tphys /= conversion.time_in_Gyr(ro=ro, vo=vo)
@@ -529,7 +541,7 @@ def to_galpy(cluster, ro=solar_ro, vo=solar_vo):
 
         cluster.analyze()
 
-def to_WDunits(cluster,ro=solar_ro,vo=solar_vo):
+def to_WDunits(cluster,ro=solar_ro,vo=solar_vo, solarmotion=solar_motion):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Walter Dehnen Units
 
     Parameters
@@ -540,6 +552,8 @@ def to_WDunits(cluster,ro=solar_ro,vo=solar_vo):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     Returns
     -------
     None
@@ -556,7 +570,7 @@ def to_WDunits(cluster,ro=solar_ro,vo=solar_vo):
         mcon = 222288.4543021174
 
         if cluster.units!='kpckms' and cluster.units!="WDunits":
-            cluster.to_kpckms(ro=ro,vo=vo)
+            cluster.to_kpckms(ro=ro,vo=vo,solarmotion=solarmotion)
 
         if cluster.units!="WDunits":
 
@@ -576,7 +590,7 @@ def to_WDunits(cluster,ro=solar_ro,vo=solar_vo):
             cluster.analyze()
 
 
-def to_units(cluster, units, ro=solar_ro, vo=solar_vo):
+def to_units(cluster, units, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units
 
     Parameters
@@ -589,6 +603,8 @@ def to_units(cluster, units, ro=solar_ro, vo=solar_vo):
         galpy radius scaling parameter
     vo : float
         galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -603,17 +619,17 @@ def to_units(cluster, units, ro=solar_ro, vo=solar_vo):
         print('NO UNITS SPECIFIED')
     else:
         if units == "nbody":
-            cluster.to_nbody()
+            cluster.to_nbody(ro=ro, vo=vo, solarmotion=solarmotion)
         elif units == "galpy":
-            cluster.to_galpy(ro=ro, vo=vo)
+            cluster.to_galpy(ro=ro, vo=vo, solarmotion=solarmotion)
         elif units == "pckms":
-            cluster.to_pckms()
+            cluster.to_pckms(ro=ro, vo=vo, solarmotion=solarmotion)
         elif units == "kpckms":
-            cluster.to_kpckms()
+            cluster.to_kpckms(ro=ro, vo=vo, solarmotion=solarmotion)
         elif units == "radec":
-            cluster.to_radec(sortstars=False)
+            cluster.to_radec(sortstars=False,ro=ro, vo=vo, solarmotion=solar_motion)
         elif units == "WDunits":
-            cluster.to_WDunits()
+            cluster.to_WDunits(ro=ro, vo=vo, solarmotion=solarmotion)
 
 def to_sudays(cluster):
     """ Convert binary star semi-major axis and periods to solar radii and days
@@ -1095,7 +1111,7 @@ def save_cluster(cluster):
     return cluster.units, cluster.origin, cluster.rorder, cluster.rorder_origin
 
 
-def return_cluster(cluster, units0, origin0, rorder0, rorder_origin0):
+def return_cluster(cluster, units0, origin0, rorder0, rorder_origin0 ,sortstars=False, centre_method=None, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
     """ return cluster to a specific combination of units and origin
 
     Parameters
@@ -1109,6 +1125,14 @@ def return_cluster(cluster, units0, origin0, rorder0, rorder_origin0):
         origin that StarCluster will be changed to
     sortstars : bool
         sort star by radius after coordinate change (default: False)
+    centre_method : str
+        method for shifting coordinates to clustercentric coordinates (see to_cluster). (default: None)
+    ro : float
+        galpy radius scaling parameter
+    vo : float
+        galpy velocity scaling parameter
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
     Returns
     -------
@@ -1119,9 +1143,9 @@ def return_cluster(cluster, units0, origin0, rorder0, rorder_origin0):
     2018 - Written - Webb (UofT)
     """
     if cluster.units != units0:
-        cluster.to_units(units0)
+        cluster.to_units(units0, ro=ro,vo=vo,solarmotion=solarmotion)
     if cluster.origin != origin0:
-        cluster.to_origin(origin0)
+        cluster.to_origin(origin0, sortstars=sortstars, centre_method=centre_method,ro=ro, vo=vo, solarmotion=solarmotion)
 
     cluster.rorder=rorder0
     cluster.rorder_origin=rorder_origin0

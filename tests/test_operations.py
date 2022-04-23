@@ -533,7 +533,7 @@ def test_to_units(tol=0.01,ro=solar_ro,vo=solar_vo):
 	assert np.all(np.fabs(os.vlos()/cluster.vz-1.) < 1e-10)
 
 def test_to_audays(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_cluster(sortstars=True)
 	cluster.reset_nbody_scale()
 	cluster.to_nbody()
@@ -588,7 +588,7 @@ def test_to_audays(tol=0.01):
 	assert np.all(np.fabs(m2/cluster.m2-1.) < 1e-10)
 
 def test_to_sudays(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
 	zmbar,rbar,vbar,tbar=ctools.reset_nbody_scale(cluster)
 	cluster.add_nbody6(1.,1.,rbar,1.,1.,1.,1.,zmbar,vbar,tbar,1.,1.,1.,1.)
@@ -1680,7 +1680,7 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 def test_save_cluster():
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
 	units0,origin0,rorder0,rorder_origin0=ctools.save_cluster(cluster)
 	cluster.save_cluster()
@@ -1692,7 +1692,7 @@ def test_save_cluster():
 
 def test_return_cluster():
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	units0,origin0,rorder0,rorder_origin0=ctools.save_cluster(cluster)
 
 	cluster.to_galpy()
@@ -1707,7 +1707,7 @@ def test_return_cluster():
 
 def test_reset_nbody_scale(tol=0.01):
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.reset_nbody_scale()
 	cluster.to_nbody()
 	cluster.virial_radius()
@@ -1715,7 +1715,7 @@ def test_reset_nbody_scale(tol=0.01):
 	assert np.fabs(cluster.mtot-1. <= tol)
 	assert np.fabs(cluster.rv-1. <= tol)
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
 	mtot0=cluster.mtot
 
@@ -1726,7 +1726,7 @@ def test_reset_nbody_scale(tol=0.01):
 	assert np.fabs(cluster.mtot-mtot0 <= tol)
 	assert np.fabs(cluster.rv-1. <= tol)
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
 	rv0=cluster.virial_radius()
 
@@ -1738,7 +1738,7 @@ def test_reset_nbody_scale(tol=0.01):
 	assert np.fabs(cluster.rv-rv0 <= tol)
 
 def test_add_rotation(tol=0.1):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	vr, vtheta, vz = coords.rect_to_cyl_vec(
 	    cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
 	)
@@ -1761,7 +1761,7 @@ def test_add_rotation(tol=0.1):
 
 
 def test_virialize(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
 	cluster.energies()
 

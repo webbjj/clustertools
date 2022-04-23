@@ -14,6 +14,7 @@ from limepy import limepy
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]
+solar_zo=0.0208 #Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417
 
 mo=conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
@@ -59,6 +60,11 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 	assert cluster.orbit == kwargs.get("orbit", None)
 	assert cluster.give==kwargs.get('give','mxv')
 	assert cluster.centre_method == kwargs.get("centre_method", None)
+
+	assert cluster._ro==kwargs.get('ro',solar_ro)
+	assert cluster._vo==kwargs.get('vo',solar_vo)
+	assert cluster._zo==kwargs.get('zo',solar_zo)
+	assert cluster._solarmotion==kwargs.get('_solarmotion',solar_motion)
 
 
 	# Total Number of Stars + Binaries in the cluster

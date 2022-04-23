@@ -15,7 +15,6 @@ except:
 
 from galpy.util import _rotate_to_arbitrary_vector
 from galpy import potential
-from galpy.potential import MWPotential2014
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -86,7 +85,7 @@ def to_tail(cluster):
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
 def tail_path(
-    cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=MWPotential2014, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
+    cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=None, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
     to_path=False,
     do_full=False,
     ro=solar_ro, 
@@ -110,7 +109,7 @@ def tail_path(
     ntail : int
         number of points along the tail with roaming average (default: 1000)
     pot : class
-        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+        galpy Potential that orbit is to be integrate in (default: None)
     dmax : float
         maximum distance (assumed to be same units as cluster) from orbital path to be included in generating tail path (default: None)
     bintype : str
@@ -256,7 +255,7 @@ def tail_path_match(
     no=1000,
     nt=100,
     ntail=100,
-    pot=MWPotential2014,
+    pot=None,
     path=None,
     from_centre=False,
     skypath=False,
@@ -284,7 +283,7 @@ def tail_path_match(
     ntail : int
         number of points along the tail with roaming average (default: 1000)
     pot : class
-        galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+        galpy Potential that orbit is to be integrate in (default: None)
     path : array
         array of (t,x,y,x,vx,vy,vz) corresponding to the tail path. If none path is calculated (default: None)
     from_centre : bool

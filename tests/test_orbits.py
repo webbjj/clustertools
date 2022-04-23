@@ -12,7 +12,7 @@ solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A,
 solar_vo=solar_ro*30.39-solar_motion[1]
 
 def test_initialize_orbit(tol=0.001):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 
@@ -85,10 +85,10 @@ def test_initialize_orbits(tol=0.0001):
 	np.testing.assert_allclose(vx,ocluster.vx(),rtol=tol)
 	np.testing.assert_allclose(vy,ocluster.vy(),rtol=tol)
 	np.testing.assert_allclose(vz,ocluster.vz(),rtol=tol)
-	
+
 def test_interpolate_orbit(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
-	x,y,z,vx,vy,vz=cluster.interpolate_orbit(tfinal=1.,nt=1000)
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	x,y,z,vx,vy,vz=cluster.interpolate_orbit(pot=MWPotential2014,tfinal=1.,nt=1000)
 
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo))
@@ -105,14 +105,14 @@ def test_interpolate_orbit(tol=0.1,ro=solar_ro,vo=solar_vo):
 
 def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
-	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.interpolate_orbit(tfinal=1.,nt=1000)
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.interpolate_orbit(pot=MWPotential2014,tfinal=1.,nt=1000)
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
 	
 	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
 
-	x,y,z,vx,vy,vz=cluster.interpolate_orbits(tfinal=1.,nt=1000)
+	x,y,z,vx,vy,vz=cluster.interpolate_orbits(pot=MWPotential2014,tfinal=1.,nt=1000)
 	np.testing.assert_allclose(cluster.x,x,rtol=tol)
 	np.testing.assert_allclose(cluster.y,y,rtol=tol)
 	np.testing.assert_allclose(cluster.z,z,rtol=tol)
@@ -139,7 +139,7 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vygc-cluster.vygc) <= tol
 	assert np.fabs(vzgc-cluster.vzgc) <= tol
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='cluster',mbar=10)
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='cluster',mbar=10)
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
 	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
 
@@ -152,7 +152,7 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo),1000)
 	o.integrate(ts,pot)
 
-	cluster.interpolate_orbits(tfinal=1,nt=1000)
+	cluster.interpolate_orbits(pot=pot,tfinal=1,nt=1000)
 
 	np.testing.assert_allclose(cluster.x,o.x(ts[-1]),rtol=tol)
 	np.testing.assert_allclose(cluster.y,o.y(ts[-1]),rtol=tol)
@@ -169,7 +169,7 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vzgc-cluster.vzgc) <= tol	
 
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='pckms',origin='centre',mbar=10)
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='pckms',origin='centre',mbar=10)
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
 
 	print(cluster.xgc,cluster.ygc,cluster.zgc)
@@ -189,7 +189,7 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	ts=np.linspace(0,1./conversion.time_in_Gyr(ro=ro,vo=vo),1000)
 	o.integrate(ts,pot)
 
-	cluster.interpolate_orbits(tfinal=1000,nt=1000)
+	cluster.interpolate_orbits(pot=pot,tfinal=1000,nt=1000)
 
 	np.testing.assert_allclose(cluster.x/1000,o.x(ts[-1]),rtol=tol)
 	np.testing.assert_allclose(cluster.y/1000,o.y(ts[-1]),rtol=tol)
@@ -206,7 +206,7 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vzgc-cluster.vzgc) <= tol
 
 def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
 
 	tfinal=0.1
 

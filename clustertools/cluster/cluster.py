@@ -17,7 +17,6 @@ except:
     import galpy.util.bovy_coords as coords
     import galpy.util.bovy_conversion as conversion
 from textwrap import dedent
-from galpy.potential import MWPotential2014
 from ..analysis.orbits import *
 from ..analysis.functions import *
 from .operations import *
@@ -71,6 +70,14 @@ class StarCluster(object):
         galpy orbit instance
     ounits : str
         {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
+    ro : float
+        distance to the Galactic centre (Default: solar_ro)
+    vo : float
+        circular velocity at ro (Default: solar_vo)
+    zo : float
+        Sun's distance above the Galactic plane (default: solar_zo)
+    solarmotion : float
+        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     nsnap : int
         if a specific snapshot is to be read in instead of starting from zero
     nzfill : int
@@ -94,7 +101,6 @@ class StarCluster(object):
     give : str
         set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
-
     History
     -------
     2018 - Written - Webb (UofT)
@@ -143,6 +149,13 @@ class StarCluster(object):
         self.ofile = kwargs.get("ofile", None)
         self.ofilename = kwargs.get("ofilename", None)
         self.orbit = kwargs.get("orbit", None)
+
+
+        self._ro=kwargs.get('ro',solar_ro)
+        self._vo=kwargs.get('vo',solar_vo)
+        self._zo=kwargs.get('zo',solar_zo)
+        self._solarmotion=kwargs.get('solarmotion',solar_motion)
+
         self.give=kwargs.get('give','mxv')
 
         self.centre_method = kwargs.get("centre_method", None)
@@ -632,7 +645,7 @@ class StarCluster(object):
                     vxgc *= vo
                     vygc *= vo
                     vzgc *= vo
-                    tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
+                    tphys *= conversion.time_in_Gyr(ro=self._ro,vo=self._vo)
                 elif ounits == "pckms":
                     xgc /= 1000.0
                     ygc /= 1000.0
@@ -640,7 +653,7 @@ class StarCluster(object):
                     tphys /= 1000.0
 
                 elif ounits == 'radec':
-                    o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,solarmotion=solarmotion)
+                    o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=self._ro,vo=self._vo,solarmotion=self._solarmotion)
                     xgc=o.x()
                     ygc=o.y()
                     zgc=o.z()
@@ -670,7 +683,7 @@ class StarCluster(object):
                 vxgc /= vo
                 vygc /= vo
                 vzgc /= vo
-                tphys /= conversion.time_in_Gyr(ro=ro,vo=vo)
+                tphys /= conversion.time_in_Gyr(ro=self._ro,vo=self._vo)
 
 
         self.xgc = xgc
@@ -710,11 +723,11 @@ class StarCluster(object):
 
         if initialize:
             if self.origin=='galaxy' or self.origin=='sky':
-                self.initialize_orbit(from_centre=from_centre,solarmotion=solarmotion)
+                self.initialize_orbit(from_centre=from_centre,solarmotion=self._solarmotion)
             else:
                 origin0=self.origin
                 self.to_galaxy()
-                self.initialize_orbit(from_centre=from_centre,solarmotion=solarmotion)
+                self.initialize_orbit(from_centre=from_centre,solarmotion=self._solarmotion)
                 self.to_origin(origin0)
 
 
@@ -1261,13 +1274,19 @@ class StarCluster(object):
 
     # Directly call from operations.py (see operations.py files for documenation):
 
-    def to_pckms(self):
+    def to_pckms(self,ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
 
         Parameters
         ----------
         cluster : class
             StarCluster
+        ro : float
+            galpy radius scaling parameter
+        vo : float
+            galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
         Returns
         -------
@@ -1278,9 +1297,9 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_pckms(self)
+        to_pckms(self,ro=solar_ro, vo=solar_vo, solarmotion=solar_motion)
 
-    def to_kpckms(self, ro=solar_ro, vo=solar_vo):
+    def to_kpckms(self, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s
 
         Parameters
@@ -1291,6 +1310,8 @@ class StarCluster(object):
             galpy radius scaling parameter
         vo : float
             galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
         Returns
         -------
@@ -1301,9 +1322,9 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_kpckms(self, ro=ro,vo=vo)
+        to_kpckms(self, ro=self._ro, vo=self._vo, solarmotion=self._solarmotion)
 
-    def to_nbody(self, ro=solar_ro, vo=solar_vo):
+    def to_nbody(self, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
        
         - requires that cluster.zmbar, cluster.rbar, cluster.vbar are set (defaults are 1)
@@ -1316,6 +1337,8 @@ class StarCluster(object):
             galpy radius scaling parameter
         vo : float
             galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
         Returns
         -------
@@ -1326,7 +1349,7 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_nbody(self, ro=ro, vo=vo)
+        to_nbody(self, ro=self._ro, vo=self._vo, solarmotion=self._solarmotion)
 
     def to_radec(self, sortstars=True,centre_method=None, ro=solar_ro, vo=solar_vo,solarmotion=solar_motion):
         """Convert to on-sky position, proper motion, and radial velocity of cluster
@@ -1353,9 +1376,9 @@ class StarCluster(object):
         -------
         2018 - Written - Webb (UofT)
         """
-        to_radec(self, sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo,solarmotion=solarmotion)
+        to_radec(self, sortstars=sortstars,centre_method=centre_method,ro=self._ro, vo=self._vo,solarmotion=self._solarmotion)
 
-    def to_galpy(self, ro=solar_ro, vo=solar_vo):
+    def to_galpy(self, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
         
         Parameters
@@ -1366,6 +1389,8 @@ class StarCluster(object):
             galpy radius scaling parameter
         vo : float
             galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
         Returns
         -------
@@ -1376,9 +1401,9 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_galpy(self, ro=ro, vo=vo)
+        to_galpy(self, ro=self._ro, vo=self._vo, solarmotion=self._solarmotion)
 
-    def to_WDunits(self, ro=solar_ro, vo=solar_vo):
+    def to_WDunits(self, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Walter Dehnen Units
 
         Parameters
@@ -1389,6 +1414,9 @@ class StarCluster(object):
             galpy radius scaling parameter
         vo : float
             galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
+
         Returns
         -------
         None
@@ -1398,9 +1426,9 @@ class StarCluster(object):
         2022 - Written - Webb (UofT)
 
         """
-        to_WDunits(self, ro=ro, vo=vo)
+        to_WDunits(self, ro=self._ro, vo=self._vo, solarmotion=self._solarmotion)
 
-    def to_units(self, units, ro=solar_ro, vo=solar_vo):
+    def to_units(self, units, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units
 
         Parameters
@@ -1413,6 +1441,8 @@ class StarCluster(object):
             galpy radius scaling parameter
         vo : float
             galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
         Returns
         -------
@@ -1423,7 +1453,7 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_units(self, units=units, ro=ro, vo=vo)
+        to_units(self, units=units, ro=self._ro, vo=self._vo, solarmotion=self._solarmotion)
 
     def to_sudays(self):
         """ Convert binary star semi-major axis and periods to solar radii and days
@@ -1586,7 +1616,7 @@ class StarCluster(object):
         -------
         2018 - Written - Webb (UofT)
         """
-        to_sky(self, sortstars=sortstars,centre_method=centre_method,ro=ro, vo=vo,solarmotion=solarmotion)
+        to_sky(self, sortstars=sortstars,centre_method=centre_method,ro=self._ro, vo=self._vo,solarmotion=self._solarmotion)
 
     def to_origin(self, origin, sortstars=True, centre_method=None,ro=solar_ro, vo=solar_vo,solarmotion=solar_motion):
         """Shift cluster to origin as defined by keyword
@@ -1611,7 +1641,7 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_origin(self, origin, sortstars=sortstars, centre_method=centre_method, ro=ro, vo=vo, solarmotion=solarmotion)
+        to_origin(self, origin, sortstars=sortstars, centre_method=centre_method, ro=self._ro, vo=self._vo, solarmotion=self._solarmotion)
 
     def save_cluster(self):
         """Save cluster's units and origin
@@ -1632,7 +1662,7 @@ class StarCluster(object):
         """
         self.units0,self.origin0, self.rorder0, self.rorder_origin0=save_cluster(self)
 
-    def return_cluster(self, units0=None, origin0=None, rorder0=None, rorder_origin0=None):
+    def return_cluster(self, units0=None, origin0=None, rorder0=None, rorder_origin0=None, sortstars=False, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
         """ return cluster to a specific combination of units and origin
 
         Parameters
@@ -1646,6 +1676,12 @@ class StarCluster(object):
             origin that StarCluster will be changed to
         sortstars : bool
             sort star by radius after coordinate change (default: False)
+        ro : float
+            galpy radius scaling parameter
+        vo : float
+            galpy velocity scaling parameter
+        solarmotion : float
+            array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
         Returns
         -------
@@ -1660,7 +1696,7 @@ class StarCluster(object):
         if rorder0 is None: rorder0=self.rorder0
         if rorder_origin0 is None: rorder_origin0=self.rorder_origin0
 
-        return_cluster(self, units0, origin0, rorder0, rorder_origin0)
+        return_cluster(self, units0, origin0, rorder0, rorder_origin0, sortstars=sortstars, ro=self._ro,vo=self._vo,solarmotion=self._solarmotion)
 
     def reset_nbody_scale(self, mass=True, radii=True, rvirial=True, projected=None, **kwargs):
         """ Assign new conversions for real mass, size, and velocity to Nbody units
@@ -1829,7 +1865,7 @@ class StarCluster(object):
         xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             nsigma=nsigma,nsphere=nsphere,density=density,
-            rmin=rmin,rmax=rmax,nmax=nmax,ro=ro,vo=vo)
+            rmin=rmin,rmax=rmax,nmax=nmax,ro=self._ro,vo=self._vo)
 
         if self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
@@ -1928,7 +1964,7 @@ class StarCluster(object):
 
         xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-            nsphere=nsphere,rmin=rmin,rmax=rma,nmax=nmax,ro=ro,vo=vo)
+            nsphere=nsphere,rmin=rmin,rmax=rma,nmax=nmax,ro=self._ro,vo=self._vo)
 
         if self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
@@ -2808,14 +2844,14 @@ class StarCluster(object):
             mfrac=mfrac,
             projected=projected,
             plot=plot,
-            ro=ro,
-            vo=vo,
+            ro=self._ro,
+            vo=self._vo,
             **kwargs
         )
 
         return self.rl
 
-    def rtidal(self, pot=MWPotential2014, rtiterate=0, rtconverge=0.9, rgc=None, ro=solar_ro, vo=solar_vo, from_centre=False, plot=False, verbose=False, **kwargs):
+    def rtidal(self, pot=None, rtiterate=0, rtconverge=0.9, rgc=None, ro=solar_ro, vo=solar_vo, from_centre=False, plot=False, verbose=False, **kwargs):
         """Calculate tidal radius of the cluster
         - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
         -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
@@ -2830,7 +2866,7 @@ class StarCluster(object):
         cluster : class
             StarCluster instance
         pot : class 
-            GALPY potential used to calculate tidal radius (default: MWPotential2014)
+            GALPY potential used to calculate tidal radius (default: None)
         rtiterate : int
             how many times to iterate on the calculation of r_t (default: 0)
         rtconverge : float
@@ -2865,13 +2901,13 @@ class StarCluster(object):
         2019 - Written - Webb (UofT)
         """
 
-        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, ro=ro, vo=vo, from_centre=from_centre, plot=plot, verbose=verbose, **kwargs)
+        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, ro=self._ro, vo=self._vo, from_centre=from_centre, plot=plot, verbose=verbose, **kwargs)
 
         return self.rt
 
     def rlimiting(
         self,
-        pot=MWPotential2014,
+        pot=None,
         rgc=None,
         ro=solar_ro,
         vo=solar_vo,
@@ -2929,8 +2965,8 @@ class StarCluster(object):
             self,
             pot=pot,
             rgc=rgc,
-            ro=ro,
-            vo=vo,
+            ro=self._ro,
+            vo=self._vo,
             nrad=nrad,
             projected=projected,
             plot=plot,
@@ -2941,7 +2977,7 @@ class StarCluster(object):
 
         return self.rl
 
-    def initialize_orbit(self, from_centre=False, ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
+    def initialize_orbit(self, from_centre=False, ro=solar_ro, vo=solar_vo,zo=solar_zo, solarmotion=solar_motion):
         """ Initialize a galpy orbit instance for the cluster
 
         Parameters
@@ -2954,6 +2990,8 @@ class StarCluster(object):
             galpy distance scale (default: 8.)
         vo : float
             galpy velocity scale (default: 220.)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
@@ -2966,10 +3004,10 @@ class StarCluster(object):
         -------
         2018 - Written - Webb (UofT)
         """
-        self.orbit=initialize_orbit(self, from_centre=from_centre, ro=ro, vo=vo, solarmotion=solarmotion)
+        self.orbit=initialize_orbit(self, from_centre=from_centre, ro=self._ro, vo=self._vo, zo=self._zo, solarmotion=self._solarmotion)
         return self.orbit
 
-    def initialize_orbits(self,ro=solar_ro, vo=solar_vo, solarmotion=solar_motion):
+    def initialize_orbits(self,ro=solar_ro, vo=solar_vo, zo=solar_zo,solarmotion=solar_motion):
         """Initialize a galpy orbit for every star in the cluster
 
         Parameters
@@ -2980,6 +3018,8 @@ class StarCluster(object):
             galpy distance scale (default: 8.)
         vo : float
             galpy velocity scale (default: 220.)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
@@ -2992,10 +3032,10 @@ class StarCluster(object):
         -------
         2018 - Written - Webb (UofT)
         """
-        self.orbits=initialize_orbits(self,ro=ro, vo=vo, solarmotion=solarmotion)
+        self.orbits=initialize_orbits(self,ro=self._ro, vo=self._vo, zo=self._zo, solarmotion=self._solarmotion)
         return self.orbits
 
-    def interpolate_orbit(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False, ro=solar_ro,vo=solar_vo, solarmotion=solar_motion):
+    def interpolate_orbit(self,pot=None,tfinal=None,nt=1000,from_centre=False, ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion):
         """
         Interpolate past or future position of cluster and escaped stars
 
@@ -3007,7 +3047,7 @@ class StarCluster(object):
             Galpy potential for host cluster that orbit is to be integrated in
             if None, assume a Plumme Potential
         pot : class
-            galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+            galpy Potential that orbit is to be integrate in (default: None)
         tfinal : float
             final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
         nt : int
@@ -3015,9 +3055,11 @@ class StarCluster(object):
         from_centre : bool
             intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
@@ -3032,7 +3074,7 @@ class StarCluster(object):
         -------
         2021 - Written - Webb (UofT)
         """
-        xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=ro,vo=vo, solarmotion=solarmotion)
+        xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre, ro=self._ro,vo=self._vo, zo=self._zo, solarmotion=self._solarmotion)
 
         origin0=self.origin
         self.to_cluster()
@@ -3047,7 +3089,7 @@ class StarCluster(object):
 
         return self.xgc,self.ygc,self.zgc,self.vxgc,self.vygc,self.vzgc
 
-    def orbit_interpolate(self,pot=MWPotential2014,tfinal=None,nt=1000,from_centre=False,ro=solar_ro,vo=solar_vo, solarmotion=solar_motion):
+    def orbit_interpolate(self,pot=None,tfinal=None,nt=1000,from_centre=False,ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion):
         """
         Interpolate past or future position of cluster and escaped stars
 
@@ -3061,7 +3103,7 @@ class StarCluster(object):
             Galpy potential for host cluster that orbit is to be integrated in
             if None, assume a Plumme Potential
         pot : class
-            galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+            galpy Potential that orbit is to be integrate in (default: None)
         tfinal : float
             final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
         nt : int
@@ -3069,9 +3111,11 @@ class StarCluster(object):
         from_centre : bool
             intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
@@ -3086,10 +3130,10 @@ class StarCluster(object):
         -------
         2021 - Written - Webb (UofT)
         """
-        self.interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre,ro=ro,vo=vo,solarmotion=solarmotion)
+        self.interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt,from_centre=from_centre,ro=self._ro,vo=self._vo,zo=self._zo,solarmotion=self._solarmotion)
 
 
-    def interpolate_orbits(self,pot=None,tfinal=None,nt=1000,ro=solar_ro,vo=solar_vo, solarmotion=solar_motion):
+    def interpolate_orbits(self,pot=None,tfinal=None,nt=1000,ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion):
         """
         Interpolate past or future position of stars within the cluster
 
@@ -3105,9 +3149,11 @@ class StarCluster(object):
         nt : int
             number of timesteps
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
@@ -3122,7 +3168,7 @@ class StarCluster(object):
         -------
         2021 - Written - Webb (UofT)
         """
-        x,y,z,vx,vy,vz=interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=ro,vo=vo, solarmotion=solarmotion)
+        x,y,z,vx,vy,vz=interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=self._ro,vo=self._vo, zo=self._zo, solarmotion=self._solarmotion)
 
         if (self.origin=='centre' or self.origin=='cluster') and self.units!='radec':
             self.x,self.y,self.z=x,y,z
@@ -3143,9 +3189,9 @@ class StarCluster(object):
         if self.origin!='centre' and self.origin!='cluster' :
 
             if pot is None:
-                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=MWPotential2014,tfinal=tfinal,nt=nt, ro=ro,vo=vo, solarmotion=solarmotion)
+                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=None,tfinal=tfinal,nt=nt, ro=self._ro,vo=self._vo,zo=self._zo, solarmotion=self._solarmotion)
             else:
-                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt, ro=ro,vo=vo,solarmotion=solarmotion)
+                xgc,ygc,zgc,vxgc,vygc,vzgc=interpolate_orbit(self,pot=pot,tfinal=tfinal,nt=nt, ro=self._ro,vo=self._vo,zo=self._zo, solarmotion=self._solarmotion)
 
             self.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
 
@@ -3156,7 +3202,7 @@ class StarCluster(object):
         return self.x,self.y,self.z,self.vx,self.vy,self.vz
 
 
-    def orbits_interpolate(self,pot=None,tfinal=None,nt=1000,ro=solar_ro,vo=solar_vo, solarmotion=solar_motion):
+    def orbits_interpolate(self,pot=None,tfinal=None,nt=1000,ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion):
         """
         Interpolate past or future position of stars within the cluster
 
@@ -3174,9 +3220,11 @@ class StarCluster(object):
         nt : int
             number of timesteps
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
 
@@ -3191,10 +3239,10 @@ class StarCluster(object):
         -------
         2021 - Written - Webb (UofT)
         """
-        self.interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=ro,vo=vo,solarmotion=solarmotion)
+        self.interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=self._ro,vo=self._vo,solarmotion=self._solarmotion)
 
-    def orbital_path(self,dt=0.1,nt=1000,pot=MWPotential2014,from_centre=False,
-        skypath=False,initialize=False,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion, plot=False,**kwargs):
+    def orbital_path(self,dt=0.1,nt=1000,pot=None,from_centre=False,
+        skypath=False,initialize=False,ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion, plot=False,**kwargs):
         """Calculate the cluster's orbital path
 
         Parameters
@@ -3206,7 +3254,7 @@ class StarCluster(object):
         nt : int
             number of timesteps
         pot : class
-            galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+            galpy Potential that orbit is to be integrate in (default: None)
         from_centre : bool
             genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
         skypath : bool
@@ -3214,9 +3262,11 @@ class StarCluster(object):
         initialize : bool
             Initialize and return Orbit (default: False)
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
         plot : bool
@@ -3237,14 +3287,14 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
         """
         if initialize:
-            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=self._ro,vo=self._vo,zo=self._zo,solarmotion=self._solarmotion,plot=plot,**kwargs)
         else:
-            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=self._ro,vo=self._vo,zo=self._zo,solarmotion=self._solarmotion,plot=plot,**kwargs)
 
         return  self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
-    def orbital_path_match(self,dt=0.1,nt=1000,pot=MWPotential2014,path=None,from_centre=False,
-        skypath=False,to_path=False,do_full=False,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion,plot=False,projected=False,**kwargs):
+    def orbital_path_match(self,dt=0.1,nt=1000,pot=None,path=None,from_centre=False,
+        skypath=False,to_path=False,do_full=False,ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion,plot=False,projected=False,**kwargs):
 
         """Match stars to a position along the orbital path of the cluster
 
@@ -3257,7 +3307,7 @@ class StarCluster(object):
         nt : int
             number of timesteps
         pot : class
-            galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+            galpy Potential that orbit is to be integrate in (default: None)
         path : array
             array of (t,x,y,x,vx,vy,vz) corresponding to the tail path. If none path is calculated (default: None)
         from_centre : bool
@@ -3270,9 +3320,11 @@ class StarCluster(object):
         do_full : bool
             calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
         plot : bool
@@ -3295,7 +3347,7 @@ class StarCluster(object):
         """
 
         self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,path=path,
-        from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)
+        from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=self._ro,vo=self._vo,zo=self._zo,solarmotion=self._solarmotion,plot=plot,projected=projected,**kwargs)
 
         return self.tstar,self.dprog,self.dpath
 
@@ -3324,10 +3376,10 @@ class StarCluster(object):
         self.r_tail = np.sqrt(self.x_tail ** 2.0 + self.y_tail ** 2.0 + self.z_tail ** 2.0)
         self.v_tail = np.sqrt(self.vx_tail ** 2.0 + self.vy_tail ** 2.0 + self.vz_tail ** 2.0)
 
-    def tail_path(self,dt=0.1,no=1000,nt=100,ntail=100,pot=MWPotential2014,dmax=None,bintype='fix',from_centre=False,skypath=False,
+    def tail_path(self,dt=0.1,no=1000,nt=100,ntail=100,pot=None,dmax=None,bintype='fix',from_centre=False,skypath=False,
         to_path=False,
         do_full=False,
-        ro=solar_ro,vo=solar_vo,solarmotion=solar_motion,plot=False,**kwargs):
+        ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion,plot=False,**kwargs):
 
         """Calculate tail path +/- dt Gyr around the cluster
 
@@ -3344,7 +3396,7 @@ class StarCluster(object):
             ntail : int
                 number of points along the tail with roaming average (default: 1000)
             pot : class
-                galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+                galpy Potential that orbit is to be integrate in (default: None)
             dmax : float
                 maximum distance (assumed to be same units as cluster) from orbital path to be included in generating tail path (default: None)
             bintype : str
@@ -3358,9 +3410,11 @@ class StarCluster(object):
             do_full : bool
                 calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
             ro :float 
-                galpy distance scale (Default: 8.)
+                galpy distance scale (Default: solar_ro)
             vo : float
-                galpy velocity scale (Default: 220.)
+                galpy velocity scale (Default: solar_vo)
+            zo : float
+                Sun's distance above the Galactic plane (default: solar_zo)
             solarmotion : float
                 array representing U,V,W of Sun (default: solarmotion=solar_motion)
             plot : bool
@@ -3383,12 +3437,12 @@ class StarCluster(object):
             2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
             """
 
-        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,no=no,nt=nt,ntail=ntail,pot=pot,dmax=dmax,bintype=bintype,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
+        self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=tail_path(self,dt=dt,no=no,nt=nt,ntail=ntail,pot=pot,dmax=dmax,bintype=bintype,from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=self._ro,vo=self._vo,zo=self._zo,solarmotion=self._solarmotion,plot=plot,**kwargs)
 
         return self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
-    def tail_path_match(self,dt=0.1,no=1000,nt=100,ntail=100, pot=MWPotential2014,dmax=None,from_centre=False,
-        to_path=False,do_full=False,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion,plot=False,**kwargs,):
+    def tail_path_match(self,dt=0.1,no=1000,nt=100,ntail=100, pot=None,dmax=None,from_centre=False,
+        to_path=False,do_full=False,ro=solar_ro,vo=solar_vo,zo=solar_zo,solarmotion=solar_motion,plot=False,**kwargs,):
 
         """Match stars to a position along the tail path of the cluster
 
@@ -3405,7 +3459,7 @@ class StarCluster(object):
         ntail : int
             number of points along the tail with roaming average (default: 1000)
         pot : class
-            galpy Potential that orbit is to be integrate in (default: MWPotential2014)
+            galpy Potential that orbit is to be integrate in (default: None)
         path : array
             array of (t,x,y,x,vx,vy,vz) corresponding to the tail path. If none path is calculated (default: None)
         from_centre : bool
@@ -3418,9 +3472,11 @@ class StarCluster(object):
         do_full : bool
             calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
         ro :float 
-            galpy distance scale (Default: 8.)
+            galpy distance scale (Default: solar_ro)
         vo : float
-            galpy velocity scale (Default: 220.)
+            galpy velocity scale (Default: solar_vo)
+        zo : float
+            Sun's distance above the Galactic plane (default: solar_zo)
         solarmotion : float
             array representing U,V,W of Sun (default: solarmotion=solar_motion)
         plot : bool
@@ -3443,7 +3499,7 @@ class StarCluster(object):
         """
 
         self.tstar,self.dprog,self.dpath=tail_path_match(self,dt=dt,no=no,nt=nt,ntail=ntail,pot=pot,dmax=dmax,
-        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,**kwargs)
+        from_centre=from_centre,to_path=to_path,do_full=do_full,ro=self._ro,vo=self._vo,zo=self._zo,solarmotion=self._solarmotion,plot=plot,**kwargs)
 
         return self.tstar,self.dprog,self.dpath
 

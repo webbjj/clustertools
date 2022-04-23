@@ -255,7 +255,7 @@ def test_add_actions():
 	np.testing.assert_array_equal(Tz,cluster.Tzs)
 
 def test_analyze(tol=0.01):
-	cluster=ctools.setup_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
+	cluster=ctools.load_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
 	assert cluster.ctype == 'limepy'
 
 	assert float(np.fabs(cluster.ntot-10000)/10000) <= tol
@@ -300,12 +300,12 @@ def test_analyze(tol=0.01):
 	assert np.fabs(cluster.rh10pro-rpro[np.argsort(rpro)][1000])/rpro[np.argsort(rpro)][5000] <= tol
 
 def test_sortstars():
-	cluster=ctools.setup_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
+	cluster=ctools.load_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
 	np.testing.assert_array_equal(np.argsort(cluster.r),cluster.rorder)
 	np.testing.assert_array_equal(np.argsort(cluster.rpro),cluster.rproorder)
 
 def test_subset(tol=0.001):
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_cluster()
 
 	kin=np.random.rand(cluster.ntot)
@@ -362,7 +362,7 @@ def test_subset(tol=0.001):
 	assert np.sum(indx) == np.sum(cluster.vpro >= np.mean(cluster.v))
 	
 def test_subcluster():
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
 	cluster.to_radec()
 
@@ -502,7 +502,7 @@ def test_subcluster():
 	assert subcluster.nb==cluster.nb
 	assert subcluster.n_p==cluster.n_p
 
-	cluster=ctools.setup_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_cluster(sortstars=True)
 
 	kw=np.random.randint(0,10,cluster.ntot)

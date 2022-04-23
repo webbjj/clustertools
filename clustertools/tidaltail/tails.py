@@ -88,9 +88,10 @@ def tail_path(
     cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=None, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
     to_path=False,
     do_full=False,
-    ro=solar_ro, 
-    vo=solar_vo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
     plot=False,projected=False,
     **kwargs,
 ):
@@ -122,12 +123,14 @@ def tail_path(
         measure distance to the path itself instead of distance to central point along the path (default: False)
     do_full : bool
         calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
-    ro :float 
-        galpy distance scale (Default: 8.)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: 220.)
+        circular velocity at ro (Default: None)
+    zo : float
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -160,7 +163,7 @@ def tail_path(
         elif units0=='pckms':
             dmax/=1000.
         elif units0=='galpy':
-            dmax*=ro
+            dmax*=cluster._ro
         elif units0=='radec' and not skypath:
             dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
             dmax=dist*np.tan(dmax)
@@ -168,7 +171,7 @@ def tail_path(
             dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
             dmax=np.arctan(dmax/dist)
 
-    to, xo, yo, zo, vxo, vyo, vzo = orbital_path(
+    top, xop, yop, zop, vxop, vyop, vzop = orbital_path(
         cluster,
         dt=dt,
         nt=no,
@@ -178,26 +181,27 @@ def tail_path(
         initialize=False,
         ro=ro,
         vo=vo,
+        zo=zo,
         solarmotion=solarmotion,
     )
 
-    path=(to, xo, yo, zo, vxo, vyo, vzo)
+    path=(top, xop, yop, zop, vxop, vyop, vzop)
 
 
     if bintype=='fix':
         if ntail > nt:
-            t_lower, t_mid, t_upper, t_hist = roaming_binmaker(to, nbin=nt,ntot=ntail)
+            t_lower, t_mid, t_upper, t_hist = roaming_binmaker(top, nbin=nt,ntot=ntail)
         else:
-            t_lower, t_mid, t_upper, t_hist = binmaker(to, nbin=nt)
+            t_lower, t_mid, t_upper, t_hist = binmaker(top, nbin=nt)
     elif bintype=='num':
         if ntail>nt:
-            t_lower, t_mid, t_upper, t_hist = roaming_nbinmaker(to, nbin=nt,ntot=ntail)
+            t_lower, t_mid, t_upper, t_hist = roaming_nbinmaker(top, nbin=nt,ntot=ntail)
         else:
-            t_lower, t_mid, t_upper, t_hist = nbinmaker(to, nbin=nt)
+            t_lower, t_mid, t_upper, t_hist = nbinmaker(top, nbin=nt)
 
 
     tstar, dprog, dpath = orbital_path_match(
-        cluster=cluster, dt=dt, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, solarmotion=solarmotion,projected=projected
+        cluster=cluster, dt=dt, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, zo=zo, solarmotion=solarmotion,projected=projected
     )
 
     if dmax is None:
@@ -261,9 +265,10 @@ def tail_path_match(
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=solar_ro,
-    vo=solar_vo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
     plot=False,
     projected=False,
     **kwargs,
@@ -295,12 +300,14 @@ def tail_path_match(
         measure distance to the path itself instead of distance to central point along the path (default: False)
     do_full : bool
         calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
-    ro :float 
-        galpy distance scale (Default: 8.)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: 220.)
+        circular velocity at ro (Default: None)
+    zo : float
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -322,8 +329,8 @@ def tail_path_match(
  
     if path is None:
         path = tail_path(
-            cluster, dt=dt, no=no, nt=nt, ntail=ntail, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo
+            cluster, dt=dt, no=no, nt=nt, ntail=ntail, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo,zo=zo,solarmotion=solarmotion,
         )
 
     return orbital_path_match(cluster=cluster,dt=dt,nt=no,pot=pot,path=path,from_centre=from_centre,
-        skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)
+        skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)

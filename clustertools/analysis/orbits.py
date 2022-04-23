@@ -34,7 +34,7 @@ from ..util.constants import *
 import astropy.coordinates as coord
 import astropy.units as u
 
-def initialize_orbit(cluster, from_centre=False, ro=solar_ro, vo=solar_vo, zo = solar_zo, solarmotion=solar_motion):
+def initialize_orbit(cluster, from_centre=False, ro=None, vo=None, zo = None, solarmotion=None):
     """ Initialize a galpy orbit instance for the cluster
 
     Parameters
@@ -44,13 +44,13 @@ def initialize_orbit(cluster, from_centre=False, ro=solar_ro, vo=solar_vo, zo = 
     from_centre : bool
         intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
     ro : float
-        galpy distance scale (default: None)
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (default: None)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
 
     Returns
     -------
@@ -61,6 +61,11 @@ def initialize_orbit(cluster, from_centre=False, ro=solar_ro, vo=solar_vo, zo = 
     -------
     2018 - Written - Webb (UofT)
     """
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     if cluster.units == "radec":
         o = Orbit(
@@ -109,7 +114,7 @@ def initialize_orbit(cluster, from_centre=False, ro=solar_ro, vo=solar_vo, zo = 
     return o
 
 
-def initialize_orbits(cluster, ro=solar_ro, vo=solar_vo, zo = solar_zo, solarmotion=solar_motion):
+def initialize_orbits(cluster, ro=None, vo=None, zo = None, solarmotion=None):
     """Initialize a galpy orbit for every star in the cluster
 
     Parameters
@@ -117,13 +122,13 @@ def initialize_orbits(cluster, ro=solar_ro, vo=solar_vo, zo = solar_zo, solarmot
     cluster : class
         StarCluster
     ro : float
-        galpy distance scale (default: solar_ro)
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
 
     Returns
     -------
@@ -134,6 +139,11 @@ def initialize_orbits(cluster, ro=solar_ro, vo=solar_vo, zo = solar_zo, solarmot
     -------
     2018 - Written - Webb (UofT)
     """
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     if cluster.units == "radec" and cluster.origin=='sky':
 
@@ -177,7 +187,7 @@ def initialize_orbits(cluster, ro=solar_ro, vo=solar_vo, zo = solar_zo, solarmot
 
 
 def _integrate_orbit(
-    cluster, pot=None, tfinal=None, nt=1000, from_centre=False, ro=solar_ro, vo=solar_vo, zo=solar_zo, solarmotion=solar_motion, plot=False
+    cluster, pot=None, tfinal=None, nt=1000, from_centre=False, ro=None, vo=None, zo=None, solarmotion=None, plot=False
 ):
     """Integrate a galpy orbit instance for the cluster
 
@@ -193,14 +203,14 @@ def _integrate_orbit(
         number of timesteps
     from_centre : bool
         intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
     plot : float
         show plot of cluster's orbit
 
@@ -215,6 +225,12 @@ def _integrate_orbit(
     -------
        2018 - Written - Webb (UofT)
     """
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
+
     o = initialize_orbit(cluster,from_centre=from_centre,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion)
 
     if tfinal is None:
@@ -235,7 +251,7 @@ def _integrate_orbit(
     return ts, o
 
 def _integrate_orbits(
-    cluster, pot=None, tfinal=None, nt=1000, ro=solar_ro, vo=solar_vo,zo = solar_zo, solarmotion=solar_motion, plot=False
+    cluster, pot=None, tfinal=None, nt=1000, ro=None, vo=None,zo = None, solarmotion=None, plot=False
 ):
     """Integrate a galpy orbit instance for each star
 
@@ -250,14 +266,14 @@ def _integrate_orbits(
         final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
     plot : float
         show plot of cluster's orbit
 
@@ -272,6 +288,11 @@ def _integrate_orbits(
     -------
        2018 - Written - Webb (UofT)
     """
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     if tfinal is None:
         tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
@@ -299,10 +320,10 @@ def interpolate_orbit(
     tfinal=None,
     nt=1000,
     from_centre=False,
-    ro=solar_ro,
-    vo=solar_vo,
-    zo=solar_zo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
 ):
     """
     Interpolate past or future position of cluster and escaped stars
@@ -322,14 +343,14 @@ def interpolate_orbit(
         number of timesteps
     from_centre : bool
         intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
 
     Returns
     -------
@@ -342,6 +363,11 @@ def interpolate_orbit(
     -------
     2021 - Written - Webb (UofT)
     """
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
@@ -385,10 +411,10 @@ def interpolate_orbits(
     pot=None,
     tfinal=None,
     nt=1000,
-    ro=solar_ro,
-    vo=solar_vo,
-    zo=solar_zo,
-    solarmotion=solar_motion
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None
 ):
     """
     Interpolate past or future position of stars within the cluster
@@ -404,14 +430,14 @@ def interpolate_orbits(
         final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
 
     Returns
     -------
@@ -424,6 +450,11 @@ def interpolate_orbits(
     -------
     2021 - Written - Webb (UofT)
     """
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
@@ -474,10 +505,10 @@ def orbit_interpolate(
     pot=None,
     tfinal=None,
     nt=1000,
-    ro=solar_ro,
-    vo=solar_vo,
-    zo=solar_zo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
 ):
     """
     Interpolate past or future position of cluster and escaped stars
@@ -499,14 +530,14 @@ def orbit_interpolate(
         number of timesteps
     from_centre : bool
         intialize orbits from cluster's exact centre instead of cluster's position in galaxy (default :False)
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
 
     Returns
     -------
@@ -526,10 +557,10 @@ def orbits_interpolate(
     pot=None,
     tfinal=None,
     nt=1000,
-    ro=solar_ro,
-    vo=solar_vo,
-    zo=solar_zo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
 ):
     """
     Interpolate past or future position of stars within the cluster
@@ -547,14 +578,14 @@ def orbits_interpolate(
         final time (in cluster.units) to integrate orbit to (default: 12 Gyr)
     nt : int
         number of timesteps
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
 
     Returns
     -------
@@ -578,10 +609,10 @@ def orbital_path(
     from_centre=False,
     skypath=False,
     initialize=False,
-    ro=solar_ro,
-    vo=solar_vo,
-    zo=solar_zo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
     plot=False,
     **kwargs,
 ):
@@ -603,14 +634,14 @@ def orbital_path(
         return sky coordinates instead of cartesian coordinates (default: False)
     initialize : bool
         Initialize and return Orbit (default: False)
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
 
@@ -631,6 +662,11 @@ def orbital_path(
 
     #Legacy - allow for dt to be given instead of tfinal
     tfinal=kwargs.get('dt',tfinal)
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     if tfinal is None:
         tfinal=0.1/conversion.time_in_Gyr(ro=ro, vo=vo)
@@ -757,10 +793,10 @@ def orbital_path_match(
     skypath=False,
     to_path=False,
     do_full=False,
-    ro=solar_ro,
-    vo=solar_vo,
-    zo=solar_zo,
-    solarmotion=solar_motion,
+    ro=None,
+    vo=None,
+    zo=None,
+    solarmotion=None,
     plot=False,
     projected=False,
     **kwargs,
@@ -788,14 +824,14 @@ def orbital_path_match(
         measure distance to the path itself instead of distance to central point along the path (default: False)
     do_full : bool
         calculate dpath all at once in a single numpy array (can be memory intensive) (default:False)
-    ro :float 
-        galpy distance scale (Default: solar_ro)
+    ro : float
+        distance to the Galactic centre (Default: None)
     vo : float
-        galpy velocity scale (Default: solar_vo)
+        circular velocity at ro (Default: None)
     zo : float
-        Sun's distance above the Galactic plane (default: solar_zo)
+        Sun's distance above the Galactic plane (default: None)
     solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
+        array representing U,V,W of Sun (default: None)
     plot : bool
         plot a snapshot of the cluster in galactocentric coordinates with the orbital path (defualt: False)
     projected : bool
@@ -817,6 +853,11 @@ def orbital_path_match(
 
     #Legacy - allow for dt to be given instead of tfinal
     tfinal=kwargs.get('dt',tfinal)
+
+    if ro is None: ro=cluster._ro
+    if vo is None: vo=cluster._vo
+    if zo is None: zo=cluster._zo
+    if solarmotion is None: solarmotion=cluster._solarmotion
 
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0

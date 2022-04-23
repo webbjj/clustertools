@@ -42,7 +42,6 @@ from scipy.optimize import curve_fit
 
 from ..util.recipes import *
 from ..util.constants import _get_grav
-from ..util.constants import *
 from ..util.plots import _plot,_lplot,_scatter
 
 import matplotlib.pyplot as plt
@@ -62,8 +61,6 @@ def find_centre(
     rmin=0.1,
     rmax=None,
     nmax=100,
-    ro=solar_ro,
-    vo=solar_vo,
 ):
     """Find the cluster's centre
 
@@ -92,7 +89,6 @@ def find_centre(
         maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
     nmax : int
         maximum number of iterations to find centre
-    ro,vo - For converting to and from galpy units (Default: 8., 220.)
 
     Returns
     -------
@@ -900,8 +896,6 @@ def virial_radius_critical_density(
     overdens=200.0,
     projected=False,
     plot=False,
-    ro=solar_ro,
-    vo=solar_vo,
     **kwargs
 ):
     """Calculate virial radius of the cluster
@@ -924,10 +918,6 @@ def virial_radius_critical_density(
         calculate projected virial radius (default: False)
     plot : bool
         plot cluster density profile and illustrate virial radius calculation
-    ro : float
-        GALPY radius scaling parameter
-    vo : float
-        GALPY velocity scaling parameter
 
     Returns
     -------
@@ -954,7 +944,7 @@ def virial_radius_critical_density(
 
     cluster.to_pckms()
 
-    rhocrit=conversion.dens_in_msolpc3(vo=solar_vo,ro=solar_ro)/conversion.dens_in_criticaldens(vo=solar_vo,ro=solar_ro,H=H)
+    rhocrit=conversion.dens_in_msolpc3(vo=cluster._vo,ro=cluster._ro)/conversion.dens_in_criticaldens(vo=cluster._vo,ro=cluster._ro,H=H)
 
     if projected:
         if not cluster.projected: cluster.analyze(sortstars=True,projected=True)
@@ -1826,8 +1816,8 @@ def rcore(
     mfrac=0.1,
     projected=False,
     plot=False,
-    ro=solar_ro,
-    vo=solar_vo,
+    ro=None,
+    vo=None,
     **kwargs
 ):
     """Calculate core radius of the cluster
@@ -1861,8 +1851,8 @@ def rcore(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
-    mo=conversion.mass_in_msol(ro=ro,vo=vo)
-    dens_in_msolpc2=(mo/ro**2.)/(1000.0**2.)
+    mo=conversion.mass_in_msol(ro=cluster._ro,vo=cluster._vo)
+    dens_in_msolpc2=(mo/cluster._ro**2.)/(1000.0**2.)
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
@@ -2012,9 +2002,6 @@ def rtidal(
     rtconverge=0.9,
     rgc=None,
     zgc=None,
-    ro=solar_ro,
-    vo=solar_vo,
-    solarmotion=solar_motion,
     from_centre=False,
     plot=False,
     verbose=False,
@@ -2071,10 +2058,12 @@ def rtidal(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
-    cluster.to_galpy(ro=ro,vo=vo,solarmotion=solarmotion)
+    cluster.to_galpy()
 
     if rgc != None:
         R = rgc / ro
@@ -2195,9 +2184,6 @@ def rlimiting(
     pot=None,
     rgc=None,
     zgc=None,
-    ro=solar_ro,
-    vo=solar_vo,
-    solarmotion=solar_motion,
     nrad=20,
     projected=False,
     plot=False,
@@ -2220,12 +2206,6 @@ def rlimiting(
         Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
     zgc : float
         For non-spherically symmetric potentials, manually set distance in kpc above disk at which the tidal radius is to be evaluated. When set, rgc becomes radius in cylindrical coordinates (default: None)
-    ro : float
-        GALPY radius scaling parameter
-    vo : float
-        GALPY velocity scaling parameter
-    solarmotion : float
-        array representing U,V,W of Sun (default: solarmotion=solar_motion)
     nrad : int
         number of radial bins used to calculate density profile (Default: 20)
     projected : bool
@@ -2252,13 +2232,15 @@ def rlimiting(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
+
     mo=conversion.mass_in_msol(ro=ro,vo=vo)
     dens_in_msolpc2=(mo/ro**2.)/(1000.0**2.)
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
-    cluster.to_galpy(ro=ro,vo=vo,solarmotion=solarmotion)
+    cluster.to_galpy()
 
     if rgc != None:
         R = rgc / ro
@@ -2305,7 +2287,7 @@ def rlimiting(
     elif units0 == "nbody":
         rl *= 1000.0 * ro / cluster.rbar
 
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0, ro=ro,vo=vo, solarmotion=solarmotion)
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
     if plot:

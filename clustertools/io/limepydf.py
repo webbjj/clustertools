@@ -39,10 +39,7 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
     de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906
     Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
     Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487
-    King I. R., 1966, AJ, 71, 64
     Vasiliev E., 2019, MNRAS, 484,2832  
-    Wilson C. P., 1975, AJ, 80, 175
-    Woolley R. V. D. R., 1954, MNRAS, 114, 191
 
     Parameters
     ----------
@@ -67,17 +64,9 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
     N : int
         number of stars in the cluster (default: 1000)
     model : str/object
-        model name ('WOOLLEY','KING','WILSON') or a limepy model object
+        limepy model object
     gcname : str
         name of globular cluster to generate model for
-    g : float
-        model parameter for LIMEPY
-    phi0/W0 : float
-        central potential model parameter for LIMEPY
-    M : float
-        Mass of cluster
-    rh/rt : float 
-        half-mass radius or tidal radius of cluster in parsecs
     source : str
         Source for extracting Galactic GC parameters (Harris 1996 (2010 Edition) or de Boer et al. 2019). The default checks 
             de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found
@@ -106,29 +95,8 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
         if cluster.origin!=origin:
             cluster.to_origin(origin)
 
-    elif model is not None:
-        if model == "woolley":
-            g = kwargs.pop("g", 0)
-            cluster = _sample_limepy(g=g, **kwargs)
-        elif model == "king":
-            g = kwargs.pop("g", 1)
-            cluster = _sample_limepy(g=g, **kwargs)
-        elif model == "wilson":
-            g = kwargs.pop("g", 2)
-            cluster = _sample_limepy(g=g, **kwargs)
-        else:
-            cluster = _sample_limepy(model=model, **kwargs)
-
-        cluster.units=units
-
-        if cluster.origin!=origin:
-            cluster.to_origin(origin)
-
-
     else:
-        g = kwargs.pop("g")
-        cluster = _sample_limepy(g=g, **kwargs)
-
+        cluster = _sample_limepy(model=model, **kwargs)
         cluster.units=units
 
         if cluster.origin!=origin:
@@ -157,6 +125,15 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
         cluster.to_galaxy()
 
     cluster.analyze(sortstars=True)
+
+    if gcname is not None: 
+        print('LOAD_CLUSTER MADE USE OF:')
+        print("Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576")
+        print("Vasiliev E., 2019, MNRAS, 484,2832 ")
+        if source=="default":
+            print("de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906")
+        else:
+            print("Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487")
 
     return cluster
 

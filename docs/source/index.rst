@@ -1,7 +1,7 @@
 ``clustertools``
 ================
 
-``clustertools`` is a Python package with tools for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able to use or act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
+``clustertools`` is a Python package for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able to use or act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
 <https://docs.galpy.org/en/v1.6.0/index.html>`_), and measuring common cluster properties like its mass function, density profile, and velocity dispersion profile (among others). 
 
 The package contains methods for loading data from commonly used N-body codes, generic snapshots, and codes for generating intial conditions. 
@@ -94,9 +94,9 @@ References
 
 ``load_cluster(ctype='limepy')`` - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
 
-``load_cluster('limepy','gcname')`` (default) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 - Vasiliev E., 2019, MNRAS, 484,2832
+``load_cluster('limepy','gcname')`` (default) - Bovy J., 2015, ApJS, 216, 29 - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 - Vasiliev E., 2019, MNRAS, 484,2832
 
-``load_cluster('limepy',gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - Vasiliev E., 2019, MNRAS, 484,2832
+``load_cluster('limepy',gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Bovy J., 2015, ApJS, 216, 29 - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - Vasiliev E., 2019, MNRAS, 484,2832
 
 ``meq_function``, ``meq_prof`` - Bianchini, P. et al. 2016, MNRAS, 458, 3644 
 
@@ -108,7 +108,7 @@ References
 
 ``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
 
-``tail_path``, ``tail_path_match`` - Bovy J., 2015, ApJS, 216, 29
+``tail_path``, ``tail_path_match``, ``to_tail`` - Bovy J., 2015, ApJS, 216, 29
 
 ``to_centre(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 
 
@@ -123,6 +123,11 @@ References
 ``virial_radius(method='critical_density')`` - Bovy J., 2015, ApJS, 216, 29 -
 
 ``virial_radius(method=inverse_distance)`` - Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9
+
+Contributers
+-----------------
+Jo Bovy - https://github.com/jobovy
+Nathaniel Starkman - https://github.com/nstarman
 
 Library Reference
 -----------------

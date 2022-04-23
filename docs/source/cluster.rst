@@ -224,6 +224,8 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - pc/Myr
      - Msun/222288.4543021174
 
+In order to convert between certain units, it is necessary to know the distance to the Galactic Centre (``ro``), the rotation velocity at ``ro`` (``vo``), the Sun's height above the Galactic disk (``zo``), and the Sun's motion with respect to the local standard of rest (``solarmotion``). When a ``StarCluster`` is initialzied, the default value for ``ro`` is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1). The height of the Sun above the disk is 0.0208 kpc (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417). However each of these values can be changed when intializing a ``StarCluster``.
+
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one set of units to another.
 
 Coordinate Systems
@@ -247,6 +249,8 @@ Similar to ``StarCluster.units``, when a ``StarCluster`` is initialized the defa
      - sky coordinate system, used when units are set to degrees
 
 For clarity, it is worth expanding on the difference between ``StarCluster.origin='cluster'`` and ``StarCluster.origin='centre'``. The motivation for the two separate reference frames stems from codes like NBODY6 where the orbital evolution of the cluster in the external tidal field is handled separately from the internal cluster evolution. Hence the cluster's orbital position is integrated forwards in time from its initial conditions while the cluster's centre of density (or mass) will wander slightly due to internal cluster evolution. The true centre may in fact wander a lot if tidal tail stars are kept in the simulation or the cluster reaches dissolution. Codes like NBODY6 provide snapshots where the origin is at the cluster's orbital position (``StarCluster.origin='cluster'``) and then provide the location of the cluster's true centre separately to change to ``StarCluster.origin='centre'``.
+
+It is also important to note that converting to ``sky`` requires knowlendge of ``ro``,``vo``,``zo``, and ``solarmotion``, the default values of which are discussed above.
 
 
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one coordinate system to another.

@@ -115,9 +115,9 @@ All available profiles are listed below.
 Orbit
 -----
 
-In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyse the cluster's orbital properties.
+In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyse the cluster's orbital properties. Hence Bovy (2015) must be cited anytime a ``clusertools`` function makes use of the external tidal field and/or the cluster's orbit. 
 
-It is important to note that the orbital analysis performed in ``clusertools`` is simply just a wrapper around a ``galpy`` function that uses the ``StarCluster`` class. The only role that ``clustertools`` plays is to extract the necessary information from the simulated data and handle any necessary unit or coordinate changes before calling ``galpy``. Hence Bovy (2015) must be cited anytime a ``clusertools`` function makes use of the external tidal field and/or the cluster's orbit. Furthermore, the default value for the solar distance (``ro``) is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest (``vo``) is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1).
+As discussed in :ref:`Initialization <_cluster>` , the default value for the solar distance (``ro``) is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest (``vo``) is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1).The height of the Sun above the disk ``zo`` is 0.0208 kpc (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417). However the below functions all allow for these parameters to be uniquely set. 
 
 Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and a cluster's ``galpy`` orbit, given its galactocentric coordinates are known, using:
 
@@ -143,13 +143,17 @@ Stars can also be matched to a point along the orbital path, where each stars di
 Since ``plot=True``, a figure showing ``dpath`` vs ``dprog`` is returned.
 
 
-Finally,Clusters can be interpolated to past or future points in time. To interpolate a cluster 1 Gyr forward in time use:
+Finally, clusters can be interpolated to past or future points in time. To interpolate a cluster 1 Gyr forward in time use:
 
 >> cluster.orbit_interpolate(1.0,do_tails=True,rmax=0.1)
 
 By default, all stars are simply shifted so the cluster is centred on its new galactocentric position. If one wishes to identify tail stars that have their own orbits interpolated, set ``do_tails=True`` as above and provide a criteria for what defines a tail star. In the above example, any star beyond 0.1 ``cluster.units`` is a tail star. Other criteria include velocity, energy, kwtype, or a custom boolean array (similar to defining subsets for profiles as disussed above).
 
-If one wishes to interpolate the orbits of stars within the cluster, then use ``orbits_interpolate`` with ``cluster.origin`` equal to centre or cluster. In this case the ``galpy`` potential of the cluster should be provided. If its not provided, the cluster is assumed to be a Plummer Sphere with the scale radius calculated from the cluster's half-mass radius. 
+If one wishes to interpolate the orbits of stars within the cluster, then use ``orbits_interpolate`` with ``cluster.origin`` equal to centre or cluster. In this case the ``galpy`` potential of the cluster should be provided. A recomended potential would be a Plummer sphere
+
+>>from galpy.potential import PlummerPotential
+>>cluster.to_galpy()
+>>pot=PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=cluster._ro,vo=cluster._vo)
 
 A complete list of all functions related to a cluster's orbit can be found below.
 
@@ -161,7 +165,10 @@ A complete list of all functions related to a cluster's orbit can be found below
 Tidal Tails
 -----------
 
-Since stars which escape a cluster lead to the formation of tidal tails, which survive as stellar streams long after the cluster has dissolved. For star cluster simulations that keep track of a cluster's tidal tails, a few methods are included in ``clustertools`` to help in their analysis. The first of which is the ``to_tail`` operation, which rotates the system such that the cluster's velocity is pointing along the positive x-axis. Calling the operation externally returns each stars coordinates in the rotated system:
+Since stars which escape a cluster lead to the formation of tidal tails, which survive as stellar streams long after the cluster has dissolved. For star cluster simulations that keep track of a cluster's tidal tails, a few methods are included in ``clustertools`` to help in their analysis. Since these methods require knoweldge of the cluster's orbit, they accept ``ro``, ``vo``, ``zo``, and ``solarmotion`` as inputs if the values set for the ``StarCluster`` are not relevant. Bovy (2015) should also be cited when using tail functions as well.
+
+
+ The first of which is the ``to_tail`` operation, which rotates the system such that the cluster's velocity is pointing along the positive x-axis. Calling the operation externally returns each stars coordinates in the rotated system:
 
 >>> x,y,z,vx,vy,vz=to_tails(cluster)
 

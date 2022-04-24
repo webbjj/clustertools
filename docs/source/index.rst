@@ -11,9 +11,9 @@ The package contains methods for loading data from commonly used N-body codes, g
 Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 -----------------
 
-'AMUSE <https://amusecode.github.io/>'__ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
+`AMUSE <https://amusecode.github.io/>`__ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
 
-'ASTROPY_TABLE <https://docs.astropy.org/en/latest/>'_ (Astropy Collaboration 2013, A&A, 558, A33)
+`ASTROPY_TABLE <https://docs.astropy.org/en/latest/>`_ (Astropy Collaboration 2013, A&A, 558, A33)
 
 GALPY <https://docs.galpy.org/en/v1.7.2/index.html> (Bovy J., 2015, ApJS, 216, 29)
 

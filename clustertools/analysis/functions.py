@@ -1812,7 +1812,6 @@ def ckin(
 
 def rcore(
     cluster,
-    method='isothermal',
     mfrac=0.1,
     projected=False,
     plot=False,
@@ -1821,8 +1820,7 @@ def rcore(
     **kwargs
 ):
     """Calculate core radius of the cluster
-    - The core radius can be calculated using two different methods
-    -- Isothermal (method=='isothermal') - if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
+    -- if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
     --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
     --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
 
@@ -2000,6 +1998,7 @@ def rtidal(
     pot=None,
     rtiterate=0,
     rtconverge=0.9,
+    indx=None,
     rgc=None,
     zgc=None,
     from_centre=False,
@@ -2026,6 +2025,8 @@ def rtidal(
         how many times to iterate on the calculation of r_t (default: 0)
     rtconverge : float
         criteria for tidal radius convergence within iterations (default 0.9)
+    indx : bool
+        subset of stars to use when calculate the tidal radius (default: None)
     rgc : float
         Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
     zgc : float
@@ -2081,13 +2082,16 @@ def rtidal(
         else:
             z = cluster.zgc
 
+    if indx is None:
+        indx=np.ones(len(cluster.m),dtype=bool)
+
     # Calculate rtide
-    rt = rtide(pot, R, z, M=np.sum(cluster.m),use_physical=False)
+    rt = rtide(pot, R, z, M=np.sum(cluster.m[indx]),use_physical=False)
     nit = 0
     for i in range(0, rtiterate):
         msum = 0.0
 
-        indx = cluster.r < rt
+        indx *= cluster.r < rt
         msum = np.sum(cluster.m[indx])
 
         rtnew = rtide(pot, R, z, M=msum,use_physical=False)

@@ -140,6 +140,5 @@ cython_debug/
 
 *.DS_Store
 
-#custom script
-/clustertools/custom/custom_loaders.py
-/clustertools/custom/custom_outputs.py
+#custom scripts
+/clustertools/custom

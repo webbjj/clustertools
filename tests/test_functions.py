@@ -8,6 +8,9 @@ from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 from galpy.util import bovy_conversion
 
+import limepy
+from limepy import limepy
+
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]
@@ -428,7 +431,9 @@ def test_ckin(tol=0.1):
 	assert np.fabs(ck-1.)<=tol
 
 def test_rcore(tol=0.2):
-	cluster=ctools.load_cluster('limepy',model='king',phi0=3.,r0=2.,M=1e4)
+
+	lmodel=limepy(g=1,phi0=3,r0=2,M=1e4)
+	cluster=ctools.load_cluster('limepy',model=lmodel)
 	rc=ctools.rcore(cluster)
 	assert np.fabs(rc-2.) <= tol
 

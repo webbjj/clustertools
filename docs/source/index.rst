@@ -11,19 +11,19 @@ The package contains methods for loading data from commonly used N-body codes, g
 Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 -----------------
 
-`AMUSE <https://amusecode.github.io/>`__ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
+`AMUSE <https://amusecode.github.io/>`_ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
 
 `ASTROPY_TABLE <https://docs.astropy.org/en/latest/>`_ (Astropy Collaboration 2013, A&A, 558, A33)
 
-GALPY <https://docs.galpy.org/en/v1.7.2/index.html> (Bovy J., 2015, ApJS, 216, 29)
+`GALPY <https://docs.galpy.org/en/v1.7.2/index.html>`_ (Bovy J., 2015, ApJS, 216, 29)
 
-LIMEPY <https://limepy.readthedocs.io/en/latest/> (Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576)
+`LIMEPY <https://limepy.readthedocs.io/en/latest/>`_ (Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576)
 
-NBODY6 <https://people.ast.cam.ac.uk/~sverre/web/pages/nbody.htm> (Aarseth S. J., 2003, Gravitational N-Body Simulations)
+`NBODY6 <https://people.ast.cam.ac.uk/~sverre/web/pages/nbody.htm>`_ (Aarseth S. J., 2003, Gravitational N-Body Simulations)
 
-NBODY6++GPU <https://github.com/nbodyx/Nbody6ppGPU> (Wang L., Spurzem R., Aarseth S., Nitadori K., Berczik P., Kouwenhoven M. B. N., Naab T., 2015, MNRAS, 450, 4070)
+`NBODY6ppGPU <https://github.com/nbodyx/Nbody6ppGPU>`_ (Wang L., Spurzem R., Aarseth S., Nitadori K., Berczik P., Kouwenhoven M. B. N., Naab T., 2015, MNRAS, 450, 4070)
 
-NEMO/GYRFALCON <https://astronemo.readthedocs.io/en/latest/> (Teuben P., 1995, The Stellar Dynamics Toolbox NEMO. p. 398)
+`NEMO <https://astronemo.readthedocs.io/en/latest/>`_ (Teuben P., 1995, The Stellar Dynamics Toolbox NEMO. p. 398)
 
 Guide
 -----------------
@@ -78,51 +78,49 @@ For specific functions, it is recomended to check that specific functions docume
 References
 -----------------
 
-``alpha_prof`` - Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383
+``alpha_prof`` - Webb, J.J. & Vesperini, E. 2016, MNRAS, 463, 2383 (`ADS <https://ui.adsabs.harvard.edu/abs/2016MNRAS.463.2383W/abstract>`_)
 
-``core_relaxation_time`` - Stone, N.C. & Ostriker, J.P. 2015, ApJ, 806, 28
+``core_relaxation_time`` - Stone, N.C. & Ostriker, J.P. 2015, ApJ, 806, 28 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJ...806L..28S/abstract>`_)
 
-``ckin`` - Bianchini et al. 2018, MNRAS, 475, 96
+``ckin`` - Bianchini, P. et al. 2018, MNRAS, 475, 96 (`ADS <https://ui.adsabs.harvard.edu/abs/2018MNRAS.475L..96B/abstract>`_)
 
-``cyl_coords`` ,``cart_to_cy``,``cyl_to_cart`` - Bovy J., 2015, ApJS, 216, 29
+``cyl_coords`` ,``cart_to_cy``,``cyl_to_cart`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357
+``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357 (`ADS <https://ui.adsabs.harvard.edu/abs/2007NewA...12..357H/abstract>`_)
 
-``half_mass_relaxation_time`` - Spitzer, L. 1987, Dynamical evolution of globular clusters
+``half_mass_relaxation_time`` - Spitzer, L. 1987, Dynamical evolution of globular clusters (`ADS <https://ui.adsabs.harvard.edu/abs/1987degc.book.....S/abstract>`_)
 
-``initialize_orbit``, ``initialize_orbits``, ``interpolate_orbit``, ``interpolate_orbits`` - Bovy J., 2015, ApJS, 216, 29
+``initialize_orbit``, ``initialize_orbits``, ``interpolate_orbit``, ``interpolate_orbits`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``load_cluster(ctype='limepy')`` - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576
+``load_cluster('limepy','gcname')`` (default) - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 (`ADS <https://ui.adsabs.harvard.edu/abs/2015MNRAS.454..576G/abstract>`_) - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.4906D/abstract>`_) - Vasiliev E., 2019, MNRAS, 484,2832 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.484.2832V/abstract>`_)
 
-``load_cluster('limepy','gcname')`` (default) - Bovy J., 2015, ApJS, 216, 29 - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 - Vasiliev E., 2019, MNRAS, 484,2832
+``load_cluster('limepy',gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 (`ADS <https://ui.adsabs.harvard.edu/abs/2015MNRAS.454..576G/abstract>`_) - Vasiliev E., 2019, MNRAS, 484,2832 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.484.2832V/abstract>`_)
 
-``load_cluster('limepy',gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Bovy J., 2015, ApJS, 216, 29 - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 - Vasiliev E., 2019, MNRAS, 484,2832
+``meq_function``, ``meq_prof`` - Bianchini, P. et al. 2016, MNRAS, 458, 3644 (`ADS <https://ui.adsabs.harvard.edu/abs/2016MNRAS.458.3644B/abstract>`_)
 
-``meq_function``, ``meq_prof`` - Bianchini, P. et al. 2016, MNRAS, 458, 3644 
+``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 -
+``relaxation_time`` - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 (`ADS <https://ui.adsabs.harvard.edu/abs/1971ApJ...164..399S/abstract>`_)
 
-``relaxation_time`` - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399
+``rlimiting`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``rlimiting`` - Bovy J., 2015, ApJS, 216, 29 
+``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.488.5748W/abstract>`_)
 
-``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4
+``tail_path``, ``tail_path_match``, ``to_tail`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``tail_path``, ``tail_path_match``, ``to_tail`` - Bovy J., 2015, ApJS, 216, 29
+``to_centre(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 (`ADS <https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..12G/abstract>`_)
 
-``to_centre(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 
+``to_centre(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University (`ADS <https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract>`_)
 
-``to_centre(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University
+``to_cluster(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 (`ADS <https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..12G/abstract>`_)
 
-``to_cluster(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 
+``to_cluster(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University (`ADS <https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract>`_)
 
-``to_cluster(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University
+``to_sky``,``sky_coords``,``cart_to_sky`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``to_sky``,``sky_coords``,``cart_to_sky`` - Bovy J., 2015, ApJS, 216, 29 
+``virial_radius(method='critical_density')`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``virial_radius(method='critical_density')`` - Bovy J., 2015, ApJS, 216, 29 -
-
-``virial_radius(method=inverse_distance)`` - Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9
+``virial_radius(method=inverse_distance)`` - Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9 (`ADS <https://ui.adsabs.harvard.edu/abs/2018araa.book.....P/abstract>`_)
 
 Contributers
 -----------------

@@ -1,5 +1,7 @@
 import clustertools as ctools
 import numpy as np
+import limepy
+import limepy as limepy
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -255,7 +257,9 @@ def test_add_actions():
 	np.testing.assert_array_equal(Tz,cluster.Tzs)
 
 def test_analyze(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
+
+	lmodel=limepy(g=1,phi0=5.,rh=3.,M=10000)
+	cluster=ctools.load_cluster(ctype='limepy',model=lmodel,N=10000)
 	assert cluster.ctype == 'limepy'
 
 	assert float(np.fabs(cluster.ntot-10000)/10000) <= tol
@@ -300,7 +304,9 @@ def test_analyze(tol=0.01):
 	assert np.fabs(cluster.rh10pro-rpro[np.argsort(rpro)][1000])/rpro[np.argsort(rpro)][5000] <= tol
 
 def test_sortstars():
-	cluster=ctools.load_cluster(ctype='limepy',model='king',phi0=5.,rh=3.,M=10000,N=10000)
+	lmodel=limepy(g=1,phi0=5.,rh=3.,M=10000)
+	cluster=ctools.load_cluster(ctype='limepy',model=lmodel,N=10000)
+	cluster=ctools.load_cluster(ctype='limepy',model=lmodel)
 	np.testing.assert_array_equal(np.argsort(cluster.r),cluster.rorder)
 	np.testing.assert_array_equal(np.argsort(cluster.rpro),cluster.rproorder)
 

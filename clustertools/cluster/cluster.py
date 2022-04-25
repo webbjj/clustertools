@@ -2737,7 +2737,6 @@ class StarCluster(object):
 
     def rcore(
         self,
-        method='heggie2003',
         mfrac=0.01,
         projected=False,
         plot=False,
@@ -2746,12 +2745,9 @@ class StarCluster(object):
         **kwargs
     ):
         """Calculate core radius of the cluster
-        - The core radius can be calculated using two different methods
-        -- Isothermal (method=='isothermal') - if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
+        --- if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
         --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
         --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
-        -- Heggie and Hut 2003 (method=='heggie2003') - where 4 pi G/3 rho_c r_c^2 = v_c^2 and v_c^2 = 3 sigma_c^2
-        ---Note that the inner mass fraction of stars used to calculate v_c an rho_c is set by mfrac (default 0.1 = 10%)
 
 
         Parameters
@@ -2792,7 +2788,7 @@ class StarCluster(object):
 
         return self.rl
 
-    def rtidal(self, pot=None, rtiterate=0, rtconverge=0.9, rgc=None, from_centre=False, plot=False, verbose=False, **kwargs):
+    def rtidal(self, pot=None, rtiterate=0, rtconverge=0.9, indx=None, rgc=None, from_centre=False, plot=False, verbose=False, **kwargs):
         """Calculate tidal radius of the cluster
         - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
         -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
@@ -2812,6 +2808,8 @@ class StarCluster(object):
             how many times to iterate on the calculation of r_t (default: 0)
         rtconverge : float
             criteria for tidal radius convergence within iterations (default 0.9)
+        indx : bool
+            subset of stars to use when calculate the tidal radius (default: None)
         rgc : float
             Manually set galactocentric distance in kpc at which the tidal radius is to be evaluated (default: None)
         zgc : float
@@ -2838,7 +2836,7 @@ class StarCluster(object):
         2019 - Written - Webb (UofT)
         """
 
-        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, rgc=rgc, from_centre=from_centre, plot=plot, verbose=verbose, **kwargs)
+        self.rt = rtidal(self, pot=pot, rtiterate=rtiterate,rtconverge=rtconverge, indx=indx, rgc=rgc, from_centre=from_centre, plot=plot, verbose=verbose, **kwargs)
 
         return self.rt
 

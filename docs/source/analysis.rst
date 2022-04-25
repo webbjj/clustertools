@@ -52,11 +52,12 @@ Finally, cluster properties that depend on the external tidal field, like its ti
 >>> from galpy.potential import MWPotential2014
 >>> pot = MWPotential2014
 
-It is always possible to define a differnt ``galpy`` potential using the ``pot`` variable where applicable. See https://docs.galpy.org/en/latest/reference/potential.html for a list of potentials in ``galpy``.
+It is always possible to define a different ``galpy`` potential using the ``pot`` variable where applicable. See https://docs.galpy.org/en/latest/reference/potential.html for a list of potentials in ``galpy``.
 
 For example, the limiting radius of a cluster (radius where the density falls to background) can be measured via:
 
->> cluster.rlimiting(plot=True)
+>> from galpy.potential import MWPotential2014
+>> cluster.rlimiting(pot=MWPotential2014, plot=True)
 
 Since ``plot=True``, a figure showing the cluster's density profile and the background density in MWPotential at the cluster's position is returned in order to view exactly where the limiting radius is. cluster.rl is now set equal to the the measured limiting radius. See the full list of functions and their input parameters to see what other functions have the ``plot`` option as well.
 
@@ -70,6 +71,14 @@ Alternatively, one can define a different ``galpy`` potential and make the calcu
 .. image:: /images/rlplot_log.png
 
 If the cluster's orbit is not known it is possible to set a galactocentric distance using ``rgc``.
+
+The calculation of a cluster's tidal radius also requires knowledge of the external tidal field, and can be calculated via:
+
+>> from galpy.potential import MWPotential2014
+>> cluster.rtidal(pot=MWPotential2014, plot=True)
+
+It is, however, worth noting that ``rtidal`` has two additional arguments that can improve your calculation of the tidal radius. It may be the case that not all of your particles are technically part of the star cluster. In this case, you could consider setting ``rtiterate`` and ``rtconverge``. When set, ``clustertools`` will first calculate ``rt`` using all the particles in the ``StarCluster``. It will then recalculate ``rt`` using only the particles within the initial estimate of the tidal radius. This process will occur ``rtiterate`` times of until the ratio of the new tidal radius to the previous tidal radius is greater than than ``rtconverge``. For example, ``rtconverge=0.9`` means the tidal radius has changed by less than 10 percent between iterations. Alternatively, if one knew which stars were bound to the cluster you could define a ``sub_cluster`` of bound particles and calculate it's tidal radius or pass a boolean array to ``rtidal`` to inform it which stars to use in the calculate of ``rt``.
+
 
 All functions, with the exception of calculating the cluster's tidal radius, can be called using projected valeus with ``projected=True``. When called internally, a function call will default to whatever ``StarCluster.projected`` is set to if ``projected`` is not given.
 

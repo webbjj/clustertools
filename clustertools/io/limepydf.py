@@ -72,6 +72,8 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
             de Boer et al. 2019 first and then pulls from Harris 1996 (2010 Edition) if no cluster found
     mbar : float
         mean mass of stars in the cluster (only single mass models available at the moment)
+    citation : boolean
+        print the proper citaion for setting up a mock Galactic GC (Default: True)
     kwargs : str
         Additional key word arguments needed by limepy and spes models can be passed. See https://readthedocs.org/projects/limepy/
 
@@ -82,6 +84,7 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
 
     gcname=kwargs.pop("gcname",None)
     model=kwargs.pop("model",None)
+    citation=kwargs.pop("citation",True)
 
     if gcname is not None:
         source = kwargs.pop("source", "default")
@@ -126,7 +129,7 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
 
     cluster.analyze(sortstars=True)
 
-    if gcname is not None: 
+    if gcname is not None and citation: 
         print('LOAD_CLUSTER MADE USE OF:')
         print("Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576")
         print("Vasiliev E., 2019, MNRAS, 484,2832 ")

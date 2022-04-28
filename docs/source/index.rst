@@ -1,10 +1,9 @@
 ``clustertools``
 ================
 
-``clustertools`` is a Python package for analysing star cluster simulations. The package is built around the StarCluster class, for which all functions are able to use or act on. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy
-<https://docs.galpy.org/en/v1.6.0/index.html>`_), and measuring common cluster properties like its mass function, density profile, and velocity dispersion profile (among others). 
+``clustertools`` is a Python package for analysing star cluster simulations. The package is built around the ``StarCluster`` class, which will store all the necessary information from a given star cluster simulation to be used for anaylsis. All functions within ``clustertools`` are then designed to act on a ``StarCluster``. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy <https://docs.galpy.org/en/v1.6.0/index.html>`_ , and measuring common cluster properties like its mass function, density profile, and velocity dispersion profile (among others). While originally designed with star clusters in mind, ``clustertools`` can be used to study other types of N-body systems, including stellar streams and dark matter sub-halos.  
 
-The package contains methods for loading data from commonly used N-body codes, generic snapshots, and codes for generating intial conditions. 
+The package contains functions for loading data from commonly used N-body codes, generic snapshots, and codes for generating initial conditions. 
 
 ``clustertools`` is developed on Github. Please go to https://github.com/webbjj/clustertools to report issues or contribute to the code. 
 
@@ -69,11 +68,7 @@ If you use ``clustertools`` in a publiclication, please cite the following digit
 
 and link to ``https://github.com/webbjj/clustertools``. 
 
-If you perform any analysis related to a cluster's orbit and the external tidal field, please cite ``galpy`` (Bovy 2015).
-
-If you use the ``setup_cluster`` command, please cite ``limepy`` (Gieles & Zocchi 2015) or ``galpy`` (Bovy 2015) depending on your choice of  ``ctype``. If you use ``setup_cluster`` to initialize a specific Galactic globular cluster, please cite either de Boer et al. (2019) or Harris (1999, 2010 Edition) depending on the cluster and your choice for the keyword argument ``source``. If you make use of the cluster's orbit, please cite Vasiliev (2019) as orbital properties are taken from that paper.
-
-For specific functions, it is recomended to check that specific functions documentation to check for a specific reference if applicable. The list below will continually be updated when possible:
+For specific functions, please consult the list below for the appropriate reference (if applicable).
 
 References
 -----------------

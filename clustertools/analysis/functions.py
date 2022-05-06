@@ -1828,8 +1828,6 @@ def rcore(
     ----------
     cluster : class
         StarCluster instance
-    method : str
-        method for calculating the core radius (default: isothermal)
     projected : bool
         use projected values (default: False)
     plot : bool
@@ -1868,31 +1866,31 @@ def rcore(
 
     rcentral=rlagrange(cluster,mfrac=mfrac,projected=projected)
 
-    if method=='isothermal':
-        nrad=int(np.ceil(1./mfrac))
 
-        rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+    nrad=int(np.ceil(1./mfrac))
+
+    rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
 
 
-        #interpolate
+    #interpolate
 
-        if projected:
-            rho_c=0.5*pprof[0]
-        else:
-            rho_c=pprof[0]/3.
+    if projected:
+        rho_c=0.5*pprof[0]
+    else:
+        rho_c=pprof[0]/3.
 
-        rindx=pprof < rho_c
+    rindx=pprof < rho_c
 
-        r1=rprof[np.invert(rindx)][-1]
-        r2=rprof[rindx][0]
+    r1=rprof[np.invert(rindx)][-1]
+    r2=rprof[rindx][0]
 
-        p1=pprof[np.invert(rindx)][-1]
-        p2=pprof[rindx][0]
-       
-        m=(p2-p1)/(r2-r1)
-        b=p2-m*r2
+    p1=pprof[np.invert(rindx)][-1]
+    p2=pprof[rindx][0]
+   
+    m=(p2-p1)/(r2-r1)
+    b=p2-m*r2
 
-        rc=(rho_c-b)/m
+    rc=(rho_c-b)/m
 
     if units0 == "kpckms":
         rc /= 1000.0

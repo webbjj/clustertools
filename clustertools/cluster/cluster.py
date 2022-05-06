@@ -2754,8 +2754,6 @@ class StarCluster(object):
         ----------
         cluster : class
             StarCluster instance
-        method : str
-            method for calculating the core radius (default: isothermal)
         projected : bool
             use projected values (default: False)
         plot : bool
@@ -2775,9 +2773,8 @@ class StarCluster(object):
         """
 
 
-        self.rc = core(
+        self.rc = rcore(
             self,
-            method=method,
             mfrac=mfrac,
             projected=projected,
             plot=plot,

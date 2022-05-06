@@ -25,7 +25,7 @@ else:
 author = 'Jeremy J. Webb'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1.dev1'
+release = '1.0'
 
 
 # -- General configuration ---------------------------------------------------

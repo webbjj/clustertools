@@ -1,4 +1,4 @@
-__version__= "0.1.dev1"
+__version__= "1.0"
 from .analysis import *
 from .cluster import *
 from .io import *

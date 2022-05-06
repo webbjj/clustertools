@@ -1,2 +1,2 @@
 # clustertools
-A python packaged for analysing star clusters
+A python packaged for analysing star cluster simulations

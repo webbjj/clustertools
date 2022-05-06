@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="clustertools",
-    version="0.1.dev3",
+    version="1.0",
     author="Jeremy J. Webb",
     author_email="webb@astro.utoronto.ca",
     description="A python packaged for analysing star clusters",

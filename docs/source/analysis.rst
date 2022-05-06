@@ -154,15 +154,15 @@ Since ``plot=True``, a figure showing ``dpath`` vs ``dprog`` is returned.
 
 Finally, clusters can be interpolated to past or future points in time. To interpolate a cluster 1 Gyr forward in time use:
 
->> cluster.orbit_interpolate(1.0,do_tails=True,rmax=0.1)
+>>> cluster.orbit_interpolate(1.0,do_tails=True,rmax=0.1)
 
 By default, all stars are simply shifted so the cluster is centred on its new galactocentric position. If one wishes to identify tail stars that have their own orbits interpolated, set ``do_tails=True`` as above and provide a criteria for what defines a tail star. In the above example, any star beyond 0.1 ``cluster.units`` is a tail star. Other criteria include velocity, energy, kwtype, or a custom boolean array (similar to defining subsets for profiles as disussed above).
 
 If one wishes to interpolate the orbits of stars within the cluster, then use ``orbits_interpolate`` with ``cluster.origin`` equal to centre or cluster. In this case the ``galpy`` potential of the cluster should be provided. A recomended potential would be a Plummer sphere
 
->>from galpy.potential import PlummerPotential
->>cluster.to_galpy()
->>pot=PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=cluster._ro,vo=cluster._vo)
+>>> from galpy.potential import PlummerPotential
+>>> cluster.to_galpy()
+>>> pot=PlummerPotential(cluster.mtot,b=cluster.rm/1.305,ro=cluster._ro,vo=cluster._vo)
 
 A complete list of all functions related to a cluster's orbit can be found below.
 

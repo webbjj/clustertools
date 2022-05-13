@@ -10,6 +10,9 @@ to_nbody=operations.to_nbody
 to_radec=operations.to_radec
 to_galpy=operations.to_galpy
 to_WDunits=operations.to_WDunits
+to_pcmyr=operations.to_pcmyr
+to_kpcgyr=operations.to_kpcgyr
+
 to_units=operations.to_units
 to_sudays=operations.to_sudays
 to_audays=operations.to_audays

@@ -182,7 +182,7 @@ Here, ``tol`` represents the distance tolerance. If a star in ``cluster1`` is wi
 Units
 -----
 
-When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. For most functions, it is necessary to set units in order for calculations to be carried out. At present, ``clustertools`` supports 6 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
+When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. For most functions, it is necessary to set units in order for calculations to be carried out. At present, ``clustertools`` supports 8 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
 
 .. list-table:: Table 1 - Units available in ``clustertools``
    :widths: 25 25 25 25 25
@@ -193,8 +193,10 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - Distance Units
      - Velocity Units
      - Mass Units
+     - Time Units
    * - nbody
      - nbody or Henon units, where G=M=rv=1
+     - nbody
      - nbody
      - nbody
      - nbody
@@ -203,26 +205,43 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - pc
      - km/s
      - Msun
+     - Myr
+   * - pcmyr
+     - units for when working in clustercentric coordinates
+     - pc
+     - pc/Myr
+     - Msun
+     - Myr
    * - kpckms
      - units for working in galactocentric coordinates
      - kpc
      - km/s
      - Msun
+     - Gyr
+   * - kpcgyr
+     - units for working in galactocentric coordinates
+     - kpc
+     - kpc/Gyr
+     - Msun
+     - Gyr
    * - radec
      - units for comparison to observations
      - degrees (Ra, Dec), and kpc (distance)
      - mas (proper motions) and kms (radial velocity)
-     - Msun  
+     - Msun
+     - Gyr
    * - galpy
      - galpy or natural units, set so the Sun orbits at a distance of 1 with a velocity of 1
      - kpc/ro
      - kms/vo
-     - Msun/90027307126.905106
+     - Msun/110119572536.69392 (assumes ``ro,vo=8.275,239.2``)
+     - Gyr/0.03382094817762924 (assumes ``ro,vo=8.275,239.2``)
    * - WDunits
      - Walter Dehnen units used by NEMO
      - kpc
      - pc/Myr
      - Msun/222288.4543021174
+     - Gyr
 
 In order to convert between certain units, it is necessary to know the distance to the Galactic Centre (``ro``), the rotation velocity at ``ro`` (``vo``), the Sun's height above the Galactic disk (``zo``), and the Sun's motion with respect to the local standard of rest (``solarmotion``). When a ``StarCluster`` is initialzied, the default value for ``ro`` is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1). The height of the Sun above the disk is 0.0208 kpc (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417). However each of these values can be changed when intializing a ``StarCluster``.
 

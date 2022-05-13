@@ -8,6 +8,8 @@ __all__ = [
     "to_pckms",
     "to_kpckms",
     "to_nbody",
+    "to_pcmyr",
+    "to_kpcgyr",
     "to_radec",
     "to_galpy",
     "to_WDunits",
@@ -65,7 +67,7 @@ def to_pckms(cluster):
     if cluster.units is None:
         print('NO UNITS SPECIFIED')
     else:
-        if cluster.units == "galpy" or cluster.units == "radec" or cluster.units =="WDunits":
+        if cluster.units == "galpy" or cluster.units == "radec" or cluster.units =="WDunits" or cluster.units=='kpcgyr':
             cluster.to_kpckms()
 
         if cluster.units == "nbody":
@@ -113,6 +115,21 @@ def to_pckms(cluster):
 
             cluster.units = "pckms"
 
+        elif cluster.units == 'pcmyr':
+            cluster.vx/=1.022712165045695
+            cluster.vy/=1.022712165045695
+            cluster.vz/=1.022712165045695
+
+            cluster.vxgc/=1.022712165045695
+            cluster.vygc/=1.022712165045695
+            cluster.vzgc/=1.022712165045695
+
+            cluster.vxc/=1.022712165045695
+            cluster.vyc/=1.022712165045695
+            cluster.vzc/=1.022712165045695
+
+            cluster.units = "pckms"
+
         cluster.analyze()
 
 def to_kpckms(cluster):
@@ -140,6 +157,9 @@ def to_kpckms(cluster):
     else:
         if cluster.units == "radec":
             from_radec(cluster)
+
+        if cluster.units == 'pcmyr':
+            cluster.to_pckms()
 
         if cluster.units == "galpy":
             cluster.tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
@@ -211,6 +231,21 @@ def to_kpckms(cluster):
 
             cluster.units = "kpckms"
 
+        elif cluster.units == 'kpcgyr':
+            cluster.vx/=1.022712165045695
+            cluster.vy/=1.022712165045695
+            cluster.vz/=1.022712165045695
+
+            cluster.vxgc/=1.022712165045695
+            cluster.vygc/=1.022712165045695
+            cluster.vzgc/=1.022712165045695
+
+            cluster.vxc/=1.022712165045695
+            cluster.vyc/=1.022712165045695
+            cluster.vzc/=1.022712165045695
+
+            cluster.units = "kpckms"
+
         elif cluster.units == 'WDunits':
             vcon = vo / conversion.velocity_in_kpcGyr(vo=vo, ro=ro)
             mcon = 222288.4543021174
@@ -229,6 +264,85 @@ def to_kpckms(cluster):
 
 
         cluster.analyze()
+
+def to_pcmyr(cluster):
+    """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and pc/Myr
+       
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+
+    Returns
+    -------
+    None
+
+    History:
+    -------
+    2022 - Written - Webb (UofT)
+
+    """
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units!='pckms' and cluster.units!='pcmyr':
+            cluster.to_pckms()
+
+        if cluster.units!='pcmyr':
+            cluster.vx*=1.022712165045695
+            cluster.vy*=1.022712165045695
+            cluster.vz*=1.022712165045695
+
+            cluster.vxgc*=1.022712165045695
+            cluster.vygc*=1.022712165045695
+            cluster.vzgc*=1.022712165045695
+
+            cluster.vxc*=1.022712165045695
+            cluster.vyc*=1.022712165045695
+            cluster.vzc*=1.022712165045695
+
+            cluster.units='pcmyr'
+            cluster.analyze()
+
+def to_kpcgyr(cluster):
+    """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and kpc/Gyr
+       
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+
+    Returns
+    -------
+    None
+
+    History:
+    -------
+    2022 - Written - Webb (UofT)
+
+    """
+    if cluster.units is None:
+        print('NO UNITS SPECIFIED')
+    else:
+        if cluster.units!='kpckms' and cluster.units!='kpcgyr':
+            cluster.to_kpckms()
+
+        if cluster.units!='kpcgyr':
+            cluster.vx*=1.022712165045695
+            cluster.vy*=1.022712165045695
+            cluster.vz*=1.022712165045695
+
+            cluster.vxgc*=1.022712165045695
+            cluster.vygc*=1.022712165045695
+            cluster.vzgc*=1.022712165045695
+
+            cluster.vxc*=1.022712165045695
+            cluster.vyc*=1.022712165045695
+            cluster.vzc*=1.022712165045695
+
+            cluster.units='kpcgyr'
+            cluster.analyze()
+
 
 def to_nbody(cluster):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
@@ -601,6 +715,10 @@ def to_units(cluster, units):
             cluster.to_radec(sortstars=False,)
         elif units == "WDunits":
             cluster.to_WDunits()
+        elif units == "pcmyr":
+            cluster.to_pcmyr()
+        elif units == "kpcgyr":
+            cluster.to_kpcgyr()
 
 def to_sudays(cluster):
     """ Convert binary star semi-major axis and periods to solar radii and days

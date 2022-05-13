@@ -1305,6 +1305,45 @@ class StarCluster(object):
         """
         to_kpckms(self)
 
+    def to_pcmyr(self):
+        """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and pc/Myr
+           
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+
+        Returns
+        -------
+        None
+
+        History:
+        -------
+        2022 - Written - Webb (UofT)
+
+        """
+        to_pcmyr(self)
+
+    def to_kpcgyr(self):
+        """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and kpc/Gyr
+           
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+
+        Returns
+        -------
+        None
+
+        History:
+        -------
+        2022 - Written - Webb (UofT)
+
+        """
+        to_kpcgyr(self)
+
+
     def to_nbody(self):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
        

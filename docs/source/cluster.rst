@@ -185,7 +185,7 @@ Units
 When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. For most functions, it is necessary to set units in order for calculations to be carried out. At present, ``clustertools`` supports 8 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
 
 .. list-table:: Table 1 - Units available in ``clustertools``
-   :widths: 25 25 25 25 25
+   :widths: 25 25 25 25 25 25
    :header-rows: 1
 
    * - Name

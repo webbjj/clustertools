@@ -185,7 +185,7 @@ Units
 When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. For most functions, it is necessary to set units in order for calculations to be carried out. At present, ``clustertools`` supports 8 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
 
 .. list-table:: Table 1 - Units available in ``clustertools``
-   :widths: 25 25 25 25 25 25
+   :widths: 35 25 25 25 20 20
    :header-rows: 1
 
    * - Name
@@ -231,11 +231,11 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
      - Msun
      - Gyr
    * - galpy
-     - galpy or natural units, set so the Sun orbits at a distance of 1 with a velocity of 1
+     - galpy or natural units, set so the Sun orbits at a distance of 1 with a velocity of 1 (assumes ``ro,vo=8.275,239.2``)
      - kpc/ro
      - kms/vo
-     - Msun/110119572536.69392 (assumes ``ro,vo=8.275,239.2``)
-     - Gyr/0.03382094817762924 (assumes ``ro,vo=8.275,239.2``)
+     - Msun/110119572536.69392
+     - Gyr/0.03382094817762924
    * - WDunits
      - Walter Dehnen units used by NEMO
      - kpc

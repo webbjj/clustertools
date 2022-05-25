@@ -635,8 +635,6 @@ def _get_filename(filename,**kwargs):
             filename="%s%s%s" % (wdir, snapdir, filename)
         elif os.path.isfile("%s%s" % (wdir, filename)):
             filename="%s%s" % (wdir, filename)
-        else:
-            filename=None
 
     elif os.path.isfile(
         "%s%s%s%s%s" % (wdir, snapdir, snapbase, str(nsnap).zfill(nzfill), snapend)

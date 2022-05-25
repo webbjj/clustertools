@@ -314,7 +314,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     Returns
     -------
        trelax : float
-          relaxation time within radius rad
+          relaxation time within radius rad (in Myr)
 
     History
     -------
@@ -384,7 +384,7 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     Returns
     -------
        trh : float
-          half-mass relaxation time within radius rad
+          half-mass relaxation time within radius rm (in Myr)
 
     History
     -------
@@ -443,7 +443,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     Returns
 
-     trc
+     trc (in Myr)
 
     History
     -------

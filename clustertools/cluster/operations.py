@@ -969,22 +969,26 @@ def _get_orthographic_centre(cluster,from_centre=False):
         elif cluster.units=='radec' and cluster.origin!='sky':
             cluster.to_sky()
 
-        ra = np.radians(cluster.x)
-        dec = np.radians(cluster.y)
-        pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
-        pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
+        ra = copy(np.radians(cluster.x))
+        dec = copy(np.radians(cluster.y))
+        pmra = copy(cluster.vx) # / (1000.0 * 3600.0)))
+        pmdec = copy(cluster.vy) # / (1000.0 * 3600.0)))
 
         if from_centre:
-            ra_gc = np.radians(cluster.xc)
-            dec_gc = np.radians(cluster.yc)
+            ra_gc = copy(np.radians(cluster.xc))
+            dec_gc = copy(np.radians(cluster.yc))
         else:
-            ra_gc = np.radians(cluster.xgc)
-            dec_gc = np.radians(cluster.ygc)
+            ra_gc = copy(np.radians(cluster.xgc))
+            dec_gc = copy(np.radians(cluster.ygc))
 
         cluster.x = np.cos(dec) * np.sin(ra - ra_gc)
         cluster.y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
             dec_gc
         ) * np.cos(ra - ra_gc)
+
+
+        cluster.x*=(180.0/np.pi)
+        cluster.y*=(180.0/np.pi)
 
         cluster.vx = pmra * np.cos(ra - ra_gc) - pmdec * np.sin(dec) * np.sin(
             ra - ra_gc
@@ -995,6 +999,9 @@ def _get_orthographic_centre(cluster,from_centre=False):
             np.cos(dec) * np.cos(dec_gc)
             + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
         )
+
+        cluster.vx-=cluster.vxgc
+        cluster.vy-=cluster.vygc
 
         if from_centre:
             cluster.z -= cluster.zc
@@ -1016,8 +1023,6 @@ def _get_vandeven_centre(cluster,from_centre=False):
 
         ra = np.radians(cluster.x)
         dec = np.radians(cluster.y)
-        pmra = np.radians(cluster.vx / (1000.0 * 3600.0))
-        pmdec = np.radians(cluster.vy / (1000.0 * 3600.0))
 
         if from_centre:
             ra_gc = np.radians(cluster.xc)
@@ -1027,15 +1032,14 @@ def _get_vandeven_centre(cluster,from_centre=False):
             dec_gc = np.radians(cluster.ygc)
 
         cluster.x = (
-            (10800.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc) / 60.0
+            (180.0 / np.pi) * np.cos(dec) * np.sin(ra - ra_gc)
         )
         cluster.y = (
-            (10800.0 / np.pi)
+            (180.0 / np.pi)
             * (
                 np.sin(dec) * np.cos(dec_gc)
                 - np.cos(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
             )
-            / 60.0
         )
 
         if from_centre:

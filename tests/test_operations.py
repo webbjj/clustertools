@@ -848,15 +848,20 @@ def test_to_cluster(tol=0.01):
 
 	ra = np.radians(ra)
 	dec = np.radians(dec)
-	pmra = np.radians(pmra / (1000.0 * 3600.0))
-	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	#pmra = np.radians(pmra) #/ (1000.0 * 3600.0))
+	#pmdec = np.radians(pmdec) # / (1000.0 * 3600.0))
 	ra_gc = np.radians(cluster.xgc)
 	dec_gc = np.radians(cluster.ygc)
+	pmra_gc = cluster.vxgc
+	pmdec_gc = cluster.vygc
 
 	x = np.cos(dec) * np.sin(ra - ra_gc)
 	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
 	    dec_gc
 	) * np.cos(ra - ra_gc)
+
+	x*=(180.0/np.pi)
+	y*=(180.0/np.pi)
 
 	z = np.zeros(len(x))
 
@@ -869,6 +874,9 @@ def test_to_cluster(tol=0.01):
 	    np.cos(dec) * np.cos(dec_gc)
 	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
 	)
+
+	vx-=pmra_gc
+	vy-=pmdec_gc
 
 	z=cluster.z-cluster.zgc
 	vz=cluster.vz-cluster.vzgc
@@ -987,15 +995,20 @@ def test_to_centre(tol=0.01):
 
 	ra = np.radians(ra)
 	dec = np.radians(dec)
-	pmra = np.radians(pmra / (1000.0 * 3600.0))
-	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	#pmra = np.radians(pmra / (1000.0 * 3600.0))
+	#pmdec = np.radians(pmdec / (1000.0 * 3600.0))
 	ra_gc = np.radians(cluster.xc)
 	dec_gc = np.radians(cluster.yc)
+	pmra_gc=cluster.vxc
+	pmdec_gc=cluster.vyc
 
 	x = np.cos(dec) * np.sin(ra - ra_gc)
 	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
 	    dec_gc
 	) * np.cos(ra - ra_gc)
+
+	x*=(180.0/np.pi)
+	y*=(180.0/np.pi)
 
 	z = np.zeros(len(x))
 
@@ -1008,6 +1021,9 @@ def test_to_centre(tol=0.01):
 	    np.cos(dec) * np.cos(dec_gc)
 	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
 	)
+
+	vx-=pmra_gc
+	vy-=pmdec_gc
 
 	z=cluster.z-cluster.zc
 	vz=cluster.vz-cluster.vzc
@@ -1125,15 +1141,20 @@ def test_to_center(tol=0.01):
 
 	ra = np.radians(ra)
 	dec = np.radians(dec)
-	pmra = np.radians(pmra / (1000.0 * 3600.0))
-	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	#pmra = np.radians(pmra / (1000.0 * 3600.0))
+	#pmdec = np.radians(pmdec / (1000.0 * 3600.0))
 	ra_gc = np.radians(cluster.xc)
 	dec_gc = np.radians(cluster.yc)
+	pmra_gc=cluster.vxc
+	pmdec_gc=cluster.vyc
 
 	x = np.cos(dec) * np.sin(ra - ra_gc)
 	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
 	    dec_gc
 	) * np.cos(ra - ra_gc)
+
+	x*=(180.0/np.pi)
+	y*=(180.0/np.pi)
 
 	z = np.zeros(len(x))
 
@@ -1146,6 +1167,9 @@ def test_to_center(tol=0.01):
 	    np.cos(dec) * np.cos(dec_gc)
 	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
 	)
+
+	vx-=pmra_gc
+	vy-=pmdec_gc
 
 	z=cluster.z-cluster.zc
 	vz=cluster.vz-cluster.vzc
@@ -1368,15 +1392,20 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 	ra = np.radians(ra)
 	dec = np.radians(dec)
-	pmra = np.radians(pmra / (1000.0 * 3600.0))
-	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	#pmra = np.radians(pmra) #/ (1000.0 * 3600.0))
+	#pmdec = np.radians(pmdec) # / (1000.0 * 3600.0))
 	ra_gc = np.radians(cluster.xgc)
 	dec_gc = np.radians(cluster.ygc)
+	pmra_gc = cluster.vxgc
+	pmdec_gc = cluster.vygc
 
 	x = np.cos(dec) * np.sin(ra - ra_gc)
 	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
 	    dec_gc
 	) * np.cos(ra - ra_gc)
+
+	x*=(180.0/np.pi)
+	y*=(180.0/np.pi)
 
 	z = np.zeros(len(x))
 
@@ -1390,8 +1419,12 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
 	)
 
+	vx-=pmra_gc
+	vy-=pmdec_gc
+
 	z=cluster.z-cluster.zgc
 	vz=cluster.vz-cluster.vzgc
+
 
 	cluster.to_origin('cluster',centre_method = "orthographic")
 
@@ -1505,15 +1538,20 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 	ra = np.radians(ra)
 	dec = np.radians(dec)
-	pmra = np.radians(pmra / (1000.0 * 3600.0))
-	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	#pmra = np.radians(pmra / (1000.0 * 3600.0))
+	#pmdec = np.radians(pmdec / (1000.0 * 3600.0))
 	ra_gc = np.radians(cluster.xc)
 	dec_gc = np.radians(cluster.yc)
+	pmra_gc=cluster.vxc
+	pmdec_gc=cluster.vyc
 
 	x = np.cos(dec) * np.sin(ra - ra_gc)
 	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
 	    dec_gc
 	) * np.cos(ra - ra_gc)
+
+	x*=(180.0/np.pi)
+	y*=(180.0/np.pi)
 
 	z = np.zeros(len(x))
 
@@ -1526,6 +1564,9 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 	    np.cos(dec) * np.cos(dec_gc)
 	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
 	)
+
+	vx-=pmra_gc
+	vy-=pmdec_gc
 
 	z=cluster.z-cluster.zc
 	vz=cluster.vz-cluster.vzc
@@ -1642,15 +1683,20 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 	ra = np.radians(ra)
 	dec = np.radians(dec)
-	pmra = np.radians(pmra / (1000.0 * 3600.0))
-	pmdec = np.radians(pmdec / (1000.0 * 3600.0))
+	#pmra = np.radians(pmra / (1000.0 * 3600.0))
+	#pmdec = np.radians(pmdec / (1000.0 * 3600.0))
 	ra_gc = np.radians(cluster.xc)
 	dec_gc = np.radians(cluster.yc)
+	pmra_gc=cluster.vxc
+	pmdec_gc=cluster.vyc
 
 	x = np.cos(dec) * np.sin(ra - ra_gc)
 	y = np.sin(dec) * np.cos(dec_gc) - np.cos(dec) * np.sin(
 	    dec_gc
 	) * np.cos(ra - ra_gc)
+
+	x*=(180.0/np.pi)
+	y*=(180.0/np.pi)
 
 	z = np.zeros(len(x))
 
@@ -1663,6 +1709,9 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 	    np.cos(dec) * np.cos(dec_gc)
 	    + np.sin(dec) * np.sin(dec_gc) * np.cos(ra - ra_gc)
 	)
+
+	vx-=pmra_gc
+	vy-=pmdec_gc
 
 	z=cluster.z-cluster.zc
 	vz=cluster.vz-cluster.vzc

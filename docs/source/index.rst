@@ -34,6 +34,8 @@ Thanks to anyone that has been using ``clustertools`` while it was in devlopment
 
 -- The ``setup_cluster`` function has been deprecated. You can now initialize a Galactic cluster using ``load_cluster(ctype='limepy',gcname='Pal5')``. If you wish to initialize a cluster with a specific lowered isothermal model, you must do so in ``limepy`` first and then call ``load_cluster`` accordingly.
 
+-- Previously when centreing the cluster to orthonormal coordinates, positions were in radians and velocities were converted to radians/year, but not actually moved to the cluster's centre. Positions are now returned to degrees and velocities remain in mas/yr. Furthermore the velocities are shifted to be relative to the cluster's centre
+
 The above changes were made to ensure consistency accross ``clustertools``. Now that Version 1.0 is official, I will work to ensure that any future changes will be compatabile with past versions of ``clustertools``.
 
 Guide

@@ -610,10 +610,13 @@ def _potential_energy(cluster):
     for i in range(len(cluster) - 1):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
-            if r==0: print(i,j,r)
-            m2 = cluster[i, 3] * cluster[j, 3]
-            pot[i] += -m2 / r
-            pot[j] += -m2 / r
+            if r==0: 
+                pot[i]=float("nan")
+                pot[j]=float("nan")
+            else:
+                m2 = cluster[i, 3] * cluster[j, 3]
+                pot[i] += -m2 / r
+                pot[j] += -m2 / r
 
     return pot
 
@@ -641,9 +644,13 @@ def _potential_energy_parallel(cluster):
     for i in numba.prange(len(cluster) - 1):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
-            m2 = cluster[i, 3] * cluster[j, 3]
-            pot[i] += -m2 / r
-            pot[j] += -m2 / r
+            if r==0: 
+                pot[i]=float("nan")
+                pot[j]=float("nan")
+            else:
+                m2 = cluster[i, 3] * cluster[j, 3]
+                pot[i] += -m2 / r
+                pot[j] += -m2 / r
 
     return pot
 

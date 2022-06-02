@@ -1025,8 +1025,8 @@ class StarCluster(object):
         else:
             self.etot = np.array(etot)
 
-        self.ektot = np.sum(self.kin)
-        self.ptot = np.sum(self.pot) / 2.0
+        self.ektot = np.sum(np.nan_to_num(self.kin))
+        self.ptot = np.sum(np.nan_to_num(self.pot)) / 2.0
 
         if self.ptot == 0.0:
             self.qvir = 0.0

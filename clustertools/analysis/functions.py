@@ -583,7 +583,6 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-
     return ek, pot
 
 
@@ -611,7 +610,7 @@ def _potential_energy(cluster):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
 
-            if r==0: r=1e-10
+            if r==0: r=np.nan
 
             m2 = cluster[i, 3] * cluster[j, 3]
             pot[i] += -m2 / r
@@ -644,8 +643,8 @@ def _potential_energy_parallel(cluster):
         for j in range(i + 1, len(cluster)):
             r = distance(cluster[i], cluster[j])
 
-            if r==0: r=1e-10
-            
+            if r==0: r=np.nan
+
             m2 = cluster[i, 3] * cluster[j, 3]
             pot[i] += -m2 / r
             pot[j] += -m2 / r

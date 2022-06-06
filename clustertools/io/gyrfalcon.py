@@ -49,13 +49,6 @@ def _get_gyrfalcon(
     2018 - Written - Webb (UofT)
     """
 
-    if units=='WDunits':
-        vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
-        mcon = 222288.4543021174
-    else:
-        vcon=1.
-        mcon=1.
-
     # Default **kwargs
     skiprows = kwargs.pop("skiprows", 13)
     give = kwargs.get('give','mxv')
@@ -119,13 +112,13 @@ def _get_gyrfalcon(
             break
 
         i_d.append(j + 1)
-        m.append(float(data[0]) * mcon)
+        m.append(float(data[0]))
         x.append(float(data[1]))
         y.append(float(data[2]))
         z.append(float(data[3]))
-        vx.append(float(data[4]) * vcon)
-        vy.append(float(data[5]) * vcon)
-        vz.append(float(data[6]) * vcon)
+        vx.append(float(data[4]))
+        vy.append(float(data[5]))
+        vz.append(float(data[6]))
 
 
         if give == 'mxvpqael':

@@ -187,6 +187,9 @@ def load_cluster(
         dtout=kwargs.pop('dtout',deltat)
         hdf5=kwargs.pop('hdf5',False)
 
+        if isinstance(dtoutut,float):
+            nsnap=float(nsnap)
+
         if hdf5:
             if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
                 conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
@@ -218,6 +221,11 @@ def load_cluster(
     elif ctype == "gyrfalcon" or ctype=='nemo':
         # Read in snapshot from gyrfalcon.
         filename=_get_filename(filename,**kwargs)
+
+        if dtout is None:
+            filein = open(filename, "r")
+            filein.readlines()
+
 
         filein = open(filename, "r")
 

@@ -187,7 +187,7 @@ def load_cluster(
         dtout=kwargs.pop('dtout',deltat)
         hdf5=kwargs.pop('hdf5',False)
 
-        if isinstance(dtoutut,float):
+        if isinstance(dtout,float):
             nsnap=float(nsnap)
 
         if hdf5:

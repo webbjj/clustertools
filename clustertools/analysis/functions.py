@@ -487,8 +487,10 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
       StarCluster instance
     specific : bool
       find specific energies (default: True)
+    indx : bool
+      subset of stars to return the energies of. Incompatible with i_d (default: None)
     i_d : int
-      if given, find energies for a specific star only (default: None)
+      if given, find energies for a specific star only. Incompatible with indx (default: None)
     full : bool
       calculate distance of full array of stars at once with numbra (default: True)
     parallel : bool
@@ -505,6 +507,10 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    
+    # Initialize indx from i_d, use for the rest
+    if i_d != None:
+        indx = cluster.id == i_d
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_cluster(sortstars=False)
@@ -512,20 +518,17 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
     grav=_get_grav(cluster)
 
     if projected:
-      if specific:
-          ek = 0.5 * (cluster.vpro ** 2.0)
-      else:
-          ek = 0.5 * cluster.m * (cluster.vpro ** 2.0)
+        if specific:
+            ek = 0.5 * (cluster.vpro ** 2.0)
+        else:
+            ek = 0.5 * cluster.m * (cluster.vpro ** 2.0)
     else:
-
-      if specific:
-          ek = 0.5 * (cluster.v ** 2.0)
-      else:
-          ek = 0.5 * cluster.m * (cluster.v ** 2.0)
-
-    if i_d != None:
-        indx = cluster.id == i_d
-
+        if specific:
+            ek = 0.5 * (cluster.v ** 2.0)
+        else:
+            ek = 0.5 * cluster.m * (cluster.v ** 2.0)
+      
+    if indx != None:
         dx = cluster.x[indx] - cluster.x
         dy = cluster.y[indx] - cluster.y
         dz = cluster.z[indx] - cluster.z
@@ -536,9 +539,9 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
             m = cluter.m[indx] * cluster.m
 
         if projected:
-          dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+            dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
         else:
-          dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+            dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
 
         rindx = dr != 0.0
         gmr = -grav * m[rindx] / dr[rindx]
@@ -549,9 +552,9 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
     elif full:
         if projected:
-          x = np.array([cluster.x, cluster.y, np.zeros(len(cluster.x)), cluster.m]).T
+            x = np.array([cluster.x, cluster.y, np.zeros(len(cluster.x)), cluster.m]).T
         else:
-          x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
+            x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
         if parallel:
             pot = grav * np.array(_potential_energy_parallel(x))
         else:

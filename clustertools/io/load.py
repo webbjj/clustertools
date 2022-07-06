@@ -222,13 +222,12 @@ def load_cluster(
         # Read in snapshot from gyrfalcon.
         filename=_get_filename(filename,**kwargs)
 
-        deltat=kwargs.pop('deltat',1)
-        dtout=kwargs.pop('dtout',deltat)
+        deltat=kwargs.pop('deltat',None)
+        dtout=kwargs.pop('dtout',None)
 
         if dtout is None:
             filein = open(filename, "r")
             filein.readlines()
-
 
         filein = open(filename, "r")
 

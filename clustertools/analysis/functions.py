@@ -480,37 +480,28 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
 def energies(cluster, specific=True, i_d=None, full=True, projected=False, parallel=False):
     """Calculate kinetic and potential energy of every star
-
     Parameters
     ----------
     cluster : class
       StarCluster instance
     specific : bool
       find specific energies (default: True)
-    indx : bool
-      subset of stars to return the energies of. Incompatible with i_d (default: None)
     i_d : int
-      if given, find energies for a specific star only. Incompatible with indx (default: None)
+      if given, find energies for a specific star only (default: None)
     full : bool
       calculate distance of full array of stars at once with numbra (default: True)
     parallel : bool
       calculate distances in parallel (default: False)
-
     Returns
     -------
     ek,pot : float
       kinetic and potential energy of every star
-
     History
     -------
        2019 - Written - Webb (UofT)
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
-    
-    # Initialize indx from i_d, use for the rest
-    if i_d != None:
-        indx = cluster.id == i_d
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_cluster(sortstars=False)
@@ -523,12 +514,15 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
         else:
             ek = 0.5 * cluster.m * (cluster.vpro ** 2.0)
     else:
+
         if specific:
             ek = 0.5 * (cluster.v ** 2.0)
         else:
             ek = 0.5 * cluster.m * (cluster.v ** 2.0)
-      
-    if indx != None:
+
+    if i_d != None:
+        indx = cluster.id == i_d
+
         dx = cluster.x[indx] - cluster.x
         dy = cluster.y[indx] - cluster.y
         dz = cluster.z[indx] - cluster.z
@@ -575,9 +569,9 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
                 m = cluter.m[i] * cluster.m
 
             if projected:
-              dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+                dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
             else:
-              dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+                dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
 
             indx = dr != 0.0
             gmr = -grav * m[indx] / dr[indx]
@@ -653,6 +647,7 @@ def _potential_energy_parallel(cluster):
             pot[j] += -m2 / r
 
     return pot
+
 
 
 def closest_star(cluster, projected=False):

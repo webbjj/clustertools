@@ -221,12 +221,6 @@ def load_cluster(
     elif ctype == "gyrfalcon" or ctype=='nemo':
         # Read in snapshot from gyrfalcon.
         filename=_get_filename(filename,**kwargs)
-
-        if dtout is None:
-            filein = open(filename, "r")
-            filein.readlines()
-
-
         filein = open(filename, "r")
 
         cluster = _get_gyrfalcon(filein, units=units, origin=origin, advance=False, **kwargs)

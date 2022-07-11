@@ -2176,7 +2176,7 @@ class StarCluster(object):
         ek, pot=energies(self, specific=specific, i_d=i_d, full=full, projected=projected, parallel=parallel)
         self.add_energies(ek, pot)
 
-        return self.ektot,self.ptot
+        return self.kin,self.pot
 
     def closest_star(self, projected=None):
         """Find distance to closest star for each star

@@ -545,7 +545,6 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
         pot = np.sum(gmr)
         ek = ek[indx]
-        etot = ek + pot
 
     elif full:
         if projected:

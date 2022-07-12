@@ -2146,7 +2146,7 @@ class StarCluster(object):
 
         return self.trc
 
-    def energies(self, specific=True, i_d=None, full=True, projected=None, parallel=False):
+    def energies(self, specific=True, i_d=None, ids=None, full=True, projected=None, parallel=False):
         """Calculate kinetic and potential energy of every star
 
         Parameters
@@ -2157,6 +2157,10 @@ class StarCluster(object):
           find specific energies (default: True)
         i_d : int
           if given, find energies for a specific star only (default: None)
+        ids: boolean array or integer array
+          if given, find the energues of a subset of stars defined either by an array of
+          star ids, or a boolean array that can be used to slice the cluster. Overridden
+          by i_d parameter (default: None)
         full : bool
           calculate distance of full array of stars at once with numbra (default: True)
         parallel : bool
@@ -2170,10 +2174,12 @@ class StarCluster(object):
         History
         -------
            2019 - Written - Webb (UofT)
+           2022 - Updated with support for multiple ids or an idexing array - Gillis (UofT)
+
         """
         if projected==None:
             projected=self.projected
-        ek, pot=energies(self, specific=specific, i_d=i_d, full=full, projected=projected, parallel=parallel)
+        ek, pot=energies(self, specific=specific, i_d=i_d, ids=ids, full=full, projected=projected, parallel=parallel)
         self.add_energies(ek, pot)
 
         return self.kin,self.pot

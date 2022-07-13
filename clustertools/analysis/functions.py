@@ -503,7 +503,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
     History
     -------
        2019 - Written - Webb (UofT)
-       2022 - Updated with support for multiple ids or an idexing array - Gillis (UofT)
+       2022 - Updated with support for multiple ids or an idexing array - Erik Gillis (UofT)
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
@@ -681,9 +681,9 @@ def _potential_energy_subset(cluster_sub, cluster_full):
     
     Parameters
     ----------
-    cluster_sub : numpy array
+    cluster_sub : float
         2d numpy array with x, y, z and mass at each index of the sub cluster
-    cluster_full : numpy array
+    cluster_full : float
         2d numpy array with x, y, z and mass at each index of the cluster
     
     Returns:
@@ -693,7 +693,7 @@ def _potential_energy_subset(cluster_sub, cluster_full):
             
     History
     -------
-        2022 - Written - Gillis (UofT)
+        2022 - Written - Erik Gillis (UofT)
     """
     potential = [0.0] * len(cluster_sub)
     

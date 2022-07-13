@@ -592,8 +592,8 @@ def _potential_energy(cluster):
 
     Parameters
     ----------
-    cluster : class
-        StarCluster
+    cluster : float
+        positions and masses of stars within the StarCluster
 
     Returns
     -------
@@ -626,7 +626,7 @@ def _potential_energy_parallel(cluster):
     Parameters
     ----------
     cluster : class
-        StarCluster
+        positions and masses of stars within the StarCluster
 
     Returns
     -------
@@ -658,7 +658,7 @@ def closest_star(cluster, projected=False):
     Parameters
     ----------
     cluster : class
-        StarCluster
+        positions of stars within the StarCluster
 
     Returns
     -------

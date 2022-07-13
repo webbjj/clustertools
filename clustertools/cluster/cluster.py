@@ -2164,7 +2164,7 @@ class StarCluster(object):
 
         Returns
         -------
-        ek,pot : float
+        kin,pot : float
           kinetic and potential energy of every star
 
         History

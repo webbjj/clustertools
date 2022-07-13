@@ -496,7 +496,7 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
     Returns
     -------
-    ek,pot : float
+    kin,pot : float
       kinetic and potential energy of every star
 
     History
@@ -513,15 +513,15 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
     if projected:
       if specific:
-          ek = 0.5 * (cluster.vpro ** 2.0)
+          kin = 0.5 * (cluster.vpro ** 2.0)
       else:
-          ek = 0.5 * cluster.m * (cluster.vpro ** 2.0)
+          kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
     else:
 
       if specific:
-          ek = 0.5 * (cluster.v ** 2.0)
+          kin = 0.5 * (cluster.v ** 2.0)
       else:
-          ek = 0.5 * cluster.m * (cluster.v ** 2.0)
+          kin = 0.5 * cluster.m * (cluster.v ** 2.0)
 
     if i_d != None:
         indx = cluster.id == i_d
@@ -544,7 +544,7 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
         gmr = -grav * m[rindx] / dr[rindx]
 
         pot = np.sum(gmr)
-        ek = ek[indx]
+        kin = kin[indx]
 
     elif full:
         if projected:
@@ -582,7 +582,7 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-    return ek, pot
+    return kin, pot
 
 
 @numba.njit

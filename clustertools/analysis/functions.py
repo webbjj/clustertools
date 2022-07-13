@@ -498,7 +498,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
       calculate distances in parallel (default: False)
     Returns
     -------
-    ek,pot : float
+    kin,pot : float
       kinetic and potential energy of every star
     History
     -------
@@ -515,15 +515,25 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
 
     if projected:
         if specific:
-            ek = 0.5 * (cluster.vpro ** 2.0)
+            kin = 0.5 * (cluster.vpro ** 2.0)
         else:
-            ek = 0.5 * cluster.m * (cluster.vpro ** 2.0)
+            kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
     else:
 
         if specific:
-            ek = 0.5 * (cluster.v ** 2.0)
+            kin = 0.5 * (cluster.v ** 2.0)
         else:
-            ek = 0.5 * cluster.m * (cluster.v ** 2.0)
+            kin = 0.5 * cluster.m * (cluster.v ** 2.0)
+    if specific:
+          kin = 0.5 * (cluster.vpro ** 2.0)
+    else:
+          kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
+    else:
+
+    if specific:
+          kin = 0.5 * (cluster.v ** 2.0)
+    else:
+          kin = 0.5 * cluster.m * (cluster.v ** 2.0)
 
     if i_d != None:
         indx = cluster.id == i_d
@@ -546,7 +556,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
         gmr = -grav * m[rindx] / dr[rindx]
 
         pot = np.sum(gmr)
-        ek = ek[indx]
+        kin = kin[indx]
         
     
     elif type(ids) != type(None):
@@ -557,7 +567,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
         # Get gravitational constant
         grav = _get_grav(cluster)
 
-        ek = 0.5 * cluster.m[ids] * cluster.v[ids]**2
+        kin = 0.5 * cluster.m[ids] * cluster.v[ids]**2
 
         cluster_full = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
         cluster_sub  = np.array([cluster.x[ids], cluster.y[ids], 
@@ -567,8 +577,9 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
         
         if specific:
             pot /= cluster.m[ids]
-            ek  /= cluster.m[ids]
+            kin  /= cluster.m[ids]
     
+        kin = kin[indx]
 
     elif full:
         if projected:
@@ -606,7 +617,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-    return ek, pot
+    return kin, pot
 
 
 @numba.njit
@@ -616,8 +627,8 @@ def _potential_energy(cluster):
 
     Parameters
     ----------
-    cluster : class
-        StarCluster
+    cluster : float
+        positions and masses of stars within the StarCluster
 
     Returns
     -------
@@ -650,7 +661,7 @@ def _potential_energy_parallel(cluster):
     Parameters
     ----------
     cluster : class
-        StarCluster
+        positions and masses of stars within the StarCluster
 
     Returns
     -------
@@ -722,7 +733,7 @@ def closest_star(cluster, projected=False):
     Parameters
     ----------
     cluster : class
-        StarCluster
+        positions of stars within the StarCluster
 
     Returns
     -------

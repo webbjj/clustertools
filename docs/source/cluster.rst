@@ -9,9 +9,9 @@ The ``StarCluster`` class is the foundation on which ``clustertools`` has been b
 
 To initialize a ``StarCluster``, one can simply start with:
 
->>> import clustertools
+>>> import clustertools as ctools
 
->>> cluster=StarCluster()
+>>> cluster=ctools.StarCluster()
 
 ``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``,``'galpy'``,``'gyrfalcon'``,``'limepy'``, ``'nbody6'``,``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Loading and Advancing <_load_and_advance>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
 

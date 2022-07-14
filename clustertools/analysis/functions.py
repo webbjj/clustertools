@@ -530,7 +530,6 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
           kin = 0.5 * (cluster.vpro ** 2.0)
     else:
           kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
-    else:
 
     if specific:
           kin = 0.5 * (cluster.v ** 2.0)
@@ -563,8 +562,6 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
             pot /= cluster.m[ids]
             kin /= cluster.m[ids]
     
-        kin = kin[ids]
-
     elif full:
         if projected:
             x = np.array([cluster.x, cluster.y, np.zeros(len(cluster.x)), cluster.m]).T

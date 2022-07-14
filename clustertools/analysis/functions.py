@@ -563,7 +563,7 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
             pot /= cluster.m[ids]
             kin /= cluster.m[ids]
     
-        kin = kin[indx]
+        kin = kin[ids]
 
     elif full:
         if projected:

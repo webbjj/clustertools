@@ -2180,7 +2180,7 @@ class StarCluster(object):
         """
         if projected == None:
             projected=self.projected
-        kin, pot = energies(self, specific=specific, i_d=i_d, ids=ids, full=full, 
+        kin, pot = energies(self, specific=specific, i_d=i_d, full=full, 
                             projected=projected, parallel=parallel)
         
         if type(i_d) != type(None):
@@ -2188,7 +2188,7 @@ class StarCluster(object):
             # Convert ids to boolean array if given as an array of ids
             if type(i_d) == type(0):
                 ids = cluster.id == i_d
-            elif type(ids[0]) == type(1):
+            elif type(i_d[0]) == type(1):
                 ids = np.in1d(cluster.id, ids)
             else:
                 ids = i_d

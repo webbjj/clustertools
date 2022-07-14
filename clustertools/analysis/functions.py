@@ -478,7 +478,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     return trc
 
 
-def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=False, parallel=False):
+def energies(cluster, specific=True, i_d=None, full=True, projected=False, parallel=False):
     """Calculate kinetic and potential energy of every star
     Parameters
     ----------
@@ -543,7 +543,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
         # Convert ids to boolean array if given as an array of ids
         if type(i_d) == type(0):
             ids = cluster.id == i_d
-        elif type(ids[0]) == type(1):
+        elif type(i_d[0]) == type(1):
             ids = np.in1d(cluster.id, ids)
         else:
             ids = i_d

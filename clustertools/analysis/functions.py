@@ -499,7 +499,9 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
     Returns
     -------
     kin,pot : float
-      kinetic and potential energy of every star
+      kinetic and potential energy of every star if the i_d argument is not used. If i_d
+      argument is used, return an arrays with potential and kinetic energy in the same shape
+      of i_d
     History
     -------
        2019 - Written - Webb (UofT)

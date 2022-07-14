@@ -534,35 +534,17 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
           kin = 0.5 * (cluster.v ** 2.0)
     else:
           kin = 0.5 * cluster.m * (cluster.v ** 2.0)
-
-    if i_d != None:
-        indx = cluster.id == i_d
-
-        dx = cluster.x[indx] - cluster.x
-        dy = cluster.y[indx] - cluster.y
-        dz = cluster.z[indx] - cluster.z
-
-        if specific:
-            m = cluster.m
-        else:
-            m = cluter.m[indx] * cluster.m
-
-        if projected:
-            dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
-        else:
-            dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
-
-        rindx = dr != 0.0
-        gmr = -grav * m[rindx] / dr[rindx]
-
-        pot = np.sum(gmr)
-        kin = kin[indx]
         
     
-    elif type(ids) != type(None):
+    if type(i_d) != type(None):
+        
         # Convert ids to boolean array if given as an array of ids
-        if type(ids[0]) == type(1):
+        if type(i_d) == type(0):
+            ids = cluster.id == i_d
+        elif type(ids[0]) == type(1):
             ids = np.in1d(cluster.id, ids)
+        else:
+            ids = i_d
     
         # Get gravitational constant
         grav = _get_grav(cluster)
@@ -577,7 +559,7 @@ def energies(cluster, specific=True, i_d=None, ids=None, full=True, projected=Fa
         
         if specific:
             pot /= cluster.m[ids]
-            kin  /= cluster.m[ids]
+            kin /= cluster.m[ids]
     
         kin = kin[indx]
 

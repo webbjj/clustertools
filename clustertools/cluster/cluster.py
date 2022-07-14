@@ -2177,12 +2177,31 @@ class StarCluster(object):
            2022 - Updated with support for multiple ids or an idexing array - Gillis (UofT)
 
         """
-        if projected==None:
+        if projected == None:
             projected=self.projected
-        ek, pot=energies(self, specific=specific, i_d=i_d, ids=ids, full=full, projected=projected, parallel=parallel)
-        self.add_energies(ek, pot)
+        kin, pot = energies(self, specific=specific, i_d=i_d, ids=ids, full=full, 
+                            projected=projected, parallel=parallel)
+        
+        if type(i_d) != type(None):
 
-        return self.kin,self.pot
+            # Convert ids to boolean array if given as an array of ids
+            if type(i_d) == type(0):
+                ids = cluster.id == i_d
+            elif type(ids[0]) == type(1):
+                ids = np.in1d(cluster.id, ids)
+            else:
+                ids = i_d
+        
+            kin_full, pot_full = np.zeros(cluster.m.shape), np.zeros(cluster.m.shape)
+            kin_full[ids], pot_full[ids] = kin, pot
+            
+            self.add_energies(kin_full, pot_full)
+            
+            return kin, pot
+            
+        self.add_energies(kin, pot)
+
+        return self.kin, self.pot
 
     def closest_star(self, projected=None):
         """Find distance to closest star for each star

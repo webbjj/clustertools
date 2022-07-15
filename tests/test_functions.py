@@ -198,7 +198,7 @@ def test_energies(tol=0.01):
 
 	m=np.array([1.,1.])
 	x=np.array([-1.,1.])
-	vx=np.array([-1.,1.])
+	vx=np.array([-2.,2.])
 
 	y,z=np.zeros(2)
 	vy,vz=np.zeros(2)
@@ -218,6 +218,36 @@ def test_energies(tol=0.01):
 	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
 	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
 	np.testing.assert_array_equal(etot,cluster.etot)
+
+	cluster.energies(parallel=True)
+
+	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
+	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot,cluster.etot)
+
+	kid,pid=cluster.energies(ids=cluster.id[0])
+	eid=kid+pid
+
+
+	assert(eid[0]==etot[0])
+
+	kid,pid=cluster.energies(ids=[cluster.id[0],cluster.id[1]])
+	eid=kid+pid
+
+	assert(eid[0]==etot[0])
+	assert(eid[1]==etot[1])
+
+	ids=np.ones(cluster.ntot,dtype=bool)
+
+	kid,pid=cluster.energies(ids=ids)
+	eid=kid+pid
+	assert(eid[0]==etot[0])
+	assert(eid[1]==etot[1])
+
+	ids[0]=False
+	kid,pid=cluster.energies(ids=ids)
+	eid=kid+pid
+	assert(eid[0]==etot[1])
 
 	cluster.z=x
 	cluster.vz=vx

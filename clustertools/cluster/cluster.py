@@ -2172,7 +2172,7 @@ class StarCluster(object):
 
         return self.trc
 
-    def energies(self, specific=True, i_d=None, ids=None, full=True, projected=None, parallel=False):
+    def energies(self, specific=True, ids=None, full=True, projected=None, parallel=False, **kwargs):
         """Calculate kinetic and potential energy of every star
 
         Parameters
@@ -2181,12 +2181,9 @@ class StarCluster(object):
           StarCluster instance
         specific : bool
           find specific energies (default: True)
-        i_d : int
-          if given, find energies for a specific star only (default: None)
         ids: boolean array or integer array
           if given, find the energues of a subset of stars defined either by an array of
-          star ids, or a boolean array that can be used to slice the cluster. Overridden
-          by i_d parameter (default: None)
+          star ids, or a boolean array that can be used to slice the cluster (default: None)
         full : bool
           calculate distance of full array of stars at once with numbra (default: True)
         parallel : bool
@@ -2204,31 +2201,36 @@ class StarCluster(object):
            2022 - Updated with support for multiple ids or an idexing array - Gillis (UofT)
 
         """
+
+        if ids is None:
+            ids=kwargs.get('i_d',None)
+
         if projected == None:
             projected=self.projected
-        kin, pot = energies(self, specific=specific, i_d=i_d, full=full, 
+
+        kin, pot = energies(self, specific=specific, ids=ids, full=full, 
                             projected=projected, parallel=parallel)
         
-        if type(i_d) != type(None):
+        if ids is not None:
 
             # Convert ids to boolean array if given as an array of ids
-            if type(i_d) == type(0):
-                ids = cluster.id == i_d
-            elif type(i_d[0]) == type(1):
-                ids = np.in1d(cluster.id, ids)
-            else:
-                ids = i_d
-        
-            kin_full, pot_full = np.zeros(cluster.m.shape), np.zeros(cluster.m.shape)
+            if isinstance(ids,int) or isinstance(ids,float) or isinstance(ids,np.int64) or isinstance(ids,np.float64):
+                ids = self.id == ids
+            elif isinstance(ids[0],int) or isinstance(ids[0],float) or isinstance(ids[0],np.int64) or isinstance(ids[0],np.float64):
+                ids = np.in1d(self.id, ids)
+
+            kin_full, pot_full = np.zeros(self.ntot), np.zeros(self.ntot)
             kin_full[ids], pot_full[ids] = kin, pot
             
             self.add_energies(kin_full, pot_full)
             
             return kin, pot
-            
-        self.add_energies(kin, pot)
 
-        return self.kin, self.pot
+        else:
+            
+            self.add_energies(kin, pot)
+
+            return self.kin, self.pot
 
     def closest_star(self, projected=None):
         """Find distance to closest star for each star

@@ -2172,7 +2172,7 @@ class StarCluster(object):
 
         return self.trc
 
-    def energies(self, specific=True, i_d=None, full=True, projected=None, parallel=False):
+    def energies(self, specific=True, i_d=None, ids=None, full=True, projected=None, parallel=False):
         """Calculate kinetic and potential energy of every star
 
         Parameters
@@ -2183,6 +2183,10 @@ class StarCluster(object):
           find specific energies (default: True)
         i_d : int
           if given, find energies for a specific star only (default: None)
+        ids: boolean array or integer array
+          if given, find the energues of a subset of stars defined either by an array of
+          star ids, or a boolean array that can be used to slice the cluster. Overridden
+          by i_d parameter (default: None)
         full : bool
           calculate distance of full array of stars at once with numbra (default: True)
         parallel : bool
@@ -2191,18 +2195,40 @@ class StarCluster(object):
         Returns
         -------
         kin,pot : float
-          kinetic and potential energy of every star
-
+          kinetic and potential energy of every star if the i_d argument is not used. If i_d
+          argument is used, return an arrays with potential and kinetic energy in the same shape
+          of i_d
         History
         -------
            2019 - Written - Webb (UofT)
-        """
-        if projected==None:
-            projected=self.projected
-        ek, pot=energies(self, specific=specific, i_d=i_d, full=full, projected=projected, parallel=parallel)
-        self.add_energies(ek, pot)
+           2022 - Updated with support for multiple ids or an idexing array - Gillis (UofT)
 
-        return self.kin,self.pot
+        """
+        if projected == None:
+            projected=self.projected
+        kin, pot = energies(self, specific=specific, i_d=i_d, full=full, 
+                            projected=projected, parallel=parallel)
+        
+        if type(i_d) != type(None):
+
+            # Convert ids to boolean array if given as an array of ids
+            if type(i_d) == type(0):
+                ids = cluster.id == i_d
+            elif type(i_d[0]) == type(1):
+                ids = np.in1d(cluster.id, ids)
+            else:
+                ids = i_d
+        
+            kin_full, pot_full = np.zeros(cluster.m.shape), np.zeros(cluster.m.shape)
+            kin_full[ids], pot_full[ids] = kin, pot
+            
+            self.add_energies(kin_full, pot_full)
+            
+            return kin, pot
+            
+        self.add_energies(kin, pot)
+
+        return self.kin, self.pot
 
     def closest_star(self, projected=None):
         """Find distance to closest star for each star

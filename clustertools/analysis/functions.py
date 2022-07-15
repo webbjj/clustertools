@@ -481,7 +481,6 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
 def energies(cluster, specific=True, i_d=None, full=True, projected=False, parallel=False):
     """Calculate kinetic and potential energy of every star
-
     Parameters
     ----------
     cluster : class
@@ -490,19 +489,24 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
       find specific energies (default: True)
     i_d : int
       if given, find energies for a specific star only (default: None)
+    ids: boolean array or integer array
+      if given, find the energues of a subset of stars defined either by an array of
+      star ids, or a boolean array that can be used to slice the cluster. Overridden
+      by i_d parameter (default: None)
     full : bool
       calculate distance of full array of stars at once with numbra (default: True)
     parallel : bool
       calculate distances in parallel (default: False)
-
     Returns
     -------
     kin,pot : float
-      kinetic and potential energy of every star
-
+      kinetic and potential energy of every star if the i_d argument is not used. If i_d
+      argument is used, return an arrays with potential and kinetic energy in the same shape
+      of i_d
     History
     -------
        2019 - Written - Webb (UofT)
+       2022 - Updated with support for multiple ids or an idexing array - Erik Gillis (UofT)
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
@@ -513,45 +517,57 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
     grav=_get_grav(cluster)
 
     if projected:
-      if specific:
-          kin = 0.5 * (cluster.vpro ** 2.0)
-      else:
-          kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
+        if specific:
+            kin = 0.5 * (cluster.vpro ** 2.0)
+        else:
+            kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
     else:
 
-      if specific:
-          kin = 0.5 * (cluster.v ** 2.0)
-      else:
-          kin = 0.5 * cluster.m * (cluster.v ** 2.0)
-
-    if i_d != None:
-        indx = cluster.id == i_d
-
-        dx = cluster.x[indx] - cluster.x
-        dy = cluster.y[indx] - cluster.y
-        dz = cluster.z[indx] - cluster.z
-
         if specific:
-            m = cluster.m
+            kin = 0.5 * (cluster.v ** 2.0)
         else:
-            m = cluter.m[indx] * cluster.m
+            kin = 0.5 * cluster.m * (cluster.v ** 2.0)
+    if specific:
+          kin = 0.5 * (cluster.vpro ** 2.0)
+    else:
+          kin = 0.5 * cluster.m * (cluster.vpro ** 2.0)
 
-        if projected:
-          dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+    if specific:
+          kin = 0.5 * (cluster.v ** 2.0)
+    else:
+          kin = 0.5 * cluster.m * (cluster.v ** 2.0)
+        
+    
+    if type(i_d) != type(None):
+        
+        # Convert ids to boolean array if given as an array of ids
+        if type(i_d) == type(0):
+            ids = cluster.id == i_d
+        elif type(i_d[0]) == type(1):
+            ids = np.in1d(cluster.id, ids)
         else:
-          dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+            ids = i_d
+    
+        # Get gravitational constant
+        grav = _get_grav(cluster)
 
-        rindx = dr != 0.0
-        gmr = -grav * m[rindx] / dr[rindx]
+        kin = 0.5 * cluster.m[ids] * cluster.v[ids]**2
 
-        pot = np.sum(gmr)
-        kin = kin[indx]
+        cluster_full = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
+        cluster_sub  = np.array([cluster.x[ids], cluster.y[ids], 
+                                 cluster.z[ids], cluster.m[ids]]).T
 
+        pot = -grav * np.array(_potential_energy_subset(cluster_sub, cluster_full))
+        
+        if specific:
+            pot /= cluster.m[ids]
+            kin /= cluster.m[ids]
+    
     elif full:
         if projected:
-          x = np.array([cluster.x, cluster.y, np.zeros(len(cluster.x)), cluster.m]).T
+            x = np.array([cluster.x, cluster.y, np.zeros(len(cluster.x)), cluster.m]).T
         else:
-          x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
+            x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
         if parallel:
             pot = grav * np.array(_potential_energy_parallel(x))
         else:
@@ -572,9 +588,9 @@ def energies(cluster, specific=True, i_d=None, full=True, projected=False, paral
                 m = cluter.m[i] * cluster.m
 
             if projected:
-              dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+                dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
             else:
-              dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+                dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
 
             indx = dr != 0.0
             gmr = -grav * m[indx] / dr[indx]
@@ -652,6 +668,46 @@ def _potential_energy_parallel(cluster):
     return pot
 
 
+@numba.njit()
+def _potential_energy_subset(cluster_sub, cluster_full):
+    """Find the potential energy for a subset of stars in a bigger cluster
+    
+    Parameters
+    ----------
+    cluster_sub : float
+        2d numpy array with x, y, z and mass at each index of the sub cluster
+    cluster_full : float
+        2d numpy array with x, y, z and mass at each index of the cluster
+    
+    Returns:
+    --------
+        potential : numpy array
+            array of the potential energy of each star in the subcluster
+            
+    History
+    -------
+        2022 - Written - Erik Gillis (UofT)
+    """
+    potential = [0.0] * len(cluster_sub)
+    
+    for i in numba.prange(len(cluster_sub)):
+        x = cluster_sub[i, 0]
+        y = cluster_sub[i, 1]
+        z = cluster_sub[i, 2]
+        for j in range(len(cluster_full)):
+            dr = np.sqrt((x - cluster_full[j,0])**2 +\
+                         (y - cluster_full[j,1])**2 +\
+                         (z - cluster_full[j,2])**2)
+            m = cluster_sub[i,3] * cluster_full[j,3]
+
+            if dr > 0:
+                potential[i] += m / dr
+        
+    return potential
+
+
+
+
 def closest_star(cluster, projected=False):
     """Find distance to closest star for each star
     - uses numba
@@ -677,6 +733,8 @@ def closest_star(cluster, projected=False):
     else:
         x = np.array([cluster.x, cluster.y, cluster.z]).T
     return minimum_distance(x)
+
+
 
 
 def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):

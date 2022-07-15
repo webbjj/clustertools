@@ -184,7 +184,20 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             #Convert from fortran array address to python
             arg-=1
 
-            cluster.add_sse(kw,zl1,r1)
+            if len(kw) != len(x):
+                if verbose: print('SSE/BSE NBODY6++ ERROR',len(x)-len(kw))
+                kws=np.ones(len(x))*-10.0
+                zl1s=np.ones(len(x))*-10.0
+                r1s=np.ones(len(x))*-10.0
+
+                kws[arg]=kw
+                zl1s[arg]=zl1
+                r1s[arg]=r1
+                cluster.add_sse(kws,zl1s,r1s)
+
+            else:
+
+                cluster.add_sse(kw,zl1,r1)
 
             pb=(10.0**pb)/cluster.tbar_days
             semi=(10.0**semi)/cluster.rbar_su
@@ -192,13 +205,6 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             m2b/=cluster.zmbar
 
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
-    
-            if cluster.ntot != len(kw):
-                if verbose: print('SSE/BSE NBODY6++ ERROR',cluster.ntot-len(kw))
-                nextra=cluster.ntot-len(kw)
-                cluster.add_sse(np.zeros(nextra),np.ones(nextra)*-10,np.ones(nextra))
-
-
 
     if kwargs.get("analyze", True) and cluster.ntot>0:
         sortstars=kwargs.get("sortstars", True)

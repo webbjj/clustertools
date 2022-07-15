@@ -1849,7 +1849,20 @@ class StarCluster(object):
             nsigma=nsigma,nsphere=nsphere,density=density,
             rmin=rmin,rmax=rmax,nmax=nmax)
 
-        if self.origin=='cluster':
+        if self.origin=='centre':
+
+            warning=False
+            if xc!=0.0 or yc!=0.0 or zc!=0.0:
+                warning=True
+            if vxc!=0.0 or vyc!=0.0 or vzc!=0.0:
+                warning=True
+
+            if warning:
+                print('Centre is not at origin')
+
+            return xc,yc,zc,vxc,vyc,vzc
+
+        elif self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
             self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
 
@@ -2776,7 +2789,7 @@ class StarCluster(object):
 
     def rcore(
         self,
-        mfrac=0.01,
+        mfrac=0.1,
         projected=False,
         plot=False,
         ro=None,
@@ -2822,7 +2835,7 @@ class StarCluster(object):
             **kwargs
         )
 
-        return self.rl
+        return self.rc
 
     def rtidal(self, pot=None, rtiterate=0, rtconverge=0.9, indx=None, rgc=None, from_centre=False, plot=False, verbose=False, **kwargs):
         """Calculate tidal radius of the cluster

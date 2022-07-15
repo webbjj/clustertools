@@ -1895,7 +1895,7 @@ def rcore(
 
     rc=(rho_c-b)/m
 
-    if units0 == "kpckms":
+    if units0 == "kpckms" or units0 == 'kpcgyr':
         rc /= 1000.0
     elif units0 == "nbody":
         rc /= cluster.rbar
@@ -1937,7 +1937,7 @@ def rcore(
             xunits = " (NBODY)"
             yunits = " (NBODY)"
 
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units=='kpcgyr':
             rprof /=1000.0
             if projected:
                 pprof *= (1000.0 ** 2.0)
@@ -1965,12 +1965,12 @@ def rcore(
             xunits = "(GALPY)"
             yunits = "(GALPY)"
 
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units == "pcmyr":
             xunits = " (pc)"
             if projected:
-                yunits = " Msun/ppc^2"
+                yunits = " Msun/pc^2"
             else:
-                yunits = " Msun/ppc^3"
+                yunits = " Msun/pc^3"
 
         else:
             xunits = ""

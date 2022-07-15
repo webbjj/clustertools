@@ -264,8 +264,6 @@ def fortout(
 
     cluster.to_pckms()
 
-    print('DEBUG: ',cluster.kw,cluster.kw.astype(int))
-
     if sse:
         np.savetxt(
             cluster.wdir+sse_filename,

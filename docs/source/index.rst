@@ -134,8 +134,8 @@ References
 Contributers
 -----------------
 Jo Bovy - https://github.com/jobovy
-Nathaniel Starkman - https://github.com/nstarman
 Erik Gillis - https://github.com/e-gillis
+Nathaniel Starkman - https://github.com/nstarman
 
 Library Reference
 -----------------

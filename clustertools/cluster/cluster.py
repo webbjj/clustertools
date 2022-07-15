@@ -33,8 +33,8 @@ class StarCluster(object):
     tphys : float
         Time (units not necessary) associated with the population (default: 0)
     units : str
-        Units of stellar positions and velocties. Options include 'pckms',
-        'kpckms','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
+        Units of stellar positions and velocties. Options include 'pckms','pcmyr',
+        'kpckms','kpcgyr','radec','nbody',and 'galpy'. For 'pckms' and 'kpckms', 
         stellar velocities are assumed to be km/s. (default: None)
     origin : str
         Origin of coordinate system within which stellar positions and velocities are defined. 
@@ -69,7 +69,7 @@ class StarCluster(object):
     orbit : str
         galpy orbit instance
     ounits : str
-        {'pckms','kpckms','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
+        {'pckms','pcmyr','kpckms','kpcgyr','radec','nbody','galpy'} units of orbital information (else assumed equal to StarCluster.units)
     ro : float
         distance to the Galactic centre (Default: solar_ro)
     vo : float
@@ -590,8 +590,8 @@ class StarCluster(object):
         vxgc,vygc,vzgc: float
             cluster's galactocentric velocity
         ounits: str
-            units of position and velocity. Options include 'pckms',
-            'kpckms','radec','nbody',and 'galpy'. Values will be converted 
+            units of position and velocity. Options include 'pckms','pcmyr'
+            'kpckms','kpcgyr','radec','nbody',and 'galpy'. Values will be converted 
             to match self.units
         initialize: bool
             Initialize a galpy orbit for self.orbit (default: False)
@@ -644,6 +644,19 @@ class StarCluster(object):
                     ygc /= 1000.0
                     zgc /= 1000.0
                     tphys /= 1000.0
+                elif ounits == "pcmyr":
+                    xgc /= 1000.0
+                    ygc /= 1000.0
+                    zgc /= 1000.0
+                    vxgc/=1.022712165045695
+                    vygc/=1.022712165045695
+                    vzgc/=1.02271216504569
+                    tphys /= 1000.0
+                elif ounits == 'kpcgyr':
+                    vxgc/=1.022712165045695
+                    vygc/=1.022712165045695
+                    vzgc/=1.022712165045695
+
 
                 elif ounits == 'radec':
                     o=Orbit([xgc,ygc,zgc,vxgc,vygc,vzgc],radec=True,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion)

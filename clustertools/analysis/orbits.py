@@ -235,9 +235,9 @@ def _integrate_orbit(
 
     if tfinal is None:
         tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
-    elif cluster.units=='pckms':
+    elif cluster.units=='pckms' or cluster.units=='pcmyr':
         tfinal/=1000.
-    elif cluster.units=='kpckms':
+    elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
         tfinal*=(cluster.tbar/1000.)
@@ -296,9 +296,9 @@ def _integrate_orbits(
 
     if tfinal is None:
         tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
-    elif cluster.units=='pckms':
+    elif cluster.units=='pckms' or cluster.units=='pcmyr':
         tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
-    elif cluster.units=='kpckms':
+    elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
         tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
@@ -387,6 +387,18 @@ def interpolate_orbit(
             xgc*=1000
             ygc*=1000
             zgc*=1000
+        elif cluster.units=='pcmyr':
+            xgc*=1000
+            ygc*=1000
+            zgc*=1000
+            vxgc*=1.022712165045695
+            vygc*=1.022712165045695
+            vzgc*=1.022712165045695
+        elif cluster.units=='kpcgyr' or cluster.units=='WDunits':
+            vxgc*=1.022712165045695
+            vygc*=1.022712165045695
+            vzgc*=1.022712165045695
+
         elif cluster.units=='galpy':
             xgc/=ro
             ygc/=ro
@@ -480,6 +492,17 @@ def interpolate_orbits(
             x*=1000
             y*=1000
             z*=1000
+        elif cluster.units=='pcmyr':
+            xgc*=1000
+            ygc*=1000
+            zgc*=1000
+            vxgc*=1.022712165045695
+            vygc*=1.022712165045695
+            vzgc*=1.022712165045695
+        elif cluster.units=='kpcgyr' or cluster.units=='WDunits':
+            vxgc*=1.022712165045695
+            vygc*=1.022712165045695
+            vzgc*=1.022712165045695
         elif cluster.units=='galpy':
             x/=ro
             y/=ro
@@ -670,9 +693,9 @@ def orbital_path(
 
     if tfinal is None:
         tfinal=0.1/conversion.time_in_Gyr(ro=ro, vo=vo)
-    elif cluster.units=='pckms':
+    elif cluster.units=='pckms' or cluster.units=='pcmyr':
         tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
-    elif cluster.units=='kpckms' or cluster.units=='radec':
+    elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
         tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
@@ -715,7 +738,7 @@ def orbital_path(
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 / cluster.tbar
         elif cluster.units == "galpy":
             t = ts
-        elif cluster.units == "kpckms" or cluster.units == 'radec':
+        elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
         else:
             print('TIME RETURNED IN GALPY UNITS')
@@ -746,6 +769,20 @@ def orbital_path(
             y *= 1000.0
             z *= 1000.0
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)*1000.0
+        elif cluster.units=='pcmyr':
+            x*=1000
+            y*=1000
+            z*=1000
+            vx*=1.022712165045695
+            vy*=1.022712165045695
+            vz*=1.022712165045695
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)*1000.0
+
+        elif cluster.units=='kpcgyr' or cluster.units=='WDunits':
+            vx*=1.022712165045695
+            vy*=1.022712165045695
+            vz*=1.022712165045695
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
         elif cluster.units == "nbody":
             x *= 1000.0 / cluster.rbar
             y *= 1000.0 / cluster.rbar

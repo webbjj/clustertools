@@ -43,6 +43,7 @@ from scipy.optimize import curve_fit
 from ..util.recipes import *
 from ..util.constants import _get_grav
 from ..util.plots import _plot,_lplot,_scatter
+from ..util.units import _convert_length
 
 import matplotlib.pyplot as plt
 
@@ -1022,14 +1023,7 @@ def virial_radius_critical_density(
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
-    if units0=='kpckms':
-        r_v/=1000.0
-    elif units0=='galpy':
-        r_v/=ro
-    elif units0=='nbody':
-        r_v/=cluster.rbar
-    elif units0=='radec':
-        print('Conversion of r_v to "radec" no implemented')
+    r_v=_convert_length(r_v,'pckms',cluster)
 
     return r_v
 
@@ -1895,14 +1889,10 @@ def rcore(
 
     rc=(rho_c-b)/m
 
-    if units0 == "kpckms" or units0 == 'kpcgyr':
-        rc /= 1000.0
-    elif units0 == "nbody":
-        rc /= cluster.rbar
-    elif units0=='galpy':
-        rc /= (1000.0*ro)
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    rc=_convert_length(rc,'pckms',cluster)
 
     if plot:
 
@@ -2121,25 +2111,21 @@ def rtidal(
             " iterations",
         )
 
-    if units0 == "pckms":
-        rt *= 1000.0 * ro
-    elif units0 == "kpckms":
-        rt *= ro
-    elif units0 == "nbody":
-        rt *= 1000.0 * ro / cluster.rbar
-
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    rt=_convert_length(rt,'galpy',cluster)
+
 
     if plot:
 
         if cluster.units == "nbody":
             xunits = " (NBODY)"
             yunits = " (NBODY)"
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units=="pcmyr":
             xunits = " (pc)"
             yunits = " (pc)"
 
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units=="kpcgyr":
             xunits = " (kpc)"
             yunits = " (kpc)"
         elif cluster.units == "galpy":
@@ -2285,14 +2271,9 @@ def rlimiting(
 
         rl = interpolate(r1, r2, y=rho_local)
 
-    if units0 == "pckms":
-        rl *= 1000.0 * ro
-    elif units0 == "kpckms":
-        rl *= ro
-    elif units0 == "nbody":
-        rl *= 1000.0 * ro / cluster.rbar
-
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    rl=_convert_length(rl,'galpy',cluster)
 
 
     if plot:
@@ -2331,7 +2312,7 @@ def rlimiting(
 
             xunits = " (NBODY)"
             yunits = " (NBODY)"
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units == "pcmyr":
             rprof *= ro * 1000.0
 
             if projected:
@@ -2346,7 +2327,7 @@ def rlimiting(
                 yunits = " Msun/pc^2"
             else:
                 yunits = " Msun/pc^3"
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units == "kpcgyr":
             rprof *= ro
             if projected:
                 pprof *= dens_in_msolpc2 * (1000.0 ** 2.0)
@@ -2540,13 +2521,13 @@ def _rho_prof(
         if cluster.units == "nbody":
             xunits = " (NBODY)"
             yunits = " (NBODY)"
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units == "pcmyr":
             xunits = " (pc)"
             if projected:
                 yunits = " Msun/pc^2"
             else:
                 yunits = " Msun/pc^3"
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units == "kpcgyr":
             xunits = " (kpc)"
             if projected:
                 yunits = " Msun/kpc^2"

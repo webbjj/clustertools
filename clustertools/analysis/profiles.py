@@ -186,13 +186,13 @@ def rho_prof(
         if cluster.units == "nbody":
             xunits = " (NBODY)"
             yunits = " (NBODY)"
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units == "pcmyr":
             xunits = " (pc)"
             if projected:
                 yunits = " Msun/pc^2"
             else:
                 yunits = " Msun/pc^3"
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units == "kpcgyr" or cluster.units== "WDunits":
             xunits = " (kpc)"
             if projected:
                 yunits = " Msun/kpc^2"
@@ -397,10 +397,10 @@ def m_prof(
         if cluster.units == "nbody":
             xunits = " (NBODY)"
             yunits = " (NBODY)"
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units == "pcmyr":
             xunits = " (pc)"
             yunits = " Msun"
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units == "kpcgyr" or cluster.units== "WDunits":
             xunits = " (kpc)"
             yunits = " Msun"
         elif cluster.units == "galpy":
@@ -2006,10 +2006,10 @@ def vcirc_prof(
         if cluster.units == "nbody":
             xunits = " (NBODY)"
             yunits = " (NBODY)"
-        elif cluster.units == "pckms":
+        elif cluster.units == "pckms" or cluster.units == "pcmyr":
             xunits = " (pc)"
             yunits = " km/s"
-        elif cluster.units == "kpckms":
+        elif cluster.units == "kpckms" or cluster.units == "kpcgyr" or cluster.units== "WDunits":
             xunits = " (kpc)"
             yunits = " km/s"
 

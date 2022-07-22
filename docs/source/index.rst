@@ -95,7 +95,7 @@ References
 
 ``cyl_coords`` ,``cart_to_cy``,``cyl_to_cart`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357 (`ADS <https://ui.adsabs.harvard.edu/abs/2007NewA...12..357H/abstract>`_)
+``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357 (`ADS <https://ui.adsabs.harvard.edu/abs/2007NewA...12..357H/abstract>`_) or Casertano, S., Hut, P. 1985, ApJ, 298, 80 (`ADS <https://ui.adsabs.harvard.edu/abs/1985ApJ...298...80C/abstract>`_)
 
 ``half_mass_relaxation_time`` - Spitzer, L. 1987, Dynamical evolution of globular clusters (`ADS <https://ui.adsabs.harvard.edu/abs/1987degc.book.....S/abstract>`_)
 
@@ -110,6 +110,8 @@ References
 ``orbital_path``, ``orbital_path_match`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
 ``relaxation_time`` - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 (`ADS <https://ui.adsabs.harvard.edu/abs/1971ApJ...164..399S/abstract>`_)
+
+``rcore`` - Casertano, S., Hut, P. 1985, ApJ, 298, 80 (`ADS <https://ui.adsabs.harvard.edu/abs/1985ApJ...298...80C/abstract>`_)
 
 ``rlimiting`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 

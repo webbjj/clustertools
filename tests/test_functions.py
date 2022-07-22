@@ -33,6 +33,28 @@ def test_find_centre_of_density(tol=0.01):
 	assert np.fabs(1.0-vyc/o.vy()) <= tol
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
+def test_find_centre_of_density_casertano(tol=0.01):
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster.to_galaxy()
+	cluster.to_kpckms()
+	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
+
+	xc, yc, zc, vxc, vyc, vzc=ctools.find_centre_of_density(cluster,method='casertano')
+
+	assert np.fabs(1.0-xc/o.x()) <= tol
+	assert np.fabs(1.0-yc/o.y()) <= tol
+	assert np.fabs(1.0-zc/o.z()) <= tol
+
+
+	assert np.fabs(1.0-vxc/o.vx()) <= tol
+	assert np.fabs(1.0-vyc/o.vy()) <= tol
+	assert np.fabs(1.0-vzc/o.vz()) <= tol
+
+	xc, yc, zc, vxc, vyc, vzc, rhos=ctools.find_centre_of_density(cluster,method='casertano',return_rhos=True)
+
+	assert len(rhos)==cluster.ntot
+
+
 def test_find_centre_of_mass(tol=0.01):
 	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 	cluster.to_galaxy()
@@ -460,12 +482,30 @@ def test_ckin(tol=0.1):
 
 	assert np.fabs(ck-1.)<=tol
 
-def test_rcore(tol=0.2):
+def test_rcore(tol=0.1):
 
-	lmodel=limepy(g=1,phi0=3,r0=2,M=1e4)
-	cluster=ctools.load_cluster('limepy',model=lmodel)
+	wdir='../docs/source/notebooks/'
+	rc0=0.4465
+
+	#Plummer sphere with rm=1.
+	a0=0.76628
+	rc0=0.64*a0
+
+	m,x,y,z,vx,vy,vz=np.loadtxt(wdir+'N10k.dat.10',unpack=True)
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+
 	rc=ctools.rcore(cluster)
-	assert np.fabs(rc-2.) <= tol
+
+	print(rc,rc0)
+
+	assert np.fabs(rc-rc0) <= tol
+
+	m,x,y,z,vx,vy,vz=np.loadtxt(wdir+'N1k.dat.10',unpack=True)
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	rc=ctools.rcore(cluster,method='isothermal')
+	assert np.fabs(rc-rc0) <= tol
 
 def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates

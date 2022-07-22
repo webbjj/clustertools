@@ -175,6 +175,22 @@ class StarCluster(object):
         self.vz = np.array([])
         self.m0 = np.array([])
 
+        # variables for add_binary_stars
+        self.mb1 = np.array([])
+        self.xb1 = np.array([])
+        self.yb1 = np.array([])
+        self.zb1 = np.array([])
+        self.vxb1 = np.array([])
+        self.vyb1 = np.array([])
+        self.vzb1 = np.array([])
+        self.mb2 = np.array([])
+        self.xb2 = np.array([])
+        self.yb2 = np.array([])
+        self.zb2 = np.array([])
+        self.vxb2 = np.array([])
+        self.vyb2 = np.array([])
+        self.vzb2 = np.array([])
+
         #If using Nbodypp
         self.rhos=np.array([])
 
@@ -303,6 +319,8 @@ class StarCluster(object):
         self.semi = np.array([])
         self.m1 = np.array([])
         self.m2 = np.array([])
+        self.m01 = np.array([])
+        self.m02 = np.array([])
         self.logl1 = np.array([])
         self.logl2 = np.array([])
         self.logr1 = np.array([])
@@ -311,6 +329,8 @@ class StarCluster(object):
         self.ep2 = np.array([])
         self.ospin1 = np.array([])
         self.ospin2 = np.array([])
+        self.npop1 = np.array([])
+        self.npop2 = np.array([])
 
         # variables of energies
         self.kin = np.array([])
@@ -363,7 +383,7 @@ class StarCluster(object):
         self.ngroup=0
 
     def add_stars(
-        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,npop=None,sortstars=False,analyze=True
+        self, x, y, z, vx, vy, vz,m=None,id=None,m0=None,npop=None,nb=0,sortstars=False,analyze=True
     ):
         """Add stars to StarCluster.
 
@@ -383,6 +403,8 @@ class StarCluster(object):
             initial stellar mass
         npop : int
             population number, for use with multiple populations
+        nb: int
+            number of binary stars, which are assumed to be the first 2*nb stars in the array (default:0)
         sortstars: bool
             order stars by radius (default: False)
         analyze : bool
@@ -396,40 +418,122 @@ class StarCluster(object):
 
         """
 
-        self.x = np.append(self.x, np.array(x))
-        self.y = np.append(self.y, np.array(y))
-        self.z = np.append(self.z, np.array(z))
-        self.vx = np.append(self.vx, np.array(vx))
-        self.vy = np.append(self.vy, np.array(vy))
-        self.vz = np.append(self.vz, np.array(vz))
+        #Check for float entries
+        params=([x,y,z,vx,vy,vz])
+        nfloat=np.zeros(len(params),dtype=bool)
+        npmax=0
+        for i,p in enumerate(params):
+            if isinstance(p,float):
+                nfloat[i]=True
+            else:
+                npmax=int(np.maximum(npmax,len(p)))
+
+        if nfloat[0]: x=np.ones(npmax)*x
+        if nfloat[1]: y=np.ones(npmax)*y
+        if nfloat[2]: z=np.ones(npmax)*z
+        if nfloat[3]: vx=np.ones(npmax)*vx
+        if nfloat[4]: vy=np.ones(npmax)*vy
+        if nfloat[5]: vz=np.ones(npmax)*vz
+
+        #Check for bianries
+        if nb>0:
+            if nb==1:
+                arg1,arg2=0,1
+            else:
+                arg1=np.arange(0,2*nb-1,2)
+                arg2=arg1+1
+
+            if m is None:
+                xcom,ycom,zcom,vxcom,vycom,vzcom,mcom=self.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2],return_com=True)
+            else:
+                xcom,ycom,zcom,vxcom,vycom,vzcom,mcom=self.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2],m[arg1],m[arg2],return_com=True)
+
+            self.x = np.append(np.array(xcom),self.x)
+            self.y = np.append(np.array(ycom),self.y)
+            self.z = np.append(np.array(zcom),self.z)
+            self.vx = np.append(np.array(vxcom),self.vx)
+            self.vy = np.append(np.array(vycom),self.vy)
+            self.vz = np.append(np.array(vzcom),self.vz) 
+            self.m = np.append(np.array(mcom),self.m) 
+
+            if id is None:
+                if len(self.id)!=0:
+                    idstart=np.amax(self.id)+1
+                else:
+                    idstart=0
+
+                ids=idstart+np.linspace(0,len(xcom)-1,len(xcom))*2
+            else:
+                ids=id[arg1]
+
+            self.id=np.append(ids,self.id)
+
+            if m0 is not None:
+                self.m0=np.append(m0[arg1]+m0[arg2],self.m0)
+            else:
+                self.m0=np.append(np.zeros(len(xcom)),self.m0)
+
+
+            if npop is None:
+                npopb=np.ones(len(xcom),int)
+            elif isinstance(npop,float):
+                npopb=np.ones(len(xcom))*npop
+            else:
+                npopb=npop[arg1]
+
+            self.npop=np.append(npopb,self.npop).astype(int)
+
+            args=2*nb
+        else:
+            args=0
+
+
+        #Add single stars
+        self.x = np.append(self.x, np.array(x[args:]))
+        self.y = np.append(self.y, np.array(y[args:]))
+        self.z = np.append(self.z, np.array(z[args:]))
+        self.vx = np.append(self.vx, np.array(vx[args:]))
+        self.vy = np.append(self.vy, np.array(vy[args:]))
+        self.vz = np.append(self.vz, np.array(vz[args:]))
 
         if m is None:
-            m = np.ones(len(x),float)
+            ms = np.ones(len(x[args:]),float)
         elif isinstance(m,float):
-            m=np.ones(len(x))*m
+            ms=np.ones(len(x[args:]))*m
+        else:
+            ms=m[args:]
 
-        self.m = np.append(self.m, np.array(m))
-
-        if id is None:
-            id = np.linspace(0, len(x) - 1, len(x), dtype=int)
-
-            if len(self.id) != 0:
-                id+=(1+int(np.amax(self.id)))
-
-        self.id = np.append(self.id, np.array(id))
-        self.id = self.id.astype(int)
+        self.m = np.append(self.m, np.array(ms))
 
         if m0 is not None:
-            self.m0=np.append(self.m0,m0)
+            self.m0=np.append(self.m0,m0[args:])
         else:
-            self.m0=np.append(self.m0,np.zeros(len(x)))
+            self.m0=np.append(self.m0,np.zeros(len(x[args:])))
 
         if npop is None:
-            npop=np.ones(len(x),int)
+            npop=np.ones(len(x[args:]),int)
         elif isinstance(npop,float):
-            npop=np.ones(len(x))*npop
+            npop=np.ones(len(x[args:]))*npop
 
         self.npop=np.append(self.npop,npop).astype(int)
+
+        if id is None:
+
+            if len(self.id)!=0:
+                idstart=np.amax(self.id)+1
+                if self.nb>0:
+                    idstart+=1
+            else:
+                idstart=0
+
+            ids=idstart+np.arange(0, len(x[args:]), dtype=int)
+
+        else:
+            ids=id
+
+        self.id = np.append(self.id, np.array(ids))
+
+        self.id = self.id.astype(int)
 
         # Check lengths
 
@@ -532,19 +636,36 @@ class StarCluster(object):
         self.ntot = len(self.x)
 
     def add_binary_stars(
-        self, xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2
+        self, xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2,mb1=None,mb2=None,id1=None,id2=None,m01=None,m02=None,npop1=None,npop2=None,set_com=True,return_com=False,
     ):
         """Individually add binary stars to StarCluster.
-        Only an option with Nbody6pp with hdf5=True
 
         Parameters
         ----------
-        x,y,z: float
-            stellar positions. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
+        xb1,yb1,zb1: float
+            stellar positions of primary. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
             and self.origin=='sky', then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)
-        vx,vy,vz: float
-            atellar velocities. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
+        vxb1,vyb1,vzb1: float
+            stellar velocities of primary. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
             and self.origin=='sky', then positions are assumed to be pmra,pmdec,vlos (mas/yr, mas/yr, km/s)
+        xb2,yb2,zb2: float
+            stellar positions of secondary. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
+            and self.origin=='sky', then positions are assumed to be ra,dec,dist (degrees, degrees, kpc)
+        vxb2,vyb2,vzb2: float
+            stellar velocities of secondary. Input is assumed to be in cartesian coordinates unless self.units=='radec' 
+            and self.origin=='sky', then positions are assumed to be pmra,pmdec,vlos (mas/yr, mas/yr, km/s)
+        mb1. mb2 : float
+            mass of primary and secondary (default: None)
+        id1,id2: int 
+            primary and secondary star ids (default: None)
+        m01,m02: float
+            initial primary and secondary stellar masses (default: None)
+        npop1,npop2 : int
+            population number of primary and secondary star, for use with multiple populations (default: None)
+        set_com : bool
+            set coordinates of binary's centre of mass in main arrays (default: False)
+        return_com : bool
+            reuturn coordinates of binary's centre of mass (default: False)
 
         Notes
         -----
@@ -554,19 +675,104 @@ class StarCluster(object):
 
         """
 
-        self.xb1=xb1
-        self.yb1=yb1
-        self.zb1=zb1
-        self.vxb1=vxb1
-        self.vyb1=vyb1
-        self.vzb1=vzb1
+        self.nb+=len(xb1)
 
-        self.xb2=xb2
-        self.yb2=yb2
-        self.zb2=zb2
-        self.vxb2=vxb2
-        self.vyb2=vyb2
-        self.vzb2=vzb2
+        self.xb1=np.append(self.xb1,xb1)
+        self.yb1=np.append(self.yb1,yb1)
+        self.zb1=np.append(self.zb1,zb1)
+        self.vxb1=np.append(self.vxb1,vxb1)
+        self.vyb1=np.append(self.vyb1,vyb1)
+        self.vzb1=np.append(self.vzb1,vzb1)
+
+        self.xb2=np.append(self.xb2,xb2)
+        self.yb2=np.append(self.yb2,yb2)
+        self.zb2=np.append(self.zb2,zb2)
+        self.vxb2=np.append(self.vxb2,vxb2)
+        self.vyb2=np.append(self.vyb2,vyb2)
+        self.vzb2=np.append(self.vzb2,vzb2)
+
+        if mb1 is not None:
+            self.mb1=mb1
+        else:
+            self.mb1=np.ones(len(xb1))
+        if mb2 is not None:
+            self.mb2=mb2
+        else:
+            self.mb2=np.ones(len(xb2))
+
+        if set_com and not return_com:
+            mcom=self.mb1+self.mb2
+            xcom=(xb1*self.mb1+xb2*self.mb2)/mcom
+            ycom=(yb1*self.mb1+yb2*self.mb2)/mcom
+            zcom=(zb1*self.mb1+zb2*self.mb2)/mcom
+            vxcom=(vxb1*self.mb1+vxb2*self.mb2)/mcom
+            vycom=(vyb1*self.mb1+vyb2*self.mb2)/mcom
+            vzcom=(vzb1*self.mb1+vzb2*self.mb2)/mcom
+
+            self.x = np.append(np.array(xcom),self.x)
+            self.y = np.append(np.array(ycom),self.y)
+            self.z = np.append(np.array(zcom),self.z)
+            self.vx = np.append(np.array(vxcom),self.vx)
+            self.vy = np.append(np.array(vycom),self.vy)
+            self.vz = np.append(np.array(vzcom),self.vz) 
+            self.m = np.append(np.array(mcom),self.m) 
+
+            if id1 is None:
+                if len(self.id)!=0:
+                    idstart=np.amax(self.id)+1
+                else:
+                    idstart=0
+
+                ids=idstart+np.linspace(0,len(xcom)-1,len(xcom))*2
+            else:
+                ids=id1
+                self.id1=id1
+
+            self.id=np.append(ids,self.id)
+
+            if id2 is not None:
+                self.id2=id2
+            else:
+                self.id2=self.id1+1
+
+            if m01 is not None and m02 is not None:
+                self.m0=np.append(m01+m02,self.m0)
+            else:
+                self.m0=np.append(np.zeros(len(xcom)),self.m0)
+
+            if m01 is not None:
+                self.m01=np.append(m01,self.m01)
+            if m02 is not None:
+                self.m02=np.append(m02,self.m02)
+
+            if npop1 is not None and npop2 is not None:
+                npopb=np.maximum(npop1,npop2)
+                self.npop=np.append(npopb,self.npop).astype(int)
+
+            if npop1 is None:
+                self.npop1=np.append(np.ones(len(xcom)),self.npop1)
+            elif isinstance(npop1,float):
+                self.npop1=np.append(np.ones(len(xcom))*npop1,self.npop1)
+            else:
+                self.npop1=np.append(npop1,self.npop1)
+
+            if npop2 is None:
+                self.npop2=np.append(np.ones(len(xcom)),self.npop2)
+            elif isinstance(npop1,float):
+                self.npop2=np.append(np.ones(len(xcom))*npop2,self.npop2)
+            else:
+                self.npop2=np.append(npop2,self.npop2)
+
+        elif return_com:
+            mcom=self.mb1+self.mb2
+            xcom=(xb1*self.mb1+xb2*self.mb2)/mcom
+            ycom=(yb1*self.mb1+yb2*self.mb2)/mcom
+            zcom=(zb1*self.mb1+zb2*self.mb2)/mcom
+            vxcom=(vxb1*self.mb1+vxb2*self.mb2)/mcom
+            vycom=(vyb1*self.mb1+vyb2*self.mb2)/mcom
+            vzcom=(vzb1*self.mb1+vzb2*self.mb2)/mcom
+
+            return xcom,ycom,zcom,vxcom,vycom,vzcom,mcom
 
     def add_orbit(
         self,
@@ -1817,127 +2023,15 @@ class StarCluster(object):
         rmin=0.1,
         rmax=None,
         nmax=100,
+        method='harfst',
+        nneighbour=6,
+        return_rhos=False,
         reset_centre=False
     ):
         """Find the cluster's centre
 
         - The default assumes the cluster's centre is the centre of density, calculated via the find_centre_of_density function.
         - For density=False, the routine first works to identify a sphere of nsphere stars around the centre in which to perform a centre of mass calculation (similar to NBODY6). Stars beyond nsigma standard deviations are removed from the calculation until only nsphere stars remain. This step prevents long tidal tails from affecting the calculation
-
-        Parameters
-        ----------
-        cluster : class
-            StarCluster
-        xstart,ystart,zstart : float
-            starting position for centre
-        vxstart,vystart,vzstart :
-            starting velocity for centre
-        indx : bool
-            subset of stars to use when finding center
-        nsigma : int
-            number of standard deviations to within which to keep stars
-        nsphere : int
-            number of stars in centre sphere (default:100)
-        density : bool
-            use Yohai Meiron's centre of density calculator instead (default: True)
-        rmin : float
-            minimum radius to start looking for stars
-        rmax : float
-            maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
-        nmax : int
-            maximum number of iterations to find centre
-
-        Returns
-        -------
-        xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
-
-        History
-        -------
-        2019 - Written - Webb (UofT)
-        """
-
-
-        xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
-            ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-            nsigma=nsigma,nsphere=nsphere,density=density,
-            rmin=rmin,rmax=rmax,nmax=nmax)
-
-        if self.origin=='centre':
-
-            warning=False
-            if xc!=0.0 or yc!=0.0 or zc!=0.0:
-                warning=True
-            if vxc!=0.0 or vyc!=0.0 or vzc!=0.0:
-                warning=True
-
-            if warning:
-                print('Centre is not at origin')
-
-            return xc,yc,zc,vxc,vyc,vzc
-
-        elif self.origin=='cluster':
-            self.xc, self.yc, self.zc = xc,yc,zc
-            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
-
-            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
-
-        elif self.origin == "galaxy":
-
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
-
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-     
-            else:
-                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
-                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
-
-
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
-        elif self.origin=='sky':
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
-
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-            else:
-                print('No Cluster Variables Set')
-                return xc,yc,zc,vxc,vyc,vzc
-        elif self.origin is None:
-            self.xc, self.yc, self.zc = xc,yc,zc
-            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
-
-            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-        else:
-            print('No Cluster Variables Set')
-            return xc,yc,zc,vxc,vyc,vzc
-
-    def find_centre_of_density(
-        self,
-        xstart=0.0,
-        ystart=0.0,
-        zstart=0.0,
-        vxstart=0.0,
-        vystart=0.0,
-        vzstart=0.0,
-        indx=None,
-        nsphere=100,
-        rmin=0.1,
-        rmax=None,
-        nmax=100,
-        reset_centre=False
-    ):
-        """Find cluster's centre of density
-
-        - The motivation behind this piece of code comes from phigrape (Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357) courtesy of Yohai Meiron
-        - The routine first finds the centre of density of the whole system, and then works to identify a sphere stars around the centre in which to perform the final centre of density calculation. Stars with radii outside 80% of the maximum radius are removed from the calculation until the final subset of stars are enclosed within a radius rmin. The maximum size of the final subset is nmax. This step prevents long tidal tails from affecting the calculation
 
         Parameters
         ----------
@@ -1958,6 +2052,185 @@ class StarCluster(object):
         nmax : float
             maximum number of iterations (default:100)
 
+        method : str
+            method for finding the centre of density ('harfst' (default), 'casertano')
+
+        if method=='casertano'
+            nneighbour : int
+                number of neighbours for calculation local densities
+            return_rhos : bool
+                return local densities (default: False)
+
+
+        reset_centre : bool
+            forcibly reset cluster's centre of mass (default: False)
+
+        Returns
+        -------
+        xc,yc,zc,vxc,vyc,vzc - coordinates of centre of mass
+
+        History
+        -------
+        2019 - Written - Webb (UofT)
+        """
+
+
+        if return_rhos:
+            xc,yc,zc,vxc,vyc,vzc,rhos=find_centre(self,xstart=xstart,
+                    ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
+                    nsigma=nsigma,nsphere=nsphere,density=density,
+                    rmin=rmin,rmax=rmax,nmax=nmax,method=method,nneighbour=nneighbour,return_rhos=return_rhos)
+        else:
+            xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
+                ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
+                nsigma=nsigma,nsphere=nsphere,density=density,
+                rmin=rmin,rmax=rmax,nmax=nmax,method=method,nneighbour=nneighbour,return_rhos=return_rhos)
+
+        if self.origin=='centre':
+
+            warning=False
+            if xc!=0.0 or yc!=0.0 or zc!=0.0:
+                warning=True
+            if vxc!=0.0 or vyc!=0.0 or vzc!=0.0:
+                warning=True
+
+            if warning:
+                print('Centre is not at origin')
+
+            if return_rhos: 
+                self.rhos=rhos
+                return xc,yc,zc,vxc,vyc,vzc,rhos
+            else:
+                return xc,yc,zc,vxc,vyc,vzc
+
+        elif self.origin=='cluster':
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+            
+            if return_rhos: 
+                self.rhos=rhos
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc, self.rhos
+            else:
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+
+        elif self.origin == "galaxy":
+
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                if return_rhos:
+                    self.rhos=rhos
+                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc, self.rhos
+                else:
+                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+     
+            else:
+                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+
+
+                if return_rhos:
+                    self.rhos=rhos
+                    return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc, self.rhos
+                else:
+                    return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+        elif self.origin=='sky':
+            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                self.xgc, self.ygc, self.zgc = xc,yc,zc
+                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+
+                if return_rhos:
+                    self.rhos=rhos
+                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc, self.rhos
+                else:
+                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+
+            else:
+                print('No Cluster Variables Set')
+                if return_rhos:
+                    return xc,yc,zc,vxc,vyc,vzc,rhos
+                else:
+                    return xc,yc,zc,vxc,vyc,vzc
+        elif self.origin is None:
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+
+            if return_rhos:
+                self.rhos=rhos
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc, self.rhos
+            else:
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+
+        else:
+            print('No Cluster Variables Set')
+            if return_rhos:
+                return xc,yc,zc,vxc,vyc,vzc,rhos
+            else:
+                return xc,yc,zc,vxc,vyc,vzc
+
+    def find_centre_of_density(
+        self,
+        xstart=0.0,
+        ystart=0.0,
+        zstart=0.0,
+        vxstart=0.0,
+        vystart=0.0,
+        vzstart=0.0,
+        indx=None,
+        nsphere=100,
+        rmin=0.1,
+        rmax=None,
+        nmax=100,
+        method='harfst',
+        nneighbour=6,
+        return_rhos=False,
+        reset_centre=False,
+    ):
+        """Find cluster's centre of density
+
+        - Find cluster's centre of density:
+            if method=='harfst' use (Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357) courtesy of Yohai Meiron
+            if method=='casertano' use (Casertano, S., Hut, P. 1985, ApJ, 298, 80)
+
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+        xstart,ystart,zstart : float
+            starting position for centre (default: 0,0,0)
+        vxstart,vystart,vzstart : float
+            starting velocity for centre (default: 0,0,0)
+        indx: bool
+            subset of stars to perform centre of density calculation on (default: None)
+        nsphere : int
+            number of stars in centre sphere (default:100)
+        rmin : float
+            minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
+        rmax : float
+            maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
+        nmax : float
+            maximum number of iterations (default:100)
+
+        method : str
+            method for finding the centre of density ('harfst' (default), 'casertano')
+
+        if method=='casertano'
+            nneighbour : int
+                number of neighbours for calculation local densities
+            return_rhos : bool
+                return local densities (default: False)
+
+        reset_centre : bool
+            forcibly reset cluster's centre of mass (default: False)
+
+
         Returns
         -------
         xc,yc,zc,vxc,vyc,vzc : float
@@ -1966,11 +2239,12 @@ class StarCluster(object):
         HISTORY
         -------
         2019 - Written - Webb (UofT) with Yohai Meiron (UofT)
+        2022 - Written - Webb (UofT) - add method=='casertano'
         """
 
         xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(self,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-            nsphere=nsphere,rmin=rmin,rmax=rma,nmax=nmax)
+            nsphere=nsphere,rmin=rmin,rmax=rmax,nmax=nmax)
 
         if self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
@@ -2830,23 +3104,31 @@ class StarCluster(object):
 
     def rcore(
         self,
+        method='casertano',
+        nneighbour=6,
         mfrac=0.1,
         projected=False,
         plot=False,
-        ro=None,
-        vo=None,
         **kwargs
     ):
         """Calculate core radius of the cluster
-        --- if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
+        -- The default method (method='casertano') follows Casertano, S., Hut, P. 1985, ApJ, 298, 80 to find the core
+        -- An alternative metrhod (method=='isothermal') assumes the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
         --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
         --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
-
 
         Parameters
         ----------
         cluster : class
             StarCluster instance
+        method : string
+            method of calculating the core radius of a star cluster (default 'casertano')
+        if method =='casertano':
+            nneighbour : int
+                number of neighbours for calculation local densities
+        if method=='isothermal':
+            mfrac : float
+                inner mass fraction to be used to establish the central density
         projected : bool
             use projected values (default: False)
         plot : bool
@@ -2868,11 +3150,11 @@ class StarCluster(object):
 
         self.rc = rcore(
             self,
+            method=method,
+            nneighbour=nneighbour,
             mfrac=mfrac,
             projected=projected,
             plot=plot,
-            ro=ro,
-            vo=vo,
             **kwargs
         )
 

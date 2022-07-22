@@ -48,7 +48,18 @@ It is also possible to include stellar masses ``m`` and ids ``id`` if they are k
 
 Otherwise, masses will be set to 1 and ids will simply be set to integer values between 1 and the number of stars in the cluster. ``add_stars`` can also accept the initial masses of each stars ``m0`` and the star's population number ``npop`` if one is studying multiple population within the cluster.
 
-Finally, using ``add_stars`` results in ``cluster.ntot`` being calculated. Otherwise it would have to be set manually.
+If your dataset contains binary stars, you can specificy the number of binary stars using ``nb`` via:
+
+>>> cluster.add_stars(x,y,z,vx,vy,vz,nb=10)
+
+Note that ``clustertools`` assumes that the arrays are structured such that the individual binary stars make up the first 2 x ``nb`` stars in the arrays. The position and centre of each binary's centre of mass is then determined and put in the main ``cluster`` arrays. The individual binary star positions and velocities are stored separately (e.g the x-position and velocity of the primary stars are saved as ``cluster.xb1`` and ``cluster.vxb1``). Alternatively you could add the binary stars manually if you have their individual position and velocities.
+
+>>> cluster.add_binary_stars(xb1,yb1,zb1,vxb1,vyb1,vzb1,xb2,yb2,zb2,vxb2,vyb2,vzb2)
+
+``add_binary_stars`` has the same features as ``add_stars`` in that masses (``mb1``,``mb1``), ids (``id1``,``id2``), initial masses (``m01``,``m02``), and population numbers (``npop1``,``npop2``) can be provided.
+
+
+Finally, using ``add_stars``  and/or ``add_binary_stars`` results in ``cluster.ntot`` and ``cluster.nb`` being calculated. Otherwise they would have to be set manually.
 
 One other features in ``add_stars`` that is by default set to ``True`` is ``sortstars`` . Having ``sortstars=True`` means stars are being sorted based on their distance from the origin (information stored in ``cluster.rorder``) and the half-mass radius ``rm`` and 10\% Lagrange radius ``r10`` will be calculated as well. Alternatively, one can call:
 
@@ -268,6 +279,8 @@ Similar to ``StarCluster.units``, when a ``StarCluster`` is initialized the defa
      - sky coordinate system, used when units are set to degrees
 
 For clarity, it is worth expanding on the difference between ``StarCluster.origin='cluster'`` and ``StarCluster.origin='centre'``. The motivation for the two separate reference frames stems from codes like NBODY6 where the orbital evolution of the cluster in the external tidal field is handled separately from the internal cluster evolution. Hence the cluster's orbital position is integrated forwards in time from its initial conditions while the cluster's centre of density (or mass) will wander slightly due to internal cluster evolution. The true centre may in fact wander a lot if tidal tail stars are kept in the simulation or the cluster reaches dissolution. Codes like NBODY6 provide snapshots where the origin is at the cluster's orbital position (``StarCluster.origin='cluster'``) and then provide the location of the cluster's true centre separately to change to ``StarCluster.origin='centre'``.
+
+In most cases, the cluster's centre may not be done. The centre can be determined using the ``find_centre()`` command, where the default option is to find the centre of density using the method of Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357. Alternatively it is possible to find the centre of density using Casertano, S., Hut, P. 1985, ApJ, 298, 80 via ``find_centre(method='casertano')``. If the centre of mass is preferred, use ``find_centre(density=False)``
 
 It is also important to note that converting to ``sky`` requires knowlendge of ``ro``,``vo``,``zo``, and ``solarmotion``, the default values of which are discussed above.
 

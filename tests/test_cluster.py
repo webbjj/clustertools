@@ -90,6 +90,188 @@ def test_add_stars_radec():
 	np.testing.assert_array_equal(vy,cluster.pmdec)
 	np.testing.assert_array_equal(vz,cluster.vlos)
 
+def test_add_stars_binaries():
+	nstar=100
+	nb=10
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
+	vx,vy,vz=np.ones(nstar),np.ones(nstar),np.ones(nstar)
+	x[:2*nb]*=2
+
+	cluster.add_stars(x,y,z,vx,vy,vz,nb=nb)
+
+	assert(len(cluster.x)==nstar-nb)
+	assert(len(cluster.y)==nstar-nb)
+	assert(len(cluster.z)==nstar-nb)
+	assert(len(cluster.vx)==nstar-nb)
+	assert(len(cluster.vy)==nstar-nb)
+	assert(len(cluster.vz)==nstar-nb)
+	assert(len(cluster.m)==nstar-nb)
+
+	assert(len(cluster.xb1)==nb)
+	assert(len(cluster.yb1)==nb)
+	assert(len(cluster.zb1)==nb)
+	assert(len(cluster.vxb1)==nb)
+	assert(len(cluster.vyb1)==nb)
+	assert(len(cluster.vzb1)==nb)
+	assert(len(cluster.xb2)==nb)
+	assert(len(cluster.yb2)==nb)
+	assert(len(cluster.zb2)==nb)
+	assert(len(cluster.vxb2)==nb)
+	assert(len(cluster.vyb2)==nb)
+	assert(len(cluster.vzb2)==nb)
+	assert(len(cluster.mb1)==nb)
+	assert(len(cluster.mb2)==nb)
+
+	arg1=np.arange(0,2*nb,2)
+	arg2=arg1+1
+
+	xcom=(x[arg1]+x[arg2])/2.
+	ycom=(y[arg1]+y[arg2])/2.
+	zcom=(z[arg1]+z[arg2])/2.
+	vxcom=(vx[arg1]+vx[arg2])/2.
+	vycom=(vy[arg1]+vy[arg2])/2.
+	vzcom=(vz[arg1]+vz[arg2])/2.
+
+	np.testing.assert_array_equal(xcom,cluster.x[:nb])
+	np.testing.assert_array_equal(np.ones(nb)*2,cluster.x[:nb])
+	np.testing.assert_array_equal(np.ones(nstar-2*nb),cluster.x[nb:])
+
+	np.testing.assert_array_equal(ycom,cluster.y[:nb])
+	np.testing.assert_array_equal(zcom,cluster.z[:nb])
+
+	np.testing.assert_array_equal(vxcom,cluster.vx[:nb])
+	np.testing.assert_array_equal(vycom,cluster.vy[:nb])
+	np.testing.assert_array_equal(vzcom,cluster.vz[:nb])
+
+	assert(len(np.unique(cluster.id))==nstar-nb)
+	assert np.amax(cluster.id)==nstar-1
+
+
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
+	vx,vy,vz=np.ones(nstar),np.ones(nstar),np.ones(nstar)
+	x[:2*nb]*=2
+
+	arg1=np.arange(0,2*nb-1,2)
+	arg2=arg1+1
+	args=arg2[-1]+1
+
+	cluster.add_stars(x[args:],y[args:],z[args:],vx[args:],vy[args:],vz[args:])
+	cluster.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2])
+
+	assert(len(cluster.x)==nstar-nb)
+	assert(len(cluster.y)==nstar-nb)
+	assert(len(cluster.z)==nstar-nb)
+	assert(len(cluster.vx)==nstar-nb)
+	assert(len(cluster.vy)==nstar-nb)
+	assert(len(cluster.vz)==nstar-nb)
+	assert(len(cluster.m)==nstar-nb)
+
+	assert(len(cluster.xb1)==nb)
+	assert(len(cluster.yb1)==nb)
+	assert(len(cluster.zb1)==nb)
+	assert(len(cluster.vxb1)==nb)
+	assert(len(cluster.vyb1)==nb)
+	assert(len(cluster.vzb1)==nb)
+	assert(len(cluster.xb2)==nb)
+	assert(len(cluster.yb2)==nb)
+	assert(len(cluster.zb2)==nb)
+	assert(len(cluster.vxb2)==nb)
+	assert(len(cluster.vyb2)==nb)
+	assert(len(cluster.vzb2)==nb)
+	assert(len(cluster.mb1)==nb)
+	assert(len(cluster.mb2)==nb)
+
+	arg1=np.arange(0,2*nb,2)
+	arg2=arg1+1
+
+	xcom=(x[arg1]+x[arg2])/2.
+	ycom=(y[arg1]+y[arg2])/2.
+	zcom=(z[arg1]+z[arg2])/2.
+	vxcom=(vx[arg1]+vx[arg2])/2.
+	vycom=(vy[arg1]+vy[arg2])/2.
+	vzcom=(vz[arg1]+vz[arg2])/2.
+
+	np.testing.assert_array_equal(xcom,cluster.x[:nb])
+	np.testing.assert_array_equal(np.ones(nb)*2,cluster.x[:nb])
+	np.testing.assert_array_equal(np.ones(nstar-2*nb),cluster.x[nb:])
+
+	np.testing.assert_array_equal(ycom,cluster.y[:nb])
+	np.testing.assert_array_equal(zcom,cluster.z[:nb])
+
+	np.testing.assert_array_equal(vxcom,cluster.vx[:nb])
+	np.testing.assert_array_equal(vycom,cluster.vy[:nb])
+	np.testing.assert_array_equal(vzcom,cluster.vz[:nb])
+
+	assert(len(np.unique(cluster.id))==nstar-nb)
+
+	print(cluster.id,cluster.ntot,cluster.nb)
+
+	assert np.amax(cluster.id)==nstar-2
+
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	x,y,z=np.ones(nstar),np.ones(nstar),np.ones(nstar)
+	vx,vy,vz=np.ones(nstar),np.ones(nstar),np.ones(nstar)
+	x[:2*nb]*=2
+
+	arg1=np.arange(0,2*nb-1,2)
+	arg2=arg1+1
+	args=arg2[-1]+1
+
+	cluster.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2])
+	cluster.add_stars(x[args:],y[args:],z[args:],vx[args:],vy[args:],vz[args:])
+
+	assert(len(cluster.x)==nstar-nb)
+	assert(len(cluster.y)==nstar-nb)
+	assert(len(cluster.z)==nstar-nb)
+	assert(len(cluster.vx)==nstar-nb)
+	assert(len(cluster.vy)==nstar-nb)
+	assert(len(cluster.vz)==nstar-nb)
+	assert(len(cluster.m)==nstar-nb)
+
+	assert(len(cluster.xb1)==nb)
+	assert(len(cluster.yb1)==nb)
+	assert(len(cluster.zb1)==nb)
+	assert(len(cluster.vxb1)==nb)
+	assert(len(cluster.vyb1)==nb)
+	assert(len(cluster.vzb1)==nb)
+	assert(len(cluster.xb2)==nb)
+	assert(len(cluster.yb2)==nb)
+	assert(len(cluster.zb2)==nb)
+	assert(len(cluster.vxb2)==nb)
+	assert(len(cluster.vyb2)==nb)
+	assert(len(cluster.vzb2)==nb)
+	assert(len(cluster.mb1)==nb)
+	assert(len(cluster.mb2)==nb)
+
+	arg1=np.arange(0,2*nb,2)
+	arg2=arg1+1
+
+	xcom=(x[arg1]+x[arg2])/2.
+	ycom=(y[arg1]+y[arg2])/2.
+	zcom=(z[arg1]+z[arg2])/2.
+	vxcom=(vx[arg1]+vx[arg2])/2.
+	vycom=(vy[arg1]+vy[arg2])/2.
+	vzcom=(vz[arg1]+vz[arg2])/2.
+
+	np.testing.assert_array_equal(xcom,cluster.x[:nb])
+	np.testing.assert_array_equal(np.ones(nb)*2,cluster.x[:nb])
+	np.testing.assert_array_equal(np.ones(nstar-2*nb),cluster.x[nb:])
+
+	np.testing.assert_array_equal(ycom,cluster.y[:nb])
+	np.testing.assert_array_equal(zcom,cluster.z[:nb])
+
+	np.testing.assert_array_equal(vxcom,cluster.vx[:nb])
+	np.testing.assert_array_equal(vycom,cluster.vy[:nb])
+	np.testing.assert_array_equal(vzcom,cluster.vz[:nb])
+
+	assert(len(np.unique(cluster.id))==nstar-nb)
+
+	print(cluster.id,cluster.ntot,cluster.nb)
+
+	assert np.amax(cluster.id)==nstar-1
+
 def test_add_orbit():
 	nstar=100
 	cluster=ctools.StarCluster(units='kpckms',origin='cluster')

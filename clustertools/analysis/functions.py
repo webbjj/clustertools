@@ -39,6 +39,7 @@ except:
 from galpy import potential
 from galpy.potential import rtide
 from scipy.optimize import curve_fit
+from scipy.spatial import cKDTree
 
 from ..util.recipes import *
 from ..util.constants import _get_grav
@@ -62,6 +63,9 @@ def find_centre(
     rmin=0.1,
     rmax=None,
     nmax=100,
+    method='harfst',
+    nneighbour=6,
+    return_rhos=False,
 ):
     """Find the cluster's centre
 
@@ -90,6 +94,14 @@ def find_centre(
         maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
     nmax : int
         maximum number of iterations to find centre
+    method : str
+        method for finding the centre of density ('harfst' (default), 'casertano')
+
+    if method=='casertano'
+        nneighbour : int
+            number of neighbours for calculation local densities
+        return_rhos : bool
+            return local densities (default: False)
 
     Returns
     -------
@@ -105,21 +117,45 @@ def find_centre(
         print("NO SUBSET OF STARS GIVEN")
         return 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
 
+    rhos=np.zeros(cluster.ntot)
+
     if density:
-        xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(
-            cluster=cluster,
-            xstart=xstart,
-            ystart=ystart,
-            zstart=zstart,
-            vxstart=vxstart,
-            vystart=vystart,
-            vzstart=vzstart,
-            indx=indx,
-            nsphere=nsphere,
-            rmin=rmin,
-            rmax=rmax,
-            nmax=nmax,
-        )
+        if return_rhos:
+            xc,yc,zc,vxc,vyc,vzc,rhos=find_centre_of_density(
+                    cluster=cluster,
+                    xstart=xstart,
+                    ystart=ystart,
+                    zstart=zstart,
+                    vxstart=vxstart,
+                    vystart=vystart,
+                    vzstart=vzstart,
+                    indx=indx,
+                    nsphere=nsphere,
+                    rmin=rmin,
+                    rmax=rmax,
+                    nmax=nmax,
+                    method=method,
+                    nneighbour=nneighbour,
+                    return_rhos=return_rhos,
+                )
+        else:
+            xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(
+                cluster=cluster,
+                xstart=xstart,
+                ystart=ystart,
+                zstart=zstart,
+                vxstart=vxstart,
+                vystart=vystart,
+                vzstart=vzstart,
+                indx=indx,
+                nsphere=nsphere,
+                rmin=rmin,
+                rmax=rmax,
+                nmax=nmax,
+                method=method,
+                nneighbour=nneighbour,
+                return_rhos=return_rhos,
+            )
     else:
 
         x = cluster.x[indx] - xstart
@@ -152,9 +188,149 @@ def find_centre(
         vyc = np.sum(cluster.m[indx] * cluster.vy[indx]) / np.sum(cluster.m[indx])
         vzc = np.sum(cluster.m[indx] * cluster.vz[indx]) / np.sum(cluster.m[indx])
 
-    return xc, yc, zc, vxc, vyc, vzc
+    if return_rhos:
+        return xc, yc, zc, vxc, vyc, vzc, rhos
+    else:
+        return xc, yc, zc, vxc, vyc, vzc
 
 def find_centre_of_density(
+    cluster,
+    xstart=0.0,
+    ystart=0.0,
+    zstart=0.0,
+    vxstart=0.0,
+    vystart=0.0,
+    vzstart=0.0,
+    indx=None,
+    nsphere=100,
+    rmin=0.1,
+    rmax=None,
+    nmax=100,
+    method='harfst',
+    nneighbour=6,
+    return_rhos=False,
+):
+    """Find cluster's centre of density
+
+    - Find cluster's centre of density:
+        if method=='harfst' use (Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357) courtesy of Yohai Meiron
+        if method=='casertano' use (Casertano, S., Hut, P. 1985, ApJ, 298, 80)
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    xstart,ystart,zstart : float
+        starting position for centre (default: 0,0,0)
+    vxstart,vystart,vzstart : float
+        starting velocity for centre (default: 0,0,0)
+    indx: bool
+        subset of stars to perform centre of density calculation on (default: None)
+    nsphere : int
+        number of stars in centre sphere (default:100)
+    rmin : float
+        minimum radius of sphere around which to estimate density centre (default: 0.1 cluster.units)
+    rmax : float
+        maxmimum radius of sphere around which to estimate density centre (default: None cluster.units, uses maximum r)
+    nmax : float
+        maximum number of iterations (default:100)
+
+    method : str
+        method for finding the centre of density ('harfst' (default), 'casertano')
+
+    if method=='casertano'
+        nneighbour : int
+            number of neighbours for calculation local densities
+        return_rhos : bool
+            return local densities (default: False)
+
+    Returns
+    -------
+    xc,yc,zc,vxc,vyc,vzc : float
+        coordinates of centre of mass
+
+    HISTORY
+    -------
+    2019 - Written - Webb (UofT) with Yohai Meiron (UofT)
+    2022 - Written - Webb (UofT) - add method=='casertano'
+    """
+
+    if method=='harfst':
+        xdc, ydc, zdc,vxdc, vydc, vzdc=find_centre_of_density_harfst(cluster,xstart=xstart,
+            ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
+            nsphere=nsphere,rmin=rmin,rmax=rmax,nmax=nmax)
+    elif method=='casertano':
+        if return_rhos:
+            xdc, ydc, zdc,vxdc, vydc, vzdc, rhos=find_centre_of_density_casertano(cluster,nneighbour=nneighbour,return_rhos=return_rhos)
+        else:
+            xdc, ydc, zdc,vxdc, vydc, vzdc=find_centre_of_density_casertano(cluster,nneighbour=nneighbour,return_rhos=return_rhos)
+
+    if method=='casertano' and return_rhos:
+        return xdc, ydc, zdc,vxdc, vydc, vzdc, rhos
+    else:
+        return xdc, ydc, zdc,vxdc, vydc, vzdc
+
+def find_centre_of_density_casertano(
+    cluster,
+    nneighbour=6,
+    return_rhos=False
+):
+
+    """Find cluster's centre of density
+
+    - The motivation behind this piece of code comes from Casertano, S., Hut, P. 1985, ApJ, 298, 80
+
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    nneighbour : int
+        number of neighbours for calculation local densities
+    return_rhos : bool
+        return local densities (default: False)
+
+    Returns
+    -------
+    xc,yc,zc,vxc,vyc,vzc : float
+        coordinates of centre of mass
+
+    if return_rhos:
+        rhos : float
+            local density about each star
+
+    HISTORY
+    -------
+    2022 - Written - Webb (UofT)
+    """
+
+    pos=np.column_stack([cluster.x,cluster.y,cluster.z])
+    vel=np.column_stack([cluster.vx,cluster.vy,cluster.vz])
+
+    tree=cKDTree(pos)
+    dist, arg = tree.query(pos, k=nneighbour)
+
+    #Sum the masses but ignore last neighbour
+    mass=np.sum(cluster.m[arg],axis=1)-cluster.m[arg[:,-1]]
+    #Set volume equal using cube of distance to outermost neighbour
+    vol=(dist[:,-1]**3.)
+    rhos=mass/vol
+    rhototal=np.sum(rhos)
+
+    xdc=np.sum(rhos*cluster.x/rhototal)
+    ydc=np.sum(rhos*cluster.y/rhototal)
+    zdc=np.sum(rhos*cluster.z/rhototal)
+    vxdc=np.sum(rhos*cluster.vx/rhototal)
+    vydc=np.sum(rhos*cluster.vy/rhototal)
+    vzdc=np.sum(rhos*cluster.vz/rhototal)
+
+    if return_rhos:
+        return xdc, ydc, zdc,vxdc, vydc, vzdc, rhos
+    else:
+        return xdc, ydc, zdc,vxdc, vydc, vzdc
+
+
+def find_centre_of_density_harfst(
     cluster,
     xstart=0.0,
     ystart=0.0,
@@ -466,10 +642,10 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     mtot=np.sum(cluster.m)
     mbar=np.mean(cluster.m)
     if projected:
-        rc=cluster.r10pro
+        rc=cluster.rcore(projected=True)
         rh=cluster.rmpro
     else:
-        rc=cluster.r10
+        rc=cluster.rcore()
         rh=cluster.rm
 
     trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
@@ -1888,15 +2064,16 @@ def ckin(
 
 def rcore(
     cluster,
+    method='casertano',
+    nneighbour=6,
     mfrac=0.1,
     projected=False,
     plot=False,
-    ro=None,
-    vo=None,
     **kwargs
 ):
     """Calculate core radius of the cluster
-    -- if we assume the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
+    -- The default method (method='casertano') follows Casertano, S., Hut, P. 1985, ApJ, 298, 80 to find the core
+    -- An alternative metrhod (method=='isothermal') assumes the cluster is an isothermal sphere the core radius is where density drops to 1/3 central value
     --- For projected core radius, the core radius is where the surface density profile drops to 1/2 the central value
     --- Note that the inner mass fraction of stars used to calculate central density is set by mfrac (default 0.1 = 10%)
 
@@ -1904,6 +2081,14 @@ def rcore(
     ----------
     cluster : class
         StarCluster instance
+    method : string
+        method of calculating the core radius of a star cluster (default 'casertano')
+    if method =='casertano':
+        nneighbour : int
+            number of neighbours for calculation local densities
+    if method=='isothermal':
+        mfrac : float
+            inner mass fraction to be used to establish the central density
     projected : bool
         use projected values (default: False)
     plot : bool
@@ -1920,58 +2105,100 @@ def rcore(
     History
     -------
     2021 - Written - Webb (UofT)
+    2022 - Written - Webb (UofT) - add method='casertano'
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
-    mo=conversion.mass_in_msol(ro=cluster._ro,vo=cluster._vo)
-    dens_in_msolpc2=(mo/cluster._ro**2.)/(1000.0**2.)
 
-    if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
-        cluster.to_centre(sortstars=False)
+    if cluster.origin0 != 'centre':
+        if cluster.xc==0. and cluster.yc==0. and cluster.zc==0.0:
+            if method=='casertano':
+                cluster.find_centre(method='casertano')
+            else:
+                cluster.find_centre()
 
-    cluster.to_pckms()
+        cluster.to_centre(sortstars=True)
 
-    if projected:
-        r=cluster.rpro
-        rorder=cluster.rproorder
-        v=cluster.vpro
+    if method=='casertano':
+        
+        if projected:
+            r=cluster.rpro
+            pos=np.column_stack([cluster.x,cluster.y])
+        else:
+            r=cluster.r
+            pos=np.column_stack([cluster.x,cluster.y,cluster.z])
+
+        tree=cKDTree(pos)
+        dist, arg = tree.query(pos, k=nneighbour)
+
+        mass=np.sum(cluster.m[arg],axis=1)-cluster.m[arg[:,-1]]
+        if projected:
+            area=dist[:,-1]**2.
+            rhos=mass/area
+        else:
+            vol=dist[:,-1]**3.
+            rhos=mass/vol
+
+        rc2=np.sum((rhos**2.)*(r**2.))/np.sum((rhos**2.))
+        rc=np.sqrt(rc2)
+
+        if plot: 
+            rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+            rcindx=(cluster.r<rc)
+            mc=np.sum(cluster.mtot[rcindx])
+            volc=(4./3.)*np.pi*(rc**3.)
+            rho_c=mc/volc
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     else:
-        r=cluster.r
-        rorder=cluster.rorder
-        v=cluster.v
 
-    rcentral=rlagrange(cluster,mfrac=mfrac,projected=projected)
+        mo=conversion.mass_in_msol(ro=cluster._ro,vo=cluster._vo)
+        dens_in_msolpc2=(mo/cluster._ro**2.)/(1000.0**2.)
 
+        cluster.to_pckms()
 
-    nrad=int(np.ceil(1./mfrac))
+        if projected:
+            r=cluster.rpro
+            rorder=cluster.rproorder
+            v=cluster.vpro
+        else:
+            r=cluster.r
+            rorder=cluster.rorder
+            v=cluster.v
 
-    rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
-
-
-    #interpolate
-
-    if projected:
-        rho_c=0.5*pprof[0]
-    else:
-        rho_c=pprof[0]/3.
-
-    rindx=pprof < rho_c
-
-    r1=rprof[np.invert(rindx)][-1]
-    r2=rprof[rindx][0]
-
-    p1=pprof[np.invert(rindx)][-1]
-    p2=pprof[rindx][0]
-   
-    m=(p2-p1)/(r2-r1)
-    b=p2-m*r2
-
-    rc=(rho_c-b)/m
+        rcentral=rlagrange(cluster,mfrac=mfrac,projected=projected)
 
 
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+        nrad=int(np.ceil(1./mfrac))
 
-    rc=_convert_length(rc,'pckms',cluster)
+        rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
+
+
+        #interpolate
+
+        if projected:
+            rho_c=0.5*pprof[0]
+        else:
+            rho_c=pprof[0]/3.
+
+        rindx=pprof < rho_c
+
+        r1=rprof[np.invert(rindx)][-1]
+        r2=rprof[rindx][0]
+
+        p1=pprof[np.invert(rindx)][-1]
+        p2=pprof[rindx][0]
+       
+        m=(p2-p1)/(r2-r1)
+        b=p2-m*r2
+
+        rc=(rho_c-b)/m
+
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+        rc=_convert_length(rc,'pckms',cluster)
 
     if plot:
 

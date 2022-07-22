@@ -470,3 +470,29 @@ def test_astropy_table():
 	cluster = ctools.load_cluster('astropy_table',particles=data, units='kpckms',origin='galaxy')
 	assert check_params(cluster,'astropy_table','kpckms','galaxy',False)
 
+def test_mcluster(tol=0.2):
+	wdir='../docs/source/notebooks/'
+	rvirp=1.20395
+	rhp=1.0
+	rplummer=0.76628
+
+	m,x,y,z,vx,vy,vz=np.loadtxt(wdir+'N1k.dat.10',unpack=True)
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+
+	r_v=ctools.virial_radius(cluster)
+	print(r_v,rvirp,cluster.rm,rhp)
+
+	assert np.fabs(r_v-rvirp) <= tol
+	assert np.fabs(cluster.rm-rhp) <= tol
+
+	m,x,y,z,vx,vy,vz=np.loadtxt(wdir+'N1kb.dat.10',unpack=True)
+	cluster=ctools.StarCluster(units='pckms',origin='cluster')
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m,nb=500)
+
+	r_v=ctools.virial_radius(cluster)
+	print(r_v,rvirp,cluster.rm,rhp)
+
+	assert np.fabs(r_v-rvirp) <= tol
+	assert np.fabs(cluster.rm-rhp) <= tol
+

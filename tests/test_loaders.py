@@ -47,7 +47,10 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 	assert cluster.snapdir == kwargs.get("snapdir", "")
 	assert cluster.skiprows == kwargs.get("skiprows", 0)
 	if cluster.sfile is not None:
-		assert cluster.sfile.name == kwargs.get("sfile")
+		if isinstance(cluster.sfile,str):
+			assert cluster.sfile == kwargs.get("sfile")
+		else:
+			assert cluster.sfile.name == kwargs.get("sfile")
 	if cluster.bfile is not None:
 		assert cluster.bfile.name == kwargs.get("bfile")
 	if cluster.ssefile !=None:
@@ -438,6 +441,20 @@ def test_gyrfalcon():
 	wdir='../docs/source/notebooks/'
 	cluster=ctools.load_cluster('gyrfalcon',filename='cluster.nemo.dat',wdir=wdir,units='WDunits',origin='centre')
 	assert check_params(cluster,'nemo','WDunits','centre',False,sfile='%scluster.nemo.dat' % wdir,wdir=wdir,skiprows=13)
+
+def test_new_gyrfalcon():
+	wdir='../docs/source/notebooks/'
+	cluster=ctools.load_cluster('new_gyrfalcon',filename='cluster.nemo.dat',wdir=wdir,units='WDunits',origin='centre')
+	assert check_params(cluster,'new_nemo','WDunits','centre',False,sfile='%scluster.nemo.dat' % wdir,wdir=wdir,skiprows=13)
+
+	cluster=ctools.advance_cluster(cluster,filename=cluster.sfile)
+
+
+	assert check_params(cluster,'new_nemo','WDunits','centre',False,sfile='%scluster.nemo.dat' % wdir,wdir=wdir,skiprows=13,nsnap=1,tphys=0.484375)
+
+	cluster=ctools.advance_cluster(cluster,filename=cluster.sfile)
+
+	assert check_params(cluster,'new_nemo','WDunits','centre',False,sfile='%scluster.nemo.dat' % wdir,wdir=wdir,skiprows=13,nsnap=2,tphys=2.*0.484375)
 
 def test_amuse():
 	N=100

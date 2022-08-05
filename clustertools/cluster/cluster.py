@@ -119,6 +119,7 @@ class StarCluster(object):
 
         # Age of cluster
         self.tphys = tphys
+        self.dt = None
 
         # Units and origin
         self.units = units
@@ -2025,7 +2026,6 @@ class StarCluster(object):
         nmax=100,
         method='harfst',
         nneighbour=6,
-        return_rhos=False,
         reset_centre=False
     ):
         """Find the cluster's centre
@@ -2058,8 +2058,6 @@ class StarCluster(object):
         if method=='casertano'
             nneighbour : int
                 number of neighbours for calculation local densities
-            return_rhos : bool
-                return local densities (default: False)
 
 
         reset_centre : bool
@@ -2074,17 +2072,10 @@ class StarCluster(object):
         2019 - Written - Webb (UofT)
         """
 
-
-        if return_rhos:
-            xc,yc,zc,vxc,vyc,vzc,rhos=find_centre(self,xstart=xstart,
-                    ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-                    nsigma=nsigma,nsphere=nsphere,density=density,
-                    rmin=rmin,rmax=rmax,nmax=nmax,method=method,nneighbour=nneighbour,return_rhos=return_rhos)
-        else:
-            xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
-                ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
-                nsigma=nsigma,nsphere=nsphere,density=density,
-                rmin=rmin,rmax=rmax,nmax=nmax,method=method,nneighbour=nneighbour,return_rhos=return_rhos)
+        xc,yc,zc,vxc,vyc,vzc=find_centre(self,xstart=xstart,
+            ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
+            nsigma=nsigma,nsphere=nsphere,density=density,
+            rmin=rmin,rmax=rmax,nmax=nmax,method=method,nneighbour=nneighbour)
 
         if self.origin=='centre':
 
@@ -2097,21 +2088,13 @@ class StarCluster(object):
             if warning:
                 print('Centre is not at origin')
 
-            if return_rhos: 
-                self.rhos=rhos
-                return xc,yc,zc,vxc,vyc,vzc,rhos
-            else:
-                return xc,yc,zc,vxc,vyc,vzc
+            return xc,yc,zc,vxc,vyc,vzc
 
         elif self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
             self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
             
-            if return_rhos: 
-                self.rhos=rhos
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc, self.rhos
-            else:
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
 
         elif self.origin == "galaxy":
@@ -2122,22 +2105,14 @@ class StarCluster(object):
                 self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
                 self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
 
-                if return_rhos:
-                    self.rhos=rhos
-                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc, self.rhos
-                else:
-                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
      
             else:
                 self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
                 self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
 
 
-                if return_rhos:
-                    self.rhos=rhos
-                    return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc, self.rhos
-                else:
-                    return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
         elif self.origin=='sky':
             if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
@@ -2146,34 +2121,20 @@ class StarCluster(object):
                 self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
                 self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
 
-                if return_rhos:
-                    self.rhos=rhos
-                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc, self.rhos
-                else:
-                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
 
             else:
                 print('No Cluster Variables Set')
-                if return_rhos:
-                    return xc,yc,zc,vxc,vyc,vzc,rhos
-                else:
-                    return xc,yc,zc,vxc,vyc,vzc
+                return xc,yc,zc,vxc,vyc,vzc
         elif self.origin is None:
             self.xc, self.yc, self.zc = xc,yc,zc
             self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
 
-            if return_rhos:
-                self.rhos=rhos
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc, self.rhos
-            else:
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
 
         else:
             print('No Cluster Variables Set')
-            if return_rhos:
-                return xc,yc,zc,vxc,vyc,vzc,rhos
-            else:
-                return xc,yc,zc,vxc,vyc,vzc
+            return xc,yc,zc,vxc,vyc,vzc
 
     def find_centre_of_density(
         self,
@@ -2190,7 +2151,6 @@ class StarCluster(object):
         nmax=100,
         method='harfst',
         nneighbour=6,
-        return_rhos=False,
         reset_centre=False,
     ):
         """Find cluster's centre of density
@@ -2224,8 +2184,6 @@ class StarCluster(object):
         if method=='casertano'
             nneighbour : int
                 number of neighbours for calculation local densities
-            return_rhos : bool
-                return local densities (default: False)
 
         reset_centre : bool
             forcibly reset cluster's centre of mass (default: False)

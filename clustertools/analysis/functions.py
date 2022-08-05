@@ -65,7 +65,6 @@ def find_centre(
     nmax=100,
     method='harfst',
     nneighbour=6,
-    return_rhos=False,
 ):
     """Find the cluster's centre
 
@@ -100,8 +99,6 @@ def find_centre(
     if method=='casertano'
         nneighbour : int
             number of neighbours for calculation local densities
-        return_rhos : bool
-            return local densities (default: False)
 
     Returns
     -------
@@ -120,42 +117,22 @@ def find_centre(
     rhos=np.zeros(cluster.ntot)
 
     if density:
-        if return_rhos:
-            xc,yc,zc,vxc,vyc,vzc,rhos=find_centre_of_density(
-                    cluster=cluster,
-                    xstart=xstart,
-                    ystart=ystart,
-                    zstart=zstart,
-                    vxstart=vxstart,
-                    vystart=vystart,
-                    vzstart=vzstart,
-                    indx=indx,
-                    nsphere=nsphere,
-                    rmin=rmin,
-                    rmax=rmax,
-                    nmax=nmax,
-                    method=method,
-                    nneighbour=nneighbour,
-                    return_rhos=return_rhos,
-                )
-        else:
-            xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(
-                cluster=cluster,
-                xstart=xstart,
-                ystart=ystart,
-                zstart=zstart,
-                vxstart=vxstart,
-                vystart=vystart,
-                vzstart=vzstart,
-                indx=indx,
-                nsphere=nsphere,
-                rmin=rmin,
-                rmax=rmax,
-                nmax=nmax,
-                method=method,
-                nneighbour=nneighbour,
-                return_rhos=return_rhos,
-            )
+        xc,yc,zc,vxc,vyc,vzc=find_centre_of_density(
+            cluster=cluster,
+            xstart=xstart,
+            ystart=ystart,
+            zstart=zstart,
+            vxstart=vxstart,
+            vystart=vystart,
+            vzstart=vzstart,
+            indx=indx,
+            nsphere=nsphere,
+            rmin=rmin,
+            rmax=rmax,
+            nmax=nmax,
+            method=method,
+            nneighbour=nneighbour,
+        )
     else:
 
         x = cluster.x[indx] - xstart
@@ -188,10 +165,7 @@ def find_centre(
         vyc = np.sum(cluster.m[indx] * cluster.vy[indx]) / np.sum(cluster.m[indx])
         vzc = np.sum(cluster.m[indx] * cluster.vz[indx]) / np.sum(cluster.m[indx])
 
-    if return_rhos:
-        return xc, yc, zc, vxc, vyc, vzc, rhos
-    else:
-        return xc, yc, zc, vxc, vyc, vzc
+    return xc, yc, zc, vxc, vyc, vzc
 
 def find_centre_of_density(
     cluster,
@@ -208,7 +182,6 @@ def find_centre_of_density(
     nmax=100,
     method='harfst',
     nneighbour=6,
-    return_rhos=False,
 ):
     """Find cluster's centre of density
 
@@ -241,8 +214,6 @@ def find_centre_of_density(
     if method=='casertano'
         nneighbour : int
             number of neighbours for calculation local densities
-        return_rhos : bool
-            return local densities (default: False)
 
     Returns
     -------
@@ -260,20 +231,14 @@ def find_centre_of_density(
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             nsphere=nsphere,rmin=rmin,rmax=rmax,nmax=nmax)
     elif method=='casertano':
-        if return_rhos:
-            xdc, ydc, zdc,vxdc, vydc, vzdc, rhos=find_centre_of_density_casertano(cluster,nneighbour=nneighbour,return_rhos=return_rhos)
-        else:
-            xdc, ydc, zdc,vxdc, vydc, vzdc=find_centre_of_density_casertano(cluster,nneighbour=nneighbour,return_rhos=return_rhos)
+        xdc, ydc, zdc,vxdc, vydc, vzdc=find_centre_of_density_casertano(cluster,nneighbour=nneighbour)
 
-    if method=='casertano' and return_rhos:
-        return xdc, ydc, zdc,vxdc, vydc, vzdc, rhos
-    else:
-        return xdc, ydc, zdc,vxdc, vydc, vzdc
+
+    return xdc, ydc, zdc,vxdc, vydc, vzdc
 
 def find_centre_of_density_casertano(
     cluster,
     nneighbour=6,
-    return_rhos=False
 ):
 
     """Find cluster's centre of density
@@ -287,17 +252,11 @@ def find_centre_of_density_casertano(
         StarCluster
     nneighbour : int
         number of neighbours for calculation local densities
-    return_rhos : bool
-        return local densities (default: False)
 
     Returns
     -------
     xc,yc,zc,vxc,vyc,vzc : float
         coordinates of centre of mass
-
-    if return_rhos:
-        rhos : float
-            local density about each star
 
     HISTORY
     -------
@@ -324,10 +283,7 @@ def find_centre_of_density_casertano(
     vydc=np.sum(rhos*cluster.vy/rhototal)
     vzdc=np.sum(rhos*cluster.vz/rhototal)
 
-    if return_rhos:
-        return xdc, ydc, zdc,vxdc, vydc, vzdc, rhos
-    else:
-        return xdc, ydc, zdc,vxdc, vydc, vzdc
+    return xdc, ydc, zdc,vxdc, vydc, vzdc
 
 
 def find_centre_of_density_harfst(

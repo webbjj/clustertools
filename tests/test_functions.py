@@ -50,10 +50,6 @@ def test_find_centre_of_density_casertano(tol=0.01):
 	assert np.fabs(1.0-vyc/o.vy()) <= tol
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
-	xc, yc, zc, vxc, vyc, vzc, rhos=ctools.find_centre_of_density(cluster,method='casertano',return_rhos=True)
-
-	assert len(rhos)==cluster.ntot
-
 
 def test_find_centre_of_mass(tol=0.01):
 	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
@@ -188,7 +184,7 @@ def test_core_relaxation_time(tol=0.01):
 	#Setup cluster with rad=1, mean velocity=1, mass=ntot
 	ntot=1000
 	grav=4.302e-3
-	x=np.append(np.ones(int(ntot/2)),np.ones(int(ntot/2))*2.)
+	x=np.append(np.random.rand(int(ntot/2)),1.0+np.random.rand(int(ntot/2)))
 	y,z=np.zeros(ntot),np.zeros(ntot)
 
 	m=np.ones(ntot)
@@ -199,7 +195,8 @@ def test_core_relaxation_time(tol=0.01):
 	cluster.analyze()
 
 	coulomb=0.4
-	rc,rh=1.,1.
+	rh=1.
+	rc=cluster.rcore()
 	mbar=1.
 	vol=4.0*np.pi/3.0
 	rho=(ntot/2.)/vol

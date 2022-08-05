@@ -20,7 +20,7 @@ from ..analysis.orbits import initialize_orbit
 from ..util.constants import *
 
 #Import loaders for different code
-from .gyrfalcon import _get_gyrfalcon
+from .gyrfalcon import _get_gyrfalcon,_get_new_gyrfalcon
 from .nbody6pp import _get_nbody6pp
 from .nbody6 import _get_nbody6
 from .snapshot import _get_snapshot
@@ -224,6 +224,12 @@ def load_cluster(
         filein = open(filename, "r")
 
         cluster = _get_gyrfalcon(filein, units=units, origin=origin, advance=False, **kwargs)
+
+    elif ctype == "new_gyrfalcon" or ctype=='new_nemo':
+        # Read in snapshot from gyrfalcon.
+        filename=_get_filename(filename,**kwargs)
+
+        cluster = _get_new_gyrfalcon(filename, units=units, origin=origin, advance=False, **kwargs)
 
     elif ctype=='amuse':
         filename=_get_filename(filename,**kwargs)
@@ -514,6 +520,32 @@ def advance_cluster(
                 **kwargs
             )
 
+    elif cluster.ctype == "new_gyrfalcon" or cluster.ctype=="new_nemo":
+
+        filename=_get_filename(filename,**advance_kwargs)
+
+        if filename is None:
+            cluster = _get_new_gyrfalcon(
+                cluster.sfile,
+                units=cluster.units_init,
+                origin=cluster.origin_init,
+                ofile=ofile,
+                advance=True,
+                **advance_kwargs,
+                **kwargs
+            )
+
+        else:
+            cluster = _get_new_gyrfalcon(
+                filename,
+                units=cluster.units_init,
+                origin=cluster.origin_init,
+                ofile=ofile,
+                advance=True,
+                **advance_kwargs,
+                **kwargs
+            )
+
     elif cluster.ctype == "snapshot":
         col_names = kwargs.pop("col_names", ["m", "x", "y", "z", "vx", "vy", "vz"])
         col_nums = kwargs.pop("col_nums", [0, 1, 2, 3, 4, 5, 6])
@@ -681,7 +713,7 @@ def _get_advanced_kwargs(cluster, **kwargs):
     """
 
     nsnap = np.maximum(int(kwargs.pop("nsnap", 0)), cluster.nsnap) + 1
-
+    dt = kwargs.pop('dt',cluster.dt)
     delimiter = kwargs.pop("delimiter", cluster.delimiter)
     wdir = kwargs.pop("wdir", cluster.wdir)
     nzfill = int(kwargs.pop("nzfill", cluster.nzfill))
@@ -707,6 +739,7 @@ def _get_advanced_kwargs(cluster, **kwargs):
 
     return {
         "nsnap": nsnap,
+        "dt": dt,
         "delimiter": delimiter,
         "wdir": wdir,
         "nzfill": nzfill,

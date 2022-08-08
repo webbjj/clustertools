@@ -284,7 +284,8 @@ def _get_new_gyrfalcon(
     try:
         data=np.loadtxt(filename,skiprows=nskip,max_rows=ntot)
     except:
-        return cluster
+        print("END OF FILE")
+        return StarCluster(0.0,ctype="new_nemo",**kwargs)
 
     m=data[:,0].astype(float)
     x=data[:,1].astype(float)

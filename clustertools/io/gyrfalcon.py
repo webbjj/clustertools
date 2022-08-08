@@ -281,7 +281,10 @@ def _get_new_gyrfalcon(
     else:
         nskip=(skiprows+ntot)*cluster.nsnap+skiprows
 
-    data=np.loadtxt(filename,skiprows=nskip,max_rows=ntot)
+    try:
+        data=np.loadtxt(filename,skiprows=nskip,max_rows=ntot)
+    except:
+        return cluster
 
     m=data[:,0].astype(float)
     x=data[:,1].astype(float)

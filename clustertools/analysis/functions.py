@@ -826,6 +826,7 @@ def _potential_energy_subset(cluster_sub, cluster_full):
 
         
     return pot
+    
 @numba.njit()
 def _potential_energy_subset_parallel(cluster_sub, cluster_full):
     """Find the potential energy for a subset of stars in a bigger cluster

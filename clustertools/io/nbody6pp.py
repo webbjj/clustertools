@@ -184,13 +184,16 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
                 ssargs=np.arange(0,ntot,1)
 
             cluster.rhos=np.zeros(ntot-nb)
+            pots=np.zeros(ntot-nb)
 
             if nb>0: cluster.rhos[binargs]=rhos[binargs1]+rhos[binargs2]
             cluster.rhos[nb:]=rhos[ssargs]
+            pots[binargs]=pot[binargs1]+pot[binargs2]
+            pots[nb:]=pot[ssargs]
 
             v=np.sqrt(cluster.vx**2.+cluster.vy**2.+cluster.vz**2.)
             ek=0.5*cluster.m*v**2.
-            cluster.add_energies(ek,pot)
+            cluster.add_energies(ek,pots)
 
         if bev82 is not None and sev83 is not None:
             arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,nsnap=nsnap,**kwargs)

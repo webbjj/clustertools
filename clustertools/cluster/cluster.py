@@ -472,13 +472,13 @@ class StarCluster(object):
             if m0 is not None:
                 self.m0=np.append(m0[arg1]+m0[arg2],self.m0)
             else:
-                self.m0=np.append(np.zeros(len(xcom)),self.m0)
+                self.m0=np.append(np.zeros(nb),self.m0)
 
 
             if npop is None:
-                npopb=np.ones(len(xcom),int)
+                npopb=np.ones(nb,int)
             elif isinstance(npop,float):
-                npopb=np.ones(len(xcom))*npop
+                npopb=np.ones(nb)*npop
             else:
                 npopb=npop[arg1]
 

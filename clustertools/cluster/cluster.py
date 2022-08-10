@@ -676,7 +676,10 @@ class StarCluster(object):
 
         """
 
-        self.nb+=len(xb1)
+        if isinstance(xb1,float):
+            self.nb+=1
+        else:
+            self.nb+=len(xb1)
 
         self.xb1=np.append(self.xb1,xb1)
         self.yb1=np.append(self.yb1,yb1)

@@ -172,11 +172,24 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, alist[1], ntot+alist[1]
         )
-            cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
-            cluster.rhos=rhos
+            nb=alist[1]
+            cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,nb=nb)
 
-            v=np.sqrt(vx**2.+vy**2.+vz**2.)
-            ek=0.5*m*v**2.
+            if nb>0:
+                binargs=np.arange(0,nb,1)
+                binargs1=np.arange(0,nb,2)
+                binargs2=binargs1+1
+                ssargs=np.arange(2*nb,ntot,1)
+            else:
+                ssargs=np.arange(0,ntot,1)
+
+            cluster.rhos=np.zeros(ntot-nb)
+
+            if nb>0: cluster.rhos[binargs]=rhos[binargs1]+rhos[binargs2]
+            cluster.rhos[nb:]=rhos[ssargs]
+
+            v=np.sqrt(cluster.vx**2.+cluster.vy**2.+cluster.vz**2.)
+            ek=0.5*cluster.m*v**2.
             cluster.add_energies(ek,pot)
 
         if bev82 is not None and sev83 is not None:
@@ -184,20 +197,22 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             #Convert from fortran array address to python
             arg-=1
 
+            kws=np.ones(len(x))*-10.0
+            zl1s=np.ones(len(x))*-10.0
+            r1s=np.ones(len(x))*-10.0
+
+            if nb>0:
+                kws[binargs]=kwb
+                zl1s[binargs]=zl1b+zl2b
+                r1s[binargs]=r1b+r2b
+
+            kws[nb:]=kw[ssargs]
+            zl1s[nb:]=zl1[ssargs]
+            r1s[nb:]=r1[ssargs]
+
             if len(kw) != len(x):
                 if verbose: print('SSE/BSE NBODY6++ ERROR',len(x)-len(kw))
-                kws=np.ones(len(x))*-10.0
-                zl1s=np.ones(len(x))*-10.0
-                r1s=np.ones(len(x))*-10.0
-
-                kws[arg]=kw
-                zl1s[arg]=zl1
-                r1s[arg]=r1
-                cluster.add_sse(kws,zl1s,r1s)
-
-            else:
-
-                cluster.add_sse(kw,zl1,r1)
+            cluster.add_sse(kws,zl1s,r1s)
 
             pb=(10.0**pb)/cluster.tbar_days
             semi=(10.0**semi)/cluster.rbar_su

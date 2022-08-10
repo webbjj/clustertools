@@ -171,7 +171,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.add_nbody6(
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, alist[1], ntot+alist[1]
         )
-            nb=alist[1]
+            nb=int(alist[1])
             cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,nb=nb)
             cluster.rhos=np.zeros(ntot-nb)
             pots=np.zeros(ntot-nb)

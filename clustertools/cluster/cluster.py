@@ -463,11 +463,11 @@ class StarCluster(object):
                 else:
                     idstart=0
 
-                ids=idstart+np.linspace(0,len(xcom)-1,len(xcom))*2
+                ids=idstart+np.arange(0,2*nb-1,2)
             else:
                 ids=id[arg1]
 
-            self.id=np.append(ids,self.id)
+            self.id=np.append(np.array(ids),self.id)
 
             if m0 is not None:
                 self.m0=np.append(m0[arg1]+m0[arg2],self.m0)

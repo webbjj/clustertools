@@ -530,7 +530,7 @@ class StarCluster(object):
             ids=idstart+np.arange(0, len(x[args:]), dtype=int)
 
         else:
-            ids=id
+            ids=id[args:]
 
         self.id = np.append(self.id, np.array(ids))
 

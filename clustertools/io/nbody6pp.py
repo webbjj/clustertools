@@ -178,7 +178,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
 
             if nb>0:
                 binargs=np.arange(0,nb,1)
-                binargs1=np.arange(0,nb,2)
+                binargs1=np.arange(0,int(2*nb),2)
                 binargs2=binargs1+1
                 cluster.rhos[binargs]=rhos[binargs1]+rhos[binargs2]
                 pots[binargs]=pot[binargs1]+pot[binargs2]
@@ -200,7 +200,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             #Convert from fortran array address to python
 
             if nb>0:
-                kws[binargs]=kwb
+                kws[binargs]=np.maximum(kw1,kw2)
                 zl1s[binargs]=zl1b+zl2b
                 r1s[binargs]=r1b+r2b
                 args=arg[2*nb:]-nb-1

@@ -157,7 +157,6 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     else:
         ntot,alist,x,y,z,vx,vy,vz,m,i_d,rhos,xns,pot=_get_nbody6pp_conf3(conf3,nsnap=nsnap,**kwargs)
 
-
         cluster = StarCluster(
             alist[0],
             units="nbody",
@@ -179,42 +178,43 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
                 binargs=np.arange(0,nb,1)
                 binargs1=np.arange(0,nb,2)
                 binargs2=binargs1+1
-                ssargs=np.arange(2*nb,ntot,1)
             else:
-                ssargs=np.arange(0,ntot,1)
 
             cluster.rhos=np.zeros(ntot-nb)
             pots=np.zeros(ntot-nb)
 
             if nb>0: cluster.rhos[binargs]=rhos[binargs1]+rhos[binargs2]
-            cluster.rhos[nb:]=rhos[ssargs]
+            cluster.rhos[nb:]=rhos[2*nb:]
             pots[binargs]=pot[binargs1]+pot[binargs2]
-            pots[nb:]=pot[ssargs]
+            pots[nb:]=pot[2*nb:]
 
             v=np.sqrt(cluster.vx**2.+cluster.vy**2.+cluster.vz**2.)
             ek=0.5*cluster.m*v**2.
             cluster.add_energies(ek,pots)
 
         if bev82 is not None and sev83 is not None:
+
+            kws=np.ones(ntot-nb)*-10.0
+            zl1s=np.ones(ntot-nb)*-10.0
+            r1s=np.ones(ntot-nb)*-10.0
+
             arg,i_d,kw,ri,m1,zl1,r1,te,i_d1,i_d2,kw1,kw2,kwb,rib,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b,te1,te2=_get_nbody6pp_ev(bev82,sev83,nsnap=nsnap,**kwargs)
             #Convert from fortran array address to python
-            arg-=1
-
-            kws=np.ones(len(x))*-10.0
-            zl1s=np.ones(len(x))*-10.0
-            r1s=np.ones(len(x))*-10.0
 
             if nb>0:
                 kws[binargs]=kwb
                 zl1s[binargs]=zl1b+zl2b
                 r1s[binargs]=r1b+r2b
+                args=arg[2*nb:]-nb-1
+            else:
+                args=arg-1
 
-            kws[nb:]=kw[ssargs]
-            zl1s[nb:]=zl1[ssargs]
-            r1s[nb:]=r1[ssargs]
+            args=args.astype(int)
 
-            if len(kw) != len(x):
-                if verbose: print('SSE/BSE NBODY6++ ERROR',len(x)-len(kw))
+            kws[args]=kw[2*nb:]
+            zl1s[args]=zl1[2*nb:]
+            r1s[args]=r1[2*nb:]
+
             cluster.add_sse(kws,zl1s,r1s)
 
             pb=(10.0**pb)/cluster.tbar_days
@@ -223,6 +223,10 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             m2b/=cluster.zmbar
 
             cluster.add_bse(i_d1,i_d2,kw1,kw2,kwb,ecc,pb,semi,m1b,m2b,zl1b,zl2b,r1b,r2b)
+
+
+    if np.sum(cluster.kw<0) >0:
+        if verbose: print('SSE/BSE NBODY6++ ERROR',np.sum(cluster.kw<0))
 
     if kwargs.get("analyze", True) and cluster.ntot>0:
         sortstars=kwargs.get("sortstars", True)
@@ -331,74 +335,6 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
     header=bev.readline().split()
     nb,tphys=int(header[0]),float(header[1])
 
-    """
-    i_d1=np.array([])
-    i_d2=np.array([])
-    kw1=np.array([])
-    kw2=np.array([])
-    kwb=np.array([])
-    rib=np.array([])
-    ecc=np.array([])
-    pb=np.array([])
-    semi=np.array([])
-    m1b=np.array([])
-    m2b=np.array([])
-    zl1b=np.array([])
-    zl2b=np.array([])
-    r1b=np.array([])
-    r2b=np.array([])
-    te1=np.array([])
-    te2=np.array([])
-
-    if nb>0:
-
-        for i in range(0,nb):
-            data=bev.readline().split()
-            if len(data)==0:
-                if verbose: print('Missing stars in BEV Star')
-                break
-            arg1=int(data[1])
-            arg2=int(data[2])
-            i_d1=np.append(i_d1,int(data[3]))
-            i_d2=np.append(i_d2,int(data[4]))
-            kw1=np.append(kw1,int(data[5]))
-            kw2=np.append(kw2,int(data[6]))
-            kwb=np.append(kwb,int(data[7]))
-            rib=np.append(rib,float(data[8]))
-            ecc=np.append(ecc,float(data[9]))
-            pb=np.append(pb,float(data[10]))
-            semi=np.append(semi,float(data[11]))
-            m1b=np.append(m1b,float(data[12]))
-            m2b=np.append(m2b,float(data[13]))
-
-            if data[14]=='NaN':
-                zl1b=np.append(zl1b,0.)
-                zl2b=np.append(zl2b,0.)
-                r1b=np.append(r1b,0.)
-                r2b=np.append(r2b,0.)
-                te1=np.append(te1,0.)
-                te2=np.append(te2,0.)
-            else:
-                zl1b=np.append(zl1b,float(data[14]))
-                zl2b=np.append(zl2b,float(data[15]))
-                r1b=np.append(r1b,float(data[16]))
-                r2b=np.append(r2b,float(data[17]))
-                te1=np.append(te1,float(data[18]))
-                te2=np.append(te2,float(data[19]))
-
-            #Add select parameters to single star array
-            arg=np.append(arg,arg1)
-            arg=np.append(arg,arg2)
-            i_d=np.append(i_d,i_d1[-1])
-            i_d=np.append(i_d,i_d2[-1])
-            kw=np.append(kw,kw1[-1])
-            kw=np.append(kw,kw2[-1])
-            zl1=np.append(zl1,zl1b[-1])
-            zl1=np.append(zl1,zl2b[-1])
-            r1=np.append(r1,r1b[-1])
-            r1=np.append(r1,r2b[-1])
-    """
-
     if nb>0:
 
         data=np.loadtxt(bev.name,skiprows=1)
@@ -483,31 +419,6 @@ def _get_nbody6pp_ev(bev, sev, **kwargs):
 
     header=sev.readline().split()
     ntot,tphys=int(header[0]),float(header[1])
-
-    """
-
-    for i in range(0,ntot):
-        data=sev.readline().split()
-
-        if len(data)==0:
-            if verbose: print('Missing stars in SEV Star',i,ntot)
-            break
-
-        arg=np.append(arg,int(data[1]))
-        i_d=np.append(i_d,int(data[2]))
-        kw=np.append(kw,int(data[3]))
-        ri=np.append(ri,float(data[4]))
-        m1=np.append(m1,float(data[5]))
-
-        if data[6]=='NaN':
-            zl1=np.append(zl1,0.)
-            r1=np.append(r1,0.)
-            te=np.append(te,0.)
-        else:
-            zl1=np.append(zl1,float(data[6]))
-            r1=np.append(r1,float(data[7]))
-            te=np.append(te,float(data[8]))
-    """
 
     data=np.loadtxt(sev.name,skiprows=1)
 

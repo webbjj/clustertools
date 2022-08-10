@@ -173,19 +173,17 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
         )
             nb=alist[1]
             cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,nb=nb)
+            cluster.rhos=np.zeros(ntot-nb)
+            pots=np.zeros(ntot-nb)
 
             if nb>0:
                 binargs=np.arange(0,nb,1)
                 binargs1=np.arange(0,nb,2)
                 binargs2=binargs1+1
-            else:
+                cluster.rhos[binargs]=rhos[binargs1]+rhos[binargs2]
+                pots[binargs]=pot[binargs1]+pot[binargs2]
 
-            cluster.rhos=np.zeros(ntot-nb)
-            pots=np.zeros(ntot-nb)
-
-            if nb>0: cluster.rhos[binargs]=rhos[binargs1]+rhos[binargs2]
             cluster.rhos[nb:]=rhos[2*nb:]
-            pots[binargs]=pot[binargs1]+pot[binargs2]
             pots[nb:]=pot[2*nb:]
 
             v=np.sqrt(cluster.vx**2.+cluster.vy**2.+cluster.vz**2.)

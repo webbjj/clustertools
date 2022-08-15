@@ -13,7 +13,7 @@ To initialize a ``StarCluster``, one can simply start with:
 
 >>> cluster=ctools.StarCluster()
 
-``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``,``'galpy'``,``'gyrfalcon'``,``'limepy'``, ``'nbody6'``,``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Loading and Advancing <_load_and_advance>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
+``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``, ``'galpy'``, ``'gyrfalcon'``, ``'limepy'``, ``'nbody6'``, ``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Loading and Advancing <_load_and_advance>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
 
 Once a ``StarCluster`` is initialized, there are a large number of arrays and variables that correspond to individual stars, global properties of the cluster, and information related to the software used to generate the data. However, several functions have then been written to more easily populate ``StarCluster`` with information and carry out helpful calculations. They are:
 
@@ -56,7 +56,7 @@ Note that ``clustertools`` assumes that the arrays are structured such that the 
 
 >>> cluster.add_binary_stars(xb1,yb1,zb1,vxb1,vyb1,vzb1,xb2,yb2,zb2,vxb2,vyb2,vzb2)
 
-``add_binary_stars`` has the same features as ``add_stars`` in that masses (``mb1``,``mb1``), ids (``id1``,``id2``), initial masses (``m01``,``m02``), and population numbers (``npop1``,``npop2``) can be provided.
+``add_binary_stars`` has the same features as ``add_stars`` in that masses (``mb1``, ``mb1``), ids (``id1``, ``id2``), initial masses (``m01``, ``m02``), and population numbers (``npop1``, ``npop2``) can be provided.
 
 
 Finally, using ``add_stars``  and/or ``add_binary_stars`` results in ``cluster.ntot`` and ``cluster.nb`` being calculated. Otherwise they would have to be set manually.
@@ -282,7 +282,7 @@ For clarity, it is worth expanding on the difference between ``StarCluster.origi
 
 In most cases, the cluster's centre may not be done. The centre can be determined using the ``find_centre()`` command, where the default option is to find the centre of density using the method of Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357. Alternatively it is possible to find the centre of density using Casertano, S., Hut, P. 1985, ApJ, 298, 80 via ``find_centre(method='casertano')``. If the centre of mass is preferred, use ``find_centre(density=False)``
 
-It is also important to note that converting to ``sky`` requires knowlendge of ``ro``,``vo``,``zo``, and ``solarmotion``, the default values of which are discussed above.
+It is also important to note that converting to ``sky`` requires knowlendge of ``ro``, ``vo``, ``zo``, and ``solarmotion``, the default values of which are discussed above.
 
 
 See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one coordinate system to another.

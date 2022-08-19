@@ -635,7 +635,7 @@ class StarCluster(object):
 
 
         self.ntot = len(self.x)
-        self.ns=self.ntot+self.nb
+        self.ns=self.ntot-self.nb
 
     def add_binary_stars(
         self, xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2,mb1=None,mb2=None,id1=None,id2=None,m01=None,m02=None,npop1=None,npop2=None,set_com=True,return_com=False,
@@ -769,7 +769,7 @@ class StarCluster(object):
                 self.npop2=np.append(npop2,self.npop2)
 
             self.ntot = len(self.x)
-            self.ns=self.ntot+self.nb
+            self.ns=self.ntot-self.nb
 
         elif return_com:
             mcom=self.mb1+self.mb2

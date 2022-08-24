@@ -468,6 +468,21 @@ def test_amuse():
 
 	assert check_params(cluster,'amuse','pckms','centre',False)
 
+def test_amuse_units():
+	N=100
+	Mcluster=100.0 | units.MSun
+	Rcluster= 1.0 | units.parsec
+	converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
+	stars=new_plummer_sphere(N,converter)
+
+	print(stars.total_mass().in_(units.MSun))
+
+	cluster=ctools.StarCluster(ctype='amuse')
+	cluster.add_stars(stars.x, stars.y, stars.z, stars.vx, stars.vy, stars.vz, stars.mass, stars.key)
+	cluster.analyze(sortstars=True)
+
+
+
 def test_galpy(tol=0.01):
 	kdf= kingdf(M=2.3,rt=1.4,W0=3.)
 	sam= kdf.sample(n=1000)

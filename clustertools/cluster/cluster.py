@@ -424,7 +424,7 @@ class StarCluster(object):
         nfloat=np.zeros(len(params),dtype=bool)
         npmax=0
         for i,p in enumerate(params):
-            if isinstance(p,float):
+            if isinstance(p,float) or isinstance(p,int):
                 nfloat[i]=True
             else:
                 npmax=int(np.maximum(npmax,len(p)))
@@ -507,7 +507,10 @@ class StarCluster(object):
         self.m = np.append(self.m, np.array(ms))
 
         if m0 is not None:
-            self.m0=np.append(self.m0,m0[args:])
+            if isinstance(m0,float) or isinstance(m0,int):
+                self.m0=np.append(self.m0,np.ones(len(x[args:]))*m0)
+            else:
+                self.m0=np.append(self.m0,m0[args:])
         else:
             self.m0=np.append(self.m0,np.zeros(len(x[args:])))
 
@@ -528,9 +531,11 @@ class StarCluster(object):
                 idstart=0
 
             ids=idstart+np.arange(0, len(x[args:]), dtype=int)
-
         else:
-            ids=id[args:]
+            if isinstance(ids,float) or isinstance(ids,int):
+                ids=np.array(id)
+            else:
+                ids=id[args:]
 
         self.id = np.append(self.id, np.array(ids))
 

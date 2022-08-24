@@ -255,9 +255,9 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 		# Scale radius of cluster
 		assert cluster.rscale == 1.
 		# Number of single stars
-		assert cluster.ns == 0
+		assert cluster.ns == cluster.ntot-cluster.nb
 		# Number of binary stars
-		assert cluster.nb == 0
+		assert cluster.nb == cluster.ntot-cluster.ns
 		# Number of particles (from NBODY6 when tidal tail is being integrated)
 		assert cluster.n_p == 0
 
@@ -468,6 +468,7 @@ def test_amuse():
 
 	assert check_params(cluster,'amuse','pckms','centre',False)
 
+"""
 def test_amuse_units():
 	N=100
 	Mcluster=100.0 | units.MSun
@@ -479,8 +480,19 @@ def test_amuse_units():
 
 	cluster=ctools.StarCluster(ctype='amuse')
 	cluster.add_stars(stars.x, stars.y, stars.z, stars.vx, stars.vy, stars.vz, stars.mass, stars.key)
-	cluster.analyze(sortstars=True)
 
+	r=np.sqrt(stars.x**2.+stars.y**2.+stars.z**2.)
+	rorder = np.argsort(r)
+	msum=np.cumsum(stars.mass[rorder])
+	print(stars.mass)
+	print(np.append([],stars.mass))
+	print(rorder)
+	print(msum)
+	print(cluster.mtot)
+	indx = msum >= 0.5 * cluster.mtot
+	print(indx)
+	cluster.analyze(sortstars=True)
+"""
 
 
 def test_galpy(tol=0.01):

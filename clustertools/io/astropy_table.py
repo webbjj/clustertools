@@ -138,7 +138,7 @@ def _get_astropy_table(
         0., units=units, origin=origin, ctype='astropy_table', **kwargs
     )
 
-    cluster.add_stars(x, y, z, vx, vy, vz, m, ID, sortstars=False)
+    cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), np.array(m), np.array(ID), sortstars=False)
 
     if origin == "galaxy":
         if ofile == None:

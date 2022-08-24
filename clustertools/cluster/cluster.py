@@ -420,14 +420,16 @@ class StarCluster(object):
         """
 
         #Check for float entries
-        params=([x,y,z,vx,vy,vz])
+        params=([x,y,z,vx,vy,vz,m,id,m0,npop])
         nfloat=np.zeros(len(params),dtype=bool)
         npmax=0
         for i,p in enumerate(params):
-            if isinstance(p,float) or isinstance(p,int):
-                nfloat[i]=True
-            else:
-                npmax=int(np.maximum(npmax,len(p)))
+            if p is not None:
+                if isinstance(p,float) or isinstance(p,int):
+                    nfloat[i]=True
+                    npmax=int(np.maximum(npmax,1))
+                else:
+                    npmax=int(np.maximum(npmax,len(p)))
 
         if nfloat[0]: x=np.ones(npmax)*x
         if nfloat[1]: y=np.ones(npmax)*y
@@ -435,8 +437,12 @@ class StarCluster(object):
         if nfloat[3]: vx=np.ones(npmax)*vx
         if nfloat[4]: vy=np.ones(npmax)*vy
         if nfloat[5]: vz=np.ones(npmax)*vz
+        if nfloat[6]: m=np.ones(npmax)*m
+        if nfloat[7]: id=np.ones(npmax)*id
+        if nfloat[8]: m0=np.ones(npmax)*m0
+        if nfloat[9]: npop=np.ones(npmax)*npop
 
-        #Check for bianries
+        #Check for binaries
         if nb>0:
             if nb==1:
                 arg1,arg2=0,1
@@ -449,13 +455,13 @@ class StarCluster(object):
             else:
                 xcom,ycom,zcom,vxcom,vycom,vzcom,mcom=self.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2],m[arg1],m[arg2],return_com=True)
 
-            self.x = np.append(np.array(xcom),self.x)
-            self.y = np.append(np.array(ycom),self.y)
-            self.z = np.append(np.array(zcom),self.z)
-            self.vx = np.append(np.array(vxcom),self.vx)
-            self.vy = np.append(np.array(vycom),self.vy)
-            self.vz = np.append(np.array(vzcom),self.vz) 
-            self.m = np.append(np.array(mcom),self.m) 
+            self.x = np.append(xcom,self.x)
+            self.y = np.append(ycom,self.y)
+            self.z = np.append(zcom,self.z)
+            self.vx = np.append(vxcom,self.vx)
+            self.vy = np.append(vycom,self.vy)
+            self.vz = np.append(vzcom,self.vz) 
+            self.m = np.append(mcom,self.m) 
 
             if id is None:
                 if len(self.id)!=0:
@@ -467,7 +473,7 @@ class StarCluster(object):
             else:
                 ids=id[arg1]
 
-            self.id=np.append(np.array(ids),self.id)
+            self.id=np.append(ids,self.id)
 
             if m0 is not None:
                 self.m0=np.append(m0[arg1]+m0[arg2],self.m0)
@@ -490,12 +496,12 @@ class StarCluster(object):
 
 
         #Add single stars
-        self.x = np.append(self.x, np.array(x[args:]))
-        self.y = np.append(self.y, np.array(y[args:]))
-        self.z = np.append(self.z, np.array(z[args:]))
-        self.vx = np.append(self.vx, np.array(vx[args:]))
-        self.vy = np.append(self.vy, np.array(vy[args:]))
-        self.vz = np.append(self.vz, np.array(vz[args:]))
+        self.x = np.append(self.x, x[args:])
+        self.y = np.append(self.y, y[args:])
+        self.z = np.append(self.z, z[args:])
+        self.vx = np.append(self.vx, vx[args:])
+        self.vy = np.append(self.vy, vy[args:])
+        self.vz = np.append(self.vz, vz[args:])
 
         if m is None:
             ms = np.ones(len(x[args:]),float)
@@ -504,20 +510,15 @@ class StarCluster(object):
         else:
             ms=m[args:]
 
-        self.m = np.append(self.m, np.array(ms))
+        self.m = np.append(self.m, ms)
 
         if m0 is not None:
-            if isinstance(m0,float) or isinstance(m0,int):
-                self.m0=np.append(self.m0,np.ones(len(x[args:]))*m0)
-            else:
-                self.m0=np.append(self.m0,m0[args:])
+            self.m0=np.append(self.m0,m0[args:])
         else:
             self.m0=np.append(self.m0,np.zeros(len(x[args:])))
 
         if npop is None:
             npop=np.ones(len(x[args:]),int)
-        elif isinstance(npop,float):
-            npop=np.ones(len(x[args:]))*npop
 
         self.npop=np.append(self.npop,npop).astype(int)
 
@@ -532,12 +533,9 @@ class StarCluster(object):
 
             ids=idstart+np.arange(0, len(x[args:]), dtype=int)
         else:
-            if isinstance(id,float) or isinstance(id,int):
-                ids=np.array(id)
-            else:
-                ids=id[args:]
+            ids=id[args:]
 
-        self.id = np.append(self.id, np.array(ids))
+        self.id = np.append(self.id, ids)
 
         self.id = self.id.astype(int)
 
@@ -629,12 +627,12 @@ class StarCluster(object):
             print(len(self.id),len(self.m),len(self.x),len(self.y),len(self.z),len(self.x),len(self.y),len(self.z),len(self.m0),len(self.npop))
 
         if self.units == "radec" and self.origin == "sky":
-            self.ra = np.append(self.ra, np.array(x))
-            self.dec = np.append(self.dec, np.array(y))
-            self.dist = np.append(self.dist, np.array(z))
-            self.pmra = np.append(self.pmra, np.array(vx))
-            self.pmdec = np.append(self.pmdec, np.array(vy))
-            self.vlos = np.append(self.vlos, np.array(vz))
+            self.ra = np.append(self.ra, x)
+            self.dec = np.append(self.dec, y)
+            self.dist = np.append(self.dist, z)
+            self.pmra = np.append(self.pmra, vx)
+            self.pmdec = np.append(self.pmdec, vy)
+            self.vlos = np.append(self.vlos, vz)
 
         if analyze: self.analyze(sortstars=sortstars)
 

@@ -532,7 +532,7 @@ class StarCluster(object):
 
             ids=idstart+np.arange(0, len(x[args:]), dtype=int)
         else:
-            if isinstance(ids,float) or isinstance(ids,int):
+            if isinstance(id,float) or isinstance(id,int):
                 ids=np.array(id)
             else:
                 ids=id[args:]

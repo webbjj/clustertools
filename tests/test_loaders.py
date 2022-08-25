@@ -468,6 +468,7 @@ def test_amuse():
 
 	assert check_params(cluster,'amuse','pckms','centre',False)
 
+
 """
 def test_amuse_units():
 	N=100
@@ -478,8 +479,8 @@ def test_amuse_units():
 
 	print(stars.total_mass().in_(units.MSun))
 
-	cluster=ctools.StarCluster(ctype='amuse')
-	cluster.add_stars(stars.x, stars.y, stars.z, stars.vx, stars.vy, stars.vz, stars.mass, stars.key)
+	cluster=ctools.load_cluster('amuse',particles=stars)
+
 
 	r=np.sqrt(stars.x**2.+stars.y**2.+stars.z**2.)
 	rorder = np.argsort(r)

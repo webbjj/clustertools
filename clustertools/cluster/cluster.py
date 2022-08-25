@@ -25,6 +25,12 @@ from copy import copy
 from galpy.orbit import Orbit
 from ..util.constants import *
 
+try:
+    from amuse.lab import *
+    _hasamuse=True
+except:
+    _hasamuse=False
+
 class StarCluster(object):
     """ A class that represents a star cluster population that ooperations and functions can be performed on
     
@@ -442,6 +448,13 @@ class StarCluster(object):
         if nfloat[8]: m0=np.ones(npmax)*m0
         if nfloat[9]: npop=np.ones(npmax)*npop
 
+        #Check for units:
+        if _hasamuse:
+            if isinstance(x,VectorQuantity) or isinstance(x,ScalarQuantity):
+                _isamuse=True
+            else:
+                _isamuse=False
+
         #Check for binaries
         if nb>0:
             if nb==1:
@@ -454,6 +467,7 @@ class StarCluster(object):
                 xcom,ycom,zcom,vxcom,vycom,vzcom,mcom=self.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2],return_com=True)
             else:
                 xcom,ycom,zcom,vxcom,vycom,vzcom,mcom=self.add_binary_stars(x[arg1],y[arg1],z[arg1],vx[arg1],vy[arg1],vz[arg1],x[arg2],y[arg2],z[arg2],vx[arg2],vy[arg2],vz[arg2],m[arg1],m[arg2],return_com=True)
+
 
             self.x = np.append(xcom,self.x)
             self.y = np.append(ycom,self.y)
@@ -483,8 +497,6 @@ class StarCluster(object):
 
             if npop is None:
                 npopb=np.ones(nb,int)
-            elif isinstance(npop,float):
-                npopb=np.ones(nb)*npop
             else:
                 npopb=npop[arg1]
 
@@ -505,8 +517,6 @@ class StarCluster(object):
 
         if m is None:
             ms = np.ones(len(x[args:]),float)
-        elif isinstance(m,float):
-            ms=np.ones(len(x[args:]))*m
         else:
             ms=m[args:]
 

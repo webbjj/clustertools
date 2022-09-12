@@ -44,9 +44,14 @@ from scipy.spatial import cKDTree
 from ..util.recipes import *
 from ..util.constants import _get_grav
 from ..util.plots import _plot,_lplot,_scatter
-from ..util.units import _convert_length
+from ..util.units import _convert_length,_convert_time,_convert_velocity
 
 import matplotlib.pyplot as plt
+
+try:
+    import amuse.units.units as u
+except:
+    pass
 
 def find_centre(
     cluster,
@@ -108,6 +113,13 @@ def find_centre(
     -------
     2019 - Written - Webb (UofT)
     """
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if indx is None:
         indx = np.ones(cluster.ntot, bool)
     elif np.sum(indx) == 0.0:
@@ -165,7 +177,12 @@ def find_centre(
         vyc = np.sum(cluster.m[indx] * cluster.vy[indx]) / np.sum(cluster.m[indx])
         vzc = np.sum(cluster.m[indx] * cluster.vz[indx]) / np.sum(cluster.m[indx])
 
-    return xc, yc, zc, vxc, vyc, vzc
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if cluster.units =='amuse':
+        return xc | u.pc, yc | u.pc, zc | u.pc, vxc | u.kms, vyc | u.kms, vzc | u.kms
+    else:
+        return xc, yc, zc, vxc, vyc, vzc
 
 def find_centre_of_density(
     cluster,
@@ -226,6 +243,11 @@ def find_centre_of_density(
     2022 - Written - Webb (UofT) - add method=='casertano'
     """
 
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if method=='harfst':
         xdc, ydc, zdc,vxdc, vydc, vzdc=find_centre_of_density_harfst(cluster,xstart=xstart,
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
@@ -233,8 +255,12 @@ def find_centre_of_density(
     elif method=='casertano':
         xdc, ydc, zdc,vxdc, vydc, vzdc=find_centre_of_density_casertano(cluster,nneighbour=nneighbour)
 
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-    return xdc, ydc, zdc,vxdc, vydc, vzdc
+    if cluster.units =='amuse':
+        return xdc | u.pc, ydc | u.pc, zdc | u.pc, vxdc | u.kms, vydc | u.kms, vzdc | u.kms
+    else:
+        return xdc, ydc, zdc,vxdc, vydc, vzdc
 
 def find_centre_of_density_casertano(
     cluster,
@@ -447,7 +473,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     Returns
     -------
        trelax : float
-          relaxation time within radius rad (in Myr)
+          relaxation time within radius rad
 
     History
     -------
@@ -495,6 +521,8 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
     trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    trelax=_convert_time(trelax,'pckms',cluster)
 
     return trelax
 
@@ -552,6 +580,9 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    trh=_convert_time(trh,'pckms',cluster)
+
+
     return trh
 
 
@@ -608,6 +639,9 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    trc=_convert_time(trc,'pckms',cluster)
+
+
     return trc
 
 
@@ -646,6 +680,8 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_cluster(sortstars=False)
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     grav=_get_grav(cluster)
 
@@ -723,6 +759,12 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if cluster.units=='amuse' and specific:
+        kin=kin | (u.kms*u.kms)
+        pot=pot | (u.kms*u.kms)
+    elif cluster.units=='amuse' and not specific:
+        kin=kin | (u.MSun*u.kms*u.kms)
+        pot=pot | (u.MSun*u.kms*u.kms)
     return kin, pot
 
 
@@ -1318,6 +1360,12 @@ def mass_function(
     2018 - Written - Webb (UofT)
     """
 
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -1437,6 +1485,9 @@ def mass_function(
                 -1000.0,
             )
 
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+
 def tapered_mass_function(
     cluster,
     mmin=None,
@@ -1514,6 +1565,12 @@ def tapered_mass_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if projected:
         r = cluster.rpro
@@ -1618,6 +1675,7 @@ def tapered_mass_function(
             -1000.0,
         )
 
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 def tpl_func(m,A,alpha,mc,beta):
 
@@ -1699,6 +1757,12 @@ def eta_function(
     -------
     2018 - Written - Webb (UofT)
     """
+
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if projected:
         r = cluster.rpro
@@ -1783,8 +1847,12 @@ def eta_function(
             if filename != None:
                 plt.savefig(filename)
 
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
         return m_mean, sigvm, eta, eeta, yeta, eyeta
     else:
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
         print("NOT ENOUGH STARS TO ESTIMATE SIGMA-MASS RELATION")
         return (
             np.zeros(nmass),
@@ -1889,6 +1957,11 @@ def meq_function(
     -------
     2020
     """
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     m_mean, sigvm, meq, emq, sigma0, esigma0 = eta_function(cluster,
             mmin=mmin,
@@ -1909,6 +1982,8 @@ def meq_function(
             meq=True,
             **kwargs
         )
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     return m_mean, sigvm, meq, emq, sigma0, esigma0
 
@@ -1972,6 +2047,11 @@ def ckin(
     -------
     2020
     """
+    cluster.save_cluster()
+    units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     rn=rlagrange(cluster, nlagrange=10, projected=projected)
 
@@ -2016,6 +2096,9 @@ def ckin(
         )
 
     ck=meq/meq50
+
+    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
 
     return ck
 
@@ -2066,6 +2149,9 @@ def rcore(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'centre':
         if cluster.xc==0. and cluster.yc==0. and cluster.zc==0.0:
@@ -2313,6 +2399,9 @@ def rtidal(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
@@ -2485,6 +2574,9 @@ def rlimiting(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
 
@@ -2704,6 +2796,9 @@ def _rho_prof(
 
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)

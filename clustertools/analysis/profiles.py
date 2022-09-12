@@ -107,6 +107,9 @@ def rho_prof(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
@@ -317,6 +320,9 @@ def m_prof(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
@@ -536,6 +542,9 @@ def alpha_prof(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
@@ -727,6 +736,9 @@ def sigv_prof(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
@@ -943,6 +955,9 @@ def beta_prof(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
@@ -1133,6 +1148,9 @@ def v_prof(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
@@ -1352,6 +1370,9 @@ def v2_prof(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
     elif normalize:
@@ -1566,6 +1587,9 @@ def eta_prof(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)
@@ -1904,6 +1928,9 @@ def vcirc_prof(
     """
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
+
+    if cluster.units=='amuse':
+        cluster.to_pckms()
 
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=normalize)

@@ -2,7 +2,8 @@ import clustertools as ctools
 import numpy as np
 from astropy.table import QTable
 from amuse.lab import *
-from amuse.units import nbody_system,units
+from amuse.units import nbody_system
+import amuse.units.units as u
 from amuse.datamodel import Particles
 
 
@@ -20,7 +21,11 @@ mo=conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
 def check_params(cluster,ctype,units,origin,projected,**kwargs):
 
-	assert np.fabs(cluster.tphys-kwargs.get('tphys',0.)) < 0.001
+	if cluster.units == 'amuse':
+		assert np.fabs(cluster.tphys.value_in(u.Myr)-kwargs.get('tphys',0.)) < 0.001
+	else:
+
+		assert np.fabs(cluster.tphys-kwargs.get('tphys',0.)) < 0.001
 
 	if 'nbody' in ctype:
 		assert cluster.units=='nbody'
@@ -29,7 +34,7 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 		assert cluster.units==units
 		assert cluster.origin==origin
 
-	assert cluster.bunits==cluster.units
+	assert cluster.bunits==kwargs.get('bunits',cluster.units)
 	assert cluster.units_init==cluster.units
 	assert cluster.origin_init==cluster.origin
 
@@ -74,15 +79,27 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 	assert cluster.ntot == len(cluster.x)
 	assert cluster.nb == len(cluster.id1)
 
-	assert cluster.id.size != 0
-	assert cluster.m.size != 0
-	assert cluster.x.size != 0
-	assert cluster.y.size != 0
-	assert cluster.z.size != 0
-	assert cluster.vx.size != 0
-	assert cluster.vy.size != 0
-	assert cluster.vz.size != 0
-	assert cluster.m0.size != 0
+	if cluster.ctype=='amuse':
+		assert len(cluster.id) != 0
+		assert len(cluster.m) != 0
+		assert len(cluster.x) != 0
+		assert len(cluster.y) != 0
+		assert len(cluster.z) != 0
+		assert len(cluster.vx) != 0
+		assert len(cluster.vy) != 0
+		assert len(cluster.vz) != 0
+		assert len(cluster.m0) != 0
+	else:
+
+		assert cluster.id.size != 0
+		assert cluster.m.size != 0
+		assert cluster.x.size != 0
+		assert cluster.y.size != 0
+		assert cluster.z.size != 0
+		assert cluster.vx.size != 0
+		assert cluster.vy.size != 0
+		assert cluster.vz.size != 0
+		assert cluster.m0.size != 0
 
 	if 'nbody6pp' in ctype or 'nbody6++' in ctype:
 		assert cluster.rhos.size != 0
@@ -112,6 +129,14 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 			assert cluster.vxc != 0.0
 			assert cluster.vyc != 0.0
 			assert cluster.vzc != 0.0
+	elif cluster.units=='amuse':
+		assert np.fabs(cluster.xc.value_in(u.pc)) <= 1.e10
+		assert np.fabs(cluster.yc.value_in(u.pc)) <= 1.e10
+		assert np.fabs(cluster.zc.value_in(u.pc)) <= 1.e10
+		assert np.fabs(cluster.vxc.value_in(u.kms)) <= 1.e10
+		assert np.fabs(cluster.vyc.value_in(u.kms)) <= 1.e10
+		assert np.fabs(cluster.vzc.value_in(u.kms)) <= 1.e10
+
 	else:
 		assert np.fabs(cluster.xc) <= 1.e10
 		assert np.fabs(cluster.yc) <= 1.e10
@@ -132,6 +157,13 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 			assert cluster.vxgc != 0.0
 			assert cluster.vygc != 0.0
 			assert cluster.vzgc != 0.0
+		elif cluster.units=='amuse':
+			assert np.fabs(cluster.xgc.value_in(u.pc)) <= 1.e10
+			assert np.fabs(cluster.ygc.value_in(u.pc)) <= 1.e10
+			assert np.fabs(cluster.zgc.value_in(u.pc)) <= 1.e10
+			assert np.fabs(cluster.vxgc.value_in(u.kms)) <= 1.e10
+			assert np.fabs(cluster.vygc.value_in(u.kms)) <= 1.e10
+			assert np.fabs(cluster.vzgc.value_in(u.kms)) <= 1.e10
 		else:
 			assert cluster.xgc == 0.0
 			assert cluster.ygc == 0.0
@@ -331,15 +363,27 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 
 	# Lagrange Radii,10% lagrage radius, half-mass radius, limiting radius, tidal radius, and virial radius
 	assert cluster.rn == None
-	assert cluster.r10 != None
-	assert cluster.r10pro!=None
-	assert cluster.rm != None
-	assert cluster.rmpro != None
+
+	if cluster.ctype=='amuse' and (cluster.units==None or cluster.units=='amuse'):
+		assert cluster.r10.value_in(u.pc) != None
+		assert cluster.r10pro.value_in(u.pc)!=None
+		assert cluster.rm.value_in(u.pc) != None
+		assert cluster.rmpro.value_in(u.pc) != None
+	else:
+		assert cluster.r10 != None
+		assert cluster.r10pro!=None
+		assert cluster.rm != None
+		assert cluster.rmpro != None
 
 	if cluster.logl.size!=0:
-		assert cluster.rh != None
-		assert cluster.rhpro != None
-		assert cluster.rl != None
+		if cluster.ctype=='amuse' and (cluster.units==None or cluster.units=='amuse'):
+			assert cluster.rh.value_in(u.pc) != None
+			assert cluster.rhpro.value_in(u.pc) != None
+			assert cluster.rl.value_in(u.pc) != None
+		else:
+			assert cluster.rh != None
+			assert cluster.rhpro != None
+			assert cluster.rl != None
 
 	assert cluster.rt == None
 	assert cluster.rv == None
@@ -458,8 +502,8 @@ def test_new_gyrfalcon():
 
 def test_amuse():
 	N=100
-	Mcluster=100.0 | units.MSun
-	Rcluster= 1.0 | units.parsec
+	Mcluster=100.0 | u.MSun
+	Rcluster= 1.0 | u.parsec
 	converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
 	stars=new_plummer_sphere(N,converter)
 
@@ -469,32 +513,28 @@ def test_amuse():
 	assert check_params(cluster,'amuse','pckms','centre',False)
 
 
-"""
 def test_amuse_units():
 	N=100
-	Mcluster=100.0 | units.MSun
-	Rcluster= 1.0 | units.parsec
+	Mcluster=100.0 | u.MSun
+	Rcluster= 1.0 | u.parsec
 	converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
 	stars=new_plummer_sphere(N,converter)
-
-	print(stars.total_mass().in_(units.MSun))
-
 	cluster=ctools.load_cluster('amuse',particles=stars)
-
-
-	r=np.sqrt(stars.x**2.+stars.y**2.+stars.z**2.)
-	rorder = np.argsort(r)
-	msum=np.cumsum(stars.mass[rorder])
-	print(stars.mass)
-	print(np.append([],stars.mass))
-	print(rorder)
-	print(msum)
-	print(cluster.mtot)
-	indx = msum >= 0.5 * cluster.mtot
-	print(indx)
 	cluster.analyze(sortstars=True)
-"""
 
+	assert check_params(cluster,'amuse','amuse',None,False,bunits=None)
+
+
+	N=100
+	Mcluster=100.0 | u.MSun
+	Rcluster= 1.0 | u.parsec
+	converter=nbody_system.nbody_to_si(Mcluster,Rcluster)
+	stars=new_plummer_sphere(N,converter)
+	cluster=ctools.StarCluster(ctype='amuse')
+	cluster.add_stars(stars.x,stars.y,stars.z,stars.vx,stars.vy,stars.vz,stars.mass,stars.key)
+	cluster.analyze(sortstars=True)
+
+	assert check_params(cluster,'amuse','amuse',None,False,bunits=None)
 
 def test_galpy(tol=0.01):
 	kdf= kingdf(M=2.3,rt=1.4,W0=3.)

@@ -7,6 +7,7 @@ except:
 from ..cluster.cluster import StarCluster
 from ..analysis.orbits import initialize_orbit
 from .orbit import _get_cluster_orbit
+from ..util.units import _convert_amuse
 
 # Try Importing AMUSE. Only necessary for _get_amuse_particles
 try:
@@ -58,35 +59,12 @@ def _get_amuse_particles(
         ctype="amuse",
         **kwargs
     )
-    i_d = np.linspace(1, len(particles), len(particles), dtype="int")
 
-    m = particles.mass.value_in(u.MSun)
-
-    if units == "pckms":
-        x = particles.x.value_in(u.parsec)
-        y = particles.y.value_in(u.parsec)
-        z = particles.z.value_in(u.parsec)
-        vx = particles.vx.value_in(u.kms)
-        vy = particles.vy.value_in(u.kms)
-        vz = particles.vz.value_in(u.kms)
-
-    elif units == "kpckms":
-        x = particles.x.value_in(u.kpc)
-        y = particles.y.value_in(u.kpc)
-        z = particles.z.value_in(u.kpc)
-        vx = particles.vx.value_in(u.kms)
-        vy = particles.vy.value_in(u.kms)
-        vz = particles.vz.value_in(u.kms)
-
+    if units is None or units=='amuse':
+        cluster.add_stars(particles.x, particles.y, particles.z, particles.vx, particles.vy, particles.vz, particles.mass, particles.key, sortstars=False)
     else:
-        x = particles.x
-        y = particles.y
-        z = particles.z
-        vx = particles.vx
-        vy = particles.vy
-        vz = particles.vz
-
-    cluster.add_stars(x, y, z, vx, vy, vz, m, i_d, sortstars=False)
+        x,y,z,vx,vy,vz,m,id=_convert_amuse(particles,cluster)
+        cluster.add_stars(x,y,z,vx,vy,vz,m,id)
 
     if origin == "galaxy":
         if ofile is not None:

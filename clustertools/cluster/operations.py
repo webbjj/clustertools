@@ -13,6 +13,8 @@ __all__ = [
     "to_radec",
     "to_galpy",
     "to_WDunits",
+    "to_amuse",
+    "from_amuse",
     "to_units",
     "to_sudays",
     "to_audays",
@@ -46,14 +48,20 @@ except:
     full_default=False
     pass
 
-def to_pckms(cluster):
+try:    
+    import amuse.units.units as u
+except:
+    pass
+
+def to_pckms(cluster,analyze=True):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
 
     Parameters
     ----------
     cluster : class
         StarCluster
-
+    analyze : bool
+        run analysis function (default: True)
     Returns
     -------
     None
@@ -68,7 +76,9 @@ def to_pckms(cluster):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units == "galpy" or cluster.units == "radec" or cluster.units =="WDunits" or cluster.units=='kpcgyr':
-            cluster.to_kpckms()
+            cluster.to_kpckms(analyze=False)
+        elif cluster.units == 'amuse':
+            from_amuse(cluster)
 
         if cluster.units == "nbody":
             cluster.tphys *= cluster.tbar
@@ -130,15 +140,17 @@ def to_pckms(cluster):
 
             cluster.units = "pckms"
 
-        cluster.analyze()
+        if analyze: cluster.analyze()
 
-def to_kpckms(cluster):
+def to_kpckms(cluster,analyze=True):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s
 
     Parameters
     ----------
     cluster : class
         StarCluster
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -158,8 +170,10 @@ def to_kpckms(cluster):
         if cluster.units == "radec":
             from_radec(cluster)
 
-        if cluster.units == 'pcmyr':
-            cluster.to_pckms()
+        elif cluster.units == 'pcmyr':
+            cluster.to_pckms(analyze=False)
+        elif cluster.units == 'amuse':
+            from_amuse(cluster)
 
         if cluster.units == "galpy":
             cluster.tphys *= conversion.time_in_Gyr(ro=ro,vo=vo)
@@ -263,15 +277,17 @@ def to_kpckms(cluster):
             cluster.units = "kpckms"
 
 
-        cluster.analyze()
+        if analyze: cluster.analyze()
 
-def to_pcmyr(cluster):
+def to_pcmyr(cluster,analyze=True):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and pc/Myr
        
     Parameters
     ----------
     cluster : class
         StarCluster
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -286,7 +302,8 @@ def to_pcmyr(cluster):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units!='pckms' and cluster.units!='pcmyr':
-            cluster.to_pckms()
+            cluster.to_pckms(analyze=False)
+
 
         if cluster.units!='pcmyr':
             cluster.vx*=1.022712165045695
@@ -302,15 +319,17 @@ def to_pcmyr(cluster):
             cluster.vzc*=1.022712165045695
 
             cluster.units='pcmyr'
-            cluster.analyze()
+            if analyze: cluster.analyze()
 
-def to_kpcgyr(cluster):
+def to_kpcgyr(cluster,analyze=True):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and kpc/Gyr
        
     Parameters
     ----------
     cluster : class
         StarCluster
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -325,7 +344,7 @@ def to_kpcgyr(cluster):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units!='kpckms' and cluster.units!='kpcgyr':
-            cluster.to_kpckms()
+            cluster.to_kpckms(analyze=False)
 
         if cluster.units!='kpcgyr':
             cluster.vx*=1.022712165045695
@@ -341,10 +360,10 @@ def to_kpcgyr(cluster):
             cluster.vzc*=1.022712165045695
 
             cluster.units='kpcgyr'
-            cluster.analyze()
+            if analyze: cluster.analyze()
 
 
-def to_nbody(cluster):
+def to_nbody(cluster,analyze=True):
     """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
        
     - requires that cluster.zmbar, cluster.rbar, cluster.vbar are set (defaults are 1)
@@ -353,6 +372,8 @@ def to_nbody(cluster):
     ----------
     cluster : class
         StarCluster
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -368,7 +389,7 @@ def to_nbody(cluster):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units != "pckms" and cluster.units != "nbody":
-            cluster.to_pckms()
+            cluster.to_pckms(analyze=False)
 
         if cluster.units != "nbody":
             cluster.tphys /= cluster.tbar
@@ -411,7 +432,7 @@ def to_nbody(cluster):
 
         cluster.analyze()
 
-def to_radec(cluster, sortstars=True,centre_method=None):
+def to_radec(cluster, sortstars=True,centre_method=None,analyze=True):
     """Convert to on-sky position, proper motion, and radial velocity of cluster
     
     Parameters
@@ -422,6 +443,8 @@ def to_radec(cluster, sortstars=True,centre_method=None):
         sort star by radius after coordinate change (default: False)
     centre_method : str
         method for shifting coordinates to clustercentric coordinates (see to_cluster). (default: None)
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -442,7 +465,7 @@ def to_radec(cluster, sortstars=True,centre_method=None):
 
         if cluster.units != "radec":
 
-            cluster.to_kpckms()
+            cluster.to_kpckms(analyze=False)
             cluster.to_galaxy()
 
             if cluster.orbit is None: cluster.initialize_orbit(ro=ro,vo=vo,zo=zo,solarmotion=solarmotion)
@@ -505,7 +528,7 @@ def to_radec(cluster, sortstars=True,centre_method=None):
             elif origin0=='centre':
                 cluster.to_centre(centre_method=centre_method)
 
-            cluster.analyze(sortstars=sortstars)
+            if analyze: cluster.analyze(sortstars=sortstars)
 
 def from_radec(cluster, sortstars=True):
     """Calculate galactocentric coordinates from on-sky position, proper motion, and radial velocity of cluster
@@ -579,13 +602,15 @@ def from_radec(cluster, sortstars=True):
             cluster.origin = "galaxy"
             cluster.units = "kpckms"
 
-def to_galpy(cluster):
+def to_galpy(cluster,analyze=True):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
     
     Parameters
     ----------
     cluster : class
         StarCluster
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -603,7 +628,7 @@ def to_galpy(cluster):
         print('NO UNITS SPECIFIED')
     else:
         if cluster.units != "kpckms" and cluster.units != "galpy":
-            cluster.to_kpckms()
+            cluster.to_kpckms(analyze=False)
 
         if cluster.units == "kpckms":
             cluster.tphys /= conversion.time_in_Gyr(ro=ro, vo=vo)
@@ -633,13 +658,15 @@ def to_galpy(cluster):
 
         cluster.analyze()
 
-def to_WDunits(cluster):
+def to_WDunits(cluster,analyze=True):
     """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Walter Dehnen Units
 
     Parameters
     ----------
     cluster : class
         StarCluster
+    analyze : bool
+        run analysis function (default: True)
 
     Returns
     -------
@@ -660,7 +687,7 @@ def to_WDunits(cluster):
         mcon = 222288.4543021174
 
         if cluster.units!='kpckms' and cluster.units!="WDunits":
-            cluster.to_kpckms()
+            cluster.to_kpckms(analyze=False)
 
         if cluster.units!="WDunits":
 
@@ -678,6 +705,106 @@ def to_WDunits(cluster):
             cluster.units = "WDunits"
 
             cluster.analyze()
+
+def to_amuse(cluster,analyze=True):
+    """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to AMUSE Vector and Scalar Quantities
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+    analyze : bool
+        run analysis function (default: True)
+
+    Returns
+    -------
+    None
+
+    History:
+    -------
+    2022 - Written - Webb (UofT)
+
+    """
+
+    if cluster.units != 'amuse':
+
+        cluster.to_pckms()
+
+        cluster.tphys = cluster.tphys | u.Myr
+
+        cluster.x=cluster.x | u.parsec
+        cluster.y=cluster.y | u.parsec
+        cluster.z=cluster.z | u.parsec
+        cluster.vx=cluster.vx | u.kms
+        cluster.vy=cluster.vy | u.kms
+        cluster.vz=cluster.vz | u.kms
+        cluster.m=cluster.m | u.MSun
+
+        cluster.xc=cluster.xc | u.parsec
+        cluster.yc=cluster.yc | u.parsec
+        cluster.zc=cluster.zc | u.parsec
+        cluster.vxc=cluster.vxc | u.kms
+        cluster.vyc=cluster.vyc | u.kms
+        cluster.vzc=cluster.vzc | u.kms
+
+        cluster.xgc=cluster.xgc | u.parsec
+        cluster.ygc=cluster.ygc | u.parsec
+        cluster.zgc=cluster.zgc | u.parsec
+        cluster.vxgc=cluster.vxgc | u.kms
+        cluster.vygc=cluster.vygc | u.kms
+        cluster.vzgc=cluster.vzgc | u.kms
+
+
+        cluster.units = "amuse"
+
+        if analyze: cluster.analyze()
+
+def from_amuse(cluster):
+    """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity fronm AMUSE Vector and Scalar Quantities to pckms
+
+    Parameters
+    ----------
+    cluster : class
+        StarCluster
+
+    Returns
+    -------
+    None
+
+    History:
+    -------
+    2022 - Written - Webb (UofT)
+
+    """
+
+    if cluster.units == 'amuse':
+
+        cluster.tphys = cluster.tphys.value_in(u.Myr)
+
+        cluster.x=cluster.x.value_in(u.parsec)
+        cluster.y=cluster.y.value_in(u.parsec)
+        cluster.z=cluster.z.value_in(u.parsec)
+        cluster.vx=cluster.vx.value_in(u.kms)
+        cluster.vy=cluster.vy.value_in(u.kms)
+        cluster.vz=cluster.vz.value_in(u.kms)
+        cluster.m=cluster.m.value_in(u.MSun)
+
+        cluster.xc=cluster.xc.value_in(u.parsec)
+        cluster.yc=cluster.yc.value_in(u.parsec)
+        cluster.zc=cluster.zc.value_in(u.parsec)
+        cluster.vxc=cluster.vxc.value_in(u.kms)
+        cluster.vyc=cluster.vyc.value_in(u.kms)
+        cluster.vzc=cluster.vzc.value_in(u.kms)
+
+        cluster.xgc=cluster.xgc.value_in(u.parsec)
+        cluster.ygc=cluster.ygc.value_in(u.parsec)
+        cluster.zgc=cluster.zgc.value_in(u.parsec)
+        cluster.vxgc=cluster.vxgc.value_in(u.kms)
+        cluster.vygc=cluster.vygc.value_in(u.kms)
+        cluster.vzgc=cluster.vzgc.value_in(u.kms)
+
+
+        cluster.units = "pckms"
 
 
 def to_units(cluster, units):
@@ -719,6 +846,8 @@ def to_units(cluster, units):
             cluster.to_pcmyr()
         elif units == "kpcgyr":
             cluster.to_kpcgyr()
+        elif units == 'amuse':
+            cluster.to_amuse()
 
 def to_sudays(cluster):
     """ Convert binary star semi-major axis and periods to solar radii and days

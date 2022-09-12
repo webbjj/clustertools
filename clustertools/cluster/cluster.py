@@ -27,6 +27,9 @@ from ..util.constants import *
 
 try:
     from amuse.lab import *
+    import amuse.units.units as u
+    from amuse.datamodel import Particles
+    from ..util.units import _convert_amuse,_convert_length,_convert_velocity
     _hasamuse=True
 except:
     _hasamuse=False
@@ -431,6 +434,11 @@ class StarCluster(object):
         npmax=0
         for i,p in enumerate(params):
             if p is not None:
+                if _hasamuse:
+                    if isinstance(p,ScalarQuantity):
+                        nfloat[i]=True
+                        npmax=int(np.maximum(npmax,1))    
+
                 if isinstance(p,float) or isinstance(p,int):
                     nfloat[i]=True
                     npmax=int(np.maximum(npmax,1))
@@ -448,12 +456,24 @@ class StarCluster(object):
         if nfloat[8]: m0=np.ones(npmax)*m0
         if nfloat[9]: npop=np.ones(npmax)*npop
 
-        #Check for units:
-        if _hasamuse:
-            if isinstance(x,VectorQuantity) or isinstance(x,ScalarQuantity):
-                _isamuse=True
-            else:
-                _isamuse=False
+        #Check for AMUSE units:
+        isamuse=False
+
+        if _hasamuse and (self.units=='amuse' or (self.units is None and self.ctype=='amuse')):
+            if isinstance(x,VectorQuantity):
+                stars=Particles(len(x))
+                stars.x,stars.y,stars.z=x,y,z
+                stars.vx,stars.vy,stars.vz=vx,vy,vz
+                stars.mass=m
+                stars.key=id
+
+                if isinstance(self.tphys,ScalarQuantity):
+                    self.tphys=self.tphys.value_in(u.Myr)
+
+                self.units='pckms'                
+                x,y,z,vx,vy,vz,m,id=_convert_amuse(stars,self)
+                isamuse=True
+
 
         #Check for binaries
         if nb>0:
@@ -644,6 +664,10 @@ class StarCluster(object):
             self.pmdec = np.append(self.pmdec, vy)
             self.vlos = np.append(self.vlos, vz)
 
+
+        if isamuse: 
+            self.to_amuse()
+            self.units_init='amuse'
         if analyze: self.analyze(sortstars=sortstars)
 
 
@@ -727,13 +751,13 @@ class StarCluster(object):
             vycom=(vyb1*self.mb1+vyb2*self.mb2)/mcom
             vzcom=(vzb1*self.mb1+vzb2*self.mb2)/mcom
 
-            self.x = np.append(np.array(xcom),self.x)
-            self.y = np.append(np.array(ycom),self.y)
-            self.z = np.append(np.array(zcom),self.z)
-            self.vx = np.append(np.array(vxcom),self.vx)
-            self.vy = np.append(np.array(vycom),self.vy)
-            self.vz = np.append(np.array(vzcom),self.vz) 
-            self.m = np.append(np.array(mcom),self.m) 
+            self.x = np.append(xcom,self.x)
+            self.y = np.append(ycom,self.y)
+            self.z = np.append(zcom,self.z)
+            self.vx = np.append(vxcom,self.vx)
+            self.vy = np.append(vycom,self.vy)
+            self.vz = np.append(vzcom,self.vz) 
+            self.m = np.append(mcom,self.m) 
 
             if id1 is None:
                 if len(self.id)!=0:
@@ -1257,8 +1281,16 @@ class StarCluster(object):
 
         """
 
-        self.kin = np.array(kin)
-        self.pot = np.array(pot)
+        if _hasamuse and (self.units=='amuse' or (self.units is None and self.ctype=='amuse')):
+            if isinstance(kin,VectorQuantity) or isinstance(kin,ScalarQuantity):
+                self.kin=kin
+                self.pot=pot
+            else:
+                self.kin = np.array(kin)
+                self.pot = np.array(pot)               
+        else:
+            self.kin = np.array(kin)
+            self.pot = np.array(pot)
 
         if etot is None:
             self.etot=self.kin+self.pot 
@@ -1268,10 +1300,10 @@ class StarCluster(object):
         self.ektot = np.sum(np.nan_to_num(self.kin))
         self.ptot = np.sum(np.nan_to_num(self.pot)) / 2.0
 
-        if self.ptot == 0.0:
-            self.qvir = 0.0
-        else:
+        try:
             self.qvir = self.ektot / self.ptot
+        except:
+            self.qvir = 0.0
 
     def add_action(self, JR, Jphi, Jz, OR=None, Ophi=None, Oz=None, TR=None, Tphi=None, Tz=None):
         """ Add action values to the cluster instance
@@ -1507,13 +1539,15 @@ class StarCluster(object):
 
     # Directly call from operations.py (see operations.py files for documenation):
 
-    def to_pckms(self):
+    def to_pckms(self,analyze=True):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and km/s
 
         Parameters
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1524,15 +1558,17 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_pckms(self)
+        to_pckms(self,analyze=analyze)
 
-    def to_kpckms(self):
+    def to_kpckms(self,analyze=True):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and km/s
 
         Parameters
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1543,15 +1579,17 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_kpckms(self)
+        to_kpckms(self,analyze=analyze)
 
-    def to_pcmyr(self):
+    def to_pcmyr(self,analyze=True):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to pc and pc/Myr
            
         Parameters
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1562,15 +1600,17 @@ class StarCluster(object):
         2022 - Written - Webb (UofT)
 
         """
-        to_pcmyr(self)
+        to_pcmyr(self,analyze=analyze)
 
-    def to_kpcgyr(self):
+    def to_kpcgyr(self,analyze=True):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to kpc and kpc/Gyr
            
         Parameters
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1581,10 +1621,10 @@ class StarCluster(object):
         2022 - Written - Webb (UofT)
 
         """
-        to_kpcgyr(self)
+        to_kpcgyr(self,analyze=analyze)
 
 
-    def to_nbody(self):
+    def to_nbody(self,analyze=True):
         """Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Nbody units
        
         - requires that cluster.zmbar, cluster.rbar, cluster.vbar are set (defaults are 1)
@@ -1593,6 +1633,8 @@ class StarCluster(object):
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1603,9 +1645,9 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_nbody(self,)
+        to_nbody(self,analyze=analyze)
 
-    def to_radec(self, sortstars=True,centre_method=None):
+    def to_radec(self, sortstars=True,centre_method=None,analyze=True):
         """Convert to on-sky position, proper motion, and radial velocity of cluster
         
         Parameters
@@ -1616,6 +1658,8 @@ class StarCluster(object):
             sort star by radius after coordinate change (default: False)
         centre_method : str
             method for shifting coordinates to clustercentric coordinates (see to_cluster). (default: None)
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1625,15 +1669,17 @@ class StarCluster(object):
         -------
         2018 - Written - Webb (UofT)
         """
-        to_radec(self, sortstars=sortstars,centre_method=centre_method)
+        to_radec(self, sortstars=sortstars,centre_method=centre_method,analyze=analyze)
 
-    def to_galpy(self):
+    def to_galpy(self,analyze=True):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to galpy units
         
         Parameters
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1644,15 +1690,17 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
 
         """
-        to_galpy(self)
+        to_galpy(self,analyze=analyze)
 
-    def to_WDunits(self):
+    def to_WDunits(self,analyze=True):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to Walter Dehnen Units
 
         Parameters
         ----------
         cluster : class
             StarCluster
+        analyze : bool
+            run analysis function (default: True)
 
         Returns
         -------
@@ -1663,7 +1711,29 @@ class StarCluster(object):
         2022 - Written - Webb (UofT)
 
         """
-        to_WDunits(self)
+        to_WDunits(self,analyze=analyze)
+
+    def to_amuse(self,analyze=True):
+        """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to AMUSE Vector and Scalar Quantities
+
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+        analyze : bool
+            run analysis function (default: True)
+
+        Returns
+        -------
+        None
+
+        History:
+        -------
+        2022 - Written - Webb (UofT)
+
+        """
+
+        to_amuse(self,analyze=analyze)
 
     def to_units(self, units):
         """ Convert stellar positions/velocities, centre of mass, and orbital position and velocity to user defined units
@@ -2119,17 +2189,30 @@ class StarCluster(object):
 
         elif self.origin == "galaxy":
 
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+            if self.units!='amuse':
+                if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                    self.xgc, self.ygc, self.zgc = xc,yc,zc
+                    self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                    self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                    self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
 
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+                else:
+                    self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                    self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+
+            elif self.units=='amuse':
+                if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0. | u.pc ,0. | u.pc,0. | u.pc,0. | u.kms,0. | u.kms ,0. | u.kms) or reset_centre:
+                    self.xgc, self.ygc, self.zgc = xc,yc,zc
+                    self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                    self.xc, self.yc, self.zc = 0.0 | u.pc, 0.0 | u.pc, 0.0 | u.pc
+                    self.vxc, self.vyc, self.vzc = 0.0 | u.kms, 0.0 | u.kms , 0.0 | u.kms
+
+                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
      
-            else:
-                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
-                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+                else:
+                    self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                    self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
 
 
                 return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
@@ -2460,6 +2543,14 @@ class StarCluster(object):
         if projected == None:
             projected=self.projected
 
+        self.save_cluster()
+        units0,origin0, rorder0, rorder_origin0 = self.units0,self.origin0, self.rorder0, self.rorder_origin0
+
+        if self.origin0 != 'cluster' and self.origin0 != 'centre':
+            self.to_cluster(sortstars=False)
+        if self.units=='amuse':
+            self.to_pckms()
+
         kin, pot = energies(self, specific=specific, ids=ids, full=full, 
                             projected=projected, parallel=parallel)
         
@@ -2474,12 +2565,35 @@ class StarCluster(object):
             kin_full, pot_full = np.zeros(self.ntot), np.zeros(self.ntot)
             kin_full[ids], pot_full[ids] = kin, pot
             
+
+            self.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+            if self.units=='amuse' and specific:
+                kin_full=kin_full | (u.kms*u.kms)
+                pot_full=pot_full | (u.kms*u.kms)
+                kin=kin | (u.kms*u.kms)
+                pot=pot | (u.kms*u.kms)
+            elif self.units=='amuse' and not specific:
+                kin_full=kin_full | (u.MSun*u.kms*u.kms)
+                pot_full=pot_full | (u.MSun*u.kms*u.kms)
+                kin=kin | (u.MSun*u.kms*u.kms)
+                pot=pot | (u.MSun*u.kms*u.kms)
+
             self.add_energies(kin_full, pot_full)
             
             return kin, pot
 
         else:
             
+            self.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+            if self.units=='amuse' and specific:
+                kin=kin | (u.kms*u.kms)
+                pot=pot | (u.kms*u.kms)
+            elif self.units=='amuse' and not specific:
+                kin=kin | (u.MSun*u.kms*u.kms)
+                pot=pot | (u.MSun*u.kms*u.kms)
+
             self.add_energies(kin, pot)
 
             return self.kin, self.pot

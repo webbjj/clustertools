@@ -18,9 +18,9 @@ except:
     import galpy.util.bovy_conversion as conversion
 
 try:
-    import amuse.units.units as u
+	import amuse.units.units as u
 except:
-		pass
+	pass
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -34,16 +34,18 @@ def test_find_centre_of_density(tol=0.01):
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
+	cluster.to_amuse()
+
 	xc, yc, zc, vxc, vyc, vzc=ctools.find_centre_of_density(cluster)
 
-	assert np.fabs(1.0-xc/o.x()) <= tol
-	assert np.fabs(1.0-yc/o.y()) <= tol
-	assert np.fabs(1.0-zc/o.z()) <= tol
+	assert np.fabs(1.0-xc/(o.x() | u.kpc)) <= tol
+	assert np.fabs(1.0-yc/(o.y() | u.kpc)) <= tol
+	assert np.fabs(1.0-zc/(o.z() | u.kpc)) <= tol
 
 
-	assert np.fabs(1.0-vxc/o.vx()) <= tol
-	assert np.fabs(1.0-vyc/o.vy()) <= tol
-	assert np.fabs(1.0-vzc/o.vz()) <= tol
+	assert np.fabs(1.0-vxc/(o.vx() | u.kms)) <= tol
+	assert np.fabs(1.0-vyc/(o.vy() | u.kms)) <= tol
+	assert np.fabs(1.0-vzc/(o.vz() | u.kms)) <= tol
 
 def test_find_centre_of_density_casertano(tol=0.01):
 	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
@@ -51,16 +53,18 @@ def test_find_centre_of_density_casertano(tol=0.01):
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
+	cluster.to_amuse()
+
 	xc, yc, zc, vxc, vyc, vzc=ctools.find_centre_of_density(cluster,method='casertano')
 
-	assert np.fabs(1.0-xc/o.x()) <= tol
-	assert np.fabs(1.0-yc/o.y()) <= tol
-	assert np.fabs(1.0-zc/o.z()) <= tol
+	assert np.fabs(1.0-xc/(o.x() | u.kpc)) <= tol
+	assert np.fabs(1.0-yc/(o.y() | u.kpc)) <= tol
+	assert np.fabs(1.0-zc/(o.z() | u.kpc)) <= tol
 
 
-	assert np.fabs(1.0-vxc/o.vx()) <= tol
-	assert np.fabs(1.0-vyc/o.vy()) <= tol
-	assert np.fabs(1.0-vzc/o.vz()) <= tol
+	assert np.fabs(1.0-vxc/(o.vx() | u.kms)) <= tol
+	assert np.fabs(1.0-vyc/(o.vy() | u.kms)) <= tol
+	assert np.fabs(1.0-vzc/(o.vz() | u.kms)) <= tol
 
 
 def test_find_centre_of_mass(tol=0.01):
@@ -69,16 +73,18 @@ def test_find_centre_of_mass(tol=0.01):
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
+	cluster.to_amuse()
+
 	xc, yc, zc, vxc, vyc, vzc=ctools.find_centre_of_mass(cluster)
 
-	assert np.fabs(1.0-xc/o.x()) <= tol
-	assert np.fabs(1.0-yc/o.y()) <= tol
-	assert np.fabs(1.0-zc/o.z()) <= tol
+	assert np.fabs(1.0-xc/(o.x() | u.kpc)) <= tol
+	assert np.fabs(1.0-yc/(o.y() | u.kpc)) <= tol
+	assert np.fabs(1.0-zc/(o.z() | u.kpc)) <= tol
 
 
-	assert np.fabs(1.0-vxc/o.vx()) <= tol
-	assert np.fabs(1.0-vyc/o.vy()) <= tol
-	assert np.fabs(1.0-vzc/o.vz()) <= tol
+	assert np.fabs(1.0-vxc/(o.vx() | u.kms)) <= tol
+	assert np.fabs(1.0-vyc/(o.vy() | u.kms)) <= tol
+	assert np.fabs(1.0-vzc/(o.vz() | u.kms)) <= tol
 
 def test_find_centre(tol=0.01):
 	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
@@ -86,16 +92,23 @@ def test_find_centre(tol=0.01):
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
+	cluster.to_amuse()
+
+	print('DEBUG TEST1',cluster.xgc,cluster.vxgc,cluster.xc,cluster.vxc)
+
+
 	cluster.find_centre()
 
-	assert np.fabs(1.0-cluster.xgc/o.x()) <= tol
-	assert np.fabs(1.0-cluster.ygc/o.y()) <= tol
-	assert np.fabs(1.0-cluster.zgc/o.z()) <= tol
+	print('DEBUG TEST2',cluster.xgc,cluster.vxgc,cluster.xc,cluster.vxc)
+
+	assert np.fabs(1.0-cluster.xgc/(o.x() | u.kpc)) <= tol
+	assert np.fabs(1.0-cluster.ygc/(o.y() | u.kpc)) <= tol
+	assert np.fabs(1.0-cluster.zgc/(o.z() | u.kpc)) <= tol
 
 
-	assert np.fabs(1.0-cluster.vxgc/o.vx()) <= tol
-	assert np.fabs(1.0-cluster.vygc/o.vy()) <= tol
-	assert np.fabs(1.0-cluster.vzgc/o.vz()) <= tol
+	assert np.fabs(1.0-cluster.vxgc/(o.vx() | u.kms)) <= tol
+	assert np.fabs(1.0-cluster.vygc/(o.vy() | u.kms)) <= tol
+	assert np.fabs(1.0-cluster.vzgc/(o.vz() | u.kms)) <= tol
 
 def test_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
@@ -126,20 +139,11 @@ def test_relaxation_time(tol=0.01):
 	# Units of Myr
 	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-	assert np.fabs(1.0-trelax/cluster.relaxation_time()) <= tol
-
-	#Test calculation in Gyr
-	cluster.to_kpckms()
-	assert np.fabs(1.0-(trelax/1000.0)/cluster.relaxation_time()) <= tol
-
-	#Test calculation in galpy
-	cluster.to_galpy()
-	assert np.fabs(1.0-(trelax/1000.0/to)/cluster.relaxation_time()) <= tol
-
 	#Test calculation in amuse
 	cluster.to_amuse()
 
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.relaxation_time()) <= tol
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trelax) <= tol
 
 def test_projected_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
@@ -170,12 +174,11 @@ def test_projected_relaxation_time(tol=0.01):
 	# Units of Myr
 	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-	assert np.fabs(1.0-trelax/cluster.relaxation_time(projected=True)) <= tol
+	#Test calculation in amuse
+	cluster.to_amuse()
 
-
-	#Test calculation in Gyr
-	cluster.to_kpckms()
-	assert np.fabs(1.0-(trelax/1000.0)/cluster.relaxation_time(projected=True)) <= tol
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.relaxation_time(projected=True)) <= tol
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trelax) <= tol
 
 def test_half_mass_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
@@ -206,7 +209,11 @@ def test_half_mass_relaxation_time(tol=0.01):
 	# Units of Myr
 	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
-	assert np.fabs(1.0-trelax/cluster.half_mass_relaxation_time()) <= tol
+	#Test calculation in amuse
+	cluster.to_amuse()
+
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.half_mass_relaxation_time()) <= tol
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trh) <= tol
 
 def test_core_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
@@ -235,15 +242,21 @@ def test_core_relaxation_time(tol=0.01):
 
 	trelax=(0.39/lnlambda)*np.sqrt(rc**3./(grav*(ntot)))*(ntot)*np.sqrt(rc*rh)/(rc+rh)
 
-	assert np.fabs(1.0-trelax/cluster.core_relaxation_time()) <= tol
+	#Test calculation in amuse
+	cluster.to_amuse()
+
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.core_relaxation_time()) <= tol
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trc) <= tol
 
 	lnlambda=np.log(0.2*ntot)
 	trelax=(0.39/lnlambda)*np.sqrt(rc**3./(grav*(ntot)))*(ntot)*np.sqrt(rc*rh)/(rc+rh)
-	assert np.fabs(1.0-trelax/cluster.core_relaxation_time(coulomb=0.2)) <= tol
+
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.core_relaxation_time(coulomb=0.2)) <= tol
+	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trc) <= tol
 
 def test_energies(tol=0.01):
 
-	cluster=ctools.StarCluster(units='nbody',origin='centre')
+	cluster=ctools.StarCluster(units='pckms',origin='centre')
 
 	m=np.array([1.,1.])
 	x=np.array([-1.,1.])
@@ -255,65 +268,68 @@ def test_energies(tol=0.01):
 	dx=np.array([2.,2.])
 
 	kin=0.5*vx**2.
-	pot=-1./dx
+	pot=-4.302e-3/dx
 	etot=kin+pot
 	ektot=np.sum(kin)
 	ptot=np.sum(pot)/2.
 
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+
+	cluster.to_amuse()
+
 	cluster.analyze()
 	cluster.energies()
 
-	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
-	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
-	np.testing.assert_array_equal(etot,cluster.etot)
+	assert np.fabs(1.0-(ektot | (u.kms*u.kms)) /cluster.ektot) <= tol
+	assert np.fabs(1.0-(ptot | (u.kms*u.kms)) /cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot | (u.kms*u.kms) ,cluster.etot)
 
 	cluster.energies(parallel=True)
 
-	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
-	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
-	np.testing.assert_array_equal(etot,cluster.etot)
+	assert np.fabs(1.0-(ektot | (u.kms*u.kms)) /cluster.ektot) <= tol
+	assert np.fabs(1.0-(ptot | (u.kms*u.kms)) /cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot | (u.kms*u.kms) ,cluster.etot)
 
 	kid,pid=cluster.energies(ids=cluster.id[0])
 	eid=kid+pid
 
 
-	assert(eid[0]==etot[0])
+	assert(eid[0]==etot[0] | (u.kms*u.kms))
 
 	kid,pid=cluster.energies(ids=[cluster.id[0],cluster.id[1]])
 	eid=kid+pid
 
-	assert(eid[0]==etot[0])
-	assert(eid[1]==etot[1])
+	assert(eid[0]==etot[0] | (u.kms*u.kms))
+	assert(eid[1]==etot[1] | (u.kms*u.kms))
 
 	ids=np.ones(cluster.ntot,dtype=bool)
 
 	kid,pid=cluster.energies(ids=ids)
 	eid=kid+pid
-	assert(eid[0]==etot[0])
-	assert(eid[1]==etot[1])
+	assert(eid[0]==etot[0] | (u.kms*u.kms))
+	assert(eid[1]==etot[1] | (u.kms*u.kms))
 
 	ids[0]=False
 	kid,pid=cluster.energies(ids=ids)
 	eid=kid+pid
-	assert(eid[0]==etot[1])
+	assert(eid[0]==etot[1] | (u.kms*u.kms))
 
-	cluster.z=x
-	cluster.vz=vx
+	cluster.z=x | u.parsec
+	cluster.vz=vx | u.kms
 	cluster.analyze()
 	cluster.energies(projected=True)
 
-	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
-	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
-	np.testing.assert_array_equal(etot,cluster.etot)
+	assert np.fabs(1.0-(ektot | (u.kms*u.kms)) /cluster.ektot) <= tol
+	assert np.fabs(1.0-(ptot | (u.kms*u.kms)) /cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot | (u.kms*u.kms),cluster.etot)
 
-	cluster.m=np.array([0.1,0.1])
+	cluster.m=np.array([0.1,0.1]) | u.MSun
 	cluster.analyze()
 	cluster.energies(projected=True,specific=False)
 
-	assert np.fabs(1.0-0.1*ektot/cluster.ektot) <= tol
-	assert np.fabs(1.0-0.1*0.1*ptot/cluster.ptot) <= tol
-	np.testing.assert_array_equal(0.1*kin+0.1*0.1*pot,cluster.etot)
+	assert np.fabs(1.0-0.1*(ektot | (u.MSun*u.kms*u.kms)) /cluster.ektot) <= tol
+	assert np.fabs(1.0-0.1*0.1*(ptot | (u.MSun*u.kms*u.kms)) /cluster.ptot) <= tol
+	np.testing.assert_array_equal(0.1*(kin| (u.MSun*u.kms*u.kms))+0.1*0.1*(pot| (u.MSun*u.kms*u.kms)),cluster.etot)
 
 def test_closest_star(tol=0.01):
 

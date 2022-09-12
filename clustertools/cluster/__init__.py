@@ -12,6 +12,8 @@ to_galpy=operations.to_galpy
 to_WDunits=operations.to_WDunits
 to_pcmyr=operations.to_pcmyr
 to_kpcgyr=operations.to_kpcgyr
+to_amuse=operations.to_amuse
+from_amuse=operations.from_amuse
 
 to_units=operations.to_units
 to_sudays=operations.to_sudays

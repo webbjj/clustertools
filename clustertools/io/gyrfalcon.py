@@ -261,7 +261,7 @@ def _get_new_gyrfalcon(
     filein.close()
 
     cluster = StarCluster(
-        0.,
+        tphys,
         units=units,
         origin=origin,
         ctype="new_nemo",

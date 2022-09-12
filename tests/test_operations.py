@@ -9,6 +9,8 @@ except:
 	import galpy.util.bovy_coords as coords
 
 from copy import copy
+import amuse.units.units as u
+
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -18,6 +20,7 @@ def scale_test(init,final,tscale,mscale,xscale,vscale):
 	#assume arrays are t,mass,x,y,z,vx,vy,vz,xc,yc,zc,vxc,vyc,vzc,xgc,ygc,zgc,vxgc,vygc,vzgc
 
 	for i in range(0,len(init)):
+		print(i,init[i],final[i])
 		if i==0:
 			assert np.all(np.fabs(final[i]/init[i]-tscale) < 1e-10)
 		elif i==1:
@@ -414,6 +417,87 @@ def test_to_radec(tol=0.0001,ro=solar_ro,vo=solar_vo):
 	assert np.all(np.fabs(newpmdec/cluster.vy-1) < 1e-10)
 	assert np.all(np.fabs(newvlos/cluster.vz-1) < 1e-10)
 
+def test_from_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
+
+	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
+
+	final_units=['pckms','kpckms','galpy','nbody','WDunits','pcmyr','kpcgyr']
+	tscales=[1,1000,(1000.*conversion.time_in_Gyr(ro=ro,vo=vo)),tbar,1000.0,1.,1000.]
+	xscales=[1,1000,ro*1000,rbar,1000.,1.,1000.]
+	vscales=[1,1.,vo,vbar,220.0/conversion.velocity_in_kpcGyr(220.0, 8.0),1./1.022712165045695,1./1.022712165045695]
+	mscales=[1,1.,conversion.mass_in_msol(ro=ro,vo=vo),zmbar,222288.4543021174,1.,1.]
+
+	for i in range(0,len(final_units)):
+		t=1. | u.Myr
+		m=np.random.rand(100) | u.MSun
+		x,y,z=np.random.rand(100) | u.parsec ,np.random.rand(100) | u.parsec ,np.random.rand(100) | u.parsec
+		vx,vy,vz=np.random.rand(100) | u.kms,np.random.rand(100) | u.kms,np.random.rand(100) | u.kms
+		xc,yc,zc=np.random.rand(3) | u.parsec
+		vxc,vyc,vzc=np.random.rand(3) | u.kms
+		xgc,ygc,zgc=np.random.rand(3) | u.parsec
+		vxgc,vygc,vzgc=np.random.rand(3) | u.kms
+
+		cluster=ctools.StarCluster(tphys=t,units='amuse',origin='cluster')
+		cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+		cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
+		cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+		cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+		cluster.tbar,cluster.rbar,cluster.vbar,cluster.zmbar=tbar,rbar,vbar,zmbar
+
+		init=[t.value_in(u.Myr),m.value_in(u.MSun),x.value_in(u.parsec),y.value_in(u.parsec),z.value_in(u.parsec),vx.value_in(u.kms),vy.value_in(u.kms),vz.value_in(u.kms),xc.value_in(u.parsec),yc.value_in(u.parsec),zc.value_in(u.parsec),vxc.value_in(u.kms),vyc.value_in(u.kms),vzc.value_in(u.kms),xgc.value_in(u.parsec),ygc.value_in(u.parsec),zgc.value_in(u.parsec),vxgc.value_in(u.kms),vygc.value_in(u.kms),vzgc.value_in(u.kms)]
+
+		if i==0:
+			cluster.to_pckms()
+		elif i==1:
+			cluster.to_kpckms()
+		elif i==2:
+			cluster.to_galpy()
+		elif i==3:
+			cluster.to_nbody()
+		elif i==4:
+			cluster.to_WDunits()
+		elif i==5:
+			cluster.to_pcmyr()
+		elif i==6:
+			cluster.to_kpcgyr()
+
+		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
+
+		scale_test(final,init,tscales[i],mscales[i],xscales[i],vscales[i])
+
+def test_to_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
+	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
+
+	init_units=['pckms','kpckms','galpy','nbody','WDunits','pcmyr','kpcgyr']
+	tscales=[1.,1000,(1000.*conversion.time_in_Gyr(ro=ro,vo=vo)),tbar,1000.0,1.,1000.]
+	xscales=[1.,1000,ro*1000,rbar,1000.,1.,1000.]
+	vscales=[1.,1.,vo,vbar,220.0/conversion.velocity_in_kpcGyr(220.0, 8.0),1./1.022712165045695,1./1.022712165045695]
+	mscales=[1.,1.,conversion.mass_in_msol(ro=ro,vo=vo),zmbar,222288.4543021174,1.,1.]
+
+	for i in range(0,len(init_units)):
+		t=1.
+		m=np.random.rand(100)
+		x,y,z=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+		vx,vy,vz=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+		xc,yc,zc,vxc,vyc,vzc=np.random.rand(6)
+		xgc,ygc,zgc,vxgc,vygc,vzgc=np.random.rand(6)
+
+		cluster=ctools.StarCluster(tphys=t,units=init_units[i],origin='cluster')
+		cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+		cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=init_units[i])
+		cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+		cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+		cluster.tbar,cluster.rbar,cluster.vbar,cluster.zmbar=tbar,rbar,vbar,zmbar
+
+		init=[t,m,x,y,z,vx,vy,vz,xc,yc,zc,vxc,vyc,vzc,xgc,ygc,zgc,vxgc,vygc,vzgc]
+
+		cluster.to_amuse()
+
+		final=[cluster.tphys.value_in(u.Myr),cluster.m.value_in(u.MSun),cluster.x.value_in(u.pc),cluster.y.value_in(u.pc),cluster.z.value_in(u.pc),cluster.vx.value_in(u.kms),cluster.vy.value_in(u.kms),cluster.vz.value_in(u.kms),cluster.xc.value_in(u.pc),cluster.yc.value_in(u.pc),cluster.zc.value_in(u.pc),cluster.vxc.value_in(u.kms),cluster.vyc.value_in(u.kms),cluster.vzc.value_in(u.kms),cluster.xgc.value_in(u.pc),cluster.ygc.value_in(u.pc),cluster.zgc.value_in(u.pc),cluster.vxgc.value_in(u.kms),cluster.vygc.value_in(u.kms),cluster.vzgc.value_in(u.kms)]
+
+		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
+
+
 def test_to_units(tol=0.01,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
@@ -698,6 +782,83 @@ def test_to_units(tol=0.01,ro=solar_ro,vo=solar_vo):
 	assert np.all(np.fabs(os.pmdec()/cluster.vy-1.) < 1e-10)
 	assert np.all(np.fabs(os.vlos()/cluster.vlos-1.) < 1e-10)
 	assert np.all(np.fabs(os.vlos()/cluster.vz-1.) < 1e-10)
+
+	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
+
+	init_units=['pckms','kpckms','galpy','nbody','WDunits','pcmyr','kpcgyr']
+	tscales=[1.,1000,(1000.*conversion.time_in_Gyr(ro=ro,vo=vo)),tbar,1000.0,1.,1000.]
+	xscales=[1.,1000,ro*1000,rbar,1000.,1.,1000.]
+	vscales=[1.,1.,vo,vbar,220.0/conversion.velocity_in_kpcGyr(220.0, 8.0),1./1.022712165045695,1./1.022712165045695]
+	mscales=[1.,1.,conversion.mass_in_msol(ro=ro,vo=vo),zmbar,222288.4543021174,1.,1.]
+
+	for i in range(0,len(init_units)):
+		t=1.
+		m=np.random.rand(100)
+		x,y,z=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+		vx,vy,vz=np.random.rand(100),np.random.rand(100),np.random.rand(100)
+		xc,yc,zc,vxc,vyc,vzc=np.random.rand(6)
+		xgc,ygc,zgc,vxgc,vygc,vzgc=np.random.rand(6)
+
+		cluster=ctools.StarCluster(tphys=t,units=init_units[i],origin='cluster')
+		cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+		cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc,ounits=init_units[i])
+		cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+		cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+		cluster.tbar,cluster.rbar,cluster.vbar,cluster.zmbar=tbar,rbar,vbar,zmbar
+
+		init=[t,m,x,y,z,vx,vy,vz,xc,yc,zc,vxc,vyc,vzc,xgc,ygc,zgc,vxgc,vygc,vzgc]
+
+		cluster.to_units('amuse')
+
+		final=[cluster.tphys.value_in(u.Myr),cluster.m.value_in(u.MSun),cluster.x.value_in(u.pc),cluster.y.value_in(u.pc),cluster.z.value_in(u.pc),cluster.vx.value_in(u.kms),cluster.vy.value_in(u.kms),cluster.vz.value_in(u.kms),cluster.xc.value_in(u.pc),cluster.yc.value_in(u.pc),cluster.zc.value_in(u.pc),cluster.vxc.value_in(u.kms),cluster.vyc.value_in(u.kms),cluster.vzc.value_in(u.kms),cluster.xgc.value_in(u.pc),cluster.ygc.value_in(u.pc),cluster.zgc.value_in(u.pc),cluster.vxgc.value_in(u.kms),cluster.vygc.value_in(u.kms),cluster.vzgc.value_in(u.kms)]
+
+		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
+
+	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
+
+	final_units=['pckms','kpckms','galpy','nbody','WDunits','pcmyr','kpcgyr']
+	tscales=[1,1000,(1000.*conversion.time_in_Gyr(ro=ro,vo=vo)),tbar,1000.0,1.,1000.]
+	xscales=[1,1000,ro*1000,rbar,1000.,1.,1000.]
+	vscales=[1,1.,vo,vbar,220.0/conversion.velocity_in_kpcGyr(220.0, 8.0),1./1.022712165045695,1./1.022712165045695]
+	mscales=[1,1.,conversion.mass_in_msol(ro=ro,vo=vo),zmbar,222288.4543021174,1.,1.]
+
+	for i in range(0,len(final_units)):
+		t=1. | u.Myr
+		m=np.random.rand(100) | u.MSun
+		x,y,z=np.random.rand(100) | u.parsec ,np.random.rand(100) | u.parsec ,np.random.rand(100) | u.parsec
+		vx,vy,vz=np.random.rand(100) | u.kms,np.random.rand(100) | u.kms,np.random.rand(100) | u.kms
+		xc,yc,zc=np.random.rand(3) | u.parsec
+		vxc,vyc,vzc=np.random.rand(3) | u.kms
+		xgc,ygc,zgc=np.random.rand(3) | u.parsec
+		vxgc,vygc,vzgc=np.random.rand(3) | u.kms
+
+		cluster=ctools.StarCluster(tphys=t,units='amuse',origin='cluster')
+		cluster.add_stars(x,y,z,vx,vy,vz,m=m,analyze=True)
+		cluster.add_orbit(xgc,ygc,zgc,vxgc,vygc,vzgc)
+		cluster.xc,cluster.yc,cluster.zc=xc,yc,zc
+		cluster.vxc,cluster.vyc,cluster.vzc=vxc,vyc,vzc
+		cluster.tbar,cluster.rbar,cluster.vbar,cluster.zmbar=tbar,rbar,vbar,zmbar
+
+		init=[t.value_in(u.Myr),m.value_in(u.MSun),x.value_in(u.parsec),y.value_in(u.parsec),z.value_in(u.parsec),vx.value_in(u.kms),vy.value_in(u.kms),vz.value_in(u.kms),xc.value_in(u.parsec),yc.value_in(u.parsec),zc.value_in(u.parsec),vxc.value_in(u.kms),vyc.value_in(u.kms),vzc.value_in(u.kms),xgc.value_in(u.parsec),ygc.value_in(u.parsec),zgc.value_in(u.parsec),vxgc.value_in(u.kms),vygc.value_in(u.kms),vzgc.value_in(u.kms)]
+
+		if i==0:
+			cluster.to_units('pckms')
+		elif i==1:
+			cluster.to_units('kpckms')
+		elif i==2:
+			cluster.to_units('galpy')
+		elif i==3:
+			cluster.to_units('nbody')
+		elif i==4:
+			cluster.to_units('WDunits')
+		elif i==5:
+			cluster.to_units('pcmyr')
+		elif i==6:
+			cluster.to_units('kpcgyr')
+
+		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
+
+		scale_test(final,init,tscales[i],mscales[i],xscales[i],vscales[i])
 
 def test_to_audays(tol=0.01):
 	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')

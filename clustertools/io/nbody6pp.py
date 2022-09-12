@@ -125,7 +125,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             xb2, yb2, zb2 = bmr2 * xr1, bmr2 * xr2, bmr2 * xr3
             vxb2, vyb2, vzb2  = bmr2 * vr1,  bmr2 * vr2,  bmr2 * vr3
 
-            cluster.add_binary_stars(xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2)
+            cluster.add_binary_stars(xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2,set_com=False)
 
 
         cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)

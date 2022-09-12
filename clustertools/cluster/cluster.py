@@ -514,7 +514,6 @@ class StarCluster(object):
             else:
                 self.m0=np.append(np.zeros(nb),self.m0)
 
-
             if npop is None:
                 npopb=np.ones(nb,int)
             else:
@@ -547,10 +546,11 @@ class StarCluster(object):
         else:
             self.m0=np.append(self.m0,np.zeros(len(x[args:])))
 
-        if npop is None:
-            npop=np.ones(len(x[args:]),int)
+        if npop is not None:
+            self.npop=np.append(self.npop,npop[args:]).astype(int)
+        else:
+            self.npop=np.append(self.npop,np.ones(len(x[args:]))).astype(int)
 
-        self.npop=np.append(self.npop,npop).astype(int)
 
         if id is None:
 

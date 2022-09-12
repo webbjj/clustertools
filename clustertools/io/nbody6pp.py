@@ -98,7 +98,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.add_nbody6(nbody6list)
 
         if binaries:
-            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1)
+            cluster.add_stars(xc1,xc2,xc3,vc1,vc2,vc3,mbtot,i_d1,analyze=False)
             pb=np.array(pb)
             semi=np.array(semi)
             m1b=np.array(m1b)
@@ -128,7 +128,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.add_binary_stars(xb1, yb1, zb1, vxb1, vyb1, vzb1, xb2, yb2, zb2, vxb2, vyb2, vzb2,set_com=False)
 
 
-        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d)
+        cluster.add_stars(x, y, z, vx, vy, vz, m, i_d, analyze=False)
         cluster.add_sse(kw,lum,rs)
 
         if binaries: 
@@ -149,7 +149,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             cluster.zc*=cluster.rbar
             cluster.tphys*=cluster.tbar
 
-        cluster.to_nbody()
+        cluster.to_nbody(analyze=False)
 
         if binaries: cluster.nb = len(semi)
 
@@ -172,7 +172,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
             alist[13], alist[12], alist[2], alist[4], alist[6], alist[7], alist[8], alist[3], alist[11],alist[10],alist[17], ntot, alist[1], ntot+alist[1]
         )
             nb=int(alist[1])
-            cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,nb=nb)
+            cluster.add_stars(x, y, z, vx, vy, vz, m, i_d,nb=nb,analyze=False)
             cluster.rhos=np.zeros(ntot-nb)
             pots=np.zeros(ntot-nb)
 

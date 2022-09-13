@@ -30,9 +30,15 @@ import matplotlib.pyplot as plt
 from ..util.recipes import interpolate, binmaker
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 from ..util.constants import *
+from ..util.units import _convert_length,_convert_time,_convert_velocity
 
 import astropy.coordinates as coord
 import astropy.units as u
+
+try:
+    import amuse.units.units as u
+except:
+    pass
 
 def initialize_orbit(cluster, from_centre=False, ro=None, vo=None, zo = None, solarmotion=None):
     """ Initialize a galpy orbit instance for the cluster
@@ -236,11 +242,13 @@ def _integrate_orbit(
     if tfinal is None:
         tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='pckms' or cluster.units=='pcmyr':
-        tfinal/=1000.
+        tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
+    elif cluster.units=='amuse':
+        tfinal=tfinal.value_in(u.Gyr)/conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
-        tfinal*=(cluster.tbar/1000.)
+        tfinal*=((cluster.tbar/1000.)/conversion.time_in_Gyr(ro=ro, vo=vo))
 
     ts = np.linspace(0, tfinal, nt)
     o.integrate(ts, pot)
@@ -298,6 +306,8 @@ def _integrate_orbits(
         tfinal=12./conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='pckms' or cluster.units=='pcmyr':
         tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
+    elif cluster.units=='amuse':
+        tfinal=tfinal.value_in(u.Gyr)/conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
@@ -372,6 +382,10 @@ def interpolate_orbit(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+        tfinal=tfinal.value_in(u.Myr)
+
     ts,o=_integrate_orbit(cluster, pot=pot, tfinal=tfinal, nt=nt, from_centre=from_centre, ro=ro, vo=vo,zo=zo,solarmotion=solarmotion, plot=False)
 
     if cluster.units=='radec':
@@ -379,42 +393,21 @@ def interpolate_orbit(
             cluster.to_sky()
         xgc,ygc,zgc=o.ra(ts[-1]),o.dec(ts[-1]),o.dist(ts[-1])
         vxgc,vygc,vzgc=o.pmra(ts[-1]),o.pmdec(ts[-1]),o.vlos(ts[-1])  
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     else:
         xgc,ygc,zgc=o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1])
         vxgc,vygc,vzgc=o.vx(ts[-1]),o.vy(ts[-1]),o.vz(ts[-1])
 
-        if cluster.units=='pckms':
-            xgc*=1000
-            ygc*=1000
-            zgc*=1000
-        elif cluster.units=='pcmyr':
-            xgc*=1000
-            ygc*=1000
-            zgc*=1000
-            vxgc*=1.022712165045695
-            vygc*=1.022712165045695
-            vzgc*=1.022712165045695
-        elif cluster.units=='kpcgyr' or cluster.units=='WDunits':
-            vxgc*=1.022712165045695
-            vygc*=1.022712165045695
-            vzgc*=1.022712165045695
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-        elif cluster.units=='galpy':
-            xgc/=ro
-            ygc/=ro
-            zgc/=ro
-            vxgc/=vo
-            vygc/=vo
-            vzgc/=vo
-        elif cluster.units=='nbody':
-            xgc*=(1000/cluster.rbar)
-            ygc*=(1000/cluster.rbar)
-            zgc*=(1000/cluster.rbar)
-            vxgc/=cluster.vbar
-            vygc/=cluster.vbar
-            vzgc/=cluster.vbar
-
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+        xgc=_convert_length(xgc,'kpckms',cluster)
+        ygc=_convert_length(ygc,'kpckms',cluster)
+        zgc=_convert_length(zgc,'kpckms',cluster)
+        vxgc=_convert_velocity(vxgc,'kpckms',cluster)
+        vygc=_convert_velocity(vygc,'kpckms',cluster)
+        vzgc=_convert_velocity(vzgc,'kpckms',cluster)
 
     return xgc,ygc,zgc,vxgc,vygc,vzgc
 
@@ -471,6 +464,10 @@ def interpolate_orbits(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+        tfinal=tfinal.value_in(u.Myr)
+
     if cluster.origin=='centre':
         ts,o=_integrate_orbits(cluster, pot=pot, tfinal=tfinal, nt=nt, ro=ro, vo=vo, zo=zo,solarmotion=[0,0,0], plot=False)
     elif cluster.origin=='cluster':
@@ -481,44 +478,22 @@ def interpolate_orbits(
     if cluster.units=='radec' and cluster.origin=='sky':
         x,y,z=o.ra(ts[-1]),o.dec(ts[-1]),o.dist(ts[-1])
         vx,vy,vz=o.pmra(ts[-1]),o.pmdec(ts[-1]),o.vlos(ts[-1])
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
     elif cluster.units=='radec' and (cluster.origin=='centre' or cluster.origin=='cluster'):
         print('CANT INTEGRATE ORBITS WITH FROM_CENTRE OR FROM_CLUSTER AND RETURN IN SKY COORDINATES')
 
     else:
         x,y,z=o.x(ts[-1]),o.y(ts[-1]),o.z(ts[-1])
         vx,vy,vz=o.vx(ts[-1]),o.vy(ts[-1]),o.vz(ts[-1])
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
-        if cluster.units=='pckms':
-            x*=1000
-            y*=1000
-            z*=1000
-        elif cluster.units=='pcmyr':
-            xgc*=1000
-            ygc*=1000
-            zgc*=1000
-            vxgc*=1.022712165045695
-            vygc*=1.022712165045695
-            vzgc*=1.022712165045695
-        elif cluster.units=='kpcgyr' or cluster.units=='WDunits':
-            vxgc*=1.022712165045695
-            vygc*=1.022712165045695
-            vzgc*=1.022712165045695
-        elif cluster.units=='galpy':
-            x/=ro
-            y/=ro
-            z/=ro
-            vx/=vo
-            vy/=vo
-            vz/=vo
-        elif cluster.units=='nbody':
-            x*=(1000/cluster.rbar)
-            y*=(1000/cluster.rbar)
-            z*=(1000/cluster.rbar)
-            vx/=cluster.vbar
-            vy/=cluster.vbar
-            vz/=cluster.vbar
-
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+        x=_convert_length(x,'kpckms',cluster)
+        y=_convert_length(y,'kpckms',cluster)
+        z=_convert_length(z,'kpckms',cluster)
+        vx=_convert_velocity(vx,'kpckms',cluster)
+        vy=_convert_velocity(vy,'kpckms',cluster)
+        vz=_convert_velocity(vz,'kpckms',cluster)
 
     return x,y,z,vx,vy,vz
 
@@ -695,6 +670,8 @@ def orbital_path(
         tfinal=0.1/conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='pckms' or cluster.units=='pcmyr':
         tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
+    elif cluster.units=='amuse':
+        tfinal=tfinal.value_in(u.parsec)/(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
     elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
@@ -732,8 +709,10 @@ def orbital_path(
         pmdec = np.array(o.pmdec(ts))
         vlos = np.array(o.vlos(ts))
 
-        if cluster.units == "pckms":
+        if cluster.units == "pckms" or cluster.units=='pcmyr':
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0
+        elif cluster.units=='amuse':
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) | u.Myr
         elif cluster.units == "nbody":
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 / cluster.tbar
         elif cluster.units == "galpy":
@@ -764,47 +743,13 @@ def orbital_path(
         vy = np.array(o.vy(ts))
         vz = np.array(o.vz(ts))
 
-        if cluster.units == "pckms":
-            x *= 1000.0
-            y *= 1000.0
-            z *= 1000.0
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)*1000.0
-        elif cluster.units=='pcmyr':
-            x*=1000
-            y*=1000
-            z*=1000
-            vx*=1.022712165045695
-            vy*=1.022712165045695
-            vz*=1.022712165045695
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)*1000.0
-
-        elif cluster.units=='kpcgyr' or cluster.units=='WDunits':
-            vx*=1.022712165045695
-            vy*=1.022712165045695
-            vz*=1.022712165045695
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
-        elif cluster.units == "nbody":
-            x *= 1000.0 / cluster.rbar
-            y *= 1000.0 / cluster.rbar
-            z *= 1000.0 / cluster.rbar
-            vx /= cluster.vbar
-            vy /= cluster.vbar
-            vz /= cluster.vbar
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 / cluster.tbar
-
-        elif cluster.units == "galpy":
-            x /= ro
-            y /= ro
-            z /= ro
-            vx /= vo
-            vy /= vo
-            vz /= vo
-            t = ts
-        elif cluster.units =="kpckms" or cluster.units == "radec":
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo)
-        else:
-            print('TIME RETURNED IN GALPY UNITS')
-            t = ts 
+        x=_convert_length(x,'kpckms',cluster)
+        y=_convert_length(y,'kpckms',cluster)
+        z=_convert_length(z,'kpckms',cluster)
+        vx=_convert_velocity(vx,'kpckms',cluster)
+        vy=_convert_velocity(vy,'kpckms',cluster)
+        vz=_convert_velocity(vz,'kpckms',cluster)
+        t=_convert_time(ts,'galpy',cluster)
 
         if plot:
             filename = kwargs.pop("filename", None)

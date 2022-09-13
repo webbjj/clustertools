@@ -913,7 +913,7 @@ def test_vcirc_prof(tol=0.1):
 	rprofn_norm,vprof_norm,rvmax_norm,vmax_norm =ctools.vcirc_prof(cluster,bintype='fix',nrad=10,normalize=True)
 
 	assert np.all(np.fabs(vprof_norm/vprof-1) < tol)
-	assert np.all(np.fabs(cluster.rm*rprofn_norm/rprofn-1) < tol)
+	assert np.all(np.fabs(cluster.rm.value_in(u.parsec)*rprofn_norm/rprofn-1) < tol)
 
 	#test projected
 	cluster.z=np.random.rand(cluster.ntot) | u.parsec

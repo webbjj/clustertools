@@ -272,7 +272,7 @@ def _get_new_gyrfalcon(
     )
 
     if advance: 
-        cluster.tphys=dtout*cluster.nsnap
+        cluster.tphys+=dtout*cluster.nsnap
         cluster.dt=dtout
 
 

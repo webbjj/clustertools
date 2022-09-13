@@ -53,6 +53,9 @@ def sphere_coords(cluster):
     if origin0=='sky':
         cluster.to_galaxy(ro=ro,vo=vo,solarmotion=solar_motion)
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     x,y,z,vx,vy,vz=cart_to_sphere(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
@@ -165,6 +168,9 @@ def cyl_coords(cluster):
     if origin0=='sky':
         cluster.to_galaxy(ro=ro,vo=vo,solarmotion=solar_motion)
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+        
     R,phi,z,vR,vT,vz=cart_to_cyl(cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz)
 
     cluster.return_cluster(units0, origin0, rorder0, rorder_origin0)

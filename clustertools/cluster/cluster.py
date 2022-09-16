@@ -3632,7 +3632,7 @@ class StarCluster(object):
         """
         self.interpolate_orbits(self,pot=pot,tfinal=tfinal,nt=nt,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion)
 
-    def orbital_path(self,dt=0.1,nt=1000,pot=None,from_centre=False,
+    def orbital_path(self,tfinal=0.1,nt=1000,pot=None,from_centre=False,
         skypath=False,initialize=False,ro=None,vo=None,zo=None,solarmotion=None, plot=False,**kwargs):
         """Calculate the cluster's orbital path
 
@@ -3678,13 +3678,13 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
         """
         if initialize:
-            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,**kwargs)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath,self.orbit=orbital_path(self,tfinal=tfinal,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,**kwargs)
         else:
-            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,dt=dt,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,**kwargs)
+            self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath=orbital_path(self,tfinal=tfinal,nt=nt,pot=pot,from_centre=from_centre,skypath=skypath,initialize=initialize,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,**kwargs)
 
         return  self.tpath,self.xpath,self.ypath,self.zpath,self.vxpath,self.vypath,self.vzpath
 
-    def orbital_path_match(self,dt=0.1,nt=1000,pot=None,path=None,from_centre=False,
+    def orbital_path_match(self,tfinal=0.1,nt=1000,pot=None,path=None,from_centre=False,
         skypath=False,to_path=False,do_full=False,ro=None,vo=None,zo=None,solarmotion=None,plot=False,projected=False,**kwargs):
 
         """Match stars to a position along the orbital path of the cluster
@@ -3737,7 +3737,7 @@ class StarCluster(object):
         2018 - Written - Webb (UofT)
         """
 
-        self.tstar,self.dprog,self.dpath=orbital_path_match(self,dt=dt,nt=nt,pot=pot,path=path,
+        self.tstar,self.dprog,self.dpath=orbital_path_match(self,tfinal=tfinal,nt=nt,pot=pot,path=path,
         from_centre=from_centre,skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)
 
         return self.tstar,self.dprog,self.dpath

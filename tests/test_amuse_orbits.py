@@ -237,22 +237,22 @@ def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	)
 
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
-	ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	ts = np.linspace(0, (-1.0* tfinal.value_in(u.Gyr))/ conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
 	o.integrate(ts,MWPotential2014)
 
-	assert np.fabs(x[0]-o.x(ts[-1])) <= tol
-	assert np.fabs(y[0]-o.y(ts[-1])) <= tol
-	assert np.fabs(z[0]-o.z(ts[-1])) <= tol
-	assert np.fabs(vx[0]-o.vx(ts[-1])) <= tol
-	assert np.fabs(vy[0]-o.vy(ts[-1])) <= tol
-	assert np.fabs(vz[0]-o.vz(ts[-1])) <= tol
+	assert np.fabs(x[0].value_in(u.kpc)-o.x(ts[-1])) <= tol
+	assert np.fabs(y[0].value_in(u.kpc)-o.y(ts[-1])) <= tol
+	assert np.fabs(z[0].value_in(u.kpc)-o.z(ts[-1])) <= tol
+	assert np.fabs(vx[0].value_in(u.kms)-o.vx(ts[-1])) <= tol
+	assert np.fabs(vy[0].value_in(u.kms)-o.vy(ts[-1])) <= tol
+	assert np.fabs(vz[0].value_in(u.kms)-o.vz(ts[-1])) <= tol
 
-	assert np.fabs(cluster.xpath[0]-o.x(ts[-1])) <= tol
-	assert np.fabs(cluster.ypath[0]-o.y(ts[-1])) <= tol
-	assert np.fabs(cluster.zpath[0]-o.z(ts[-1])) <= tol
-	assert np.fabs(cluster.vxpath[0]-o.vx(ts[-1])) <= tol
-	assert np.fabs(cluster.vypath[0]-o.vy(ts[-1])) <= tol
-	assert np.fabs(cluster.vzpath[0]-o.vz(ts[-1])) <= tol
+	assert np.fabs(cluster.xpath[0].value_in(u.kpc)-o.x(ts[-1])) <= tol
+	assert np.fabs(cluster.ypath[0].value_in(u.kpc)-o.y(ts[-1])) <= tol
+	assert np.fabs(cluster.zpath[0].value_in(u.kpc)-o.z(ts[-1])) <= tol
+	assert np.fabs(cluster.vxpath[0].value_in(u.kms)-o.vx(ts[-1])) <= tol
+	assert np.fabs(cluster.vypath[0].value_in(u.kms)-o.vy(ts[-1])) <= tol
+	assert np.fabs(cluster.vzpath[0].value_in(u.kms)-o.vz(ts[-1])) <= tol
 
 	assert np.fabs(cluster.orbit.x(ts[-1])-o.x(ts[-1])) <= tol
 	assert np.fabs(cluster.orbit.y(ts[-1])-o.y(ts[-1])) <= tol
@@ -262,15 +262,15 @@ def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(cluster.orbit.vz(ts[-1])-o.vz(ts[-1])) <= tol
 
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
-	ts = np.linspace(0, 1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	ts = np.linspace(0, (1.0* tfinal.value_in(u.Gyr))/ conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
 	o.integrate(ts,MWPotential2014)
 
-	assert np.fabs(x[-1]-o.x(ts[-1])) <= tol
-	assert np.fabs(y[-1]-o.y(ts[-1])) <= tol
-	assert np.fabs(z[-1]-o.z(ts[-1])) <= tol
-	assert np.fabs(vx[-1]-o.vx(ts[-1])) <= tol
-	assert np.fabs(vy[-1]-o.vy(ts[-1])) <= tol
-	assert np.fabs(vz[-1]-o.vz(ts[-1])) <= tol
+	assert np.fabs(x[-1].value_in(u.kpc)-o.x(ts[-1])) <= tol
+	assert np.fabs(y[-1].value_in(u.kpc)-o.y(ts[-1])) <= tol
+	assert np.fabs(z[-1].value_in(u.kpc)-o.z(ts[-1])) <= tol
+	assert np.fabs(vx[-1].value_in(u.kms)-o.vx(ts[-1])) <= tol
+	assert np.fabs(vy[-1].value_in(u.kms)-o.vy(ts[-1])) <= tol
+	assert np.fabs(vz[-1].value_in(u.kms)-o.vz(ts[-1])) <= tol
 
 	#Check skypath
 	t, x, y, z, vx, vy, vz=cluster.orbital_path(
@@ -311,19 +311,19 @@ def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	xgc,ygc,zgc=cluster.xgc+cluster.xc,cluster.ygc+cluster.yc,cluster.zgc+cluster.zc
 	vxgc,vygc,vzgc=cluster.vxgc+cluster.vxc,cluster.vygc+cluster.vyc,cluster.vzgc+cluster.vzc
 
-	rad,phi,zed,vR,vT,vzed=ctools.cart_to_cyl(xgc,ygc,zgc,vxgc,vygc,vzgc)
+	rad,phi,zed,vR,vT,vzed=ctools.cart_to_cyl(xgc.value_in(u.kpc),ygc.value_in(u.kpc),zgc.value_in(u.kpc),vxgc.value_in(u.kms),vygc.value_in(u.kms),vzgc.value_in(u.kms))
 	vxvv=[rad/ro,vR/vo,vT/vo,zed/ro,vzed/vo,phi]
 
 	o=Orbit(vxvv,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
-	ts = np.linspace(0, -1.0 * tfinal / conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	ts = np.linspace(0, (-1.0* tfinal.value_in(u.Gyr))/ conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
 	o.integrate(ts,MWPotential2014)
 
-	assert np.fabs(x[0]-o.x(ts[-1])) <= tol
-	assert np.fabs(y[0]-o.y(ts[-1])) <= tol
-	assert np.fabs(z[0]-o.z(ts[-1])) <= tol
-	assert np.fabs(vx[0]-o.vx(ts[-1])) <= tol
-	assert np.fabs(vy[0]-o.vy(ts[-1])) <= tol
-	assert np.fabs(vz[0]-o.vz(ts[-1])) <= tol
+	assert np.fabs(x[0].value_in(u.kpc)-o.x(ts[-1])) <= tol
+	assert np.fabs(y[0].value_in(u.kpc)-o.y(ts[-1])) <= tol
+	assert np.fabs(z[0].value_in(u.kpc)-o.z(ts[-1])) <= tol
+	assert np.fabs(vx[0].value_in(u.kms)-o.vx(ts[-1])) <= tol
+	assert np.fabs(vy[0].value_in(u.kms)-o.vy(ts[-1])) <= tol
+	assert np.fabs(vz[0].value_in(u.kms)-o.vz(ts[-1])) <= tol
 
 def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
 

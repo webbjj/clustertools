@@ -27,6 +27,9 @@ from ..util.constants import _get_grav
 from ..util.plots import _lplot,_plot
 from ..util.coordinates import sphere_coords
 from .functions import mass_function, eta_function
+from ..util.units import _convert_length,_convert_time,_convert_velocity,_convert_density,_convert_mass,_convert_square_velocity
+
+
 
 import matplotlib.pyplot as plt
 
@@ -237,7 +240,12 @@ def rho_prof(
         if filename != None:
             plt.savefig(filename)
 
+
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    rprof=_convert_length(rprof,units,cluster)
+    pprof=_convert_density(pprof,units,cluster,projected=projected)
 
     if normalize:
         rprof/=cluster.rm
@@ -435,7 +443,11 @@ def m_prof(
         if filename != None:
             plt.savefig(filename)
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    rprof=_convert_length(rprof,units,cluster)
+    mprof=_convert_mass(mprof,units,cluster)
 
     if normalize:
         rprof/=cluster.rm
@@ -653,7 +665,9 @@ def alpha_prof(
         if filename != None:
             plt.savefig(filename)
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+    rprofn=_convert_length(rprofn,units,cluster)
 
 
     if aerror:
@@ -858,6 +872,7 @@ def sigv_prof(
 
             sigvprof[i]=sigv
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
@@ -881,6 +896,9 @@ def sigv_prof(
 
         if filename != None:
             plt.savefig(filename)
+
+    rprofn=_convert_length(rprofn,units,cluster)
+    sigvprof=_convert_velocity(sigvprof,units,cluster)
 
     return rprofn, sigvprof
 
@@ -1047,6 +1065,7 @@ def beta_prof(
 
             betaprof[i]=beta
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
@@ -1070,6 +1089,8 @@ def beta_prof(
 
         if filename != None:
             plt.savefig(filename)
+
+    if not normalize: rprofn=_convert_length(rprofn,units,cluster)
 
     return rprofn, betaprof
 
@@ -1268,6 +1289,7 @@ def v_prof(
             vmean = np.mean(v[rindx])
             vprof[i]=vmean
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
@@ -1291,6 +1313,9 @@ def v_prof(
 
         if filename != None:
             plt.savefig(filename)
+
+    if not normalize: rprofn=_convert_length(rprofn,units,cluster)
+    vprof=_convert_velocity(vprof,units,cluster)
 
     return rprofn, vprof
 
@@ -1479,6 +1504,7 @@ def v2_prof(
             vmean = np.mean(v[rindx]**2.)
             vprof[i]=vmean
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
@@ -1502,6 +1528,9 @@ def v2_prof(
 
         if filename != None:
             plt.savefig(filename)
+
+    if not normalize: rprofn=_convert_length(rprofn,units,cluster)
+    vprof=_convert_square_velocity(vprof,units,cluster)
 
     return rprofn, vprof
 
@@ -1732,8 +1761,10 @@ def eta_prof(
         if filename != None:
             plt.savefig(filename)
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if not normalize: rprofn=_convert_length(rprofn,units,cluster)
 
     return rprofn, eprof, deta, edeta, ydeta, eydeta
 
@@ -2071,7 +2102,13 @@ def vcirc_prof(
         if filename != None:
             plt.savefig(filename)
 
+    units=cluster.units
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if not normalize: rprof=_convert_length(rprof,units,cluster)
+    vcprof=_convert_velocity(vcprof,units,cluster)
+
+    rvmax=_convert_length(rvmax,units,cluster)
+    vmax=_convert_velocity(vmax,units,cluster)
 
     return rprof, vcprof, rvmax, vmax

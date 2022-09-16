@@ -728,7 +728,7 @@ def to_amuse(cluster,analyze=True):
 
     if cluster.units != 'amuse':
 
-        cluster.to_pckms()
+        cluster.to_pckms(analyze=False)
 
         cluster.tphys = cluster.tphys | u.Myr
 

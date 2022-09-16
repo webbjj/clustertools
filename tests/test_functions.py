@@ -326,9 +326,15 @@ def test_closest_star(tol=0.01):
 	mindx=ctools.closest_star(cluster)
 	np.testing.assert_array_equal(mindx,np.ones(5))
 
+	dist,arg=ctools.closest_star(cluster,argument=True)
+	np.testing.assert_array_equal(mindx,dist)
+
 	cluster.z=cluster.x
 	mindx=ctools.closest_star(cluster,projected=True)
 	np.testing.assert_array_equal(mindx,np.ones(5))
+	
+	dist,arg=ctools.closest_star(cluster,argument=True,projected=True)
+	np.testing.assert_array_equal(mindx,dist)
 
 
 def test_rlagrange(tol=0.01):

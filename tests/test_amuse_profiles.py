@@ -6,7 +6,12 @@ import numpy as np
 from galpy.orbit import Orbit
 from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
-from galpy.util import bovy_conversion
+
+try:
+    from galpy.util import coords,conversion
+except:
+    import galpy.util.bovy_coords as coords
+    import galpy.util.bovy_conversion as conversion
 
 try:
 	import amuse.units.units as u
@@ -46,7 +51,7 @@ def test_rho_prof(tol=0.1):
 	rprof, pprof, nprof=ctools.rho_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
 
 	assert np.all(np.fabs(pprof/np.mean(pprof)-1) < tol)
-	assert np.all(np.fabs(rprof/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprof.value_in(u.parsec)/((rlower+rupper)/2.)-1) < tol)
 
 	#test variable bins
 	rprof, pprof, nprof=ctools.rho_prof(cluster)
@@ -141,8 +146,8 @@ def test_m_prof(tol=0.1):
 	rprof, mprof, nprof=ctools.m_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
 
 
-	assert np.all(np.fabs(mprof/m0-1) < tol)
-	assert np.all(np.fabs(rprof/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(mprof.value_in(u.MSun)/m0-1) < tol)
+	assert np.all(np.fabs(rprof.value_in(u.parsec)/((rlower+rupper)/2.)-1) < tol)
 
 
 	#test variable bins
@@ -254,7 +259,7 @@ def test_alpha_prof(tol=0.2):
 	#Test fixed mass and radius bins
 	rprofn, aprof, dalpha, edalpha, ydalpha, eydalpha = ctools.alpha_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),nrad=10,nmass=10,mbintype='fix')
 	assert np.all(np.fabs(alphas-aprof) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.parsec)/((rlower+rupper)/2.)-1) < tol)
 	assert np.fabs(dalpha/da0-1) < tol
 
 	#Test number mass bin
@@ -359,20 +364,20 @@ def test_sigv_prof(tol=0.1):
 	#Test fixed bin
 	rprofn, sigvprof=ctools.sigv_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx')
 
-	assert np.all(np.fabs(sigvprof/stds-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(sigvprof.value_in(u.kms)/stds-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test num bin
 	rprofn, sigvprof=ctools.sigv_prof(cluster,bintype='num',nrad=10,coord='vx')
 
-	assert np.all(np.fabs(sigvprof/stds-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(sigvprof.value_in(u.kms)/stds-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test normalize
 	rprofn_norm, sigvprof_norm=ctools.sigv_prof(cluster,bintype='num',nrad=10,coord='vx',normalize=True)
 
-	assert np.all(np.fabs(sigvprof_norm/stds-1) < tol)
-	assert np.all(np.fabs((cluster.rm.value_in(u.pc))*rprofn_norm/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(sigvprof_norm.value_in(u.kms)/stds-1) < tol)
+	assert np.all(np.fabs((cluster.rm.value_in(u.pc))*rprofn_norm.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#test projected
 	cluster.z=np.random.rand(cluster.ntot) | u.parsec
@@ -459,13 +464,13 @@ def test_beta_prof(tol=0.1):
 	rprofn, bprof=ctools.beta_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
 
 	assert np.all(np.fabs(bprof) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test num bin
 	rprofn, bprof=ctools.beta_prof(cluster,bintype='num',nrad=10)
 
 	assert np.all(np.fabs(bprof) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test normalize
 	rprofn_norm, bprof_norm=ctools.beta_prof(cluster,bins=(rlower,rmid,rupper),normalize=True)
@@ -529,7 +534,7 @@ def test_beta_prof(tol=0.1):
 	rprofn, bprof=ctools.beta_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),projected=True)
 
 	assert np.all(np.fabs(bprof) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 def test_v_prof(tol=0.1):
 
@@ -561,27 +566,28 @@ def test_v_prof(tol=0.1):
 
 	cluster=ctools.StarCluster(units='pckms',origin='cluster')
 	cluster.add_stars(x,y,z,vx,vy,vz,m,analyze=True)
+	cluster.to_amuse()
 
 	#Test fixed bin
 	rprofn, vprof=ctools.v_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx')
 
-	assert np.all(np.fabs(vprof/vs-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(vprof.value_in(u.kms)/vs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test num bin
 	rprofn, vprof=ctools.v_prof(cluster,bintype='num',nrad=10,coord='vx')
 
-	assert np.all(np.fabs(vprof/vs-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(vprof.value_in(u.kms)/vs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test normalize
 	rprofn_norm, vprof_norm=ctools.v_prof(cluster,bintype='num',nrad=10,coord='vx',normalize=True)
 
-	assert np.all(np.fabs(vprof_norm/vs-1) < tol)
-	assert np.all(np.fabs(cluster.rm*rprofn_norm/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(vprof_norm.value_in(u.kms)/vs-1) < tol)
+	assert np.all(np.fabs(cluster.rm.value_in(u.pc)*rprofn_norm/((rlower+rupper)/2.)-1) < tol)
 
 	#test projected
-	cluster.z=np.random.rand(cluster.ntot)
+	cluster.z=np.random.rand(cluster.ntot) | u.parsec
 	rprofn_pro, vprof_pro=ctools.v_prof(cluster,bintype='num',nrad=10,coord='vx',normalize=False,projected=True)
 
 	assert np.all(np.fabs(rprofn/rprofn_pro-1) < tol)
@@ -589,10 +595,11 @@ def test_v_prof(tol=0.1):
 
 	#test subcluster
 
+	cluster.z=np.zeros(cluster.ntot) | u.parsec
+	rprofn, vprof=ctools.v_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx')
+
 	cluster.to_pckms()
 
-	cluster.z=np.zeros(cluster.ntot)
-	rprofn, vprof=ctools.v_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx')
 	cluster.energies()
 	emin=np.amin(cluster.etot)
 	emax=np.amax(cluster.etot)
@@ -624,8 +631,8 @@ def test_v_prof(tol=0.1):
 
 	rprofn_ex, vprof_ex=ctools.v_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx',mmin=mmin,mmax=mmax,kwmax=1,emin=emin,emax=emax,vmin=vmin,vmax=vmax)
 
-	print(vprof)
-	print(vprof_ex)
+	print(rprofn)
+	print(rprofn_ex)
 
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(vprof/vprof_ex-1) < tol)
@@ -669,19 +676,20 @@ def test_v2_prof(tol=0.1):
 	#Test fixed bin
 	rprofn, vprof=ctools.v2_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx')
 
-	assert np.all(np.fabs(vprof/vs-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+
+	assert np.all(np.fabs(vprof.value_in(u.kms*u.kms)/vs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test num bin
 	rprofn, vprof=ctools.v2_prof(cluster,bintype='num',nrad=10,coord='vx')
 
-	assert np.all(np.fabs(vprof/vs-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(vprof.value_in(u.kms*u.kms)/vs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test normalize
 	rprofn_norm, vprof_norm=ctools.v2_prof(cluster,bintype='num',nrad=10,coord='vx',normalize=True)
 
-	assert np.all(np.fabs(vprof_norm/vs-1) < tol)
+	assert np.all(np.fabs(vprof_norm.value_in(u.kms*u.kms)/vs-1) < tol)
 	assert np.all(np.fabs(cluster.rm.value_in(u.parsec)*rprofn_norm/((rlower+rupper)/2.)-1) < tol)
 
 	#test projected
@@ -693,9 +701,10 @@ def test_v2_prof(tol=0.1):
 	assert np.all(np.fabs(vprof/vprof_pro-1) < tol)
 
 	#test subcluster
-	cluster.to_pckms()
-	cluster.z=np.zeros(cluster.ntot)
+	cluster.z=np.zeros(cluster.ntot) | u.pc
 	rprofn, vprof=ctools.v2_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx')
+
+	cluster.to_pckms()
 	cluster.energies()
 	emin=np.amin(cluster.etot)
 	emax=np.amax(cluster.etot)
@@ -726,7 +735,9 @@ def test_v2_prof(tol=0.1):
 
 	rprofn_ex, vprof_ex=ctools.v2_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper),coord='vx',mmin=mmin,mmax=mmax,kwmax=1,emin=emin,emax=emax,vmin=vmin,vmax=vmax)
 
+	print(rprofn)
 	print(vprof)
+	print(rprofn_ex)
 	print(vprof_ex)
 
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
@@ -776,7 +787,7 @@ def test_eta_prof(tol=0.1):
 	rprofn, eprof, deta, edeta, ydeta, eydeta=ctools.eta_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
 
 	assert np.all(np.fabs(eprof/etatest-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.parsec)/((rlower+rupper)/2.)-1) < tol)
 	assert np.fabs(deta0/deta-1) < tol
 
 	#Test num bins
@@ -784,7 +795,7 @@ def test_eta_prof(tol=0.1):
 	rprofn, eprof, deta, edeta, ydeta, eydeta=ctools.eta_prof(cluster,bintype='num',nrad=10)
 
 	assert np.all(np.fabs(eprof/etatest-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.parsec)/((rlower+rupper)/2.)-1) < tol)
 	assert np.fabs(deta0/deta-1) < tol
 
 	#Test normalize
@@ -883,37 +894,35 @@ def test_vcirc_prof(tol=0.1):
 	#Test fixed bin
 	rprofn,vprof,rvmax,vmax =ctools.vcirc_prof(cluster,bintype='fix',bins=(rlower,rmid,rupper))
 
-	assert np.all(np.fabs(vprof/vcs-1) < tol)
-	assert np.all(np.fabs(rprofn/rmid-1) < tol)
+	assert np.all(np.fabs(vprof.value_in(u.kms)/vcs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/rmid-1) < tol)
 
 	
 	rprofn,vprof,rvmax,vmax =ctools.vcirc_prof(cluster,bintype='fix',nrad=10)
-	assert np.all(np.fabs(vprof/vcs-1) < tol)
-	assert np.all(np.fabs(rprofn/rmid-1) < tol)
+	assert np.all(np.fabs(vprof.value_in(u.kms)/vcs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.pc)/rmid-1) < tol)
 
 	
 	#Test num bin
 	rprofn,vprof,rvmax,vmax =ctools.vcirc_prof(cluster,bintype='num',nrad=10)
 
-	assert np.all(np.fabs(vprof/vcs-1) < tol)
-	assert np.all(np.fabs(rprofn/((rlower+rupper)/2.)-1) < tol)
+	assert np.all(np.fabs(vprof.value_in(u.kms)/vcs-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.parsec)/((rlower+rupper)/2.)-1) < tol)
 
 	#Test full
 	rprofn,vprof,rvmax,vmax =ctools.vcirc_prof(cluster,nrad=None)
 
-	assert np.all(np.fabs(vprof/np.sqrt(grav*np.cumsum(m)/np.sort(x))-1) < tol)
-	assert np.all(np.fabs(rprofn/(np.sort(x))-1) < tol)
-	assert vmax==np.amax(np.sqrt(grav*np.cumsum(m)/np.sort(x)))
-	assert rvmax==np.sort(x)[np.argmax(np.sqrt(grav*np.cumsum(m)/np.sort(x)))]
-
-
+	assert np.all(np.fabs(vprof.value_in(u.kms)/np.sqrt(grav*np.cumsum(m)/np.sort(x))-1) < tol)
+	assert np.all(np.fabs(rprofn.value_in(u.parsec)/(np.sort(x))-1) < tol)
+	assert vmax.value_in(u.kms)==np.amax(np.sqrt(grav*np.cumsum(m)/np.sort(x)))
+	assert rvmax.value_in(u.pc)==np.sort(x)[np.argmax(np.sqrt(grav*np.cumsum(m)/np.sort(x)))]
 
 	#Test normalize
 	rprofn,vprof,rvmax,vmax =ctools.vcirc_prof(cluster,bintype='fix',nrad=10)
 	rprofn_norm,vprof_norm,rvmax_norm,vmax_norm =ctools.vcirc_prof(cluster,bintype='fix',nrad=10,normalize=True)
 
 	assert np.all(np.fabs(vprof_norm/vprof-1) < tol)
-	assert np.all(np.fabs(cluster.rm.value_in(u.parsec)*rprofn_norm/rprofn-1) < tol)
+	assert np.all(np.fabs(cluster.rm*rprofn_norm/rprofn-1) < tol)
 
 	#test projected
 	cluster.z=np.random.rand(cluster.ntot) | u.parsec
@@ -963,4 +972,320 @@ def test_vcirc_prof(tol=0.1):
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(vprof/vprof_ex-1) < tol)
 
+def test_amuse_profile_units(tol=0.1):
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=1)
+	cluster.m=np.random.rand(cluster.ntot)
+	cluster.to_cluster()
+	cluster.reset_nbody_scale(rvirial=False)
+
+	init_units=['pckms','kpckms','pcmyr','kpcgyr','galpy','nbody','WDunits']
+	mcons=[1.0,1.0,1.0,1.0,1./conversion.mass_in_msol(ro=solar_ro, vo=solar_vo),1./cluster.zmbar,1./222288.4543021174]
+	pcons=[1.0,1.0,1.0,1.0,1./conversion.dens_in_msolpc3(ro=solar_ro, vo=solar_vo),(cluster.rbar**3.)/cluster.zmbar,1./222288.4543021174]
+	rcons=[1.0,1.0,1.0,1.0,1./solar_ro,1.0/cluster.rbar,1.]
+	vcons=[1.0,1.0,1.0,1.0,1./solar_vo,1.0/cluster.vbar,1.]
+
+	#vcon=[1.,1.0,1.022712165045695,1.022712165045695,solar_vo,cluster.vbar,1.022712165045695]
+	#rcon=[1.,1000.,1.,1000.,solar_ro,cluster.rbar,1000.0]
+
+	projected=False
+
+	for i in range(0,len(init_units)):
+		print('DEBUG : ',i,init_units[i])
+
+		if init_units[i]=='pckms':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.pc
+		elif init_units[i]=='kpckms':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.kpc
+		elif init_units[i]=='pcmyr':
+			munit = u.MSun
+			vunit = u.pc/u.Myr
+			runit = u.pc
+		elif init_units[i]=='kpcgyr':
+			munit = u.MSun
+			vunit = u.kpc/u.Gyr
+			runit = u.kpc
+		elif init_units[i]=='galpy':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.kpc
+		elif init_units[i]=='nbody':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.pc
+		elif init_units[i]=='WDunits':
+			munit = u.MSun
+			vunit = u.kpc/u.Gyr
+			runit = u.kpc
+
+		if init_units[i]=='galpy':
+			punit=munit/((u.pc)**3.0)
+		else:
+			punit=munit/(runit**3.0)
+
+
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, nprof0=ctools.rho_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, nprof=ctools.rho_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(punit)*pcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, nprof0=ctools.m_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, nprof=ctools.m_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(munit)*mcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, dalpha, edalpha, ydalpha, eydalpha=ctools.alpha_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, dalpha, edalpha, ydalpha, eydalpha=ctools.alpha_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.sigv_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.sigv_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit)*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.beta_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.beta_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.v_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.v_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit)*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.v2_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.v2_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit*vunit)*vcons[i]*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, deta, edeta, ydeta, eydeta=ctools.eta_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, deta, edeta, ydeta, eydeta=ctools.eta_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+
+		rprof0, prof0, rvmax0, vmax0=ctools.vcirc_prof(cluster,projected=projected)
+		cluster.to_amuse(analyze=True)
+		rprof, prof, rvmax, vmax=ctools.vcirc_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit)*vcons[i]
+		rvmax=rvmax.value_in(runit)*rcons[i]
+		vmax=vmax.value_in(vunit)*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		assert np.fabs(1.0-rvmax0/rvmax) < tol
+		assert np.fabs(1.0-vmax0/vmax) < tol
+
+def test_amuse_profile_units_projected(tol=0.1):
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=1)
+	cluster.m=np.random.rand(cluster.ntot)
+	cluster.to_cluster()
+	cluster.reset_nbody_scale(rvirial=False)
+
+	init_units=['pckms','kpckms','pcmyr','kpcgyr','galpy','nbody','WDunits']
+	mcons=[1.0,1.0,1.0,1.0,1./conversion.mass_in_msol(ro=solar_ro, vo=solar_vo),1./cluster.zmbar,1./222288.4543021174]
+	pcons=[1.0,1.0,1.0,1.0,1./conversion.surfdens_in_msolpc2(ro=solar_ro, vo=solar_vo),(cluster.rbar**2.)/cluster.zmbar,1./222288.4543021174]
+	rcons=[1.0,1.0,1.0,1.0,1./solar_ro,1.0/cluster.rbar,1.]
+	vcons=[1.0,1.0,1.0,1.0,1./solar_vo,1.0/cluster.vbar,1.]
+
+	#vcon=[1.,1.0,1.022712165045695,1.022712165045695,solar_vo,cluster.vbar,1.022712165045695]
+	#rcon=[1.,1000.,1.,1000.,solar_ro,cluster.rbar,1000.0]
+
+	projected=True
+
+	for i in range(0,len(init_units)):
+		print('DEBUG : ',i,init_units[i])
+
+		if init_units[i]=='pckms':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.pc
+		elif init_units[i]=='kpckms':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.kpc
+		elif init_units[i]=='pcmyr':
+			munit = u.MSun
+			vunit = u.pc/u.Myr
+			runit = u.pc
+		elif init_units[i]=='kpcgyr':
+			munit = u.MSun
+			vunit = u.kpc/u.Gyr
+			runit = u.kpc
+		elif init_units[i]=='galpy':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.kpc
+		elif init_units[i]=='nbody':
+			munit = u.MSun
+			vunit = u.kms
+			runit = u.pc
+		elif init_units[i]=='WDunits':
+			munit = u.MSun
+			vunit = u.kpc/u.Gyr
+			runit = u.kpc
+
+		if init_units[i]=='galpy':
+			punit=munit/((u.pc)**2.0)
+		else:
+			punit=munit/(runit**2.0)
+
+
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, nprof0=ctools.rho_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, nprof=ctools.rho_prof(cluster,projected=projected)
+
+		print('DEBUG:',rprof)
+		print(prof)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(punit)*pcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, nprof0=ctools.m_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, nprof=ctools.m_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(munit)*mcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, dalpha, edalpha, ydalpha, eydalpha=ctools.alpha_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, dalpha, edalpha, ydalpha, eydalpha=ctools.alpha_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.sigv_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.sigv_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit)*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.beta_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.beta_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.v_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.v_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit)*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0=ctools.v2_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof=ctools.v2_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit*vunit)*vcons[i]*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+		rprof0, prof0, deta, edeta, ydeta, eydeta=ctools.eta_prof(cluster,projected=projected)
+		cluster.to_amuse()
+		rprof, prof, deta, edeta, ydeta, eydeta=ctools.eta_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		cluster.to_units(init_units[i])
+
+
+		rprof0, prof0, rvmax0, vmax0=ctools.vcirc_prof(cluster,projected=projected)
+		cluster.to_amuse(analyze=True)
+		rprof, prof, rvmax, vmax=ctools.vcirc_prof(cluster,projected=projected)
+
+		rprof=rprof.value_in(runit)*rcons[i]
+		prof=prof.value_in(vunit)*vcons[i]
+		rvmax=rvmax.value_in(runit)*rcons[i]
+		vmax=vmax.value_in(vunit)*vcons[i]
+
+		assert np.all(np.fabs(rprof/rprof0-1) < tol)
+		assert np.all(np.fabs(prof/prof0-1) < tol)
+		assert np.fabs(1.0-rvmax0/rvmax) < tol
+		assert np.fabs(1.0-vmax0/vmax) < tol
 

@@ -671,7 +671,7 @@ def orbital_path(
     elif cluster.units=='pckms' or cluster.units=='pcmyr':
         tfinal/=(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
     elif cluster.units=='amuse':
-        tfinal=tfinal.value_in(u.parsec)/(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
+        tfinal=tfinal.value_in(u.Myr)/(1000.*conversion.time_in_Gyr(ro=ro, vo=vo))
     elif cluster.units=='kpckms' or cluster.units=='radec' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
         tfinal/=conversion.time_in_Gyr(ro=ro, vo=vo)
     elif cluster.units=='nbody':
@@ -712,7 +712,7 @@ def orbital_path(
         if cluster.units == "pckms" or cluster.units=='pcmyr':
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0
         elif cluster.units=='amuse':
-            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) | u.Myr
+            t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 | u.Myr
         elif cluster.units == "nbody":
             t = ts * conversion.time_in_Gyr(ro=ro, vo=vo) * 1000.0 / cluster.tbar
         elif cluster.units == "galpy":

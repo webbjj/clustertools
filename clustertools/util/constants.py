@@ -1,5 +1,11 @@
 """A list of commonly used constants
 """
+
+try:
+    import amuse.units.units as u
+except:
+    pass
+
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]
@@ -76,9 +82,18 @@ def _get_grav(cluster):
     elif cluster.units == "pckms":
         # G has units of pc (km/s)^2 / Msun
         grav = 4.302e-3
+    elif cluster.units == "amuse":
+        # G has units of pc (km/s)^2 / Msun
+        grav = 4.302e-3 | u.pc * u.kms * u.kms / u.MSun
+    elif cluster.units == "pcmyr":
+        # G has units of pc (pc/myr)^2 / Msun
+        grav = (4.302e-3)*(1.022712165045695**2.0)
     elif cluster.units == "kpckms":
         # G has units of kpc (km/s)^2 / Msun
         grav = 4.302e-6
+    elif cluster.units == "kpcgyr":
+        # G has units of pc (pc/myr)^2 / Msun
+        grav = (4.302e-6)*(1.022712165045695**2.0)
     else:
         grav = 1.0
 

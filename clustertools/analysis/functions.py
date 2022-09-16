@@ -904,7 +904,7 @@ def _potential_energy_subset_parallel(cluster_sub, cluster_full):
     return pot
 
 
-def closest_star(cluster, projected=False):
+def closest_star(cluster, projected=False, argument=False):
     """Find distance to closest star for each star
     - uses numba
 
@@ -912,26 +912,43 @@ def closest_star(cluster, projected=False):
     ----------
     cluster : class
         positions of stars within the StarCluster
+    projected : bool
+      use projected values (default: False)
+    argument : bool
+      return argument of closest star as well (default: False)
 
     Returns
     -------
         minimum_distance : float
             distance to closest star for each star
 
+        if argument:
+            arg : int
+                argument of closest star for each star            
+
     History
     -------
        2019 - Written - Webb (UofT)
     """
 
-    if projected:
-        z = np.zeros(cluster.ntot)
-        x = np.array([cluster.x, cluster.y, z]).T
+    if argument:
+        if projected:
+            x=np.column_stack([cluster.x,cluster.y])
+        else:
+            x=np.column_stack([cluster.x,cluster.y,cluster.z])
+
+        tree=cKDTree(x)
+        dist, arg = tree.query(x, k=2)
+
+        return dist[:,1],arg[:,1]
+
     else:
-        x = np.array([cluster.x, cluster.y, cluster.z]).T
-    return minimum_distance(x)
-
-
-
+        if projected:
+            z = np.zeros(cluster.ntot)
+            x = np.array([cluster.x, cluster.y, z]).T
+        else:
+            x = np.array([cluster.x, cluster.y, cluster.z]).T
+        return minimum_distance(x)
 
 def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
     """Calculate lagrange radii of the cluster by mass

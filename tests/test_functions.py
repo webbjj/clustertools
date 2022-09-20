@@ -22,6 +22,8 @@ try:
 except:
 		pass
 
+import time as time
+
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]

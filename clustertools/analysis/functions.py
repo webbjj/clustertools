@@ -931,24 +931,18 @@ def closest_star(cluster, projected=False, argument=False):
        2019 - Written - Webb (UofT)
     """
 
-    if argument:
-        if projected:
-            x=np.column_stack([cluster.x,cluster.y])
-        else:
-            x=np.column_stack([cluster.x,cluster.y,cluster.z])
-
-        tree=cKDTree(x)
-        dist, arg = tree.query(x, k=2)
-
-        return dist[:,1],arg[:,1]
-
+    if projected:
+        x=np.column_stack([cluster.x,cluster.y])
     else:
-        if projected:
-            z = np.zeros(cluster.ntot)
-            x = np.array([cluster.x, cluster.y, z]).T
-        else:
-            x = np.array([cluster.x, cluster.y, cluster.z]).T
-        return minimum_distance(x)
+        x=np.column_stack([cluster.x,cluster.y,cluster.z])
+
+    tree=cKDTree(x)
+    dist, arg = tree.query(x, k=2)
+
+    if argument:
+        return dist[:,1],arg[:,1]
+    else:
+        return dist[:,1]
 
 def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
     """Calculate lagrange radii of the cluster by mass

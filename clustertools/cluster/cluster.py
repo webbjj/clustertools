@@ -2598,19 +2598,27 @@ class StarCluster(object):
 
             return self.kin, self.pot
 
-    def closest_star(self, projected=None):
+    def closest_star(self, projected=None, argmument=False):
         """Find distance to closest star for each star
         - uses numba
 
         Parameters
         ----------
         cluster : class
-            StarCluster
+            positions of stars within the StarCluster
+        projected : bool
+          use projected values (default: False)
+        argument : bool
+          return argument of closest star as well (default: False)
 
         Returns
         -------
             minimum_distance : float
                 distance to closest star for each star
+
+            if argument:
+                arg : int
+                    argument of closest star for each star            
 
         History
         -------
@@ -2619,9 +2627,12 @@ class StarCluster(object):
         if projected==None:
             projected=self.projected
 
-        self.dclosest=closest_star(self, projected=projected)
-
-        return self.dclosest
+        if argument:
+            self.dclosest,self.argclosest=closest_star(self, projected=projected,argument=argument)
+            return self.dclosest,self.argclosest
+        else:
+            self.dclosest=closest_star(self, projected=projected)
+            return self.dclosest
 
     def rlagrange(self, nlagrange=10, projected=None):
         """Calculate lagrange radii of the cluster by mass

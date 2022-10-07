@@ -317,6 +317,82 @@ def test_energies(tol=0.01):
 	assert np.fabs(1.0-0.1*0.1*ptot/cluster.ptot) <= tol
 	np.testing.assert_array_equal(0.1*kin+0.1*0.1*pot,cluster.etot)
 
+def test_softened_energies(tol=0.01):
+
+	softening=0.1
+
+	cluster=ctools.StarCluster(units='nbody',origin='centre')
+
+	m=np.array([1.,1.])
+	x=np.array([-1.,1.])
+	vx=np.array([-2.,2.])
+
+	y,z=np.zeros(2)
+	vy,vz=np.zeros(2)
+
+	dx=np.array([2.,2.])
+
+	kin=0.5*vx**2.
+	pot=-1./np.sqrt(dx**2.+softening**2.)
+	etot=kin+pot
+	ektot=np.sum(kin)
+	ptot=np.sum(pot)/2.
+
+	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.analyze()
+	cluster.energies(softening=softening)
+
+	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
+	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot,cluster.etot)
+
+	cluster.energies(parallel=True,softening=softening)
+
+	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
+	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot,cluster.etot)
+
+	kid,pid=cluster.energies(ids=cluster.id[0],softening=softening)
+	eid=kid+pid
+
+
+	assert(eid[0]==etot[0])
+
+	kid,pid=cluster.energies(ids=[cluster.id[0],cluster.id[1]],softening=softening)
+	eid=kid+pid
+
+	assert(eid[0]==etot[0])
+	assert(eid[1]==etot[1])
+
+	ids=np.ones(cluster.ntot,dtype=bool)
+
+	kid,pid=cluster.energies(ids=ids,softening=softening)
+	eid=kid+pid
+	assert(eid[0]==etot[0])
+	assert(eid[1]==etot[1])
+
+	ids[0]=False
+	kid,pid=cluster.energies(ids=ids,softening=softening)
+	eid=kid+pid
+	assert(eid[0]==etot[1])
+
+	cluster.z=x
+	cluster.vz=vx
+	cluster.analyze()
+	cluster.energies(projected=True,softening=softening)
+
+	assert np.fabs(1.0-ektot/cluster.ektot) <= tol
+	assert np.fabs(1.0-ptot/cluster.ptot) <= tol
+	np.testing.assert_array_equal(etot,cluster.etot)
+
+	cluster.m=np.array([0.1,0.1])
+	cluster.analyze()
+	cluster.energies(projected=True,specific=False,softening=softening)
+
+	assert np.fabs(1.0-0.1*ektot/cluster.ektot) <= tol
+	assert np.fabs(1.0-0.1*0.1*ptot/cluster.ptot) <= tol
+	np.testing.assert_array_equal(0.1*kin+0.1*0.1*pot,cluster.etot)
+
 def test_closest_star(tol=0.01):
 
 	x,y,z=np.linspace(0,4,5),np.zeros(5),np.zeros(5)

@@ -2055,7 +2055,7 @@ class StarCluster(object):
         self.x,self.y,self.z,self.vx,self.vy,self.vz=add_rotation(self, qrot)
         self.qrot=qrot
 
-    def virialize(self, qvir=0.5,specific=True, full=True, projected=None):
+    def virialize(self, qvir=0.5,specific=True, full=True, projected=None, softening=0.0):
         """ Adjust stellar velocities so cluster is in virial equilibrium
 
         Parameters
@@ -2070,7 +2070,8 @@ class StarCluster(object):
             do full array of stars at once with numba (default: full_default)
         projected : bool
             use projected values when calculating energies (default: False)
-
+        softening : float
+          Plummer softening length in cluster.units (default: 0.0)
         Returns
         -------
         qv : float
@@ -2083,7 +2084,7 @@ class StarCluster(object):
         if projected==None:
             projected=self.projected
 
-        self.qv=virialize(self, qvir=qvir, specific=True, full=True, projected=projected)
+        self.qv=virialize(self, qvir=qvir, specific=True, full=True, projected=projected,softening=softening)
 
         self.save_cluster()
         units0,origin0, rorder0, rorder_origin0 = self.units0,self.origin0, self.rorder0, self.rorder_origin0
@@ -2507,7 +2508,7 @@ class StarCluster(object):
 
         return self.trc
 
-    def energies(self, specific=True, ids=None, full=True, projected=None, parallel=False, **kwargs):
+    def energies(self, specific=True, ids=None,  projected=None,softening=0.0, full=True, parallel=False, **kwargs):
         """Calculate kinetic and potential energy of every star
 
         Parameters
@@ -2519,6 +2520,10 @@ class StarCluster(object):
         ids: boolean array or integer array
           if given, find the energues of a subset of stars defined either by an array of
           star ids, or a boolean array that can be used to slice the cluster (default: None)
+        projected : bool
+          use projected values (default: False)
+        softening : float
+          Plummer softening length in cluster.units (default: 0.0)
         full : bool
           calculate distance of full array of stars at once with numbra (default: True)
         parallel : bool
@@ -2551,7 +2556,7 @@ class StarCluster(object):
         if self.units=='amuse':
             self.to_pckms()
 
-        kin, pot = energies(self, specific=specific, ids=ids, full=full, 
+        kin, pot = energies(self, specific=specific, ids=ids, softening=softening, full=full, 
                             projected=projected, parallel=parallel)
         
         if ids is not None:

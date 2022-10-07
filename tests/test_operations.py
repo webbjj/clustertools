@@ -2150,5 +2150,15 @@ def test_virialize(tol=0.01):
 	assert cluster.qvir==-0.5
 	assert cluster.qv==qv
 
+	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
 
+	cluster.energies(softening=0.01)
+
+	qv=np.sqrt(-0.5/cluster.qvir)
+
+	cluster.virialize(softening=0.01)
+	cluster.energies(softening=0.01)
+
+	assert cluster.qvir==-0.5
+	assert cluster.qv==qv
 

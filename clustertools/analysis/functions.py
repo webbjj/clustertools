@@ -645,7 +645,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
     return trc
 
 
-def energies(cluster, specific=True, ids=None, full=True, projected=False, parallel=False, **kwargs):
+def energies(cluster, specific=True, ids=None, projected=False, softening=0.0, full=True, parallel=False, **kwargs):
     """Calculate kinetic and potential energy of every star
     Parameters
     ----------
@@ -656,6 +656,10 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
     ids: bool or int
       if given, find the energues of a subset of stars defined either by an array of
       star ids, or a boolean array that can be used to slice the cluster. (default: None)
+    projected : bool
+      use projected values (default: False)
+    softening : float
+      Plummer softening length in cluster.units (default: 0.0)
     full : bool
       calculate distance of full array of stars at once with numbra (default: True)
     parallel : bool
@@ -715,9 +719,9 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
                                  cluster.z[ids], cluster.m[ids]]).T
 
         if parallel:
-            pot = grav * np.array(_potential_energy_subset_parallel(cluster_sub, cluster_full))
+            pot = grav * np.array(_potential_energy_subset_parallel(cluster_sub, cluster_full,softening))
         else:
-            pot = grav * np.array(_potential_energy_subset(cluster_sub, cluster_full))
+            pot = grav * np.array(_potential_energy_subset(cluster_sub, cluster_full,softening))
 
         if specific:
             pot /= cluster.m[ids]
@@ -729,9 +733,9 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
         else:
             x = np.array([cluster.x, cluster.y, cluster.z, cluster.m]).T
         if parallel:
-            pot = grav * np.array(_potential_energy_parallel(x))
+            pot = grav * np.array(_potential_energy_parallel(x,softening))
         else:
-            pot = grav * np.array(_potential_energy(x))
+            pot = grav * np.array(_potential_energy(x,softening))
 
         if specific:
             pot /= cluster.m
@@ -748,9 +752,9 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
                 m = cluter.m[i] * cluster.m
 
             if projected:
-                dr = np.sqrt(dx ** 2.0 + dy ** 2.0)
+                dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + softening**2.) 
             else:
-                dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0)
+                dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + dz ** 2.0 + softening**2.)
 
             indx = dr != 0.0
             gmr = -grav * m[indx] / dr[indx]
@@ -769,7 +773,7 @@ def energies(cluster, specific=True, ids=None, full=True, projected=False, paral
 
 
 @numba.njit
-def _potential_energy(cluster):
+def _potential_energy(cluster,softening=0.0):
     """Find potential energy for each star in a cluster
     - uses numba
 
@@ -777,7 +781,8 @@ def _potential_energy(cluster):
     ----------
     cluster : float
         positions and masses of stars within the StarCluster
-
+    softening : float
+      Plummer softening length in cluster.units (default: 0.0)
     Returns
     -------
         pot : float
@@ -795,14 +800,14 @@ def _potential_energy(cluster):
             if r==0: r=np.nan
 
             m2 = cluster[i, 3] * cluster[j, 3]
-            pot[i] += -m2 / r
-            pot[j] += -m2 / r
+            pot[i] += -m2 / np.sqrt(r**2.+softening**2.)
+            pot[j] += -m2 / np.sqrt(r**2.+softening**2.)
 
     return pot
 
 
 @numba.njit(parallel=True)
-def _potential_energy_parallel(cluster):
+def _potential_energy_parallel(cluster,softening=0.0):
     """Find potential energy for each star in a cluster in parallel
     - uses numba
 
@@ -810,7 +815,8 @@ def _potential_energy_parallel(cluster):
     ----------
     cluster : class
         positions and masses of stars within the StarCluster
-
+    softening : float
+      Plummer softening length in cluster.units (default: 0.0)
     Returns
     -------
         pot : float
@@ -828,14 +834,14 @@ def _potential_energy_parallel(cluster):
             if r==0: r=np.nan
 
             m2 = cluster[i, 3] * cluster[j, 3]
-            pot[i] += -m2 / r
-            pot[j] += -m2 / r
+            pot[i] += -m2 / np.sqrt(r**2.+softening**2.)
+            pot[j] += -m2 / np.sqrt(r**2.+softening**2.)
 
     return pot
 
 
 @numba.njit()
-def _potential_energy_subset(cluster_sub, cluster_full):
+def _potential_energy_subset(cluster_sub, cluster_full,softening=0.0):
     """Find the potential energy for a subset of stars in a bigger cluster
     
     Parameters
@@ -844,7 +850,8 @@ def _potential_energy_subset(cluster_sub, cluster_full):
         2d numpy array with x, y, z and mass at each index of the sub cluster
     cluster_full : float
         2d numpy array with x, y, z and mass at each index of the cluster
-    
+    softening : float
+      Plummer softening length in cluster.units (default: 0.0)
     Returns:
     --------
         potential : numpy array
@@ -864,13 +871,13 @@ def _potential_energy_subset(cluster_sub, cluster_full):
 
                 m = cluster_sub[i,3] * cluster_full[j,3]
 
-                pot[i] += -m / r
+                pot[i] += -m / np.sqrt(r**2.+softening**2.)
 
         
     return pot
     
 @numba.njit()
-def _potential_energy_subset_parallel(cluster_sub, cluster_full):
+def _potential_energy_subset_parallel(cluster_sub, cluster_full,softening=0.0):
     """Find the potential energy for a subset of stars in a bigger cluster
     
     Parameters
@@ -879,7 +886,8 @@ def _potential_energy_subset_parallel(cluster_sub, cluster_full):
         2d numpy array with x, y, z and mass at each index of the sub cluster
     cluster_full : float
         2d numpy array with x, y, z and mass at each index of the cluster
-    
+    softening : float
+      Plummer softening length in cluster.units (default: 0.0)    
     Returns:
     --------
         potential : numpy array
@@ -899,7 +907,7 @@ def _potential_energy_subset_parallel(cluster_sub, cluster_full):
 
                 m = cluster_sub[i,3] * cluster_full[j,3]
 
-                pot[i] += -m / r
+                pot[i] += -m / np.sqrt(r**2.+softening**2.)
         
     return pot
 

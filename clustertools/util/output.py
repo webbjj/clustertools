@@ -18,6 +18,9 @@ except:
 
 from .coordinates import sky_coords
 from .constants import *
+from ..util.units import _convert_length,_convert_time,_convert_velocity
+
+
 
 def snapout(cluster, filename, energies=False, radec=False):
     """Output a snapshot in clustertools format
@@ -283,7 +286,7 @@ def fortout(
     return 0
 
 
-def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=solar_ro):
+def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=solar_ro,vo=solar_vo):
     """Output a snapshot in gyrfalcon/NEMO format
 
     - Note that units are converted to Walter Dehnen units (WDunits in GYRFALCON)
@@ -299,7 +302,9 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=solar_ro)
     epsunits : str
         units for softening lengths (default: cluster.units)
     ro : float
-        galpy spaital scaling parameter, in case epsunits=='galpy' (default: 8.)
+        galpy spaital scaling parameter, in case epsunits=='galpy' (default: solar_ro)
+    vo : float
+        galpy velocity scaling parameter, in case epsunits=='galpy' (default: solar_vo)
 
     Returns
     -------
@@ -310,7 +315,7 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=solar_ro)
     2019 - Written - Webb (UofT)
 
     """
-    vcon = 220.0 / conversion.velocity_in_kpcGyr(220.0, 8.0)
+    vcon = 220.0 / conversion.velocity_in_kpcGyr(vo=solar_vo, ro=solar_ro)
     mcon = 222288.4543021174
 
     cluster.save_cluster()
@@ -324,12 +329,10 @@ def gyrout(cluster, filename="init.nemo.dat",eps=None,epsunits=None,ro=solar_ro)
         if epsunits is None:
             epsunits=units0
 
-        if epsunits=='pckms' or epsunits=='pc':
-            eps/=1000.0
-        elif epsunits=='nbody':
-            eps*=(cluster.rbar/1000.0)
-        elif epsunits=='galpy':
-            eps*=ro
+        eps=_convert_length(eps,epsunits,cluster)
+
+        if isinstance(eps,float):
+            eps=np.ones(cluster.ntot)*eps
 
         np.savetxt(
                 filename,

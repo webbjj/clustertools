@@ -1445,7 +1445,7 @@ def reset_nbody_scale(cluster, mass=True, radii=True, rvirial=True, projected=Fa
 
     return zmbar,rbar,vbar,tbar
 
-def virialize(cluster, qvir=0.5, specific=True, full=full_default, projected=False):
+def virialize(cluster, qvir=0.5, specific=True, full=full_default, projected=False, softening=0.0):
     """ Adjust stellar velocities so cluster is in virial equilibrium
 
     Parameters
@@ -1460,7 +1460,8 @@ def virialize(cluster, qvir=0.5, specific=True, full=full_default, projected=Fal
         do full array of stars at once with numba (default: full_default)
     projected : bool
         use projected values when calculating energies (default: False)
-
+    softening : float
+      Plummer softening length in cluster.units (default: 0.0)
     Returns
     -------
     qv : float
@@ -1478,7 +1479,7 @@ def virialize(cluster, qvir=0.5, specific=True, full=full_default, projected=Fal
         qv = np.sqrt(np.abs(qvir / cluster.qvir))
     except:
         print("NEED TO CALCULATE ENERGIES FIRST")
-        cluster.energies(specific=specific, full=full, projected=projected)
+        cluster.energies(specific=specific, full=full, projected=projected,softening=softening)
         qv = np.sqrt(np.abs(qvir / cluster.qvir))
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)

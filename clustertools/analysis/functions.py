@@ -2204,10 +2204,11 @@ def rcore(
         rc2=np.sum((rhos**2.)*(r**2.))/np.sum((rhos**2.))
         rc=np.sqrt(rc2)
 
-        if plot: 
+        if plot:
+            nrad=int(np.ceil(1./mfrac)) 
             rprof,pprof,nprof=_rho_prof(cluster,nrad=nrad,projected=projected,plot=False,**kwargs)
             rcindx=(cluster.r<rc)
-            mc=np.sum(cluster.mtot[rcindx])
+            mc=np.sum(cluster.m[rcindx])
             volc=(4./3.)*np.pi*(rc**3.)
             rho_c=mc/volc
 

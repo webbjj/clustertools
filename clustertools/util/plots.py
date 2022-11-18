@@ -8,20 +8,30 @@ __all__ = [
 ]
 
 import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 import numpy as np
-try:
-    import galpy.util.plot as gplot
-except:
-    import galpy.util.bovy_plot as gplot
 import seaborn as sns
 import os
 from scipy.ndimage import gaussian_filter
 import matplotlib.colors as colors
 
-try:
-    gplot.start_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
-except:
-    gplot.bovy_print(axes_labelsize=18.0, xtick_labelsize=14.0, ytick_labelsize=14.0)
+# plotting properties
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['font.family'] = 'serif'
+mpl.rcParams['font.weight'] = 'normal'
+mpl.rcParams['xtick.major.pad'] = 5
+mpl.rcParams['ytick.major.pad'] = 5
+mpl.rcParams['xtick.major.size'] = 6
+mpl.rcParams['xtick.minor.size'] = 4
+mpl.rcParams['ytick.major.size'] = 6
+mpl.rcParams['ytick.minor.size'] = 4
+mpl.rcParams['font.size'] = 24.0
+mpl.rcParams['legend.fontsize'] = 20.0
+mpl.rcParams['legend.numpoints'] = 1
+mpl.rcParams['savefig.dpi'] = 100
+mpl.rcParams['lines.markersize'] = 8
+mpl.rcParams['mathtext.default'] = 'regular'
 
 current_palette = sns.color_palette()
 

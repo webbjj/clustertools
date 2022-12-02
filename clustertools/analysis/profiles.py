@@ -29,12 +29,7 @@ from ..util.coordinates import sphere_coords
 from .functions import mass_function, eta_function
 from ..util.units import _convert_length,_convert_time,_convert_velocity,_convert_density,_convert_mass,_convert_square_velocity
 
-
-
 import matplotlib.pyplot as plt
-
-import warnings
-warnings.warn('all profiles are setup such that the returned radial bins and profile values are in linear space and not normalized by the effective radius. Previously select profiles had unique returns.',FutureWarning)
 
 def rho_prof(
     cluster,
@@ -1073,12 +1068,18 @@ def beta_prof(
         filename = kwargs.pop("filename", None)
         overplot = kwargs.pop("overplot", False)
 
-        if normalize:
-            xlabel=r"$r/r_m$"
+        if projected:
+            if normalize:
+                xlabel=r"$R/R_m$"
+            else:
+                xlabel=r"$R$"
         else:
-            xlabel=r"$r$"
+            if normalize:
+                xlabel=r"$r/r_m$"
+            else:
+                xlabel=r"$r$"
 
-        _plot(
+        _lplot(
             rprofn,
             betaprof,
             xlabel=xlabel,

@@ -46,12 +46,13 @@ from ..util.constants import _get_grav
 from ..util.plots import _plot,_lplot,_scatter
 from ..util.units import _convert_length,_convert_time,_convert_velocity
 
-import matplotlib.pyplot as plt
-
 try:
     import amuse.units.units as u
 except:
     pass
+
+import matplotlib.pyplot as plt
+
 
 def find_centre(
     cluster,

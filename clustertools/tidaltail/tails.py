@@ -17,7 +17,6 @@ from galpy.util import _rotate_to_arbitrary_vector
 from galpy import potential
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from ..analysis.orbits import orbital_path, orbital_path_match
 from ..cluster.operations import *
@@ -26,6 +25,8 @@ from ..util.coordinates import cart_to_sky
 from ..util.constants import *
 
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
+
+import matplotlib.pyplot as plt
 
 
 def to_tail(cluster):

@@ -20,9 +20,9 @@ __all__ = [
 
 import numpy as np
 import numba
-import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 from ..util.plots import _plot,_lplot
+import matplotlib.pyplot as plt
 
 
 def nbinmaker(x, nbin=10, nsum=False):

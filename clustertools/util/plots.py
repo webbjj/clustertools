@@ -7,16 +7,18 @@ __all__ = [
   "skyplot",
 ]
 
-import matplotlib.pyplot as plt
-import matplotlib as mpl
+#import matplotlib as mpl
 
 import numpy as np
 import seaborn as sns
 import os
 from scipy.ndimage import gaussian_filter
+
+import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
 # plotting properties
+"""
 mpl.rcParams['text.usetex'] = True
 mpl.rcParams['font.family'] = 'serif'
 mpl.rcParams['font.weight'] = 'normal'
@@ -32,6 +34,7 @@ mpl.rcParams['legend.numpoints'] = 1
 mpl.rcParams['savefig.dpi'] = 100
 mpl.rcParams['lines.markersize'] = 8
 mpl.rcParams['mathtext.default'] = 'regular'
+"""
 
 current_palette = sns.color_palette()
 

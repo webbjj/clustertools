@@ -25,7 +25,6 @@ except:
 from galpy import potential
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from ..util.recipes import interpolate, binmaker
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
@@ -39,6 +38,8 @@ try:
     import amuse.units.units as u
 except:
     pass
+
+import matplotlib.pyplot as plt
 
 def initialize_orbit(cluster, from_centre=False, ro=None, vo=None, zo = None, solarmotion=None):
     """ Initialize a galpy orbit instance for the cluster

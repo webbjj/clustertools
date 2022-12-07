@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="clustertools",
-    version="1.0.6",
+    version="1.0.7",
     author="Jeremy J. Webb",
     author_email="webb@astro.utoronto.ca",
     description="A python packaged for analysing star clusters",
@@ -14,6 +14,6 @@ setuptools.setup(
     license='MIT',
     packages=["clustertools","clustertools/analysis","clustertools/cluster","clustertools/io","clustertools/io/data","clustertools/tidaltail","clustertools/util"],
     setup_requires=['numpy>1.8','scipy'],
-    install_requires=['galpy','seaborn','numba'],
+    install_requires=['galpy','numba'],
     include_package_data=True,
     )

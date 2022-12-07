@@ -32,7 +32,7 @@ or
 
 >>> pip install clustertools --install-option="--prefix=PATH"
 
-Note: For users looking to take advantage of the plotting features available in clustertools, it may be necessary to install the cm-super and dvipng packages if they aren't installed by default.
+Note: For users looking to take advantage of the plotting features available in clustertools, it may be necessary to install the cm-super, dvipng, texlive, and texlive-extra packages if they aren't installed by default.
 
 Requirements
 ------------

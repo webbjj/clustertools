@@ -807,6 +807,7 @@ def sigv_prof(
             )
         else:
             r, phi, theta, vr, vp, vt = sphere_coords(cluster)
+            vz=cluster.vz
 
         if coord =='r' or coord=='vr':
             v=vr

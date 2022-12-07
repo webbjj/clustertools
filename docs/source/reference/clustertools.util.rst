@@ -17,3 +17,4 @@ Submodules
    clustertools.util.output
    clustertools.util.plots
    clustertools.util.recipes
+   clustertools.util.units

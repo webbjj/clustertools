@@ -10,7 +10,7 @@ __all__ = [
 #import matplotlib as mpl
 
 import numpy as np
-import seaborn as sns
+#import seaborn as sns
 import os
 from scipy.ndimage import gaussian_filter
 
@@ -36,7 +36,9 @@ mpl.rcParams['lines.markersize'] = 8
 mpl.rcParams['mathtext.default'] = 'regular'
 """
 
-current_palette = sns.color_palette()
+#current_palette = sns.color_palette()
+
+plt.style.use('tableau-colorblind10')
 
 def _scatter(
     x,

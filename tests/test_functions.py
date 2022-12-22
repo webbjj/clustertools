@@ -139,11 +139,6 @@ def test_relaxation_time(tol=0.01):
 	cluster.to_galpy()
 	assert np.fabs(1.0-(trelax/1000.0/to)/cluster.relaxation_time()) <= tol
 
-	#Test calculation in amuse
-	cluster.to_amuse()
-
-	assert np.fabs(1.0-(trelax | u.Myr)/cluster.relaxation_time()) <= tol
-
 def test_projected_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 

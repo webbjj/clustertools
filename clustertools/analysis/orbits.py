@@ -31,9 +31,6 @@ from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
 from ..util.constants import *
 from ..util.units import _convert_length,_convert_time,_convert_velocity
 
-import astropy.coordinates as coord
-import astropy.units as u
-
 try:
     import amuse.units.units as u
 except:

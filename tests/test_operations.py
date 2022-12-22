@@ -1,5 +1,6 @@
 import clustertools as ctools
 import numpy as np
+import pytest
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014,PlummerPotential,IsochronePotential,KeplerPotential
 try:
@@ -9,7 +10,11 @@ except:
 	import galpy.util.bovy_coords as coords
 
 from copy import copy
-import amuse.units.units as u
+try:
+	import amuse.units.units as u
+	noamuse=False
+except:
+	noamuse=True
 
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
@@ -417,6 +422,7 @@ def test_to_radec(tol=0.0001,ro=solar_ro,vo=solar_vo):
 	assert np.all(np.fabs(newpmdec/cluster.vy-1) < 1e-10)
 	assert np.all(np.fabs(newvlos/cluster.vz-1) < 1e-10)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_from_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
@@ -465,6 +471,7 @@ def test_from_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
 
 		scale_test(final,init,tscales[i],mscales[i],xscales[i],vscales[i])
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_to_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7
 
@@ -861,7 +868,8 @@ def test_to_units(tol=0.01,ro=solar_ro,vo=solar_vo):
 		scale_test(final,init,tscales[i],mscales[i],xscales[i],vscales[i])
 
 def test_to_audays(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_cluster(sortstars=True)
 	cluster.reset_nbody_scale()
 	cluster.to_nbody()
@@ -916,7 +924,8 @@ def test_to_audays(tol=0.01):
 	assert np.all(np.fabs(m2/cluster.m2-1.) < 1e-10)
 
 def test_to_sudays(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	zmbar,rbar,vbar,tbar=ctools.reset_nbody_scale(cluster)
 	cluster.add_nbody6(1.,1.,rbar,1.,1.,1.,1.,zmbar,vbar,tbar,1.,1.,1.,1.)
@@ -2057,7 +2066,8 @@ def test_to_origin(tol=0.01, ro=solar_ro, vo=solar_vo):
 
 def test_save_cluster():
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	units0,origin0,rorder0,rorder_origin0=ctools.save_cluster(cluster)
 	cluster.save_cluster()
@@ -2069,7 +2079,9 @@ def test_save_cluster():
 
 def test_return_cluster():
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
 	units0,origin0,rorder0,rorder_origin0=ctools.save_cluster(cluster)
 
 	cluster.to_galpy()
@@ -2084,7 +2096,8 @@ def test_return_cluster():
 
 def test_reset_nbody_scale(tol=0.01):
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.reset_nbody_scale()
 	cluster.to_nbody()
 	cluster.virial_radius()
@@ -2092,8 +2105,8 @@ def test_reset_nbody_scale(tol=0.01):
 	assert np.fabs(cluster.mtot-1. <= tol)
 	assert np.fabs(cluster.rv-1. <= tol)
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
-
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	mtot0=cluster.mtot
 
 	cluster.reset_nbody_scale(mass=False)
@@ -2103,7 +2116,8 @@ def test_reset_nbody_scale(tol=0.01):
 	assert np.fabs(cluster.mtot-mtot0 <= tol)
 	assert np.fabs(cluster.rv-1. <= tol)
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	rv0=cluster.virial_radius()
 
@@ -2115,7 +2129,9 @@ def test_reset_nbody_scale(tol=0.01):
 	assert np.fabs(cluster.rv-rv0 <= tol)
 
 def test_add_rotation(tol=0.1):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
 	vr, vtheta, vz = coords.rect_to_cyl_vec(
 	    cluster.vx, cluster.vy, cluster.vz, cluster.x, cluster.y, cluster.z
 	)
@@ -2138,7 +2154,8 @@ def test_add_rotation(tol=0.1):
 
 
 def test_virialize(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	cluster.energies()
 
@@ -2150,8 +2167,9 @@ def test_virialize(tol=0.01):
 	assert cluster.qvir==-0.5
 	assert cluster.qv==qv
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
-
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	
 	cluster.energies(softening=0.01)
 
 	qv=np.sqrt(-0.5/cluster.qvir)

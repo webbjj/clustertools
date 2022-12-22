@@ -1,6 +1,7 @@
 import clustertools as ctools
 import numpy as np
-from limepy import limepy
+
+import pytest
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -439,9 +440,7 @@ def test_add_actions():
 
 def test_analyze(tol=0.01):
 
-	lmodel=limepy(g=1,phi0=5.,rh=3.,M=10000)
-	cluster=ctools.load_cluster(ctype='limepy',model=lmodel,N=10000)
-	assert cluster.ctype == 'limepy'
+	cluster=ctools.load_cluster('snapshot',filename='g1phi5rh3m10000.dat',origin='cluster')
 
 	assert float(np.fabs(cluster.ntot-10000)/10000) <= tol
 
@@ -485,14 +484,14 @@ def test_analyze(tol=0.01):
 	assert np.fabs(cluster.rh10pro-rpro[np.argsort(rpro)][1000])/rpro[np.argsort(rpro)][5000] <= tol
 
 def test_sortstars():
-	lmodel=limepy(g=1,phi0=5.,rh=3.,M=10000)
-	cluster=ctools.load_cluster(ctype='limepy',model=lmodel,N=10000)
-	cluster=ctools.load_cluster(ctype='limepy',model=lmodel)
+	cluster=ctools.load_cluster('snapshot',filename='g1phi5rh3m10000.dat',origin='cluster')
 	np.testing.assert_array_equal(np.argsort(cluster.r),cluster.rorder)
 	np.testing.assert_array_equal(np.argsort(cluster.rpro),cluster.rproorder)
 
 def test_subset(tol=0.001):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
 	cluster.to_cluster()
 
 	kin=np.random.rand(cluster.ntot)
@@ -549,8 +548,8 @@ def test_subset(tol=0.001):
 	assert np.sum(indx) == np.sum(cluster.vpro >= np.mean(cluster.v))
 	
 def test_subcluster():
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
-
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_radec()
 
 	cluster.to_cluster(sortstars=True)
@@ -689,7 +688,8 @@ def test_subcluster():
 	assert subcluster.nb==cluster.nb
 	assert subcluster.n_p==cluster.n_p
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_cluster(sortstars=True)
 
 	kw=np.random.randint(0,10,cluster.ntot)

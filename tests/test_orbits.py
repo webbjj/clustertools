@@ -12,7 +12,8 @@ solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A,
 solar_vo=solar_ro*30.39-solar_motion[1]
 
 def test_initialize_orbit(tol=0.001):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 
@@ -87,7 +88,11 @@ def test_initialize_orbits(tol=0.0001):
 	np.testing.assert_allclose(vz,ocluster.vz(),rtol=tol)
 
 def test_interpolate_orbit(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_kpckms()
+	cluster.to_galaxy()
+
 	x,y,z,vx,vy,vz=cluster.interpolate_orbit(pot=MWPotential2014,tfinal=1.,nt=1000)
 
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -105,11 +110,16 @@ def test_interpolate_orbit(tol=0.1,ro=solar_ro,vo=solar_vo):
 
 def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_kpckms()
+	cluster.to_galaxy()
+
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.interpolate_orbit(pot=MWPotential2014,tfinal=1.,nt=1000)
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
-	
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
 	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
 
 	x,y,z,vx,vy,vz=cluster.interpolate_orbits(pot=MWPotential2014,tfinal=1.,nt=1000)
@@ -139,7 +149,10 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vygc-cluster.vygc) <= tol
 	assert np.fabs(vzgc-cluster.vzgc) <= tol
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='cluster',mbar=10)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_cluster()
+
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
 	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
 
@@ -168,8 +181,11 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vygc-cluster.vygc) <= tol
 	assert np.fabs(vzgc-cluster.vzgc) <= tol	
 
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_pckms()
+	cluster.to_centre()
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='pckms',origin='centre',mbar=10)
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
 
 	print(cluster.xgc,cluster.ygc,cluster.zgc)
@@ -206,7 +222,8 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vzgc-cluster.vzgc) <= tol
 
 def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	tfinal=0.1
 

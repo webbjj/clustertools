@@ -1,5 +1,7 @@
 import clustertools as ctools
 import numpy as np
+import pytest
+
 from galpy.orbit import Orbit
 from galpy.potential import MWPotential2014,PlummerPotential,IsochronePotential,KeplerPotential
 try:
@@ -9,15 +11,18 @@ except:
 
 try:
 	import amuse.units.units as u
+	noamuse=False
 except:
-	pass
+	noamuse=True
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_initialize_orbit(tol=0.001):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_amuse()
 
@@ -41,6 +46,7 @@ def test_initialize_orbit(tol=0.001):
 	assert np.fabs(o.vy()-ocluster.vy()+cluster.vyc.value_in(u.kms)) <= tol
 	assert np.fabs(o.vz()-ocluster.vz()+cluster.vzc.value_in(u.kms)) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_initialize_orbits(tol=0.0001):
 	
 	x=np.random.rand(1000)
@@ -92,8 +98,13 @@ def test_initialize_orbits(tol=0.0001):
 	np.testing.assert_allclose(vy,ocluster.vy(),rtol=tol)
 	np.testing.assert_allclose(vz,ocluster.vz(),rtol=tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_interpolate_orbit(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_galaxy()
+	cluster.to_kpckms()
+
 	cluster.to_amuse()
 
 	x,y,z,vx,vy,vz=cluster.interpolate_orbit(pot=MWPotential2014,tfinal=1. | u.Gyr, nt=1000)
@@ -111,14 +122,19 @@ def test_interpolate_orbit(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(cluster.vygc.value_in(u.kms)-o.vy(ts[-1])) <= tol
 	assert np.fabs(cluster.vzgc.value_in(u.kms)-o.vz(ts[-1])) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_galaxy()
+	cluster.to_kpckms()
 	cluster.to_amuse()
 
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.interpolate_orbit(pot=MWPotential2014,tfinal=1. | u.Gyr,nt=1000)
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_amuse()
 
 	rad,phi,zed,vR,vT,vzed=ctools.cyl_coords(cluster)
@@ -151,7 +167,9 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vygc.value_in(u.kms)-cluster.vygc.value_in(u.kms)) <= tol
 	assert np.fabs(vzgc.value_in(u.kms)-cluster.vzgc.value_in(u.kms)) <= tol
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='cluster',mbar=10)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_cluster()
 	cluster.to_amuse()
 
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
@@ -183,7 +201,10 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vzgc.value_in(u.kms)-cluster.vzgc.value_in(u.kms)) <= tol
 
 
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='pckms',origin='centre',mbar=10)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+	cluster.to_pckms()
+	cluster.to_centre()
 	cluster.to_amuse()
 
 	xgc,ygc,zgc,vxgc,vygc,vzgc=cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc
@@ -217,8 +238,11 @@ def test_interpolate_orbits(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vygc.value_in(u.kms)-cluster.vygc.value_in(u.kms)) <= tol
 	assert np.fabs(vzgc.value_in(u.kms)-cluster.vzgc.value_in(u.kms)) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_amuse()
 
 	tfinal=0.1 | u.Gyr
@@ -325,6 +349,7 @@ def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	assert np.fabs(vy[0].value_in(u.kms)-o.vy(ts[-1])) <= tol
 	assert np.fabs(vz[0].value_in(u.kms)-o.vz(ts[-1])) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
 
 	tfinal=0.1

@@ -8,9 +8,6 @@ from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 from galpy.util import bovy_conversion
 
-import limepy
-from limepy import limepy
-
 try:
     from galpy.util import coords,conversion
 except:
@@ -31,7 +28,8 @@ solar_zo=0.0208 #Bennett & Bovy 2019
 to=conversion.time_in_Gyr(ro=solar_ro,vo=solar_vo)
 
 def test_find_centre_of_density(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -48,7 +46,8 @@ def test_find_centre_of_density(tol=0.01):
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
 def test_find_centre_of_density_casertano(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -66,7 +65,8 @@ def test_find_centre_of_density_casertano(tol=0.01):
 
 
 def test_find_centre_of_mass(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -83,7 +83,8 @@ def test_find_centre_of_mass(tol=0.01):
 	assert np.fabs(1.0-vzc/o.vz()) <= tol
 
 def test_find_centre(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -435,8 +436,8 @@ def test_rlagrange(tol=0.01):
 	assert rn[0]==r10
 
 def test_virial_radius(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',g=1.,phi0=1.,rv=1.,m=1.,N=10000)
 
+	cluster=ctools.load_cluster(ctype='snapshot',filename='g1phi1rv1m1N10000.dat',units='nbody',origin='cluster')
 	rv=ctools.virial_radius(cluster,method='inverse_distance')
 	assert np.fabs(rv-1.)<=tol
 
@@ -525,7 +526,7 @@ def test_eta_function(tol=0.1):
 
 	assert np.fabs(eta-etatest) <= tol
 
-def test_meq_function(tol=0.01):
+def test_meq_function(tol=0.1):
 	"""
 	    - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
       versus mass is fit with the following:
@@ -622,7 +623,8 @@ def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates
 	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
-	cluster=ctools.load_cluster('limepy',gcname='NGC5466')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)	
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
 	zgc=cluster.zgc/1000.
@@ -634,10 +636,12 @@ def test_rtide(tol=0.1):
 
 def test_rlimiting(tol=0.1):
 	#test the densities are equal
-	ro,vo=8.,220.
-	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
 
-	cluster=ctools.load_cluster('limepy',gcname='NGC5466')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
+	ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
+	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
 
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.

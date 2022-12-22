@@ -7,6 +7,8 @@ from galpy.orbit import Orbit
 from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 
+import pytest
+
 try:
     from galpy.util import coords,conversion
 except:
@@ -15,13 +17,16 @@ except:
 
 try:
 	import amuse.units.units as u
+	noamuse=False
 except:
-	pass
+	noamuse=True
+
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
 solar_vo=solar_ro*30.39-solar_motion[1]
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_rho_prof(tol=0.1):
 	#Create a homogenous cluster so rho should be the same everywhere
 	rho0=1.0
@@ -114,6 +119,7 @@ def test_rho_prof(tol=0.1):
 	assert np.all(np.fabs(pprof/pprof_ex-1) < tol)
 	assert np.all(np.fabs(nprof/nprof_ex-1) < tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_m_prof(tol=0.1):
 	#Create a homogenous cluster so rho should be the same everywhere
 	rho0=1.0
@@ -210,7 +216,7 @@ def test_m_prof(tol=0.1):
 	assert np.all(np.fabs(mprof/mprof_ex-1) < tol)
 	assert np.all(np.fabs(nprof/nprof_ex-1) < tol)
 
-	
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')	
 def test_alpha_prof(tol=0.2):
 	#Create a homogenous cluster so rho should be the same everywhere
 	rho0=1.0
@@ -330,6 +336,7 @@ def test_alpha_prof(tol=0.2):
 	assert np.all(np.fabs(aprof/aprof_ex-1) < tol)
 	assert np.fabs(dalpha_ex/dalpha-1) < tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_sigv_prof(tol=0.1):
 
 	rlower=np.arange(0,20,2)
@@ -427,6 +434,7 @@ def test_sigv_prof(tol=0.1):
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(sigvprof/sigvprof_ex-1) < tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_beta_prof(tol=0.1):
 
 	rlower=np.arange(0,20,2)
@@ -536,6 +544,7 @@ def test_beta_prof(tol=0.1):
 	assert np.all(np.fabs(bprof) < tol)
 	assert np.all(np.fabs(rprofn.value_in(u.pc)/((rlower+rupper)/2.)-1) < tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_v_prof(tol=0.1):
 
 	rlower=np.arange(0,20,2)
@@ -637,7 +646,7 @@ def test_v_prof(tol=0.1):
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(vprof/vprof_ex-1) < tol)
 
-
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_v2_prof(tol=0.1):
 
 	rlower=np.arange(0,20,2)
@@ -743,6 +752,7 @@ def test_v2_prof(tol=0.1):
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(vprof/vprof_ex-1) < tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_eta_prof(tol=0.1):
 
 	rlower=np.arange(0,20,2)
@@ -857,6 +867,7 @@ def test_eta_prof(tol=0.1):
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(eprof/eprof_ex-1) < tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_vcirc_prof(tol=0.1):
 
 	rlower=np.arange(0,20,2)
@@ -972,8 +983,11 @@ def test_vcirc_prof(tol=0.1):
 	assert np.all(np.fabs(rprofn/rprofn_ex-1) < tol)
 	assert np.all(np.fabs(vprof/vprof_ex-1) < tol)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_amuse_profile_units(tol=0.1):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=1)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar1.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
 	cluster.m=np.random.rand(cluster.ntot)
 	cluster.to_cluster()
 	cluster.reset_nbody_scale(rvirial=False)
@@ -1129,8 +1143,10 @@ def test_amuse_profile_units(tol=0.1):
 		assert np.fabs(1.0-rvmax0/rvmax) < tol
 		assert np.fabs(1.0-vmax0/vmax) < tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_amuse_profile_units_projected(tol=0.1):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=1)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar1.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.m=np.random.rand(cluster.ntot)
 	cluster.to_cluster()
 	cluster.reset_nbody_scale(rvirial=False)

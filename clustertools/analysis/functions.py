@@ -980,6 +980,9 @@ def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse':
+        cluster.to_pckms()
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre()
     else:
@@ -1012,6 +1015,9 @@ def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
         rn=r[rorder][indx][0]
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
+    if cluster.units=='amuse':
+        rn=_convert_length(rn,'pckms',cluster)
 
 
     return rn
@@ -1096,6 +1102,8 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
+    if cluster.units=='amuse': cluster.to_pckms()
+
     if cluster.origin0 != 'cluster' and cluster.origin0 != 'centre':
         cluster.to_centre(sortstars=False)
 
@@ -1136,6 +1144,8 @@ def virial_radius_inverse_distance(cluster, projected=False, full=True):
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    if cluster.units=='amuse':
+        r_v=_convert_length(r_v,'pckms',cluster)
 
     return r_v
 
@@ -2214,6 +2224,7 @@ def rcore(
             rho_c=mc/volc
 
         cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+        if cluster.units=='amuse': rc=_convert_length(rc,'pckms',cluster)
 
     else:
 
@@ -2352,6 +2363,7 @@ def rcore(
 
         if filename != None:
             plt.savefig(filename)
+
     return rc
 
 def rtidal(
@@ -2596,9 +2608,6 @@ def rlimiting(
     cluster.save_cluster()
     units0,origin0, rorder0, rorder_origin0 = cluster.units0,cluster.origin0, cluster.rorder0, cluster.rorder_origin0
 
-    if cluster.units=='amuse':
-        cluster.to_pckms()
-
     ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
 
     mo=conversion.mass_in_msol(ro=ro,vo=vo)
@@ -2650,7 +2659,6 @@ def rlimiting(
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     rl=_convert_length(rl,'galpy',cluster)
-
 
     if plot:
 

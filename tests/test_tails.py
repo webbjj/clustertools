@@ -63,7 +63,8 @@ def test_to_tail(tol=0.1):
 
 
 def test_tail_path(tol=0.1,ro=solar_ro,vo=solar_vo):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101',units='kpckms',origin='galaxy',mbar=10)
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_kpckms_galaxy_mbar10.dat',units='kpckms',origin='galaxy')
+	cluster.add_orbit(-2.0052100994789871, -9.3481814843660959, -3.9454681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	tfinal=0.1
 

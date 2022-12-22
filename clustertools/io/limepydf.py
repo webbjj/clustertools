@@ -101,6 +101,7 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
     else:
         cluster = _sample_limepy(model=model, **kwargs)
         cluster.units=units
+        cluster.bunits=units
 
         if cluster.origin!=origin:
             cluster.to_origin(origin)
@@ -823,6 +824,7 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4, **kwargs):
         cluster = _sample_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
 
     cluster.units='pckms'
+    cluster.bunits='pckms'
     cluster.origin='cluster'
 
     cluster.orbit = _get_cluster_orbit(gcname)
@@ -883,6 +885,7 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
     cluster = _sample_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
 
     cluster.units='pckms'
+    cluster.bunits='pckms'
     cluster.origin='cluster'
 
     cluster.orbit = _get_cluster_orbit(gcname)

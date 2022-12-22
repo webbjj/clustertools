@@ -1,16 +1,33 @@
 import clustertools as ctools
 import numpy as np
-from astropy.table import QTable
-from amuse.lab import *
-from amuse.units import nbody_system
-import amuse.units.units as u
-from amuse.datamodel import Particles
+
+import pytest
+
+try:
+	from astropy.table import QTable
+	noastropy=False
+except:
+	noastropy=True
+
+try:
+	from amuse.lab import *
+	from amuse.units import nbody_system
+	import amuse.units.units as u
+	from amuse.datamodel import Particles
+	noamuse=False
+except:
+	noamuse=True
 
 
 from galpy.potential import KingPotential
 from galpy.util import conversion
 from galpy.df import kingdf
-from limepy import limepy
+
+try:
+	from limepy import limepy
+	nolimepy=False
+except:
+	nolimepy=True
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -35,7 +52,12 @@ def check_params(cluster,ctype,units,origin,projected,**kwargs):
 		assert cluster.origin==origin
 
 	assert cluster.bunits==kwargs.get('bunits',cluster.units)
-	assert cluster.units_init==cluster.units
+
+	if 'limepy' in ctype:
+		assert cluster.units_init is None
+	else:
+		assert cluster.units_init==cluster.units
+	
 	assert cluster.origin_init==cluster.origin
 
 	assert cluster.ctype==ctype
@@ -500,6 +522,7 @@ def test_new_gyrfalcon():
 
 	assert check_params(cluster,'new_nemo','WDunits','centre',False,sfile='%scluster.nemo.dat' % wdir,wdir=wdir,skiprows=13,nsnap=2,tphys=2.*0.484375)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_amuse():
 	N=100
 	Mcluster=100.0 | u.MSun
@@ -512,7 +535,7 @@ def test_amuse():
 
 	assert check_params(cluster,'amuse','pckms','centre',False)
 
-
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_amuse_units():
 	N=100
 	Mcluster=100.0 | u.MSun
@@ -549,6 +572,21 @@ def test_galpy(tol=0.01):
 	assert np.all(np.fabs(cluster.r/gcluster.r-solar_ro) < tol)
 	assert np.all(np.fabs(cluster.v/gcluster.v-solar_vo) < tol)
 
+@pytest.mark.skipif(nolimepy, reason='limepy required to run this test')
+def test_limepy(tol=0.01):
+
+	lmodel=limepy(g=1,phi0=5.,rh=3.,M=10000)
+	cluster=ctools.load_cluster(ctype='limepy',model=lmodel,N=10000,units='pckms',origin='cluster')
+	assert cluster.ctype == 'limepy'
+
+	assert float(np.fabs(cluster.ntot-10000)/10000) <= tol
+
+	assert np.fabs(cluster.rm-3.)/3. <= tol
+	assert np.fabs(cluster.mtot-10000.0)/10000.0 <= tol
+
+	assert check_params(cluster,'limepy','pckms','cluster',False)
+
+@pytest.mark.skipif(noastropy, reason='astropy required to run this test')
 def test_astropy_table():
 	wdir='../docs/source/notebooks/'
 	data = QTable.read("%spal5_rp.dat" % wdir, format="ascii")

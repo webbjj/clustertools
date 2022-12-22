@@ -2,14 +2,13 @@ import clustertools as ctools
 from clustertools.analysis.functions import tpl_func
 from scipy.optimize import curve_fit
 
+import pytest
+
 import numpy as np
 from galpy.orbit import Orbit
 from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
 from galpy.util import bovy_conversion
-
-import limepy
-from limepy import limepy
 
 try:
     from galpy.util import coords,conversion
@@ -19,8 +18,9 @@ except:
 
 try:
 	import amuse.units.units as u
+	noamuse=False
 except:
-	pass
+	noamuse=True
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -28,8 +28,10 @@ solar_vo=solar_ro*30.39-solar_motion[1]
 solar_zo=0.0208 #Bennett & Bovy 2019
 to=conversion.time_in_Gyr(ro=solar_ro,vo=solar_vo)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_find_centre_of_density(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -47,8 +49,10 @@ def test_find_centre_of_density(tol=0.01):
 	assert np.fabs(1.0-vyc/(o.vy() | u.kms)) <= tol
 	assert np.fabs(1.0-vzc/(o.vz() | u.kms)) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_find_centre_of_density_casertano(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -66,9 +70,10 @@ def test_find_centre_of_density_casertano(tol=0.01):
 	assert np.fabs(1.0-vyc/(o.vy() | u.kms)) <= tol
 	assert np.fabs(1.0-vzc/(o.vz() | u.kms)) <= tol
 
-
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_find_centre_of_mass(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -86,8 +91,10 @@ def test_find_centre_of_mass(tol=0.01):
 	assert np.fabs(1.0-vyc/(o.vy() | u.kms)) <= tol
 	assert np.fabs(1.0-vzc/(o.vz() | u.kms)) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_find_centre(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',gcname='NGC6101')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
 	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
@@ -110,6 +117,7 @@ def test_find_centre(tol=0.01):
 	assert np.fabs(1.0-cluster.vygc/(o.vy() | u.kms)) <= tol
 	assert np.fabs(1.0-cluster.vzgc/(o.vz() | u.kms)) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 
@@ -145,6 +153,7 @@ def test_relaxation_time(tol=0.01):
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.relaxation_time()) <= tol
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trelax) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_projected_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 
@@ -180,6 +189,7 @@ def test_projected_relaxation_time(tol=0.01):
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.relaxation_time(projected=True)) <= tol
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trelax) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_half_mass_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 
@@ -215,6 +225,7 @@ def test_half_mass_relaxation_time(tol=0.01):
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.half_mass_relaxation_time()) <= tol
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trh) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_core_relaxation_time(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 
@@ -254,6 +265,7 @@ def test_core_relaxation_time(tol=0.01):
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.core_relaxation_time(coulomb=0.2)) <= tol
 	assert np.fabs(1.0-(trelax | u.Myr)/cluster.trc) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_energies(tol=0.01):
 
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
@@ -331,6 +343,7 @@ def test_energies(tol=0.01):
 	assert np.fabs(1.0-0.1*0.1*(ptot | (u.MSun*u.kms*u.kms)) /cluster.ptot) <= tol
 	np.testing.assert_array_equal(0.1*(kin| (u.MSun*u.kms*u.kms))+0.1*0.1*(pot| (u.MSun*u.kms*u.kms)),cluster.etot)
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_closest_star(tol=0.01):
 
 	x,y,z=np.linspace(0,4,5),np.zeros(5),np.zeros(5)
@@ -346,31 +359,35 @@ def test_closest_star(tol=0.01):
 	mindx=ctools.closest_star(cluster,projected=True)
 	np.testing.assert_array_equal(mindx,np.ones(5))
 
-
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_rlagrange(tol=0.01):
 	x,y,z=np.linspace(0,10,21),np.zeros(21),np.zeros(21)
 	vx,vy,vz=np.zeros(21),np.zeros(21),np.zeros(21)
 	cluster=ctools.StarCluster(units='nbody',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz)
 	cluster.analyze()
+	cluster.to_amuse()
 
 	rn=ctools.rlagrange(cluster)
-	np.testing.assert_array_equal(rn,np.linspace(1,10,10))
+	np.testing.assert_array_equal(rn.value_in(u.parsec),np.linspace(1,10,10))
 
-	cluster.z=np.linspace(0,10,21)
+	cluster.z=np.linspace(0,10,21) | u.parsec
 	cluster.analyze(sortstars=True)
 
 	rn=ctools.rlagrange(cluster,projected=True)
-	np.testing.assert_array_equal(rn,np.linspace(1,10,10))
+	np.testing.assert_array_equal(rn.value_in(u.parsec),np.linspace(1,10,10))
 
 	r10=ctools.rlagrange(cluster,projected=True,mfrac=0.1)
 	assert rn[0]==r10
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_virial_radius(tol=0.01):
-	cluster=ctools.load_cluster(ctype='limepy',g=1.,phi0=1.,rv=1.,m=1.,N=10000)
-
+	cluster=ctools.load_cluster(ctype='snapshot',filename='g1phi1rv1m1N10000.dat',units='nbody',origin='cluster')
+	cluster.zmbar=10000
+	cluster.reset_nbody_scale(mass=False,radii=False)
+	cluster.to_amuse()
 	rv=ctools.virial_radius(cluster,method='inverse_distance')
-	assert np.fabs(rv-1.)<=tol
+	assert np.fabs(rv.value_in(u.parsec)-1.)<=tol
 
 	np.random.seed(5)
 
@@ -387,10 +404,13 @@ def test_virial_radius(tol=0.01):
 	cluster=ctools.StarCluster(units='kpckms',origin='cluster')
 	cluster.add_stars(os.x(),os.y(),os.z(),os.vx(),os.vy(),os.vz(),m=msub)
 	cluster.analyze()
+	cluster.to_amuse()
+
 	rv=ctools.virial_radius(cluster,method='critical_density')
 
-	assert np.fabs(rv-rvnfw) <= tol
+	assert np.fabs(rv.value_in(u.kpc)-rvnfw) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_mass_function(tol=0.01):
 
 	alphatest=-1
@@ -402,10 +422,13 @@ def test_mass_function(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m)
 	cluster.analyze()
+	cluster.to_amuse()
+
 	m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha=ctools.mass_function(cluster)
 
 	assert np.fabs(alpha-alphatest) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_tapered_mass_function(tol=3.):
 
 	msample=np.linspace(0.1,1.,100)
@@ -427,9 +450,10 @@ def test_tapered_mass_function(tol=3.):
 
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m,analyze=True)
+	cluster.to_amuse()
 
-	lower_bounds=[5000.,-2.,np.amin(cluster.m),1.]
-	upper_bounds=[15000.,0.,np.amax(cluster.m),3.]
+	lower_bounds=[5000.,-2.,np.amin(cluster.m.value_in(u.MSun)),1.]
+	upper_bounds=[15000.,0.,np.amax(cluster.m.value_in(u.MSun)),3.]
 
 	m_mean, m_hist, dm, Afit, eA, alphafit, ealpha, mcfit, emc, betafit, ebeta=ctools.tapered_mass_function(cluster,lower_bounds=lower_bounds,upper_bounds=upper_bounds)
 
@@ -437,7 +461,7 @@ def test_tapered_mass_function(tol=3.):
 	assert np.fabs(mcfit-mc) <= emc*tol
 	assert np.fabs(betafit-beta) <= ebeta*tol
 
-
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_eta_function(tol=0.1):
 	alphatest=-1
 	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
@@ -453,11 +477,13 @@ def test_eta_function(tol=0.1):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m)
 	cluster.analyze()
+	cluster.to_amuse()
 	m_mean, sigvm, eta, eeta, yeta, eyeta=ctools.eta_function(cluster)
 
 	assert np.fabs(eta-etatest) <= tol
 
-def test_meq_function(tol=0.01):
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
+def test_meq_function(tol=0.1):
 	"""
 	    - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
       versus mass is fit with the following:
@@ -490,10 +516,12 @@ def test_meq_function(tol=0.01):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m)
 	cluster.analyze()
+	cluster.to_amuse()
 	m_mean, sigvm, meq, emq, sigma0, esigma0=ctools.meq_function(cluster)
 
 	assert np.fabs(meq-meqtest) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_ckin(tol=0.1):
 	alphatest=-1
 	m=ctools.power_law_distribution_function(10000,alphatest,0.1,1.)
@@ -520,11 +548,13 @@ def test_ckin(tol=0.1):
 	cluster=ctools.StarCluster(units='pckms',origin='centre')
 	cluster.add_stars(x,y,z,vx,vy,vz,m)
 	cluster.analyze()
+	cluster.to_amuse()
 
 	ck=ctools.ckin(cluster)
 
 	assert np.fabs(ck-1.)<=tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_rcore(tol=0.1):
 
 	wdir='../docs/source/notebooks/'
@@ -537,39 +567,49 @@ def test_rcore(tol=0.1):
 	m,x,y,z,vx,vy,vz=np.loadtxt(wdir+'N10k.dat.10',unpack=True)
 	cluster=ctools.StarCluster(units='pckms',origin='cluster')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.to_amuse()
 
 	rc=ctools.rcore(cluster)
 
 	print(rc,rc0)
 
-	assert np.fabs(rc-rc0) <= tol
+	assert np.fabs(rc.value_in(u.parsec)-rc0) <= tol
 
 	m,x,y,z,vx,vy,vz=np.loadtxt(wdir+'N1k.dat.10',unpack=True)
 	cluster=ctools.StarCluster(units='pckms',origin='cluster')
 	cluster.add_stars(x,y,z,vx,vy,vz,m=m)
+	cluster.to_amuse()
 	rc=ctools.rcore(cluster,method='isothermal')
-	assert np.fabs(rc-rc0) <= tol
+	assert np.fabs(rc.value_in(u.parsec)-rc0) <= tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates
 	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
-	cluster=ctools.load_cluster('limepy',gcname='NGC5466')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
 	zgc=cluster.zgc/1000.
 
 	rtgalpy=rtide(MWPotential2014,Rgc/solar_ro,zgc/solar_ro,M=m/mo,ro=solar_ro,vo=solar_vo)*1000.0
+	
+	cluster.to_amuse()
+
 	rtctools=ctools.rtidal(cluster,MWPotential2014)
 
-	assert np.fabs(rtgalpy-rtctools) < tol
+	assert np.fabs(rtgalpy-rtctools.value_in(u.parsec)) < tol
 
+@pytest.mark.skipif(noamuse, reason='amuse required to run this test')
 def test_rlimiting(tol=0.1):
 	#test the densities are equal
-	ro,vo=8.,220.
-	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
 
-	cluster=ctools.load_cluster('limepy',gcname='NGC5466')
+	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
+	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
+
+	ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
+	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
 
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.
@@ -578,31 +618,32 @@ def test_rlimiting(tol=0.1):
 
 	rholocal=evaluateDensities(pot,Rgc/ro,zgc/ro,ro=ro,vo=vo)
 
+	cluster.to_amuse()
 	rl=ctools.rlimiting(cluster,MWPotential2014)
 
 	rprof, pprof, nprof = ctools.rho_prof(cluster, nrad=20, projected=False)
 
-	rlarg=np.argmin(np.fabs(rprof-rl))
+	rlarg=np.argmin(np.fabs(rprof.value_in(u.parsec)-rl.value_in(u.parsec)))
 
 	if rprof[rlarg] > rl:
-		assert pprof[rlarg-1] > rholocal
-		assert pprof[rlarg] < rholocal
+		assert pprof[rlarg-1].value_in(u.MSun/(u.parsec**3.)) > rholocal
+		assert pprof[rlarg].value_in(u.MSun/(u.parsec**3.)) < rholocal
 	else:
-		assert pprof[rlarg] > rholocal
-		assert pprof[rlarg+1] < rholocal
+		assert pprof[rlarg].value_in(u.MSun/(u.parsec**3.)) > rholocal
+		assert pprof[rlarg+1].value_in(u.MSun/(u.parsec**3.)) < rholocal
 
 	rl=ctools.rlimiting(cluster,MWPotential2014,projected=True)
 
 	rprof, pprof, nprof = ctools.rho_prof(cluster, nrad=20, projected=True)
 
-	rlarg=np.argmin(np.fabs(rprof-rl))
+	rlarg=np.argmin(np.fabs(rprof.value_in(u.parsec)-rl.value_in(u.parsec)))
 
 	#Approximate projected local density across area of cluster
-	rholocal_pro=rholocal*(4.*rprof[-1]/3)
+	rholocal_pro=rholocal*(4.*rprof[-1].value_in(u.parsec)/3)
 
 	if rprof[rlarg] > rl:
-		assert pprof[rlarg-1] > rholocal_pro
-		assert pprof[rlarg] < rholocal_pro
+		assert pprof[rlarg-1].value_in(u.MSun/(u.parsec**2.)) > rholocal_pro
+		assert pprof[rlarg].value_in(u.MSun/(u.parsec**2.)) < rholocal_pro
 	else:
-		assert pprof[rlarg] > rholocal_pro
-		assert pprof[rlarg+1] < rholocal_pro
+		assert pprof[rlarg].value_in(u.MSun/(u.parsec**2.)) > rholocal_pro
+		assert pprof[rlarg+1].value_in(u.MSun/(u.parsec**2.)) < rholocal_pro

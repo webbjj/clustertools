@@ -34,7 +34,7 @@ def test_find_centre_of_density(tol=0.01):
 	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
+	o=Orbit([246.44999999999987, -72.201999999999998, 14.450000000000003, 1.7557999999999991, -0.25770000000000326, 366.32999999999998],radec=True,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster.to_amuse()
 
@@ -55,7 +55,7 @@ def test_find_centre_of_density_casertano(tol=0.01):
 	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
+	o=Orbit([246.44999999999987, -72.201999999999998, 14.450000000000003, 1.7557999999999991, -0.25770000000000326, 366.32999999999998],radec=True,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster.to_amuse()
 
@@ -76,7 +76,7 @@ def test_find_centre_of_mass(tol=0.01):
 	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
+	o=Orbit([246.44999999999987, -72.201999999999998, 14.450000000000003, 1.7557999999999991, -0.25770000000000326, 366.32999999999998],radec=True,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster.to_amuse()
 
@@ -97,7 +97,7 @@ def test_find_centre(tol=0.01):
 	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 	cluster.to_galaxy()
 	cluster.to_kpckms()
-	o=Orbit.from_name('NGC6101',ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
+	o=Orbit([246.44999999999987, -72.201999999999998, 14.450000000000003, 1.7557999999999991, -0.25770000000000326, 366.32999999999998],radec=True,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
 
 	cluster.to_amuse()
 

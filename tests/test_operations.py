@@ -107,9 +107,6 @@ def test_to_pcmyr(tol=0.0001,ro=solar_ro,vo=solar_vo):
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
 		scale_test(init,final,tscales[i],mscales[i],xscales[i],vscales[i])
 
-	assert 1==0
-
-
 def test_to_kpckms(tol=0.0001,ro=solar_ro,vo=solar_vo):
 
 	tbar,rbar,vbar,zmbar=2.1,5.3,2.5,7553.7

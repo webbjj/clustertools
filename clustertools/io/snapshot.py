@@ -80,6 +80,9 @@ def _get_snapshot(
             data = np.loadtxt(
                 "%s%s" % (wdir, filename), delimiter=delimiter, skiprows=skiprows
             )
+        elif os.path.isfile(filename):
+            data = np.loadtxt(filename, delimiter=delimiter, skiprows=skiprows
+            )
         else:
             print("NO FILE FOUND: %s, %s, %s" % (wdir, snapdir, filename))
             cluster = StarCluster( 0., ctype=ctype, **kwargs)

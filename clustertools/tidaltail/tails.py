@@ -25,6 +25,7 @@ from ..util.coordinates import cart_to_sky
 from ..util.constants import *
 
 from ..util.plots import starplot,skyplot,_plot,_lplot,_scatter
+from ..util.units import _convert_length,_convert_time,_convert_velocity
 
 import matplotlib.pyplot as plt
 
@@ -82,6 +83,8 @@ def to_tail(cluster):
     )
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+
+
 
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
@@ -157,20 +160,9 @@ def tail_path(
     cluster.to_galaxy(sortstars=False)
     cluster.to_kpckms()
 
-    #dmax is assumed to have same units as cluster
+    #dmax is assumed to have same units as cluster initially has
     if dmax is not None:
-        if units0=='nbody':
-            dmax*=cluster.rbar/1000.0
-        elif units0=='pckms':
-            dmax/=1000.
-        elif units0=='galpy':
-            dmax*=cluster._ro
-        elif units0=='radec' and not skypath:
-            dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
-            dmax=dist*np.tan(dmax)
-        elif units0=='kpckms' and skypath:
-            dist=np.sqrt(cluster.xgc**2.+cluster.ygc**2.+cluster.zgc**2.)
-            dmax=np.arctan(dmax/dist)
+        dmax=_convert_length(dmax,units0,cluster)
 
     top, xop, yop, zop, vxop, vyop, vzop = orbital_path(
         cluster,
@@ -247,6 +239,14 @@ def tail_path(
             plt.savefig(filename)
 
     return_cluster(cluster, units0, origin0, rorder0, rorder_origin0)
+
+    ttail=_convert_time(ttail,'kpckms',cluster)
+    xtail=_convert_length(xtail,'kpckms',cluster)
+    ytail=_convert_length(ytail,'kpckms',cluster)
+    ztail=_convert_length(ztail,'kpckms',cluster)
+    vxtail=_convert_velocity(vxtail,'kpckms',cluster)
+    vytail=_convert_velocity(vytail,'kpckms',cluster)
+    vztail=_convert_velocity(vztail,'kpckms',cluster)
 
     if skypath:
         return ttail,ratail,dectail,disttail,pmratail,pmdectail,vlostail

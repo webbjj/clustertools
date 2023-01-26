@@ -1003,5 +1003,8 @@ def orbital_path_match(
 
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
+    tstar=_convert_time(tstar,'kpckms',cluster)
+    dprog=_convert_length(dprog,'kpckms',cluster)
+    dpath=_convert_length(dpath,'kpckms',cluster)
 
     return np.array(tstar), np.array(dprog), np.array(dpath)

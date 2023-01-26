@@ -12,6 +12,10 @@ solar_ro=constants.solar_ro
 solar_vo=constants.solar_vo
 solar_zo=constants.solar_zo
 solar_motion=constants.solar_motion
+kmperpc=constants.kmperpc
+kmperkpc=constants.kmperkpc
+spermyr=constants.spermyr
+
 
 sphere_coords=coordinates.sphere_coords
 cart_to_sphere=coordinates.cart_to_sphere

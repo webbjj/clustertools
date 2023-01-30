@@ -834,7 +834,7 @@ def skyplot(
         return out
     else:
         if do_centre:
-            xgc, ygc = cluster.ragc, cluster.decgc
+            xgc, ygc = cluster.ra_gc, cluster.dec_gc
             plt.plot(xgc, ygc, ".", alpha=1.0, label="COM", **kwargs)
 
         cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)

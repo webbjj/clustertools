@@ -31,6 +31,9 @@ except:
 	nolimepy=True
 
 nosim=np.invert(os.path.isfile('../docs/source/notebooks/nbody6_sim/OUT3'))
+nopath=np.invert(os.path.isdir('/Users/webbjere/Codes/clustertools/docs/source/notebooks'))
+
+
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59
@@ -623,3 +626,43 @@ def test_mcluster(tol=0.2):
 	assert np.fabs(r_v-rvirp) <= tol
 	assert np.fabs(cluster.rm-rhp) <= tol
 
+@pytest.mark.skipif(nopath, reason='Root path unknown')
+def test_filepaths(tol=0.001):
+	wdirs=['../docs/source/notebooks/',
+	       '/Users/webbjere/Codes/clustertools/docs/source/notebooks',
+	       '',
+	       '',
+	       '../docs/source/',
+	       '../docs/source',
+	       '../docs/source/',
+	       '../docs/source',
+	       '',
+	       './'
+	       ''
+	       '.'
+	       ''
+	      ]
+
+	snapdirs=['',
+	        '',
+	        '/Users/webbjere/Codes/clustertools/docs/source/notebooks/',
+	        '/Users/webbjere/Codes/clustertools/docs/source/notebooks',
+	        'notebooks',
+	        'notebooks/',
+	        'notebooks',
+	        'notebooks/',
+	        '',
+	        '',
+	        './',
+	        ''
+	        '.'
+	       ]
+
+	for i in range(0,len(wdirs)):
+		wdir=wdirs[i]
+		snapdir=snapdirs[i]
+		cluster = ctools.load_cluster('snapshot',wdir=wdir,snapdir=snapdir, filename='pal5.dat', units='kpckms',origin='galaxy')
+
+		assert np.fabs(cluster.ntot-99998) <= tol
+
+		print(i,cluster.ntot)

@@ -23,7 +23,6 @@ from galpy.orbit import Orbit
 import os
 
 try:
-    import limepy
     from limepy import limepy,spes,sample
 except:
     pass

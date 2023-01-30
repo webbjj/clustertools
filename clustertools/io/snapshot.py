@@ -63,8 +63,14 @@ def _get_snapshot(
     nsnap = int(kwargs.get("nsnap", "0"))
     nzfill = int(kwargs.get("nzfill", 5))
     delimiter = kwargs.get("delimiter", None)
-    wdir = kwargs.get("wdir", "./")
-    snapdir = kwargs.get("snapdir", "snaps/")
+    wdir = kwargs.get("wdir", "")
+    if wdir is not "":
+        if wdir[-1] != '/':
+            wdir+='/'
+    snapdir = kwargs.get("snapdir", "")
+    if snapdir is not "":
+        if snapdir[-1] != '/':
+            snapdir+='/'
     snapbase = kwargs.get("snapbase", "")
     snapend = kwargs.get("snapend", ".dat")
     skiprows = kwargs.get("skiprows", 0)

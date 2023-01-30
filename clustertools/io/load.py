@@ -105,9 +105,9 @@ def load_cluster(
     delimiter : str
         choice of delimiter when reading ascii/csv files (Default: ',')
     wdir : str
-        working directory of snapshots if not current directory
+        working directory of simulation if not current directory (Default: '')
     snapdir : str
-        directory of snapshot (Default: './')
+        directory of snapshot if not wdir (Default: '')
     snapbase : str
         base for snapshot filename (Default: '')
     snapend : str
@@ -134,9 +134,15 @@ def load_cluster(
     _______
     2018 - Written - Webb (UofT)
     """
-    wdir = kwargs.get("wdir", "./")
-    if wdir[-1] != '/':
-        wdir+='/'
+    wdir = kwargs.get("wdir", "")
+    if wdir is not "":
+        if wdir[-1] != '/':
+            wdir+='/'
+
+    snapdir = kwargs.get("snapdir", "")
+    if snapdir is not "":
+        if snapdir[-1] != '/':
+            snapdir+='/'
 
     #filename=_get_filename(filename,**kwargs)
 
@@ -158,23 +164,23 @@ def load_cluster(
     elif ctype == "nbody6":
 
         # With stellar evolution turned ON, read in OUT3, OUT33, fort.82 and fort.83.
-        if os.path.isfile("%sOUT3" % wdir):
-            out3 = open("%sOUT3" % wdir, "rb")
+        if os.path.isfile("%s%sOUT3" % (wdir,snapdir)):
+            out3 = open("%s%sOUT3" % (wdir,snapdir), "rb")
         else:
             out3 = None
 
-        if os.path.isfile("%sOUT33" % wdir):
-            out33 = open("%sOUT33" % wdir, "rb")
+        if os.path.isfile("%sOUT33" % (wdir,snapdir)):
+            out33 = open("%sOUT33" % (wdir,snapdir), "rb")
         else:
             out33=None
 
-        if os.path.isfile("%sfort.82" % wdir):
-            fort82 = open("%sfort.82" % wdir, "r")
+        if os.path.isfile("%sfort.82" % (wdir,snapdir)):
+            fort82 = open("%sfort.82" % (wdir,snapdir), "r")
         else:
             fort82=None
 
-        if os.path.isfile("%sfort.83" % wdir):
-            fort83 = open("%sfort.83" % wdir, "r")
+        if os.path.isfile("%sfort.83" % (wdir,snapdir)):
+            fort83 = open("%sfort.83" % (wdir,snapdir), "r")
         else:
             fort83=None
 
@@ -191,27 +197,27 @@ def load_cluster(
             nsnap=float(nsnap)
 
         if hdf5:
-            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            if os.path.isfile("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap))):
+                conf3 = open("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap)), "rb")
             else:
                 conf3=None
 
-            snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
+            snap40 = h5py.File("%s%ssnap.40_%s.h5part" % (wdir,snapdir,nsnap), "r")
             cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=False,dtout=dtout,**kwargs)
         else:
 
-            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            if os.path.isfile("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap))):
+                conf3 = open("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap)), "rb")
             else:
                 conf3=None
 
-            if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
-                bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
+            if os.path.isfile("%s%sbev.82_%s" % (wdir,snapdir,str(nsnap))):
+                bev82 = open("%s%sbev.82_%s" % (wdir,snapdir,str(nsnap)), "r")
             else:
                 bev82=None
 
-            if os.path.isfile("%ssev.83_%s" % (wdir,str(nsnap))):
-                sev83 = open("%ssev.83_%s" % (wdir,str(nsnap)), "r")
+            if os.path.isfile("%s%ssev.83_%s" % (wdir,snapdir,str(nsnap))):
+                sev83 = open("%s%ssev.83_%s" % (wdir,snapdir,str(nsnap)), "r")
             else:
                 sev83=None
 
@@ -398,9 +404,10 @@ def advance_cluster(
     if kwargs.get("ofilename", None) is None:
         ofilename=cluster.ofilename
 
-    wdir = advance_kwargs.get("wdir", "./")
-    if wdir[-1] != '/':
-        wdir+='/'
+    wdir = advance_kwargs.get("wdir", "")
+    if wdir is not "":
+        if wdir[-1] != '/':
+            wdir+='/'
 
     # Continue reading in cluster opened in _get_cluster()
     if load_function is not None:
@@ -456,12 +463,12 @@ def advance_cluster(
                 nsnap = advance_kwargs.pop("nsnap") + dtout - 1
                 ngroup= advance_kwargs.pop("ngroup")
 
-                if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-                    conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+                if os.path.isfile("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap))):
+                    conf3 = open("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap)), "rb")
                 else:
                     conf3=None
 
-                snap40 = h5py.File("%ssnap.40_%s.h5part" % (wdir,nsnap), "r")
+                snap40 = h5py.File("%s%ssnap.40_%s.h5part" % (wdir,snapdir,nsnap), "r")
                 cluster = _get_nbody6pp(conf3, snap40=snap40, ofile=ofile, advance=True,nsnap=nsnap,dtout=dtout,**advance_kwargs, **kwargs)
 
         else:
@@ -470,18 +477,18 @@ def advance_cluster(
 
             nsnap = advance_kwargs.pop("nsnap") + dtout - 1
 
-            if os.path.isfile("%sconf.3_%s" % (wdir,str(nsnap))):
-                conf3 = open("%sconf.3_%s" % (wdir,str(nsnap)), "rb")
+            if os.path.isfile("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap))):
+                conf3 = open("%s%sconf.3_%s" % (wdir,snapdir,str(nsnap)), "rb")
             else:
                 conf3=None
 
-            if os.path.isfile("%sbev.82_%s" % (wdir,str(nsnap))):
-                bev82 = open("%sbev.82_%s" % (wdir,str(nsnap)), "r")
+            if os.path.isfile("%s%sbev.82_%s" % (wdir,snapdir,str(nsnap))):
+                bev82 = open("%s%sbev.82_%s" % (wdir,snapdir,str(nsnap)), "r")
             else:
                 bev82=None
 
-            if os.path.isfile("%ssev.83_%s" % (wdir,str(nsnap))):
-                sev83 = open("%ssev.83_%s" % (wdir,str(nsnap)), "r")
+            if os.path.isfile("%s%ssev.83_%s" % (wdir,snapdir,str(nsnap))):
+                sev83 = open("%s%ssev.83_%s" % (wdir,snapdir,str(nsnap)), "r")
             else:
                 sev83=None
 
@@ -657,8 +664,14 @@ def _get_filename(filename,**kwargs):
 
     nzfill = int(kwargs.get("nzfill", 1))
     nsnap = int(kwargs.get("nsnap", "0"))
-    wdir = kwargs.get("wdir", "./")
-    snapdir = kwargs.get("snapdir", "snaps/")
+    wdir = kwargs.get("wdir", "")
+    if wdir is not "":
+        if wdir[-1] != '/':
+            wdir+='/'
+    snapdir = kwargs.get("snapdir", "")
+    if snapdir is not "":
+        if snapdir[-1] != '/':
+            snapdir+='/'
     snapbase = kwargs.get("snapbase", "")
     snapend = kwargs.get("snapend", ".dat")
 

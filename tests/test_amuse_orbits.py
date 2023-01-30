@@ -395,6 +395,13 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     projected=False,
 	)
 
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.parsec)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.parsec)
+
+	print(dpath)
+
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 
 	t,dprog,dpath=cluster.orbital_path_match(

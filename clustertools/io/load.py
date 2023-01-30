@@ -169,18 +169,18 @@ def load_cluster(
         else:
             out3 = None
 
-        if os.path.isfile("%sOUT33" % (wdir,snapdir)):
-            out33 = open("%sOUT33" % (wdir,snapdir), "rb")
+        if os.path.isfile("%s%sOUT33" % (wdir,snapdir)):
+            out33 = open("%s%sOUT33" % (wdir,snapdir), "rb")
         else:
             out33=None
 
-        if os.path.isfile("%sfort.82" % (wdir,snapdir)):
-            fort82 = open("%sfort.82" % (wdir,snapdir), "r")
+        if os.path.isfile("%s%sfort.82" % (wdir,snapdir)):
+            fort82 = open("%s%sfort.82" % (wdir,snapdir), "r")
         else:
             fort82=None
 
-        if os.path.isfile("%sfort.83" % (wdir,snapdir)):
-            fort83 = open("%sfort.83" % (wdir,snapdir), "r")
+        if os.path.isfile("%s%sfort.83" % (wdir,snapdir)):
+            fort83 = open("%s%sfort.83" % (wdir,snapdir), "r")
         else:
             fort83=None
 
@@ -408,6 +408,11 @@ def advance_cluster(
     if wdir is not "":
         if wdir[-1] != '/':
             wdir+='/'
+
+    snapdir = advance_kwargs.get("snapdir", "")
+    if snapdir is not "":
+        if snapdir[-1] != '/':
+            snapdir+='/'
 
     # Continue reading in cluster opened in _get_cluster()
     if load_function is not None:

@@ -396,11 +396,12 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
 	)
 
 	for i in range(0,len(dpath)):
-		dpath[i]=dpath[i].value_in(u.parsec)
+		dpath[i]=dpath[i].value_in(u.kpc)
 	for i in range(0,len(dprog)):
-		dprog[i]=dprog[i].value_in(u.parsec)
+		dprog[i]=dprog[i].value_in(u.kpc)
 
-	print(dpath)
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
 
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 
@@ -420,6 +421,14 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     projected=False,
 	)
 
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.kpc)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.kpc)
+
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
+
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 
 	t,dprog,dpath=cluster.orbital_path_match(
@@ -438,6 +447,14 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     projected=False,
 	)
 
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.kpc)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.kpc)
+
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
+
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 
 	t,dprog,dpath=cluster.orbital_path_match(
@@ -455,6 +472,14 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     plot=False,
     projected=True,
 	)
+
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.kpc)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.kpc)
+
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
 
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 
@@ -494,6 +519,14 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     projected=False,
 	)
 
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.kpc)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.kpc)
+
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
+
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 	np.testing.assert_allclose(dprog,x,rtol=tol,atol=1.)
 
@@ -513,6 +546,14 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     projected=False,
 	)
 
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.kpc)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.kpc)
+
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
+
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 	np.testing.assert_allclose(dprog,x,rtol=tol,atol=1.)
 
@@ -531,6 +572,14 @@ def test_orbital_path_match(tol=0.1,ro=solar_ro,vo=solar_vo):
     plot=False,
     projected=False,
 	)
+
+	for i in range(0,len(dpath)):
+		dpath[i]=dpath[i].value_in(u.kpc)
+	for i in range(0,len(dprog)):
+		dprog[i]=dprog[i].value_in(u.kpc)
+
+	dpath=np.array(dpath,dtype=float)
+	dprog=np.array(dprog,dtype=float)
 
 	np.testing.assert_allclose(np.zeros(len(dpath)),dpath,rtol=tol,atol=1.)
 	np.testing.assert_allclose(dprog,x,rtol=tol,atol=1.)

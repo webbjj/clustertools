@@ -38,7 +38,7 @@ mpl.rcParams['mathtext.default'] = 'regular'
 
 #current_palette = sns.color_palette()
 
-plt.style.use('tableau-colorblind10')
+#plt.style.use('tableau-colorblind10')
 
 def _scatter(
     x,

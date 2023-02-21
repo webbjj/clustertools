@@ -89,7 +89,7 @@ def to_tail(cluster):
     return x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail
 
 def tail_path(
-    cluster, dt=0.1, no=1000, nt=100, ntail=100, pot=None, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
+    cluster, tfinal=0.1, no=1000, nt=100, ntail=100, pot=None, dmax=None, bintype = 'fix', from_centre=False, skypath=False, 
     to_path=False,
     do_full=False,
     ro=None,
@@ -99,14 +99,14 @@ def tail_path(
     plot=False,projected=False,
     **kwargs,
 ):
-    """Calculate tail path +/- dt Gyr around the cluster
+    """Calculate tail path +/- tfinal Gyr around the cluster
 
         Parameters
     ----------
     cluster : class
         StarCluster
-    dt : float
-        timestep that StarCluster is to be moved to
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 0.1 Gyr)
     no : int
         number of timesteps for orbit integration (default:1000)
     nt : int
@@ -155,6 +155,9 @@ def tail_path(
     2019 - Implemented numpy array preallocation to minimize runtime - Nathaniel Starkman (UofT)
     """
 
+    #Legacy inclusion
+    tfinal=kwargs.get('dt',tfinal)
+
     units0, origin0, rorder0, rorder_origin0 = save_cluster(cluster)
 
     cluster.to_galaxy(sortstars=False)
@@ -166,7 +169,7 @@ def tail_path(
 
     top, xop, yop, zop, vxop, vyop, vzop = orbital_path(
         cluster,
-        dt=dt,
+        tfinal=tfinal,
         nt=no,
         pot=pot,
         from_centre=from_centre,
@@ -194,7 +197,7 @@ def tail_path(
 
 
     tstar, dprog, dpath = orbital_path_match(
-        cluster=cluster, dt=dt, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, zo=zo, solarmotion=solarmotion,projected=projected
+        cluster=cluster, tfinal=tfinal, nt=no, pot=pot, path=path, from_centre=from_centre, skypath=skypath, to_path=to_path,do_full=do_full, ro=ro, vo=vo, zo=zo, solarmotion=solarmotion,projected=projected
     )
 
     if dmax is None:
@@ -256,7 +259,7 @@ def tail_path(
 
 def tail_path_match(
     cluster,
-    dt=0.1,
+    tfinal=0.1,
     no=1000,
     nt=100,
     ntail=100,
@@ -280,8 +283,8 @@ def tail_path_match(
     ----------
     cluster : class
         StarCluster
-    dt : float
-        timestep that StarCluster is to be moved to
+    tfinal : float
+        final time (in cluster.units) to integrate orbit to (default: 0.1 Gyr)
     no : int
         number of timesteps for orbit integration (default:1000)
     nt : int
@@ -327,11 +330,14 @@ def tail_path_match(
     -------
     2018 - Written - Webb (UofT)
     """
+
+    #Legacy inclusion
+    tfinal=kwargs.get('dt',tfinal)
  
     if path is None:
         path = tail_path(
-            cluster, dt=dt, no=no, nt=nt, ntail=ntail, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo,zo=zo,solarmotion=solarmotion,
+            cluster, tfinal=tfinal, no=no, nt=nt, ntail=ntail, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo,zo=zo,solarmotion=solarmotion,
         )
 
-    return orbital_path_match(cluster=cluster,dt=dt,nt=no,pot=pot,path=path,from_centre=from_centre,
+    return orbital_path_match(cluster=cluster,tfinal=tfinal,nt=no,pot=pot,path=path,from_centre=from_centre,
         skypath=skypath,to_path=to_path,do_full=do_full,ro=ro,vo=vo,zo=zo,solarmotion=solarmotion,plot=plot,projected=projected,**kwargs)

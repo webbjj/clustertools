@@ -14,27 +14,33 @@ clustertools can be installed either directly from the GitHub repository or via 
 
 To install clustertools from GitHub, simply clone the repository and install via setup tools:
 
+```
 git clone https://github.com/webbjj/clustertools.git
 cd clustertools
 python setup.py install
+```
 Please note that if you don’t have permission to write files to the default install location (often /usr/local/lib), you will either need to run
-
+```
 sudo python setup.py install
+```
 or
-
+```
 python setup.py install --prefix='PATH'
+```
 where ‘PATH’ is a directory that you do have permission to write in and is in your PYTHONPATH.
 
 It is also possible to install clustertools using pip:
-
+```
 pip install clustertools
+```
 however please note this version is not updated as frequently as the GitHub repository. Similarly, if permissions are an issue, you can use:
-
+```
 pip install --user clustertools
+```
 or
-
+```
 pip install clustertools --install-option="--prefix=PATH"
-
+```
 Note: For users looking to take advantage of the plotting features available in clustertools, it may be necessary to install the cm-super and dvipng packages if they aren't installed by default.
 
 # Requirements

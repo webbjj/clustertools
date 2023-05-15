@@ -26,9 +26,9 @@ from galpy.orbit import Orbit
 from ..util.constants import *
 
 try:
-    from amuse.lab import *
     import amuse.units.units as u
     from amuse.datamodel import Particles
+    from amuse.units.quantities import ScalarQuantity,VectorQuantity
     from ..util.units import _convert_amuse,_convert_length,_convert_velocity
     _hasamuse=True
 except:
@@ -127,11 +127,19 @@ class StarCluster(object):
     ):
 
         # Age of cluster
-        self.tphys = tphys
+        if (ctype == 'amuse' and _hasamuse and units is None) or (units == 'amuse' and _hasamuse) :
+            self.tphys = tphys | u.Myr
+        else:
+            self.tphys = tphys
+
         self.dt = None
 
         # Units and origin
         self.units = units
+
+        if ctype == 'amuse' and _hasamuse and units is None:
+            self.units='amuse'
+
         self.bunits = units
         self.origin = origin
         self.units_init=units
@@ -459,7 +467,7 @@ class StarCluster(object):
         #Check for AMUSE units:
         isamuse=False
 
-        if _hasamuse and (self.units=='amuse' or (self.units is None and self.ctype=='amuse')):
+        if _hasamuse:
             if isinstance(x,VectorQuantity):
                 stars=Particles(len(x))
                 stars.x,stars.y,stars.z=x,y,z
@@ -665,9 +673,9 @@ class StarCluster(object):
             self.vlos = np.append(self.vlos, vz)
 
 
-        if isamuse: 
+        if isamuse and (self.units_init is None or self.units_init == 'amuse'):
             self.to_amuse()
-            self.units_init='amuse'
+
         if analyze: self.analyze(sortstars=sortstars)
 
 
@@ -1445,7 +1453,7 @@ class StarCluster(object):
 
         2020 - Written - Webb (UofT)
         """
-        analyze(self, sortstars = sortstars, projected=projected)
+        self.analyze(sortstars = sortstars, projected=projected)
 
     def key_params(self, do_order=True, projected=True):
         """Call analyze with key_params for backwards compatibility
@@ -1468,7 +1476,7 @@ class StarCluster(object):
         2020 - Written - Webb (UofT)
         """
 
-        analyze(self,sortstars=do_order, projected=projected)
+        self.analyze(sortstars=do_order, projected=projected)
 
 
     def sortstars(self, projected=True):
@@ -2168,77 +2176,9 @@ class StarCluster(object):
             nsigma=nsigma,nsphere=nsphere,density=density,
             rmin=rmin,rmax=rmax,nmax=nmax,method=method,nneighbour=nneighbour)
 
-        if self.origin=='centre':
+        self._set_centre(xc,yc,zc,vxc,vyc,vzc,reset_centre=reset_centre)
 
-            warning=False
-            if xc!=0.0 or yc!=0.0 or zc!=0.0:
-                warning=True
-            if vxc!=0.0 or vyc!=0.0 or vzc!=0.0:
-                warning=True
-
-            if warning:
-                print('Centre is not at origin')
-
-            return xc,yc,zc,vxc,vyc,vzc
-
-        elif self.origin=='cluster':
-            self.xc, self.yc, self.zc = xc,yc,zc
-            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
-            
-            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
-
-        elif self.origin == "galaxy":
-
-            if self.units!='amuse':
-                if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                    self.xgc, self.ygc, self.zgc = xc,yc,zc
-                    self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                    self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                    self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
-
-                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-                else:
-                    self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
-                    self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
-
-            elif self.units=='amuse':
-                if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0. | u.pc ,0. | u.pc,0. | u.pc,0. | u.kms,0. | u.kms ,0. | u.kms) or reset_centre:
-                    self.xgc, self.ygc, self.zgc = xc,yc,zc
-                    self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                    self.xc, self.yc, self.zc = 0.0 | u.pc, 0.0 | u.pc, 0.0 | u.pc
-                    self.vxc, self.vyc, self.vzc = 0.0 | u.kms, 0.0 | u.kms , 0.0 | u.kms
-
-                    return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-     
-                else:
-                    self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
-                    self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
-
-
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
-        elif self.origin=='sky':
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
-
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-
-            else:
-                print('No Cluster Variables Set')
-                return xc,yc,zc,vxc,vyc,vzc
-        elif self.origin is None:
-            self.xc, self.yc, self.zc = xc,yc,zc
-            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
-
-            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
-        else:
-            print('No Cluster Variables Set')
-            return xc,yc,zc,vxc,vyc,vzc
+        return xc,yc,zc,vxc,vyc,vzc
 
     def find_centre_of_density(
         self,
@@ -2308,45 +2248,10 @@ class StarCluster(object):
             ystart=ystart,zstart=zstart,vxstart=vxstart,vystart=vystart,vzstart=vzstart,indx=indx,
             nsphere=nsphere,rmin=rmin,rmax=rmax,nmax=nmax)
 
-        if self.origin=='cluster':
-            self.xc, self.yc, self.zc = xc,yc,zc
-            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+        self._set_centre(xc,yc,zc,vxc,vyc,vzc,reset_centre=reset_centre)
 
-            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+        return xc,yc,zc,vxc,vyc,vzc
 
-
-        elif self.origin == "galaxy":
-
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
-
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-     
-            else:
-                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
-                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
-
-
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
-        elif self.origin=='sky':
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
-
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-            else:
-                print('No Cluster Variables Set')
-                return xc,yc,zc,vxc,vyc,vzc
-
-        else:
-            print('No Cluster Variables Set')
-            return xc,yc,zc,vxc,vyc,vzc
 
     def find_centre_of_mass(self,reset_centre=False):
         """ Find the centre of mass of the cluster
@@ -2367,29 +2272,73 @@ class StarCluster(object):
         """
         xc,yc,zc,vxc,vyc,vzc=find_centre_of_mass(self)
 
-        if self.origin=='cluster':
+        self._set_centre(xc,yc,zc,vxc,vyc,vzc,reset_centre=reset_centre)
+
+        return xc,yc,zc,vxc,vyc,vzc
+
+
+    def _set_centre(self,xc,yc,zc,vxc,vyc,vzc,reset_centre=False):
+        """ Determine what cluster variables need to be set after finding centre
+
+        Parameters
+        ----------
+        cluster : class
+            StarCluster
+        xc,yc,zc,vxc,vyc,vzc : float
+            calculated coordinates of centre of mass       
+
+        Returns
+        -------
+        xc,yc,zc,vxc,vyc,vzc : float
+            coordinates of centre of mass, possible adjusted for cluster origin
+
+        HISTORY
+        -------
+        2023 - Written - Webb (UofT)
+        """
+        if self.origin=='centre':
+
+            warning=False
+            if xc!=0.0 or yc!=0.0 or zc!=0.0:
+                warning=True
+            if vxc!=0.0 or vyc!=0.0 or vzc!=0.0:
+                warning=True
+
+            if warning:
+                print('Centre is not at origin')
+                print('No Cluster Variables Set')
+
+        elif self.origin=='cluster':
             self.xc, self.yc, self.zc = xc,yc,zc
             self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
-
-            return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
-
+            
 
         elif self.origin == "galaxy":
 
-            if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
-                self.xgc, self.ygc, self.zgc = xc,yc,zc
-                self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
-                self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
-                self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+            if self.units!='amuse':
+                if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
+                    self.xgc, self.ygc, self.zgc = xc,yc,zc
+                    self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                    self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
+                    self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
+                elif (self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc)==(xc,yc,zc,vxc,vyc,vzc):
+                    pass
+                else:
+                    self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                    self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
+                
+            elif self.units=='amuse':
+                if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0. | u.pc ,0. | u.pc,0. | u.pc,0. | u.kms,0. | u.kms ,0. | u.kms) or reset_centre:
+                    self.xgc, self.ygc, self.zgc = xc,yc,zc
+                    self.vxgc, self.vygc, self.vzgc = vxc, vyc, vzc
+                    self.xc, self.yc, self.zc = 0.0 | u.pc, 0.0 | u.pc, 0.0 | u.pc
+                    self.vxc, self.vyc, self.vzc = 0.0 | u.kms, 0.0 | u.kms , 0.0 | u.kms
 
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
-     
-            else:
-                self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
-                self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
-
-
-                return self.xc, self.yc, self.zc,self.vxc, self.vyc, self.vzc
+                elif (self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc)==(xc,yc,zc,vxc,vyc,vzc):
+                    pass
+                else:
+                    self.xc,self.yc,self.zc=xc-self.xgc,yc-self.ygc,zc-self.zgc
+                    self.vxc,self.vyc,self.vzc=vxc-self.vxgc,vyc-self.vygc,vzc-self.vzgc
 
         elif self.origin=='sky':
             if (self.xgc, self.ygc, self.zgc, self.vxgc, self.vygc, self.vzgc)==(0.,0.,0.,0.,0.,0.) or reset_centre:
@@ -2398,13 +2347,18 @@ class StarCluster(object):
                 self.xc, self.yc, self.zc = 0.0, 0.0, 0.0
                 self.vxc, self.vyc, self.vzc = 0.0, 0.0, 0.0
 
-                return self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc
+            elif (self.xgc, self.ygc, self.zgc,self.vxgc, self.vygc, self.vzgc)==(xc,yc,zc,vxc,vyc,vzc):
+                pass
+
             else:
                 print('No Cluster Variables Set')
-                return xc,yc,zc,vxc,vyc,vzc
+
+        elif self.origin is None:
+            self.xc, self.yc, self.zc = xc,yc,zc
+            self.vxc, self.vyc, self.vzc = vxc,vyc,vzc
+
         else:
             print('No Cluster Variables Set')
-            return xc,yc,zc,vxc,vyc,vzc
 
     def relaxation_time(self, rad=None, coulomb=0.4, projected=None,method='spitzer'):
         """Calculate the relaxation time (Spitzer & Hart 1971) within a given radius of the cluster

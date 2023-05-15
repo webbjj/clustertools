@@ -579,10 +579,13 @@ def half_mass_relaxation_time(cluster, coulomb=0.4, projected=False):
     # Units of Myr
     trh*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
 
+    print(mass,rm,mbar,grav,lnlambda,trh)
+
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     trh=_convert_time(trh,'pckms',cluster)
 
+    print(mass,rm,mbar,grav,lnlambda,trh)
 
     return trh
 
@@ -940,18 +943,28 @@ def closest_star(cluster, projected=False, argument=False):
        2019 - Written - Webb (UofT)
     """
 
-    if projected:
+    if cluster.units=='radec' and cluster.origin=='sky':
+
         x=np.column_stack([cluster.x,cluster.y])
-    else:
-        x=np.column_stack([cluster.x,cluster.y,cluster.z])
+        tree=cKDTree(x)
+        dist, arg = tree.query(x, k=5)
 
-    tree=cKDTree(x)
-    dist, arg = tree.query(x, k=2)
+        
 
-    if argument:
-        return dist[:,1],arg[:,1]
     else:
-        return dist[:,1]
+
+        if projected:
+            x=np.column_stack([cluster.x,cluster.y])
+        else:
+            x=np.column_stack([cluster.x,cluster.y,cluster.z])
+
+        tree=cKDTree(x)
+        dist, arg = tree.query(x, k=2)
+
+        if argument:
+            return dist[:,1],arg[:,1]
+        else:
+            return dist[:,1]
 
 def rlagrange(cluster, nlagrange=10, mfrac=None, projected=False):
     """Calculate lagrange radii of the cluster by mass
@@ -1474,7 +1487,7 @@ def mass_function(
 
         if plot:
             filename = kwargs.get("filename", None)
-            _plot(m_mean, np.log10(dm), xlabel="M", ylabel="LOG(dN/dM)",**kwargs)
+            _plot(m_mean, np.log10(dm), xlabel="M", ylabel=r"$\log_{10} \ dN/dM$",**kwargs)
             mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
             dmfit = 10.0 ** (alpha * np.log10(mfit) + yalpha)
             _lplot(
@@ -1862,7 +1875,7 @@ def eta_function(
 
         if plot:
             filename = kwargs.get("filename", None)
-            _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$\log_{10} \\ \sigma_v$", **kwargs)
+            _plot(m_mean, np.log10(sigvm), xlabel="M", ylabel=r"$ \log_{10} \ \sigma_v$", **kwargs)
             mfit = np.linspace(np.min(m_mean), np.max(m_mean), nmass)
 
             if meq:
@@ -2343,6 +2356,12 @@ def rcore(
             else:
                 yunits = " Msun/pc^3"
 
+        elif cluster.units=='radec'
+            xunits = " (deg)"
+            if projected:
+                yunits = " Msun/deg^2"
+            else:
+                yunits = " Msun/deg^3"
         else:
             xunits = ""
             yunits = ""

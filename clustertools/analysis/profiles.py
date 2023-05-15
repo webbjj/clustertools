@@ -640,7 +640,7 @@ def alpha_prof(
         else:
             xlabel=r"$\ln(r)$"
 
-        _plot(
+        _lplot(
             np.log(rprofn),
             aprof,
             xlabel=xlabel,
@@ -881,7 +881,7 @@ def sigv_prof(
         else:
             xlabel=r"$r$"
 
-        _plot(
+        _lplot(
             rprofn,
             sigvprof,
             xlabel=xlabel,
@@ -1304,7 +1304,7 @@ def v_prof(
         else:
             xlabel=r"$r$"
 
-        _plot(
+        _lplot(
             rprofn,
             vprof,
             xlabel=xlabel,
@@ -1519,7 +1519,7 @@ def v2_prof(
         else:
             xlabel=r"$r$"
 
-        _plot(
+        _lplot(
             rprofn,
             vprof,
             xlabel=xlabel,
@@ -1739,7 +1739,7 @@ def eta_prof(
             ylabel=r"$\eta$"
 
 
-        _plot(
+        _lplot(
             np.log(rprofn),
             eprof,
             xlabel=xlabel,

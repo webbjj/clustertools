@@ -17,6 +17,7 @@ except:
 
 try:
 	import amuse.units.units as u
+    from amuse.units.quantities import ScalarQuantity,VectorQuantity
 	noamuse=False
 except:
 	noamuse=True

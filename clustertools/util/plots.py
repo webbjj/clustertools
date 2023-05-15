@@ -618,6 +618,11 @@ def starplot(
     2018 - Written - Webb (UofT)
     """
 
+    units0=cluster.units
+
+    if units0=='amuse':
+        cluster.to_pckms()
+
     alpha = kwargs.pop("alpha", 0.1)
 
     if coords != "xyz":
@@ -754,6 +759,9 @@ def starplot(
 
         plt.tight_layout()
 
+        if units0=='amuse':
+            cluster.to_amuse()
+
         if filename != None:
             plt.savefig(filename)
             return 0
@@ -837,8 +845,6 @@ def skyplot(
             xgc, ygc = cluster.ra_gc, cluster.dec_gc
             plt.plot(xgc, ygc, ".", alpha=1.0, label="COM", **kwargs)
 
-        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
-
         if coords == "radec":
             plt.xlabel("Ra (degree)")
             plt.ylabel("Dec (degree)")
@@ -857,5 +863,7 @@ def skyplot(
 
         if filename != None:
             plt.savefig(filename)
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
         return out

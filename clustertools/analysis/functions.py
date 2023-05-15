@@ -2356,7 +2356,7 @@ def rcore(
             else:
                 yunits = " Msun/pc^3"
 
-        elif cluster.units=='radec'
+        elif cluster.units=='radec':
             xunits = " (deg)"
             if projected:
                 yunits = " Msun/deg^2"

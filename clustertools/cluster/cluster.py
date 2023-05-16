@@ -128,22 +128,26 @@ class StarCluster(object):
 
         # Age of cluster
         if (ctype == 'amuse' and _hasamuse and units is None) or (units == 'amuse' and _hasamuse) :
-            self.tphys = tphys | u.Myr
+            if isinstance(tphys,ScalarQuantity):
+                self.tphys=tphys
+            else:
+                self.tphys = tphys | u.Myr
         else:
             self.tphys = tphys
 
         self.dt = None
 
         # Units and origin
-        self.units = units
 
         if ctype == 'amuse' and _hasamuse and units is None:
             self.units='amuse'
+        else:
+            self.units = units
 
         self.bunits = units
         self.origin = origin
-        self.units_init=units
-        self.origin_init=origin
+        self.units_init=self.units
+        self.origin_init=self.origin
 
         # Cluster Simulation Type
         self.ctype = ctype

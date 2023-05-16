@@ -456,6 +456,8 @@ def test_from_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
 
 		init=[t.value_in(u.Myr),m.value_in(u.MSun),x.value_in(u.parsec),y.value_in(u.parsec),z.value_in(u.parsec),vx.value_in(u.kms),vy.value_in(u.kms),vz.value_in(u.kms),xc.value_in(u.parsec),yc.value_in(u.parsec),zc.value_in(u.parsec),vxc.value_in(u.kms),vyc.value_in(u.kms),vzc.value_in(u.kms),xgc.value_in(u.parsec),ygc.value_in(u.parsec),zgc.value_in(u.parsec),vxgc.value_in(u.kms),vygc.value_in(u.kms),vzgc.value_in(u.kms)]
 
+		print('INIT: ',cluster.tphys,cluster.units)
+
 		if i==0:
 			cluster.to_pckms()
 		elif i==1:
@@ -472,6 +474,10 @@ def test_from_amuse(tol=0.01,ro=solar_ro,vo=solar_vo):
 			cluster.to_kpcgyr()
 
 		final=[cluster.tphys,cluster.m,cluster.x,cluster.y,cluster.z,cluster.vx,cluster.vy,cluster.vz,cluster.xc,cluster.yc,cluster.zc,cluster.vxc,cluster.vyc,cluster.vzc,cluster.xgc,cluster.ygc,cluster.zgc,cluster.vxgc,cluster.vygc,cluster.vzgc]
+
+		print('INTIT:',t)
+		print('FINAL: ',cluster.tphys,cluster.units)
+		print(i)
 
 		scale_test(final,init,tscales[i],mscales[i],xscales[i],vscales[i])
 

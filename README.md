@@ -50,3 +50,17 @@ numba
 Optional:
 limepy (https://readthedocs.org/projects/limepy/)
 AMUSE (https://amuse.readthedocs.io/en/latest/)
+
+#JOSS Publication
+
+Markdown:
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.04483/status.svg)](https://doi.org/10.21105/joss.04483)
+
+HTML:
+<a style="border-width:0" href="https://doi.org/10.21105/joss.04483">
+  <img src="https://joss.theoj.org/papers/10.21105/joss.04483/status.svg" alt="DOI badge" >
+</a>
+
+reStructuredText:
+.. image:: https://joss.theoj.org/papers/10.21105/joss.04483/status.svg
+   :target: https://doi.org/10.21105/joss.04483

@@ -75,7 +75,7 @@ Example Notebooks
 Acknowledging clustertools
 --------------------------
 
-If you use ``clustertools`` in a publiclication, please cite the corresponding publication in the Journal of Open Source Software (JOSS) via the following digital object identifier (DOI):
+If you use ``clustertools`` in a publiclication, please cite the corresponding publication in the Journal of Open Source Software (JOSS):
 
 Markdown:
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04483/status.svg)](https://doi.org/10.21105/joss.04483)
@@ -89,10 +89,12 @@ reStructuredText:
 .. image:: https://joss.theoj.org/papers/10.21105/joss.04483/status.svg
    :target: https://doi.org/10.21105/joss.04483
 
-..
-   .. image:: https://zenodo.org/badge/272233602.svg
-..
-   :target: https://zenodo.org/badge/latestdoi/272233602
+
+,the Zenodo DOI:
+
+.. image:: https://zenodo.org/badge/272233602.svg
+
+:target: https://zenodo.org/badge/latestdoi/272233602
 
 and link to ``https://github.com/webbjj/clustertools``. 
 

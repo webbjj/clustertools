@@ -24,19 +24,9 @@ Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 
 `NEMO <https://astronemo.readthedocs.io/en/latest/>`_ (Teuben P., 1995, The Stellar Dynamics Toolbox NEMO. p. 398)
 
-Version 1.0 (May 6, 2022)
+Version 1.1 (May 18, 2023)
 -----------------
-Thanks to anyone that has been using ``clustertools`` while it was in devlopment. I am happy to announce that Version 1.0 has now officially been released.  A couple of minor changes that are worth noting include:
-
--- For consistancy purposes, all profile calls now return the true values of the radial bins and the calculated value. Pre-Version 1.0, some profile calls returned the natual logarithm of one (or both) values, and sometimes normalized by the cluster's effective radius. Any other returned values are returned as per their definition. For example, ``delta_alpha`` is still calculated as d(alpha)/d(ln(r/r_m)) even though calling ``alpha_prof`` returns ``r`` and ``alpha``.
-
--- ``load_cluster`` now requires ``units`` and ``origin`` to be set, with the exception of when ``ctype=nbody6`` or ``ctype=nbody6pp``. No assumptions are made regarding the format of incoming data
-
--- The ``setup_cluster`` function has been deprecated. You can now initialize a Galactic cluster using ``load_cluster(ctype='limepy',gcname='Pal5')``. If you wish to initialize a cluster with a specific lowered isothermal model, you must do so in ``limepy`` first and then call ``load_cluster`` accordingly.
-
--- Previously when centreing the cluster to orthonormal coordinates, positions were in radians and velocities were converted to radians/year, but not actually moved to the cluster's centre. Positions are now returned to degrees and velocities remain in mas/yr. Furthermore the velocities are shifted to be relative to the cluster's centre
-
-The above changes were made to ensure consistency accross ``clustertools``. Now that Version 1.0 is official, I will work to ensure that any future changes will be compatabile with past versions of ``clustertools``.
+Thanks to anyone that has been using ``clustertools`` while it was in devlopment. I am happy to announce that Version 1.1 has now officially been released and the code has been published in JOSS. Thanks to the reviewers, Steven Rieder and Long Wang, for helpful feedback.
 
 Guide
 -----------------

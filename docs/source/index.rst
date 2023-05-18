@@ -77,18 +77,10 @@ Acknowledging clustertools
 
 If you use ``clustertools`` in a publiclication, please cite the corresponding publication in the Journal of Open Source Software (JOSS):
 
-Markdown:
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.04483/status.svg)](https://doi.org/10.21105/joss.04483)
+Webb, J. J., (2023). clustertools: A Python Package for Analyzing Star Cluster Simulations. Journal of Open Source Software, 8(85), 4483, https://doi.org/10.21105/joss.04483
 
-HTML:
-<a style="border-width:0" href="https://doi.org/10.21105/joss.04483">
-  <img src="https://joss.theoj.org/papers/10.21105/joss.04483/status.svg" alt="DOI badge" >
-</a>
-
-reStructuredText:
 .. image:: https://joss.theoj.org/papers/10.21105/joss.04483/status.svg
-   :target: https://doi.org/10.21105/joss.04483
-
+:target: https://doi.org/10.21105/joss.04483
 
 ,the Zenodo DOI:
 

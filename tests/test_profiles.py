@@ -6,7 +6,11 @@ import numpy as np
 from galpy.orbit import Orbit
 from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
-from galpy.util import bovy_conversion
+
+try:
+	from galpy.util import conversion
+except:
+	import galpy.util.bovy_conversion as conversion
 
 solar_motion=[-11.1,12.24,7.25] #Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829
 solar_ro=8.275 #Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59

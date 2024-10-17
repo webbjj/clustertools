@@ -600,6 +600,13 @@ def test_astropy_table():
 	cluster = ctools.load_cluster('astropy_table',particles=data, units='kpckms',origin='galaxy')
 	assert check_params(cluster,'astropy_table','kpckms','galaxy',False)
 
+def test_astropy_table_com():
+	wdir='../docs/source/notebooks/'
+	data = QTable.read("%spal5_rp.dat" % wdir, format="ascii")
+	cluster = ctools.load_cluster('astropy_table',particles=data, units='kpckms',origin='galaxy',cm={"m":"mass","x":"x","y":"y","z":"z","vx":"vx","xy":"vy","vz":"vz"})
+	assert check_params(cluster,'astropy_table','kpckms','galaxy',False)
+
+
 def test_mcluster(tol=0.2):
 	wdir='../docs/source/notebooks/'
 	rvirp=1.20395

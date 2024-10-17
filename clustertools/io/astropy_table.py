@@ -128,7 +128,7 @@ def _get_astropy_table(
         y = table[cm.pop("y")]
         z = table[cm.pop("z")]
         vx = table[cm.pop("vx")]
-        vy = table[cm.pop("xy")]
+        vy = table[cm.pop("vy")]
         vz = table[cm.pop("vz")]
 
         m = table[cm.pop("m")] if "m" in cm else None

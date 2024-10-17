@@ -8,7 +8,6 @@ import numpy as np
 from galpy.orbit import Orbit
 from galpy.potential import NFWPotential,MWPotential2014,rtide,evaluateDensities
 from galpy.df import isotropicNFWdf
-from galpy.util import bovy_conversion
 
 try:
     from galpy.util import coords,conversion

@@ -440,7 +440,7 @@ def test_virial_radius(tol=0.01):
 	#Generate GALPY NFW Halo and calculate virial radius via critical density method
 	mhalo=2562109.8143978487
 	chalo=24.31377803
-	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
+	mo=conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
 	nfw=NFWPotential(mvir=mhalo/1e12,conc=chalo,wrtcrit=True,ro=solar_ro,vo=solar_vo)
 	rvnfw=nfw.rvir(wrtcrit=True,ro=solar_ro,vo=solar_vo)
@@ -615,7 +615,7 @@ def test_rcore(tol=0.1):
 
 def test_rtide(tol=0.1):
 	#test rtide is the same as galpy calculates
-	mo=bovy_conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
+	mo=conversion.mass_in_msol(ro=solar_ro,vo=solar_vo)
 
 	cluster=ctools.load_cluster(ctype='snapshot',filename='ngc6101_pckms_cluster.dat',units='pckms',origin='cluster')
 	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)	
@@ -635,7 +635,7 @@ def test_rlimiting(tol=0.1):
 	cluster.add_orbit(-2005.2100994789871, -9348.1814843660959, -3945.4681762489472, -296.18121334354328, 82.774301940161507, -190.84753679996979)
 
 	ro,vo,zo,solarmotion=cluster._ro,cluster._vo,cluster._zo,cluster._solarmotion
-	mo=bovy_conversion.mass_in_msol(ro=ro,vo=vo)
+	mo=conversion.mass_in_msol(ro=ro,vo=vo)
 
 	m=cluster.mtot
 	Rgc=np.sqrt(cluster.xgc**2.+cluster.ygc**2.)/1000.

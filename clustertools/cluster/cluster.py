@@ -445,6 +445,7 @@ class StarCluster(object):
         nfloat=np.zeros(len(params),dtype=bool)
         npmax=0
         for i,p in enumerate(params):
+            print(i,p,p is None,type(p))
             if p is not None:
                 if _hasamuse:
                     if isinstance(p,ScalarQuantity):

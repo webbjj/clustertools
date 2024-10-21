@@ -134,11 +134,19 @@ def _get_astropy_table(
         m = table[cm.pop("m")] if "m" in cm else None
         ID = table[cm.pop("id")] if "id" in cm else None
 
+
     cluster = StarCluster(
         0., units=units, origin=origin, ctype='astropy_table', **kwargs
     )
 
-    cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), np.array(m), np.array(ID), sortstars=False)
+    if m is None and ID is None:
+        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), m, ID, sortstars=False)
+    elif m is None:
+        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), m, np.array(ID), sortstars=False)
+    elif ID is None:
+        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), np.array(m), ID, sortstars=False)
+    else:
+        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), np.array(m), np.array(ID),sortstars=False)
 
     if origin == "galaxy":
         if ofile == None:

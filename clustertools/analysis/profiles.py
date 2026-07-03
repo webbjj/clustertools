@@ -113,9 +113,6 @@ def rho_prof(
     elif normalize:
         cluster.sortstars()
 
-    rprof = np.array([])
-    pprof = np.array([])
-    nprof = np.array([])
 
     if projected:
         r = cluster.rpro
@@ -124,41 +121,6 @@ def rho_prof(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw)>0:
-        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-    """
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if bins is not None:
@@ -169,16 +131,22 @@ def rho_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
+
+    rprof = r_mean
+    pprof = np.zeros(len(r_mean))
+    nprof = np.zeros(len(r_mean))
+
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
-        rprof = np.append(rprof, r_mean[i])
+        rindx = indx * (bin_idx==i)
+
         if projected:
             vol = np.pi * (r_upper[i] ** 2 - r_lower[i] ** 2.0)
         else:
             vol = (4.0 / 3.0) * np.pi * (r_upper[i] ** 3 - r_lower[i] ** 3.0)
 
-        pprof = np.append(pprof, np.sum(cluster.m[rindx] / vol))
-        nprof = np.append(nprof, np.sum(rindx))
+        pprof[i] = np.sum(cluster.m[rindx] / vol)
+        nprof[i] = np.sum(rindx)
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -343,42 +311,6 @@ def m_prof(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw)>0:
-        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-    """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if bins is not None:
@@ -389,15 +321,20 @@ def m_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
+
+    rprof = r_mean
+    mprof = np.zeros(len(r_mean))
+    nprof = np.zeros(len(r_mean))
+
     for i in range(0, len(r_mean)):
         if cumulative:
-            rindx = indx * (r < r_upper[i])
+            rindx = indx * (bin_idx<=i)
         else:
-            rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
-        rprof=np.append(rprof,r_mean[i])
+            rindx = indx * (bin_idx==i)
 
-        mprof=np.append(mprof,np.sum(cluster.m[rindx]))
-        nprof=np.append(nprof,np.sum(rindx))
+        mprof[i]=np.sum(cluster.m[rindx])
+        nprof[i]=np.sum(rindx)
 
     if plot:
         filename = kwargs.pop("filename", None)
@@ -419,10 +356,11 @@ def m_prof(
             xunits = ""
             yunits = ""
 
+        x, y, n = rprof, mprof, nprof
+
         if normalize:
             x/=cluster.rm
 
-        x, y, n = rprof, mprof, nprof
         _lplot(
             x,
             y,
@@ -579,8 +517,10 @@ def alpha_prof(
         r_hist=np.zeros(len(r_mean))
         r_mean=np.zeros(len(r_mean))
 
+        bin_idx=bin_index(r,r_lower,r_upper)
+
         for i in range(0,len(r_lower)):
-            rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+            rindx = indx * (bin_idx==i)
             r_mean[i]=np.mean(r[rindx])
             r_hist[i]=np.sum(rindx)
 
@@ -588,6 +528,8 @@ def alpha_prof(
         r_lower, r_mean, r_upper, r_hist = binmaker(r[indx], nrad)
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
+
+    bin_idx = bin_index(r,r_lower,r_upper)
 
     rbinerror=np.zeros(len(r_mean))
     rprofn=np.zeros(len(r_mean))
@@ -603,8 +545,7 @@ def alpha_prof(
         rprofn=r_mean
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
-
+        rindx = indx * (bin_idx==i)
 
         if return_error:
             m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror = mass_function(cluster,nmass=nmass,indx=rindx,projected=projected,mcorr=mcorr,plot=False,**kwargs)
@@ -618,13 +559,21 @@ def alpha_prof(
             eaprof[i]=ealpha
 
     if len(rprofn) > 3:
-        if projected:
-            (dalpha, ydalpha), V = np.polyfit(np.log(r_mean/cluster.rmpro), aprof, 1, cov=True)
-        else:
-            (dalpha, ydalpha), V = np.polyfit(np.log(r_mean/cluster.rm), aprof, 1, cov=True)
 
-        edalpha = np.sqrt(V[0][0])
-        eydalpha = np.sqrt(V[1][1])
+        try:
+            if projected:
+                (dalpha, ydalpha), V = np.polyfit(np.log(r_mean/cluster.rmpro), aprof, 1, cov=True)
+            else:
+                (dalpha, ydalpha), V = np.polyfit(np.log(r_mean/cluster.rm), aprof, 1, cov=True)
+
+            edalpha = np.sqrt(V[0][0])
+            eydalpha = np.sqrt(V[1][1])
+        except:
+            print('ERROR: POLYFIT DID NOT CONVERGE WHEN FINDING DALPHA')
+            dalpha = -100.0
+            ydalpha = 0.0
+            edalpha = 0.0
+            eydalpha = 0.0            
     else:
         dalpha = -100.0
         ydalpha = 0.0
@@ -847,6 +796,8 @@ def sigv_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
+
     if normalize:
         if projected:
             rprofn=r_mean / cluster.rmpro
@@ -859,7 +810,7 @@ def sigv_prof(
 
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        rindx = indx * (bin_idx==i)
         if bins is not None: r_hist[i]=np.sum(rindx)
 
         if np.sum(rindx) > 3.0:
@@ -1033,6 +984,8 @@ def beta_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
+
     if normalize:
         if projected:
             rprofn=r_mean / cluster.rmpro
@@ -1044,7 +997,7 @@ def beta_prof(
     betaprof=np.zeros(len(rprofn))
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        rindx = indx * (bin_idx==i)
         if bins is not None: r_hist[i]=np.sum(rindx)
 
         if np.sum(rindx) > 3.0:
@@ -1272,6 +1225,7 @@ def v_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
 
     if normalize:
         if projected:
@@ -1284,7 +1238,7 @@ def v_prof(
     vprof=np.zeros(len(rprofn))
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        rindx = indx * (bin_idx==i)
 
         if np.sum(rindx) > 3.0:
 
@@ -1488,6 +1442,8 @@ def v2_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
+
     if normalize:
         if projected:
             rprofn=r_mean / cluster.rmpro
@@ -1499,7 +1455,7 @@ def v2_prof(
     vprof=np.zeros(len(rprofn))
 
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
+        rindx = indx * (bin_idx==i)
 
         if np.sum(rindx) > 3.0:
 

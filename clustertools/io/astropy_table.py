@@ -120,8 +120,8 @@ def _get_astropy_table(
             z = _helper("z", to="z", optional=False)
             # velocities
             vx = _helper("v_x", "vx", to="vx", optional=False)
-            vy = _helper("v_x", "vy", to="vy", optional=False)
-            vz = _helper("v_x", "vz", to="vz", optional=False)
+            vy = _helper("v_y", "vy", to="vy", optional=False)
+            vz = _helper("v_z", "vz", to="vz", optional=False)
 
     else:  # column_mapper not None
         x = table[cm.pop("x")]
@@ -139,14 +139,17 @@ def _get_astropy_table(
         0., units=units, origin=origin, ctype='astropy_table', **kwargs
     )
 
-    if m is None and ID is None:
-        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), m, ID, sortstars=False)
-    elif m is None:
-        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), m, np.array(ID), sortstars=False)
-    elif ID is None:
-        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), np.array(m), ID, sortstars=False)
-    else:
-        cluster.add_stars(np.array(x), np.array(y), np.array(z), np.array(vx), np.array(vy), np.array(vz), np.array(m), np.array(ID),sortstars=False)
+    cluster.add_stars(
+        np.array(x),  # TODO: correct unit handling
+        np.array(y),
+        np.array(z),
+        np.array(vx),
+        np.array(vy),
+        np.array(vz),
+        np.array(m) if m is not None else None,
+        np.array(ID) if ID is not None else None,
+        sortstars=False
+    )
 
     if origin == "galaxy":
         if ofile == None:

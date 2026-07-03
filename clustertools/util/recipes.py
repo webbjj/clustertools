@@ -16,6 +16,7 @@ __all__ = [
     "interpolate",
     "minimum_distance",
     "distance",
+    "bin_index",
 ]
 
 import numpy as np
@@ -60,32 +61,23 @@ def nbinmaker(x, nbin=10, nsum=False):
 
     xorder = np.argsort(x)
 
-    x_lower = np.array([])
-    x_upper = np.array([])
-    x_hist = np.array([])
-    x_sum = np.array([])
-    x_mid = np.array([])
 
-    for i in range(0, nbin):
-        indx = int(float(i) * float(len(x)) / float(nbin))
-        x_lower = np.append(x_lower, x[xorder[indx]])
+    #get bins based on values of x
+    cut_idx = (np.arange(nbin) * len(x) / nbin).astype(int)
+    x_lower = x[xorder[cut_idx]]
 
     x_upper=x_lower[1:]
     x_upper=np.append(x_upper,np.amax(x))
 
+    #Degenerate Bin Check
     indx = x_lower != x_upper
     x_lower = x_lower[indx]
     x_upper = x_upper[indx]
 
-    for i in range(0, np.sum(indx)):
-        if i<np.sum(indx)-1:
-            xindx = (x >= x_lower[i]) * (x < x_upper[i])
-        else:
-            xindx = (x >= x_lower[i])
-
-        x_hist = np.append(x_hist, np.sum(xindx))
-        x_sum = np.append(x_sum, np.sum(x[xindx]))
-        x_mid = np.append(x_mid, x_sum[i] / x_hist[i])
+    bin_idx = bin_index(x, x_lower, x_upper)
+    x_hist = np.bincount(bin_idx, minlength=len(x_lower)).astype(float)
+    x_sum = np.bincount(bin_idx, weights=x, minlength=len(x_lower))
+    x_mid = x_sum / x_hist
 
     if nsum:
         return x_lower, x_mid, x_upper, x_hist, x_sum
@@ -377,10 +369,8 @@ def dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upper=None,
         else:
             x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
     else:
-        x_hist=np.array([])
-        for i in range(0, len(x_lower)):
-            indx = (x >= x_lower[i]) * (x < x_upper[i])
-            x_hist = np.append(x_hist, np.sum(indx))
+        bin_idx = bin_index(x,x_lower,x_upper)
+        x_hist = np.bincount(bin_idx, minlength=len(x_lower)).astype(float)
 
     dx = x_hist / (x_upper - x_lower)
     indx=dx>0
@@ -451,10 +441,8 @@ def tapered_dx_function(x, nx=10, bintype="num", x_lower=None, x_mean=None,x_upp
         else:
             x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
     else:
-        x_hist=np.array([])
-        for i in range(0, len(x_lower)):
-            indx = (x >= x_lower[i]) * (x < x_upper[i])
-            x_hist = np.append(x_hist, np.sum(indx))
+        bin_idx = bin_index(x,x_lower,x_upper)
+        x_hist = np.bincount(bin_idx, minlength=len(x_lower)).astype(float)
 
     dx = x_hist / (x_upper - x_lower)
     indx=dx>0
@@ -531,10 +519,8 @@ def x_hist(x, nx=10, bintype="num", bins=False, x_lower=None, x_mean=None,x_uppe
         else:
             x_lower, x_mean, x_upper, x_hist = binmaker(x, nx)
     else:
-        x_hist=np.array([])
-        for i in range(0, len(x_lower)):
-            indx = (x >= x_lower[i]) * (x < x_upper[i])
-            x_hist = np.append(x_hist, np.sum(indx))
+        bin_idx = bin_index(x,x_lower,x_upper)
+        x_hist = np.bincount(bin_idx, minlength=len(x_lower)).astype(float)
 
     if bins:
         return x_lower,x_mean,x_upper,x_hist
@@ -580,17 +566,16 @@ def mean_prof(x, y, nbin=10, bintype="num", steptype="linear", median=False, x_l
             x_lower, x_mid, x_upper, x_hist = binmaker(x, nbin, steptype=steptype)
     else:
         x_mid=x_mean
-        x_hist=np.array([])
-        for i in range(0, len(x_lower)):
-            indx = (x >= x_lower[i]) * (x < x_upper[i])
-            x_hist = np.append(x_hist, np.sum(indx))
+
+    bin_idx = bin_index(x,x_lower,x_upper)
+    x_hist = np.bincount(bin_idx, minlength=len(x_lower)).astype(float)
 
     y_bin = []
     y_sig = []
     x_bin = []
 
     for i in range(0, len(x_lower)):
-        indx = (x >= x_lower[i]) * (x < x_upper[i])
+        indx = bin_idx == i
 
         if True in indx:
             x_bin = np.append(x_bin, x_mid[i])
@@ -663,8 +648,11 @@ def smooth(x, y, dx, bintype="num", median=False):
     y_max = []
     y_min = []
 
+    bin_idx = bin_index(x,x_lower,x_upper)
+
+
     for i in range(0, nbin):
-        indx = (x >= x_lower[i]) * (x < x_upper[i])
+        indx = (bin_idx==i)
 
         if True in indx:
             x_bin = np.append(x_bin, x_mid[i])
@@ -795,3 +783,26 @@ def distance(x1, x2):
     r = (dx * dx + dy * dy + dz * dz) ** 0.5
 
     return r
+
+def bin_index(x, x_lower, x_upper):
+    """determine what bin each value of x is located
+
+    Parameters
+    ----------
+    x : float
+      array of values
+    x_lower : float
+      array of lower bin limits
+    x_upper : float
+      array of upper bin limits
+
+    Returns
+    -------
+    bin_indx : int
+      integers that match each x point to a bin
+    """
+
+    bin_indx = np.searchsorted(x_upper, x, side="right")
+    bin_indx = np.minimum(bin_indx, len(x_upper) - 1)
+
+    return bin_indx

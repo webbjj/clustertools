@@ -53,5 +53,7 @@ smooth=recipes.smooth
 interpolate=recipes.interpolate
 minimum_distance=recipes.minimum_distance
 distance=recipes.distance
+bin_index=recipes.bin_index
+
 #
 # Classes

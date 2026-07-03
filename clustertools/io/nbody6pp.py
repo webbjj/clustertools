@@ -58,7 +58,7 @@ def _get_nbody6pp(conf3, bev82=None, sev83=None, snap40=None, ofile=None, advanc
     initialize = kwargs.get("initialize", False)
     nsnap = kwargs.pop("nsnap", 0)
     wdir = kwargs.get("wdir", "")
-    if wdir is not "":
+    if wdir != "":
         if wdir[-1] != '/':
             wdir+='/'
     snapdir = kwargs.get("snapdir", "")

@@ -81,6 +81,7 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
     2019 - Written - Webb (UofT)
     """
 
+
     gcname=kwargs.pop("gcname",None)
     model=kwargs.pop("model",None)
     citation=kwargs.pop("citation",True)
@@ -105,38 +106,40 @@ def _get_limepy(units="pckms", origin="cluster", orbit=None, ofile=None, advance
         if cluster.origin!=origin:
             cluster.to_origin(origin)
 
-    cluster.ctype='limepy'
+    if cluster.ntot>0:
 
-    # Add galpy orbit if given
-    if orbit != None:
-        cluster.orbit = orbit
-        t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=solar_ro, vo=solar_vo)
-        cluster.add_orbit(
-            orbit.x(t),
-            orbit.y(t),
-            orbit.z(t),
-            orbit.vx(t),
-            orbit.vy(t),
-            orbit.vz(t),
-            "kpckms",
-        )
+        cluster.ctype='limepy'
 
-    elif ofile != None:
-        _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
+        # Add galpy orbit if given
+        if orbit != None:
+            cluster.orbit = orbit
+            t = (cluster.tphys / 1000.0) / conversion.time_in_Gyr(ro=solar_ro, vo=solar_vo)
+            cluster.add_orbit(
+                orbit.x(t),
+                orbit.y(t),
+                orbit.z(t),
+                orbit.vx(t),
+                orbit.vy(t),
+                orbit.vz(t),
+                "kpckms",
+            )
 
-    if origin=='galaxy':
-        cluster.to_galaxy()
+        elif ofile != None:
+            _get_cluster_orbit(cluster, ofile, advance=advance, **kwargs)
 
-    cluster.analyze(sortstars=True)
+        if origin=='galaxy':
+            cluster.to_galaxy()
 
-    if gcname is not None and citation: 
-        print('LOAD_CLUSTER MADE USE OF:')
-        print("Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576")
-        print("Vasiliev E., 2019, MNRAS, 484,2832 ")
-        if source=="default":
-            print("de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906")
-        else:
-            print("Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487")
+        cluster.analyze(sortstars=True)
+
+        if gcname is not None and citation: 
+            print('LOAD_CLUSTER MADE USE OF:')
+            print("Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576")
+            print("Vasiliev E., 2019, MNRAS, 484,2832 ")
+            if source=="default":
+                print("de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906")
+            else:
+                print("Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487")
 
     return cluster
 
@@ -753,10 +756,25 @@ def _get_cluster(gcname, source="default", mbar=1., params=False, **kwargs):
     rm_list = []
 
     gcname = gcname.upper()
+
+
     if (
         source == "default" or "deboer" in source or "deBoer" in source
     ) and gcname in dname:
         cluster = _get_deBoer_cluster(ddata, gcname, mbar, **kwargs)
+    elif (
+        source == "default" or "deboer" in source or "deBoer" in source
+    ) and gcname not in dname:
+        if gcname in hname:
+            indx = hname == gcname
+            i_d = np.argwhere(indx == True).flatten()[0]
+            cluster = _get_deBoer_cluster(ddata, hname2[i_d], mbar, **kwargs)
+        elif gcname in hname2:
+            indx = hname2 == gcname
+            i_d = np.argwhere(indx == True).flatten()[0]
+            cluster = _get_deBoer_cluster(ddata, hname[i_d], mbar, **kwargs)
+
+
     elif (source == "default" or "harris" in source or "Harris" in source) and (
         gcname in hname or gcname in hname2
     ):
@@ -766,6 +784,7 @@ def _get_cluster(gcname, source="default", mbar=1., params=False, **kwargs):
         print(dname)
         print(hname)
         print(hname2)
+        cluster=StarCluster()
         
     return cluster
 
@@ -798,7 +817,7 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4, **kwargs):
     name = data[:, 0]
 
     indx = name == gcname
-    i_d = np.argwhere(indx == True)[0]
+    i_d = np.argwhere(indx == True).flatten()[0]
 
     if spes:
         # W_pe e_W_pe eta_pe e_eta_pe log1minB_pe e_log1minB_pe rt_pe e_rt_pe M_pe e_M_pe log_fpe e_log_fpe
@@ -818,7 +837,7 @@ def _get_deBoer_cluster(data, gcname, mbar=0.4, **kwargs):
         g_lime = data[i_d, 3].astype(float)
         rt_lime = data[i_d, 5].astype(float)
         M_lime = data[i_d, 7].astype(float)
-        N = M_lime / mbar
+        N = int(M_lime / mbar)
 
         cluster = _sample_limepy(g=g_lime, phi0=W_lime, M=M_lime, rt=rt_lime, N=N)
 
@@ -872,7 +891,7 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
     name2 = data[:, 1]
 
     indx = np.logical_or(np.in1d(name, gcname), np.in1d(name2, gcname))
-    i_d = np.argwhere(indx == True)[0]
+    i_d = np.argwhere(indx == True).flatten()[0]
     mgc = data[i_d, 2].astype(float)
     rc = data[i_d, 3].astype(float)
     rh = data[i_d, 4].astype(float)
@@ -880,6 +899,7 @@ def _get_harris_cluster(data, gcname, mbar=0.4, **kwargs):
     c = np.log10(rl / rc)
     w0 = c_to_w0(c)
     N = int(kwargs.get("N", mgc / mbar))
+
 
     cluster = _sample_limepy(g=1.0, phi0=w0, M=mgc, rt=rl, N=N)
 

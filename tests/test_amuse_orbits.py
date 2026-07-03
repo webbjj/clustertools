@@ -263,7 +263,8 @@ def test_orbital_path(tol=0.1,ro=solar_ro,vo=solar_vo):
 	)
 
 	o=Orbit([246.44999999999987, -72.201999999999998, 14.450000000000003, 1.7557999999999991, -0.25770000000000326, 366.32999999999998],radec=True,ro=solar_ro,vo=solar_vo,solarmotion=solar_motion)
-	ts = np.linspace(0, (-1.0* tfinal.value_in(u.Gyr))/ conversion.time_in_Gyr(ro=ro, vo=vo), 1000)
+	
+	ts = np.linspace(0, cluster.orbit.t.min(), 1000)	
 	o.integrate(ts,MWPotential2014)
 
 	assert np.fabs(x[0].value_in(u.kpc)-o.x(ts[-1])) <= tol

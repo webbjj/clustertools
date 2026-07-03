@@ -135,12 +135,12 @@ def load_cluster(
     2018 - Written - Webb (UofT)
     """
     wdir = kwargs.get("wdir", "")
-    if wdir is not "":
+    if wdir != "":
         if wdir[-1] != '/':
             wdir+='/'
 
     snapdir = kwargs.get("snapdir", "")
-    if snapdir is not "":
+    if snapdir != "":
         if snapdir[-1] != '/':
             snapdir+='/'
 
@@ -405,12 +405,12 @@ def advance_cluster(
         ofilename=cluster.ofilename
 
     wdir = advance_kwargs.get("wdir", "")
-    if wdir is not "":
+    if wdir != "":
         if wdir[-1] != '/':
             wdir+='/'
 
     snapdir = advance_kwargs.get("snapdir", "")
-    if snapdir is not "":
+    if snapdir != "":
         if snapdir[-1] != '/':
             snapdir+='/'
 
@@ -573,7 +573,7 @@ def advance_cluster(
             **advance_kwargs,
             **kwargs
         )
-    elif ctype=='amuse':
+    elif cluster.ctype=='amuse':
         filename=_get_filename(filename,**advance_kwargs)
 
         if filename is not None:
@@ -670,11 +670,11 @@ def _get_filename(filename,**kwargs):
     nzfill = int(kwargs.get("nzfill", 1))
     nsnap = int(kwargs.get("nsnap", "0"))
     wdir = kwargs.get("wdir", "")
-    if wdir is not "":
+    if wdir != "":
         if wdir[-1] != '/':
             wdir+='/'
     snapdir = kwargs.get("snapdir", "")
-    if snapdir is not "":
+    if snapdir != "":
         if snapdir[-1] != '/':
             snapdir+='/'
     snapbase = kwargs.get("snapbase", "")

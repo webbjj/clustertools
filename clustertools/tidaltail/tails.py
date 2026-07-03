@@ -20,7 +20,7 @@ import numpy as np
 
 from ..analysis.orbits import orbital_path, orbital_path_match
 from ..cluster.operations import *
-from ..util.recipes import binmaker,nbinmaker,roaming_binmaker,roaming_nbinmaker
+from ..util.recipes import binmaker,nbinmaker,roaming_binmaker,roaming_nbinmaker,bin_index
 from ..util.coordinates import cart_to_sky
 from ..util.constants import *
 
@@ -205,24 +205,26 @@ def tail_path(
     else:
         dindx = (np.fabs(dpath) <= dmax)
 
-    ttail = np.array([])
-    xtail = np.array([])
-    ytail = np.array([])
-    ztail = np.array([])
-    vxtail = np.array([])
-    vytail = np.array([])
-    vztail = np.array([])
+    bin_idx = bin_index(tstar, t_lower, t_upper)
 
-    for i in range(0, len(t_mid)):
-        indx = (tstar >= t_lower[i]) * (tstar <= t_upper[i]) * dindx
-        if np.sum(indx) > 0:
-            ttail = np.append(ttail, t_mid[i])
-            xtail = np.append(xtail, np.mean(cluster.x[indx]))
-            ytail = np.append(ytail, np.mean(cluster.y[indx]))
-            ztail = np.append(ztail, np.mean(cluster.z[indx]))
-            vxtail = np.append(vxtail, np.mean(cluster.vx[indx]))
-            vytail = np.append(vytail, np.mean(cluster.vy[indx]))
-            vztail = np.append(vztail, np.mean(cluster.vz[indx]))
+    nbin = len(t_mid)
+    counts = np.bincount(bin_idx[dindx], minlength=nbin).astype(float)
+    sum_x = np.bincount(bin_idx[dindx], weights=cluster.x[dindx], minlength=nbin)
+    sum_y = np.bincount(bin_idx[dindx], weights=cluster.y[dindx], minlength=nbin)
+    sum_z = np.bincount(bin_idx[dindx], weights=cluster.z[dindx], minlength=nbin)
+    sum_vx = np.bincount(bin_idx[dindx], weights=cluster.vx[dindx], minlength=nbin)
+    sum_vy = np.bincount(bin_idx[dindx], weights=cluster.vy[dindx], minlength=nbin)
+    sum_vz = np.bincount(bin_idx[dindx], weights=cluster.vz[dindx], minlength=nbin)
+
+    keep = counts > 0
+    ttail = t_mid[keep]
+    xtail = sum_x[keep] / counts[keep]
+    ytail = sum_y[keep] / counts[keep]
+    ztail = sum_z[keep] / counts[keep]
+    vxtail = sum_vx[keep] / counts[keep]
+    vytail = sum_vy[keep] / counts[keep]
+    vztail = sum_vz[keep] / counts[keep]
+
 
     if skypath:
         ratail,dectail,disttail,pmratail,pmdectail,vlostail=cart_to_sky(xtail, ytail, ztail, vxtail, vytail, vztail)
@@ -265,6 +267,8 @@ def tail_path_match(
     ntail=100,
     pot=None,
     path=None,
+    dmax=None,
+    bintype='fix',
     from_centre=False,
     skypath=False,
     to_path=False,
@@ -295,6 +299,10 @@ def tail_path_match(
         galpy Potential that orbit is to be integrate in (default: None)
     path : array
         array of (t,x,y,x,vx,vy,vz) corresponding to the tail path. If none path is calculated (default: None)
+    dmax : float
+        maximum distance (assumed to be same units as cluster) from orbital path to be included in generating tail path (default: None)
+    bintype : str
+        type of binning for tail stars (default : 'fix')
     from_centre : bool
         genrate orbit from cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     skypath : bool
@@ -336,7 +344,7 @@ def tail_path_match(
  
     if path is None:
         path = tail_path(
-            cluster, tfinal=tfinal, no=no, nt=nt, ntail=ntail, pot=pot, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo,zo=zo,solarmotion=solarmotion,
+            cluster, tfinal=tfinal, no=no, nt=nt, ntail=ntail, pot=pot, dmax=dmax, bintype=bintype, from_centre=from_centre, skypath=skypath, ro=ro, vo=vo,zo=zo,solarmotion=solarmotion,
         )
 
     return orbital_path_match(cluster=cluster,tfinal=tfinal,nt=no,pot=pot,path=path,from_centre=from_centre,

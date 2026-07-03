@@ -31,7 +31,7 @@ except:
 	nolimepy=True
 
 nosim=np.invert(os.path.isfile('../docs/source/notebooks/nbody6_sim/OUT3'))
-nopath=np.invert(os.path.isdir('/Users/webbjere/Codes/clustertools/docs/source/notebooks'))
+nopath=np.invert(os.path.isdir('../docs/source/notebooks'))
 
 
 
@@ -603,7 +603,7 @@ def test_astropy_table():
 def test_astropy_table_cm():
 	wdir='../docs/source/notebooks/'
 	data = QTable.read("%spal5_rp.dat" % wdir, format="ascii")
-	cluster = ctools.load_cluster('astropy_table',particles=data, units='kpckms',origin='galaxy',cm={"m":"mass","x":"x","y":"y","z":"z","vx":"vx","xy":"vy","vz":"vz"})
+	cluster = ctools.load_cluster('astropy_table',particles=data, units='kpckms',origin='galaxy',column_mapper={"m":"mass","x":"x","y":"y","z":"z","vx":"v_x","vy":"v_y","vz":"v_z"})
 	assert check_params(cluster,'astropy_table','kpckms','galaxy',False)
 
 

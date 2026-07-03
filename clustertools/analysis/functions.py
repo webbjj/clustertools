@@ -168,7 +168,7 @@ def find_centre(
                 break
 
         # Find centre of mass and velocity of inner stars:
-        indx = np.in1d(cluster.id, i_d)
+        indx = np.isin(cluster.id, i_d)
 
         xc = np.sum(cluster.m[indx] * cluster.x[indx]) / np.sum(cluster.m[indx])
         yc = np.sum(cluster.m[indx] * cluster.y[indx]) / np.sum(cluster.m[indx])
@@ -641,6 +641,9 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
     trc=(0.39/lnlambda)*np.sqrt(rc**3./(grav*mtot))*(mtot/mbar)*np.sqrt(rc*rh)/(rc+rh)
 
+    # Units of Myr
+    trc*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
+
     cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
     trc=_convert_time(trc,'pckms',cluster)
@@ -665,7 +668,7 @@ def energies(cluster, specific=True, ids=None, projected=False, softening=0.0, f
     softening : float
       Plummer softening length in cluster.units (default: 0.0)
     full : bool
-      calculate distance of full array of stars at once with numbra (default: True)
+      calculate distance of full array of stars at once with numba (default: True)
     parallel : bool
       calculate distances in parallel (default: False)
     Returns
@@ -711,7 +714,7 @@ def energies(cluster, specific=True, ids=None, projected=False, softening=0.0, f
         if isinstance(ids,int) or isinstance(ids,float) or isinstance(ids,np.int64) or isinstance(ids,np.float64):
             ids = cluster.id == ids
         elif isinstance(ids[0],int) or isinstance(ids[0],float) or isinstance(ids[0],np.int64) or isinstance(ids[0],np.float64):
-            ids = np.in1d(cluster.id, ids)
+            ids = np.isin(cluster.id, ids)
     
         # Get gravitational constant
         grav = _get_grav(cluster)
@@ -753,7 +756,7 @@ def energies(cluster, specific=True, ids=None, projected=False, softening=0.0, f
             if specific:
                 m = cluster.m
             else:
-                m = cluter.m[i] * cluster.m
+                m = cluster.m[i] * cluster.m
 
             if projected:
                 dr = np.sqrt(dx ** 2.0 + dy ** 2.0 + softening**2.) 
@@ -1416,42 +1419,6 @@ def mass_function(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m < mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw) > 0:
-        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-    """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
 
@@ -1469,9 +1436,11 @@ def mass_function(
         else:
             m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
 
+        bin_idx = bin_index(cluster.m,m_lower,m_upper)
+
         m_corr_hist = np.zeros(len(m_hist))
         for i in range(0, len(m_hist)):
-            mindx = (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i]) * indx
+            mindx = (bin_idx==i) * indx
             m_hist[i]=np.sum(mindx)
             m_corr_hist[i] = np.sum(1.0 / mcorr[mindx])
 
@@ -1498,12 +1467,16 @@ def mass_function(
 
             if filename != None:
                 plt.savefig(filename)
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
         if return_error:
             return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha, mbinerror
         else:
             return m_mean, m_hist, dm, alpha, ealpha, yalpha, eyalpha
     else:
         print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
         if return_error:
             return (
@@ -1528,7 +1501,6 @@ def mass_function(
                 -1000.0,
             )
 
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 
 def tapered_mass_function(
@@ -1622,42 +1594,6 @@ def tapered_mass_function(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m < mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw) > 0:
-        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-    """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
 
@@ -1666,10 +1602,11 @@ def tapered_mass_function(
     if np.sum(indx) >= nmass:
 
         m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
+        bin_idx = bin_index(cluster.m,m_lower,m_upper)
 
         m_corr_hist = np.zeros(len(m_hist))
         for i in range(0, len(m_hist)):
-            mindx = (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i]) * indx
+            mindx = (bin_idx==i) * indx
             m_hist[i]=np.sum(mindx)
             m_corr_hist[i] = np.sum(1.0 / mcorr[mindx])
 
@@ -1705,8 +1642,13 @@ def tapered_mass_function(
             if filename != None:
                 plt.savefig(filename)
 
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
         return m_mean, m_hist, dm, A, eA, alpha, ealpha, mc, emc, beta, ebeta
     else:
+
+        cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
+
         print("NOT ENOUGH STARS TO ESTIMATE MASS FUNCTION")
         return (
             np.zeros(nmass),
@@ -1718,7 +1660,6 @@ def tapered_mass_function(
             -1000.0,
         )
 
-    cluster.return_cluster(units0,origin0, rorder0, rorder_origin0)
 
 def tpl_func(m,A,alpha,mc,beta):
 
@@ -1814,54 +1755,19 @@ def eta_function(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
-
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw) > 0:
-        indx *= (cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-    """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if np.sum(indx) >= 2 * nmass:
 
         m_lower, m_mean, m_upper, m_hist = nbinmaker(cluster.m[indx], nmass)
         lm_mean = np.log10(m_mean)
+        bin_idx = bin_index(cluster.m,m_lower,m_upper)
 
         sigvm = []
         lsigvm = []
         for i in range(0, nmass):
 
-            mindx = indx * (cluster.m >= m_lower[i]) * (cluster.m < m_upper[i])
+            mindx = indx * (bin_idx==i)
             sigvm.append(np.std(v[mindx]))
             lsigvm.append(np.log10(sigvm[-1]))
 
@@ -2853,10 +2759,6 @@ def _rho_prof(
     elif normalize:
         cluster.sortstars()
 
-    rprof = np.array([])
-    pprof = np.array([])
-    nprof = np.array([])
-
     if projected:
         r = cluster.rpro
         v = cluster.vpro
@@ -2864,41 +2766,7 @@ def _rho_prof(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.min(r)
-    if rmax == None:
-        rmax = np.max(r)
-    if vmin == None:
-        vmin = np.min(v)
-    if vmax == None:
-        vmax = np.max(v)
-    if mmin == None:
-        mmin = np.min(cluster.m)
-    if mmax == None:
-        mmax = np.max(cluster.m)
 
-    if indx is None:
-        indx = cluster.id > -1
-
-    # Build subcluster containing only stars in the full radial and mass range:
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-    )
-
-    if len(cluster.kw)>0:
-        indx*=(cluster.kw >= kwmin) * (cluster.kw <= kwmax)
-
-    if emin != None:
-        indx *= cluster.etot >= emin
-    if emin != None:
-        indx *= cluster.etot <= emax
-    """
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
     if bins is not None:
@@ -2909,16 +2777,20 @@ def _rho_prof(
     else:
         r_lower, r_mean, r_upper, r_hist = nbinmaker(r[indx], nrad)
 
+    bin_idx = bin_index(r,r_lower,r_upper)
+    rprof = r_mean
+    pprof = np.zeros(len(r_mean))
+    nprof = np.zeros(len(r_mean))
+
     for i in range(0, len(r_mean)):
-        rindx = indx * (r >= r_lower[i]) * (r < r_upper[i])
-        rprof = np.append(rprof, r_mean[i])
+        rindx = indx * (bin_idx==i)
         if projected:
             vol = np.pi * (r_upper[i] ** 2 - r_lower[i] ** 2.0)
         else:
             vol = (4.0 / 3.0) * np.pi * (r_upper[i] ** 3 - r_lower[i] ** 3.0)
 
-        pprof = np.append(pprof, np.sum(cluster.m[rindx] / vol))
-        nprof = np.append(nprof, np.sum(rindx))
+        pprof[i] = np.sum(cluster.m[rindx] / vol)
+        nprof[i] = np.sum(rindx)
 
     if plot:
         filename = kwargs.pop("filename", None)

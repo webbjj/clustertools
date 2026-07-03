@@ -232,10 +232,16 @@ def test_core_relaxation_time(tol=0.01):
 
 	trelax=(0.39/lnlambda)*np.sqrt(rc**3./(grav*(ntot)))*(ntot)*np.sqrt(rc*rh)/(rc+rh)
 
+	# Units of Myr
+	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
+
 	assert np.fabs(1.0-trelax/cluster.core_relaxation_time()) <= tol
 
 	lnlambda=np.log(0.2*ntot)
 	trelax=(0.39/lnlambda)*np.sqrt(rc**3./(grav*(ntot)))*(ntot)*np.sqrt(rc*rh)/(rc+rh)
+	# Units of Myr
+	trelax*= 3.086e13 / (3600.0 * 24.0 * 365.0 * 1000000.0)
+	
 	assert np.fabs(1.0-trelax/cluster.core_relaxation_time(coulomb=0.2)) <= tol
 
 def test_energies(tol=0.01):

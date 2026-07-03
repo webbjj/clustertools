@@ -445,7 +445,7 @@ class StarCluster(object):
         nfloat=np.zeros(len(params),dtype=bool)
         npmax=0
         for i,p in enumerate(params):
-            print(i,p,p is None,type(p))
+            #print(i,p,p is None,type(p))
             if p is not None:
                 if _hasamuse:
                     if isinstance(p,ScalarQuantity):
@@ -747,13 +747,13 @@ class StarCluster(object):
         self.vzb2=np.append(self.vzb2,vzb2)
 
         if mb1 is not None:
-            self.mb1=mb1
+            self.mb1=np.append(self.mb1,mb1)
         else:
-            self.mb1=np.ones(len(xb1))
+            self.mb1=np.append(self.mb1,np.ones(len(xb1)))
         if mb2 is not None:
-            self.mb2=mb2
+            self.mb2=np.append(self.mb2,mb2)
         else:
-            self.mb2=np.ones(len(xb2))
+            self.mb2=np.append(self.mb2,np.ones(len(xb2)))
 
         if set_com and not return_com:
             mcom=self.mb1+self.mb2
@@ -781,14 +781,14 @@ class StarCluster(object):
                 ids=idstart+np.linspace(0,len(xcom)-1,len(xcom))*2
             else:
                 ids=id1
-                self.id1=id1
+                self.id1=np.append(self.id1,id1)
 
             self.id=np.append(ids,self.id)
 
             if id2 is not None:
-                self.id2=id2
+                self.id2=np.append(self.id2,id2)
             else:
-                self.id2=self.id1+1
+                self.id2=np.append(self.id2,ids+1)
 
             if m01 is not None and m02 is not None:
                 self.m0=np.append(m01+m02,self.m0)
@@ -813,7 +813,7 @@ class StarCluster(object):
 
             if npop2 is None:
                 self.npop2=np.append(np.ones(len(xcom)),self.npop2)
-            elif isinstance(npop1,float):
+            elif isinstance(npop2,float):
                 self.npop2=np.append(np.ones(len(xcom))*npop2,self.npop2)
             else:
                 self.npop2=np.append(npop2,self.npop2)
@@ -914,7 +914,7 @@ class StarCluster(object):
                     zgc /= 1000.0
                     vxgc/=1.022712165045695
                     vygc/=1.022712165045695
-                    vzgc/=1.02271216504569
+                    vzgc/=1.022712165045695
                     tphys /= 1000.0
                 elif ounits == 'kpcgyr':
                     vxgc/=1.022712165045695
@@ -2524,7 +2524,7 @@ class StarCluster(object):
             if isinstance(ids,int) or isinstance(ids,float) or isinstance(ids,np.int64) or isinstance(ids,np.float64):
                 ids = self.id == ids
             elif isinstance(ids[0],int) or isinstance(ids[0],float) or isinstance(ids[0],np.int64) or isinstance(ids[0],np.float64):
-                ids = np.in1d(self.id, ids)
+                ids = np.isin(self.id, ids)
 
             kin_full, pot_full = np.zeros(self.ntot), np.zeros(self.ntot)
             kin_full[ids], pot_full[ids] = kin, pot
@@ -2562,7 +2562,7 @@ class StarCluster(object):
 
             return self.kin, self.pot
 
-    def closest_star(self, projected=None, argmument=False):
+    def closest_star(self, projected=None, argument=False):
         """Find distance to closest star for each star
         - uses numba
 
@@ -2726,20 +2726,8 @@ class StarCluster(object):
 
         Returns
         -------
-        m_mean : float
-            mean mass in each bin
-        m_hist : float
-            number of stars in each bin
-        dm : float
-            dN/dm of each bin
         alpha : float
             power-law slope of the mass function (dN/dm ~ m^alpha)
-        ealpha : float
-            error in alpha
-        yalpha : float
-            y-intercept of fit to log(dN/dm) vs log(m)
-        eyalpha : float
-            error in yalpha
 
         Other Parameters
         ----------------
@@ -2833,20 +2821,8 @@ class StarCluster(object):
 
         Returns
         -------
-        m_mean : float
-            mean mass in each bin
-        m_hist : float
-            number of stars in each bin
-        dm : float
-            dN/dm of each bin
         alpha : float
             power-law slope of the mass function (dN/dm ~ m^alpha)
-        ealpha : float
-            error in alpha
-        yalpha : float
-            y-intercept of fit to log(dN/dm) vs log(m)
-        eyalpha : float
-            error in yalpha
 
         Other Parameters
         ----------------
@@ -2939,18 +2915,8 @@ class StarCluster(object):
 
         Returns
         -------
-        m_mean : float
-            mean mass in each bin
-        sigvm : float
-            velocity dispersion of stars in each bin
         eta : float
             power-law slope of (sigvm ~ m^eta)
-        eeta : float
-            error in eta
-        yeta : float
-            y-intercept of fit to log(sigvm) vs log(m)
-        eeta : float
-            error in yeta
 
         Other Parameters
         ----------------
@@ -3042,18 +3008,8 @@ class StarCluster(object):
 
         Returns
         -------
-        m_mean : float
-            mean mass in each bin
-        sigvm : float
-            velocity dispersion of stars in each bin
         meq : float
             Bianchini fit to sigvm vs m
-        emeq : float
-            error in Bianchini fit to sigvm vs m
-        sigma0 : float
-            Bianchini fit to sigvm vs m
-        esigma0 : float
-            error in Bianchini fit to sigvm vs m
 
         Other Parameters
         ----------------
@@ -4065,46 +4021,6 @@ def sub_cluster(
         r = cluster.r
         v = cluster.v
 
-    """
-    if rmin == None:
-        rmin = np.amin(r)
-    if rmax == None:
-        rmax = np.amax(r)
-    if vmin == None:
-        vmin = np.amin(v)
-    if vmax == None:
-        vmax = np.amax(v)
-    if mmin == None:
-        mmin = np.amin(cluster.m)
-    if mmax == None:
-        mmax = np.amax(cluster.m)
-
-    if emin == None and emax != None:
-        eindx = cluster.etot <= emax
-    elif emin != None and emax == None:
-        eindx = cluster.etot >= emin
-    elif emin != None and emax != None:
-        eindx = (cluster.etot <= emax) * (cluster.etot >= emin)
-    else:
-        eindx = cluster.id > -1
-
-    if None in indx:
-        indx = cluster.id > -1
-
-    indx *= (
-        (r >= rmin)
-        * (r <= rmax)
-        * (cluster.m >= mmin)
-        * (cluster.m <= mmax)
-        * (v >= vmin)
-        * (v <= vmax)
-        * eindx
-    )
-
-    if len(cluster.kw) > 0:
-        indx*=((cluster.kw >= kwmin) * (cluster.kw <= kwmax))
-    """
-
     indx=cluster.subset(rmin=rmin,rmax=rmax,vmin=vmin,vmax=vmax,mmin=mmin,mmax=mmax,emin=emin,emax=emax,kwmin=kwmin,kwmax=kwmax,npop=npop,indx=indx,projected=projected)
 
 
@@ -4176,8 +4092,8 @@ def sub_cluster(
 
 
         if len(cluster.id2) > 0:
-            bindx1 = np.in1d(cluster.id1, cluster.id[indx])
-            bindx2 = np.in1d(cluster.id2, cluster.id[indx])
+            bindx1 = np.isin(cluster.id1, cluster.id[indx])
+            bindx2 = np.isin(cluster.id2, cluster.id[indx])
             bindx=np.logical_or(bindx1,bindx2)
 
 

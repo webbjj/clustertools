@@ -677,7 +677,9 @@ def orbital_path(
 
     o = initialize_orbit(cluster, from_centre=from_centre, ro=ro,vo=vo,zo=zo,solarmotion=solarmotion)
 
+
     ts = np.linspace(0, -1.0 * tfinal, nt)
+
     o.integrate(ts, pot)
 
     R, phi, z = coords.rect_to_cyl(o.x(ts[-1]), o.y(ts[-1]), o.z(ts[-1]))

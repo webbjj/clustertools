@@ -291,7 +291,7 @@ def _get_nbody6se(fort82, fort83, **kwargs):
                 r1b=np.append(r1b,float(data[13]))
                 r2b=np.append(r2b,float(data[14]))
                 te1=np.append(te1,float(data[15]))
-                te2=np.append(te2,float(ata[16]))
+                te2=np.append(te2,float(data[16]))
 
             #Add select parametes to full array
             kw=np.append(kw,kwb[-1])

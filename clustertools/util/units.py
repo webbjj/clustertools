@@ -261,7 +261,7 @@ def _convert_square_velocity(x,units,cluster):
 
         elif units=='kpckms' or units=='kpcgyr' or units=='WDunits':
 
-            if units=='kpcmyr':
+            if units=='kpcgyr':
                 x/=(1.022712165045695**2.0)
 
             if cluster.units=='nbody':
@@ -325,7 +325,7 @@ def _convert_time(x,units,cluster):
         if units=='nbody':
             if cluster.units=='pckms' or cluster.units=='pcmyr' or cluster.units=='amuse':
                 x*=cluster.tbar
-                if cluster=='amuse':
+                if cluster.units=='amuse':
                     x = x | u.Myr
             elif cluster.units=='kpckms' or cluster.units=='kpcgyr' or cluster.units=='WDunits':
                 x*=cluster.tbar/1000.0
@@ -415,7 +415,7 @@ def _convert_mass(x,units,cluster):
             elif cluster.units=='galpy':
                 x /= coords.mass_in_msol(ro=cluster._ro,vo=cluster._vo)
             elif cluster.units=='WDunits':
-                m/=222288.4543021174
+                x/=222288.4543021174
 
         elif units=='galpy':
             x *= coords.mass_in_msol(ro=cluster._ro,vo=cluster._vo)
@@ -425,10 +425,10 @@ def _convert_mass(x,units,cluster):
             elif cluster.units=='nbody':
                 x/=cluster.zmbar
             elif cluster.units=='WDunits':
-                m/=222288.4543021174
+                x/=222288.4543021174
 
         elif units=='WDunits':
-            m*=222288.4543021174
+            x*=222288.4543021174
 
             if cluster.units=='nbody':
                 x/=cluster.zmbar
@@ -446,7 +446,7 @@ def _convert_mass(x,units,cluster):
             elif cluster.units=='galpy':
                 x /= coords.mass_in_msol(ro=cluster._ro,vo=cluster._vo)
             elif cluster.units=='WDunits':
-                m/=222288.4543021174
+                x/=222288.4543021174
             elif cluster.units=='amuse':
                 x= x | u.MSun
 

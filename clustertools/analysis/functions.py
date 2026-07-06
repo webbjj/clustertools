@@ -1213,7 +1213,7 @@ def virial_radius_critical_density(
     
     - Virial radius is defined as the radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
     - Note that this a quick method that is a bit of an approximation as it interpolates the cluster's density profile. A more accurate (but expensive)
-    approach would be to subtract the product of the critical density and the overdensity constant from the density profile and find the root (in development)
+      approach would be to subtract the product of the critical density and the overdensity constant from the density profile and find the root (in development)
 
     Parameters
     ----------
@@ -1860,10 +1860,10 @@ def meq_function(
     NAME: Find meq from velocity dispersion versus mass
     
     - mass bins are set up so that there are an equal number of stars in each bin
-    - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
-    versus mass is fit with the following:
-    sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
-    = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
+    - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion
+      versus mass is fit with the following:
+      sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
+      = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
 
     Parameters
     ----------

@@ -1861,12 +1861,13 @@ class StarCluster(object):
         """Shift coordinates to clustercentric reference frame
 
         - When units='radec' and origin='sky', the cluster will be shifted to clustercentric coordinates using either:
-        --centre_method=None: angular distance between each star's RA/DEC and the RA/DEC of the cluster's centre with proper motions directly subtracted off
-        --centre_method='orthographic' , positions and velocities changed to orthnormal coordinates (Helmi et al. 2018)
-        -- centre_method='VandeVen' , positions and velocities changed to clustercentric coordinates using method outlined by Van de Ven et al. 2005
+
+          --centre_method=None: angular distance between each star's RA/DEC and the RA/DEC of the cluster's centre with proper motions directly subtracted off
+          --centre_method='orthographic' , positions and velocities changed to orthnormal coordinates (Helmi et al. 2018)
+          -- centre_method='VandeVen' , positions and velocities changed to clustercentric coordinates using method outlined by Van de Ven et al. 2005
 
         - Note the the line of site positions and velocities will just have the galactocentric coordinates of the cluster
-        subtracted off. Be sure to set projected=True when making any calculations to use only x and y coordinates
+          subtracted off. Be sure to set projected=True when making any calculations to use only x and y coordinates
 
         Parameters
         ----------
@@ -2982,10 +2983,10 @@ class StarCluster(object):
         NAME: Find meq from velocity dispersion versus mass
         
         - mass bins are set up so that there are an equal number of stars in each bin
-        - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
-        versus mass is fit with the following:
-        sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
-        = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
+        - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion
+          versus mass is fit with the following:
+          sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
+          = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
 
         Parameters
         ----------

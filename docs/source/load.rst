@@ -48,7 +48,7 @@ Advance
 
 In cases where a series of snapshot files represent the time evolution of a given cluster, or a single file contains all the entire evolution of a star cluster (as is the case for NBODY6 and GYRFALCON), an advance function has been created to very simply move to the next time step. It can be called via:
 
->> cluster=advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
+>>> cluster=advance_cluster(cluster, ofile=None, orbit=None, filename=None, **kwargs):
 
 Similar to ``load_cluster``, a file containing orbital information or a ``galpy`` orbit can be provided. ``filename`` only needs to provided if the filename of the next snapshot is not simply an incremental increase of an integer in the original file name. For example, given the working example where the initial snapshot was read from ``'00000.dat'``, advance will automatically look for ``'00001.dat'``. In cases where the increment between snapshots is not 1, which is the case for NBODY6++, simply set ``dtout`` to equal the step size when intializing the cluster and/or when calling ``advance_cluster``. ``advance_cluster`` will return an empty ``StarCluster`` with ``cluster.ntot=0`` when no more snapshots can be found. See the documentation or example notebooks for how more complex filenames can still be used by ``clustertools``.
 

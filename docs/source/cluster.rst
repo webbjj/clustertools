@@ -196,7 +196,7 @@ Units
 
 When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`` is ``None``. However it is possible for users to specify the units system used by stars in the ``StarCluster``. For most functions, it is necessary to set units in order for calculations to be carried out. At present, ``clustertools`` supports 8 different string inputs for ``StarCluster.units``. The inputs and their meanings are summarized in Table 1 below.
 
-.. list-table:: Table 1 - Units available in ``clustertools``
+.. list-table:: Table 1 - Units available in clustertools
    :widths: 35 25 25 25 20 20
    :header-rows: 1
 
@@ -264,7 +264,7 @@ Coordinate Systems
 
 Similar to ``StarCluster.units``, when a ``StarCluster`` is initialized the default value of ``StarCluster.origin`` is ``None``. However it is possible for users to specify the origin of the coordinate system used by stars in the ``StarCluster``. At present, ``clustertools`` supports 4 different string inputs for ``StarCluster.origin``. The inputs and their meanings are summarized in Table 2 below.
 
-.. list-table:: Table 2 - Coordinate systems available in ``clustertools``
+.. list-table:: Table 2 - Coordinate systems available in clustertools
    :widths: 25 25
    :header-rows: 1
 

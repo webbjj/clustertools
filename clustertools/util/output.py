@@ -24,9 +24,10 @@ from ..util.units import _convert_length,_convert_time,_convert_velocity
 
 def snapout(cluster, filename, energies=False, radec=False):
     """Output a snapshot in clustertools format
+
         - clustertools column format is mass,x,y,z,vx,vy,vz,id,kwtype where
-        positions and velocities are in cartiesian coordinates, id is the star id, and
-        kwtype is the stars stellar evolution type
+          positions and velocities are in cartiesian coordinates, id is the star id, and
+          kwtype is the stars stellar evolution type
         - units and coordinate system will be cluster.units and cluster.origin.
         - if energies==True, columns for kinetic energy, potential energy, and total energy will be added
         - if radec==True, columns for RA, Dec, distance, Proper Motion in RA, Proper Motion in Dec, and radial velocity will be added
@@ -165,8 +166,9 @@ def snapout(cluster, filename, energies=False, radec=False):
 
 def sseout(cluster, filename):
     """Output simple stellar evolution information in clustertools format
+
         - clustertools column format is initial mass, kw type, current mass, epoch and ospin
-        masses are in solar masses, epoch and spin are in Nbody6 units
+          masses are in solar masses, epoch and spin are in Nbody6 units
        
     Parameters
     ----------

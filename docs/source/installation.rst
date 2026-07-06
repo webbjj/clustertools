@@ -2,7 +2,7 @@ Installation
 ===============
 
 github and pip install
-------------
+-----------------------
 
 To install ``clustertools``, simply clone the GitHub repository and install via setup tools:
 

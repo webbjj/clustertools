@@ -8,7 +8,7 @@ The package contains functions for loading data from commonly used N-body codes,
 ``clustertools`` is developed on Github. Please go to https://github.com/webbjj/clustertools to report issues or contribute to the code. 
 
 Supported N-Body Simulation Codes, Snapshot Formats, and Packages
------------------
+-------------------------------------------------------------------------
 
 `AMUSE <https://amusecode.github.io/>`_ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
 
@@ -25,7 +25,7 @@ Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 `NEMO <https://astronemo.readthedocs.io/en/latest/>`_ (Teuben P., 1995, The Stellar Dynamics Toolbox NEMO. p. 398)
 
 Version 1.1 (May 18, 2023)
------------------
+---------------------------
 Thanks to anyone that has been using ``clustertools`` while it was in devlopment. I am happy to announce that Version 1.1 has now officially been released and the code has been published in JOSS. Thanks to the reviewers, Steven Rieder and Long Wang, for helpful feedback.
 
 Guide
@@ -157,8 +157,6 @@ Planned Future Additions
 * Incorporate other methods for estimating a cluster's dynamical age (A+, Blue Stragglers)
 
 * More analysis features for binary stars
-
-* Allow for stars to be tagged as members of different subpopulations for the study of multiple populations
 
 * More analysis features that are comparable to standard techniques used by observers
 

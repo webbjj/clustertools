@@ -5,6 +5,7 @@ StarCluster
 
 .. autoclass:: StarCluster
    :show-inheritance:
+   :noindex:
 
    .. rubric:: Methods Summary
 
@@ -22,8 +23,6 @@ StarCluster
       ~StarCluster.add_stars
       ~StarCluster.analyse
       ~StarCluster.analyze
-      ~StarCluster.calc_action
-      ~StarCluster.calc_actions
       ~StarCluster.ckin
       ~StarCluster.closest_star
       ~StarCluster.core_relaxation_time
@@ -35,8 +34,6 @@ StarCluster
       ~StarCluster.half_mass_relaxation_time
       ~StarCluster.initialize_orbit
       ~StarCluster.initialize_orbits
-      ~StarCluster.integrate_orbit
-      ~StarCluster.integrate_orbits
       ~StarCluster.interpolate_orbit
       ~StarCluster.interpolate_orbits
       ~StarCluster.key_params
@@ -58,24 +55,26 @@ StarCluster
       ~StarCluster.subset
       ~StarCluster.tail_path
       ~StarCluster.tail_path_match
+      ~StarCluster.tapered_mass_function
       ~StarCluster.to_WDunits
+      ~StarCluster.to_amuse
       ~StarCluster.to_audays
       ~StarCluster.to_center
       ~StarCluster.to_centre
       ~StarCluster.to_cluster
       ~StarCluster.to_galaxy
       ~StarCluster.to_galpy
+      ~StarCluster.to_kpcgyr
       ~StarCluster.to_kpckms
       ~StarCluster.to_nbody
       ~StarCluster.to_origin
       ~StarCluster.to_pckms
+      ~StarCluster.to_pcmyr
       ~StarCluster.to_radec
       ~StarCluster.to_sky
       ~StarCluster.to_sudays
       ~StarCluster.to_tail
       ~StarCluster.to_units
-      ~StarCluster.ttensor
-      ~StarCluster.ttensors
       ~StarCluster.virial_radius
       ~StarCluster.virialize
 
@@ -93,8 +92,6 @@ StarCluster
    .. automethod:: add_stars
    .. automethod:: analyse
    .. automethod:: analyze
-   .. automethod:: calc_action
-   .. automethod:: calc_actions
    .. automethod:: ckin
    .. automethod:: closest_star
    .. automethod:: core_relaxation_time
@@ -106,8 +103,6 @@ StarCluster
    .. automethod:: half_mass_relaxation_time
    .. automethod:: initialize_orbit
    .. automethod:: initialize_orbits
-   .. automethod:: integrate_orbit
-   .. automethod:: integrate_orbits
    .. automethod:: interpolate_orbit
    .. automethod:: interpolate_orbits
    .. automethod:: key_params
@@ -129,23 +124,25 @@ StarCluster
    .. automethod:: subset
    .. automethod:: tail_path
    .. automethod:: tail_path_match
+   .. automethod:: tapered_mass_function
    .. automethod:: to_WDunits
+   .. automethod:: to_amuse
    .. automethod:: to_audays
    .. automethod:: to_center
    .. automethod:: to_centre
    .. automethod:: to_cluster
    .. automethod:: to_galaxy
    .. automethod:: to_galpy
+   .. automethod:: to_kpcgyr
    .. automethod:: to_kpckms
    .. automethod:: to_nbody
    .. automethod:: to_origin
    .. automethod:: to_pckms
+   .. automethod:: to_pcmyr
    .. automethod:: to_radec
    .. automethod:: to_sky
    .. automethod:: to_sudays
    .. automethod:: to_tail
    .. automethod:: to_units
-   .. automethod:: ttensor
-   .. automethod:: ttensors
    .. automethod:: virial_radius
    .. automethod:: virialize

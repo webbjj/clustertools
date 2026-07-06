@@ -38,6 +38,7 @@ def _get_amuse_particles(
         origin of input data (default: None)
     ofile : file
         opened file containing orbital information
+
     Returns
     -------
     cluster : class

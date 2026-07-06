@@ -1,4 +1,5 @@
-.. _analysis
+.. _analysis:
+
 Analysis
 ===============
 
@@ -110,7 +111,7 @@ returns the below figure
 
 .. image:: /images/sigvprof.png
 
-Some editing can be done to the plot via key word arguments (see :ref:`Utilities <utilities>` for information regarding making figures with ``clustertools``)
+Some editing can be done to the plot via key word arguments (see :ref:`Utilities <utilities:utilities>` for information regarding making figures with ``clustertools``)
 
 All profiles can also just be measured for a select subpopulation of stars based on mass (``mmin``,``mmax``), radius (``rmin``,``rmax``), velocity (``vmin``,``vmax``), energy (``emin``,``emax``) and stellar evolution type (``kwmin``,``kwmax``). Alternatively a boolean array can be passed to ``index`` to ensure only a predefined subset of stars is used.
 
@@ -126,7 +127,7 @@ Orbit
 
 In cases where the ``StarCluster`` does not evolve in isolation, it is possible to specify both the cluster's orbit and the the external tidal field. When orbital and tidal field information are provided, ``clustertools`` makes use of ``galpy`` to help visualize and analyse the cluster's orbital properties. Hence Bovy (2015) must be cited anytime a ``clusertools`` function makes use of the external tidal field and/or the cluster's orbit. 
 
-As discussed in :ref:`Initialization <_cluster>` , the default value for the solar distance (``ro``) is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest (``vo``) is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1).The height of the Sun above the disk ``zo`` is 0.0208 kpc (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417). However the below functions all allow for these parameters to be uniquely set. 
+As discussed in :ref:`Initialization <cluster>` , the default value for the solar distance (``ro``) is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest (``vo``) is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1).The height of the Sun above the disk ``zo`` is 0.0208 kpc (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417). However the below functions all allow for these parameters to be uniquely set. 
 
 Similar to functions, orbital analyis can be done using internal calls (which set variables inside the StarCluster class) or externally (which returns information). For example, one can easily initialize and a cluster's ``galpy`` orbit, given its galactocentric coordinates are known, using:
 

@@ -27,6 +27,7 @@ def _get_galpy_orbits(
         origin of input data (default: None)
     ofile : file
         opened file containing orbital information
+
     Returns
     -------
     cluster : class

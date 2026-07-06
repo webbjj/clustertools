@@ -651,6 +651,7 @@ def orbital_path(
         orbit velocity
     o : class
         galpy orbit (if initialize==True)
+
     History
     -------
     2018 - Written - Webb (UofT)

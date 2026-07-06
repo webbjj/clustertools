@@ -1,6 +1,7 @@
 .. _cluster:
+
 Initialization
-============
+==============
 
 The StarCluster Class
 ---------------------
@@ -13,7 +14,7 @@ To initialize a ``StarCluster``, one can simply start with:
 
 >>> cluster=ctools.StarCluster()
 
-``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``, ``'galpy'``, ``'gyrfalcon'``, ``'limepy'``, ``'nbody6'``, ``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Loading and Advancing <_load_and_advance>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
+``StarCluster`` accepts additional optional arguments, each of which have defaults. They are the current time (``tphys=0``), the units (``units=None``) and origin (``origin=None``) of the coordinate system and the name of the code used to genereate the dataset ``ctype``. The units and origin variables only need to be specified if unit or coordinate trannsformations are going to be done (see :ref:`Units and Coordinate Systems <units_and_coordinate_systems>` for more information). The code type ``ctype`` defaults to ``'snapshot'``, but can alternatively be set to ``'astropy_table'``, ``'amuse'``, ``'galpy'``, ``'gyrfalcon'``, ``'limepy'``, ``'nbody6'``, ``'nbody6pp'``. ``ctype`` informs the ``StarCluster`` of the input files format. See :ref:`Loading and Advancing <load_and_advance>` for more informatoin on how ``ctype`` is used. Other keywords accepted when initializing a ``StarCluster`` can be found in the complete documentation (see StarCluster).
 
 Once a ``StarCluster`` is initialized, there are a large number of arrays and variables that correspond to individual stars, global properties of the cluster, and information related to the software used to generate the data. However, several functions have then been written to more easily populate ``StarCluster`` with information and carry out helpful calculations. They are:
 
@@ -107,7 +108,7 @@ It is beneficial to use ``add_orbit`` as opposed to setting variables like ``clu
 
 For those not familiar with ``NBODY6``, please consult the documention for ``add_nbody6``, ``add_sse``, and ``add_bse`` for the defintion of each variable. It is important to note that each of the above variables are intialized upon the initialization of ``StarCluster``, hence they can be set manually as well if you are using a code other than ``NBODY6`` and would like to define some of these parameters. Note, no units or origin are associated with any of the values provided via ``add_nbody6``, ``add_sse``, and ``add_bse`` such that they are not adjusted when unit and coordinate transformations are performed. 
 
-One variable that is worth expanding on is the ``kw`` parameter. Motivated by NBODY6, each star's stellar evolution type is described by ``kw``. The below table illustrates what each ``kw`` integer represents. If you need to quickly lookup this table, it can be printed to screen using the function ``kwtypes()`` (See :ref:`Utilities <utilities>`).
+One variable that is worth expanding on is the ``kw`` parameter. Motivated by NBODY6, each star's stellar evolution type is described by ``kw``. The below table illustrates what each ``kw`` integer represents. If you need to quickly lookup this table, it can be printed to screen using the function ``kwtypes()`` (See :ref:`Utilities <utilities:utilities>`).
 
 .. list-table:: Table 1 - Relationship between ``kw`` and stellar evolution type, as per NBODY6
    :widths: 25 25
@@ -256,7 +257,7 @@ When a ``StarCluster`` is initialized, the default value of ``StarCluster.units`
 
 In order to convert between certain units, it is necessary to know the distance to the Galactic Centre (``ro``), the rotation velocity at ``ro`` (``vo``), the Sun's height above the Galactic disk (``zo``), and the Sun's motion with respect to the local standard of rest (``solarmotion``). When a ``StarCluster`` is initialzied, the default value for ``ro`` is 8.275 kpc (Gravity Collaboration, Abuter, R., Amorim, A., et al. 2020 ,A&A, 647, A59), the [U,V,W] motion of the Sun is set to [-11.1,12.24,7.25] (Schönrich, R., Binney, J., Dehnen, W., 2010, MNRAS, 403, 1829) and the velocity of the local standard of rest is 239.23 km/s. The choice of ``vo`` is such that ``vo`` + V is consistent with current estimates of the proper motion of Sagitarius A* (Reid, M.J. & Brunthaler, A., ApJ, 892, 1). The height of the Sun above the disk is 0.0208 kpc (Bennett, M. & Bovy, J. 2019, MNRAS, 483, 1417). However each of these values can be changed when intializing a ``StarCluster``.
 
-See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one set of units to another.
+See :ref:`Operations <analysis:operations>` for information on operations that convert a ``StarCluster`` from one set of units to another.
 
 Coordinate Systems
 ------------------
@@ -285,4 +286,4 @@ In most cases, the cluster's centre may not be done. The centre can be determine
 It is also important to note that converting to ``sky`` requires knowlendge of ``ro``, ``vo``, ``zo``, and ``solarmotion``, the default values of which are discussed above.
 
 
-See :ref:`Operations <operations>` for information on operations that convert a ``StarCluster`` from one coordinate system to another.
+See :ref:`Operations <analysis:operations>` for information on operations that convert a ``StarCluster`` from one coordinate system to another.

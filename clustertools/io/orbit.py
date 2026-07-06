@@ -14,6 +14,7 @@ def _get_cluster_orbit(cluster, ofile, advance=False, ocol_names=["t", "x", "y",
         names corresponding to time, position, and velocity
     col_nums : int
         column numbers corresponding to each column name
+
     Returns
     -------
     cluster : class

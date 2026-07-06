@@ -937,6 +937,7 @@ def _get_cluster_orbit(gcname,ro=solar_ro, vo=solar_vo):
         galpy distance scale (Default: 8.)
     vo : float
         galpy velocity scale (Default: 220.)
+
     Returns
     -------
     orbit : class

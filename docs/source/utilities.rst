@@ -21,12 +21,23 @@ There exists several built in tools for creating standardized output files.
         :no-main-docstr:
         :no-heading:
 
-It is of course possible to include custom output functions, which for simplicity could be put in the custom folder which is imported. As an example I have included ``custom_outputs.py`` that demonstrates several output functions that I frequently use.
+
+.. _units_and_coordinate_systems:
+
+Units
+-----
+
+While unit conversions on a ``StarCluster`` are handled via :ref:`Operations <analysis:operations>`, users may find the below functions helpful if trying to manually do some unit conversions.
+
+.. automodapi:: clustertools.util.units
+        :no-inheritance-diagram:
+        :no-main-docstr:
+        :no-heading:
 
 Coordinates
 -----------
 
-While coordinate transformations to a ``StarCluster``  are handled via :ref:`Operations <operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions (``cart_to_cyl``,``sky_coords``,``cart_to_sky``) are wrappers around ``galpy`` coordinate transformations.
+While coordinate transformations to a ``StarCluster``  are handled via :ref:`Operations <analysis:operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions (``cart_to_cyl``,``sky_coords``,``cart_to_sky``) are wrappers around ``galpy`` coordinate transformations.
 
 .. automodapi:: clustertools.util.coordinates
         :no-inheritance-diagram:

@@ -43,6 +43,16 @@ extensions = ['nbsphinx','sphinx.ext.todo', 'sphinx.ext.viewcode', 'sphinx.ext.a
 numpydoc_show_class_members = False
 mathjax_path="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 
+# Prefix every autosectionlabel-generated label with its document path
+# (e.g. "analysis:operations" instead of bare "operations") so that
+# identically-titled sections in different documents -- including the
+# "Functions"/"Submodules" headings automodapi generates for every module
+# block, and section titles that are mirrored between the narrative .rst
+# guides and their companion example notebooks -- don't collide. Explicit
+# labels (".. _label:") are unaffected by this setting and keep their bare
+# names.
+autosectionlabel_prefix_document = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

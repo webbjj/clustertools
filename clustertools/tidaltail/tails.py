@@ -46,7 +46,7 @@ def to_tail(cluster):
     x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail : float
         rotated coordinates with cluster's velocity vector point along x-axis
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -149,6 +149,7 @@ def tail_path(
         tail path positions
     vx,vy,vz : float
         tail path velocities
+
     History
     -------
     2018 - Written - Webb (UofT)

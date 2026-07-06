@@ -64,6 +64,7 @@ def _get_astropy_table(
         cannot be found with `column_mapper`
     KeyError
         If missing a mandatory key in `column_mapper`.
+
     History
     -------
     2020 - Written - Starkman (UofT)

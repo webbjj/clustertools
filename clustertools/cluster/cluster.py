@@ -110,6 +110,7 @@ class StarCluster(object):
     give : str
         set what parameters are read in from nemo/gyrfalcon (default: 'mxv')
         Currently only accepts 'mxvpqael' as an alternative.
+
     History
     -------
     2018 - Written - Webb (UofT)
@@ -869,7 +870,7 @@ class StarCluster(object):
 
         None
 
-        History:
+        History
         ----------
 
         2018 - Written - Webb (UofT)
@@ -1054,7 +1055,7 @@ class StarCluster(object):
         ----------
         None
 
-        History:
+        History
         ----------
         2018 - Written - Webb (UofT)
         """
@@ -1127,7 +1128,7 @@ class StarCluster(object):
         ----------
         None
 
-        History:
+        History
         ----------
         2018 - Written - Webb (UofT)
 
@@ -1238,7 +1239,7 @@ class StarCluster(object):
 
         None
 
-        History:
+        History
         ----------
 
         2018 - Written - Webb (UofT)
@@ -1587,7 +1588,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1608,7 +1609,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2022 - Written - Webb (UofT)
 
@@ -1629,7 +1630,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2022 - Written - Webb (UofT)
 
@@ -1653,7 +1654,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1678,7 +1679,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
         """
@@ -1698,7 +1699,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1719,7 +1720,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2022 - Written - Webb (UofT)
 
@@ -1740,7 +1741,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2022 - Written - Webb (UofT)
 
@@ -1762,7 +1763,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1824,7 +1825,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1849,7 +1850,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1880,7 +1881,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1901,7 +1902,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1926,7 +1927,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
         """
@@ -1950,7 +1951,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -1970,7 +1971,7 @@ class StarCluster(object):
         cluster.units, cluster.origin : str
             units and origin of StarCluster
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
         """
@@ -1995,7 +1996,7 @@ class StarCluster(object):
         -------
         None
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
         """
@@ -2085,6 +2086,7 @@ class StarCluster(object):
             use projected values when calculating energies (default: False)
         softening : float
           Plummer softening length in cluster.units (default: 0.0)
+
         Returns
         -------
         qv : float
@@ -2370,6 +2372,7 @@ class StarCluster(object):
 
         - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 (Equation 5)
         - Need to adjust amplitude for different input units
+
         Parameters
         ----------
         cluster : class
@@ -2494,6 +2497,7 @@ class StarCluster(object):
           kinetic and potential energy of every star if the i_d argument is not used. If i_d
           argument is used, return an arrays with potential and kinetic energy in the same shape
           of i_d
+
         History
         -------
            2019 - Written - Webb (UofT)
@@ -2633,6 +2637,7 @@ class StarCluster(object):
         - Virial radius is calculated using either:
         -- the average inverse distance between particles, weighted by their masses (default)
         -- the radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
+
         Parameters
         ----------
         cluster : class
@@ -2792,6 +2797,7 @@ class StarCluster(object):
 
         - mass bins are set up so that there are an equal number of stars in each bin
         - functional form of the tapered mass function is taken from De Marchi, Paresce & Portegies Zwart 2010
+
         Parameters
         ----------
         cluster : class
@@ -2977,9 +2983,9 @@ class StarCluster(object):
         
         - mass bins are set up so that there are an equal number of stars in each bin
         - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
-          versus mass is fit with the following:
-          sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
-                  = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
+        versus mass is fit with the following:
+        sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
+        = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
 
         Parameters
         ----------
@@ -3156,6 +3162,7 @@ class StarCluster(object):
             use projected values (default: False)
         plot : bool
             plot the density profile and mark the core radius of the cluster (default: False)
+
         Returns
         -------
         rc : float
@@ -3185,12 +3192,11 @@ class StarCluster(object):
 
     def rtidal(self, pot=None, rtiterate=0, rtconverge=0.9, indx=None, rgc=None, from_centre=False, plot=False, verbose=False, **kwargs):
         """Calculate tidal radius of the cluster
-        - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
+        - The calculation uses Galpy (Bovy 2015, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
         -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
         -- Bovy J., 2015, ApJS, 216, 29
         - riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (np.sum(cluster.m))
-        -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal
-           radius again using the new mass until the change is less than 90%
+        -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal radius again using the new mass until the change is less than 90%
         - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
 
         Parameters
@@ -3271,6 +3277,7 @@ class StarCluster(object):
         from_centre : bool
             calculate tidal radius based on location of cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
         verbose : bool
+
         Returns
         -------
             rl : float
@@ -3604,6 +3611,7 @@ class StarCluster(object):
             orbit velocity
         o : class
             galpy orbit (if initialize==True)
+
         History
         -------
         2018 - Written - Webb (UofT)
@@ -3689,7 +3697,7 @@ class StarCluster(object):
         x_tail,y_tail,z_tail,vx_tail,vy_tail,vz_tail : float
             rotated coordinates with cluster's velocity vector point along x-axis
 
-        History:
+        History
         -------
         2018 - Written - Webb (UofT)
 
@@ -3753,6 +3761,7 @@ class StarCluster(object):
                 tail path positions
             vx,vy,vz : float
                 tail path velocities
+
             History
             -------
             2018 - Written - Webb (UofT)

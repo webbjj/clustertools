@@ -692,6 +692,8 @@ def test_v2_prof(tol=0.1):
 
 def test_eta_prof(tol=0.1):
 
+	rng = np.random.default_rng(seed=42)
+
 	rlower=np.arange(0,20,2)
 	rupper=rlower+2
 	rmid=(rupper+rlower)/2.
@@ -708,7 +710,7 @@ def test_eta_prof(tol=0.1):
 	etatest=np.arange(-2,-0.,0.2)
 
 	for i in range(0,len(rmid)):
-		xnew=np.random.uniform(rlower[i],rupper[i],num)
+		xnew=rng.uniform(rlower[i],rupper[i],num)
 		x=np.append(x,xnew)
 
 		mnew=ctools.power_law_distribution_function(len(xnew),alphatest,0.1,1.)

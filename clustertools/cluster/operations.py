@@ -62,6 +62,7 @@ def to_pckms(cluster,analyze=True):
         StarCluster
     analyze : bool
         run analysis function (default: True)
+
     Returns
     -------
     None
@@ -156,7 +157,7 @@ def to_kpckms(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -293,7 +294,7 @@ def to_pcmyr(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2022 - Written - Webb (UofT)
 
@@ -335,7 +336,7 @@ def to_kpcgyr(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2022 - Written - Webb (UofT)
 
@@ -379,7 +380,7 @@ def to_nbody(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -450,7 +451,7 @@ def to_radec(cluster, sortstars=True,centre_method=None,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
     """
@@ -544,7 +545,7 @@ def from_radec(cluster, sortstars=True):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -616,7 +617,7 @@ def to_galpy(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -672,7 +673,7 @@ def to_WDunits(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2022 - Written - Webb (UofT)
 
@@ -720,7 +721,7 @@ def to_amuse(cluster,analyze=True):
     -------
     None
 
-    History:
+    History
     -------
     2022 - Written - Webb (UofT)
 
@@ -771,7 +772,7 @@ def from_amuse(cluster):
     -------
     None
 
-    History:
+    History
     -------
     2022 - Written - Webb (UofT)
 
@@ -821,7 +822,7 @@ def to_units(cluster, units):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -934,7 +935,7 @@ def to_centre(cluster, sortstars=True, centre_method=None):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -1001,7 +1002,7 @@ def to_center(cluster, sortstars=True, centre_method=None):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -1033,7 +1034,7 @@ def to_cluster(cluster, sortstars=True, centre_method=None):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -1198,7 +1199,7 @@ def to_galaxy(cluster, sortstars=True):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -1247,7 +1248,7 @@ def to_sky(cluster, sortstars=True,centre_method=None):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
     """
@@ -1290,7 +1291,7 @@ def to_origin(cluster, origin, sortstars=True, centre_method=None):
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
 
@@ -1327,7 +1328,7 @@ def save_cluster(cluster):
     cluster.units, cluster.origin : str
         units and origin of StarCluster
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
     """
@@ -1356,7 +1357,7 @@ def return_cluster(cluster, units0, origin0, rorder0, rorder_origin0 ,sortstars=
     -------
     None
 
-    History:
+    History
     -------
     2018 - Written - Webb (UofT)
     """
@@ -1462,6 +1463,7 @@ def virialize(cluster, qvir=0.5, specific=True, full=full_default, projected=Fal
         use projected values when calculating energies (default: False)
     softening : float
       Plummer softening length in cluster.units (default: 0.0)
+
     Returns
     -------
     qv : float

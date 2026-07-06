@@ -458,6 +458,7 @@ def relaxation_time(cluster, rad=None, coulomb=0.4, projected=False,method='spit
 
     - Spitzer, L. Jr, Hart, M.H. 1971, ApJ, 164, 399 (Equation 5)
     - Need to adjust amplitude for different input units
+
     Parameters
     ----------
     cluster : class
@@ -654,6 +655,7 @@ def core_relaxation_time(cluster, coulomb=0.4, projected=False):
 
 def energies(cluster, specific=True, ids=None, projected=False, softening=0.0, full=True, parallel=False, **kwargs):
     """Calculate kinetic and potential energy of every star
+
     Parameters
     ----------
     cluster : class
@@ -671,12 +673,14 @@ def energies(cluster, specific=True, ids=None, projected=False, softening=0.0, f
       calculate distance of full array of stars at once with numba (default: True)
     parallel : bool
       calculate distances in parallel (default: False)
+
     Returns
     -------
     kin,pot : float
       kinetic and potential energy of every star if the i_d argument is not used. If i_d
       argument is used, return an arrays with potential and kinetic energy in the same shape
       of i_d
+
     History
     -------
        2019 - Written - Webb (UofT)
@@ -790,6 +794,7 @@ def _potential_energy(cluster,softening=0.0):
         positions and masses of stars within the StarCluster
     softening : float
       Plummer softening length in cluster.units (default: 0.0)
+
     Returns
     -------
         pot : float
@@ -824,6 +829,7 @@ def _potential_energy_parallel(cluster,softening=0.0):
         positions and masses of stars within the StarCluster
     softening : float
       Plummer softening length in cluster.units (default: 0.0)
+
     Returns
     -------
         pot : float
@@ -1050,6 +1056,7 @@ def virial_radius(cluster, method='inverse_distance',
     - Virial radius is calculated using either:
     -- the average inverse distance between particles, weighted by their masses (default)
     -- the radius at which the density is equal to the critical density of the Universe at the redshift of the system, multiplied by an overdensity constant
+
     Parameters
     ----------
     cluster : class
@@ -1527,6 +1534,7 @@ def tapered_mass_function(
 
     - mass bins are set up so that there are an equal number of stars in each bin
     - functional form of the tapered mass function is taken from De Marchi, Paresce & Portegies Zwart 2010
+
     Parameters
     ----------
     cluster : class
@@ -1853,9 +1861,9 @@ def meq_function(
     
     - mass bins are set up so that there are an equal number of stars in each bin
     - As per Bianchini, P. et al. 2016, MNRAS, 458, 3644, velocity dispersion 
-      versus mass is fit with the following:
-      sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
-              = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
+    versus mass is fit with the following:
+    sigma(m)= sigma e^(-1/2 m/meq) if m<= meq
+    = sigma0 e^(-1/2) (m/meq)^-1/2 if m > meq
 
     Parameters
     ----------
@@ -2082,6 +2090,7 @@ def rcore(
         use projected values (default: False)
     plot : bool
         plot the density profile and mark the core radius of the cluster (default: False)
+
     Returns
     -------
     rc : float
@@ -2305,12 +2314,11 @@ def rtidal(
     **kwargs,
 ):
     """Calculate tidal radius of the cluster
-    - The calculation uses Galpy (Bovy 2015_, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
+    - The calculation uses Galpy (Bovy 2015, which takes the formalism of Bertin & Varri 2008 to calculate the tidal radius
     -- Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005
     -- Bovy J., 2015, ApJS, 216, 29
     - riterate = 0 corresponds to a single calculation of the tidal radius based on the cluster's mass (np.sum(cluster.m))
-    -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal
-       radius again using the new mass until the change is less than 90%
+    -- Additional iterations take the mass within the previous iteration's calculation of the tidal radius and calculates the tidal radius again using the new mass until the change is less than 90%
     - for cases where the cluster's orbital parameters are not set, it is possible to manually set rgc which is assumed to be in kpc.
 
     Parameters
@@ -2516,6 +2524,7 @@ def rlimiting(
     from_centre : bool
         calculate tidal radius based on location of cluster's exact centre instead of its assigned galactocentric coordinates (default: False)
     verbose : bool
+
     Returns
     -------
         rl : float

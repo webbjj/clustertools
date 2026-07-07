@@ -72,9 +72,6 @@ instance/
 # Sphinx documentation
 docs/_build/
 
-#JOSS paper
-paper/
-
 # PyBuilder
 .pybuilder/
 target/

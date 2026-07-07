@@ -1,7 +1,7 @@
 ``clustertools``
 ================
 
-``clustertools`` is a Python package for analysing star cluster simulations. The package is built around the ``StarCluster`` class, which will store all the necessary information from a given star cluster simulation to be used for anaylsis. All functions within ``clustertools`` are then designed to act on a ``StarCluster``. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy <https://docs.galpy.org/en/v1.6.0/index.html>`_ , and measuring common cluster properties like its mass function, density profile, and velocity dispersion profile (among others). While originally designed with star clusters in mind, ``clustertools`` can be used to study other types of N-body systems, including stellar streams and dark matter sub-halos.  
+``clustertools`` is a Python package for analysing star cluster simulations. The package is built around the ``StarCluster`` class, which will store all the necessary information from a given star cluster simulation to be used for analysis. All functions within ``clustertools`` are then designed to act on a ``StarCluster``. ``clustertools`` can be used for unit and coordinate transformations, the calculation of key structural and kinematic parameters, analysis of the cluster's orbit and tidal tails (with the help of `galpy <https://docs.galpy.org/en/v1.6.0/index.html>`_), and measuring common cluster properties like its mass function, density profile, and velocity dispersion profile (among others). While originally designed with star clusters in mind, ``clustertools`` can be used to study other types of N-body systems, including stellar streams and dark matter sub-halos.
 
 The package contains functions for loading data from commonly used N-body codes, generic snapshots, and codes for generating initial conditions. 
 
@@ -10,7 +10,7 @@ The package contains functions for loading data from commonly used N-body codes,
 Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 -------------------------------------------------------------------------
 
-`AMUSE <https://amusecode.github.io/>`_ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9)
+`AMUSE <https://amusecode.github.io/>`_ (Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art of AMUSE, doi:10.1088/978-0-7503-1320-9)
 
 `ASTROPY_TABLE <https://docs.astropy.org/en/latest/>`_ (Astropy Collaboration 2013, A&A, 558, A33)
 
@@ -26,7 +26,7 @@ Supported N-Body Simulation Codes, Snapshot Formats, and Packages
 
 Version 1.1 (May 18, 2023)
 ---------------------------
-Thanks to anyone that has been using ``clustertools`` while it was in devlopment. I am happy to announce that Version 1.1 has now officially been released and the code has been published in JOSS. Thanks to the reviewers, Steven Rieder and Long Wang, for helpful feedback.
+Thanks to anyone that has been using ``clustertools`` while it was in development. I am happy to announce that Version 1.1 has now officially been released and the code has been published in JOSS. Thanks to the reviewers, Steven Rieder and Long Wang, for helpful feedback.
 
 Guide
 -----------------
@@ -65,18 +65,17 @@ Example Notebooks
 Acknowledging clustertools
 --------------------------
 
-If you use ``clustertools`` in a publiclication, please cite the corresponding publication in the Journal of Open Source Software (JOSS):
+If you use ``clustertools`` in a publication, please cite the corresponding publication in the Journal of Open Source Software (JOSS):
 
 Webb, J. J., (2023). clustertools: A Python Package for Analyzing Star Cluster Simulations. Journal of Open Source Software, 8(85), 4483, https://doi.org/10.21105/joss.04483
 
 .. image:: https://joss.theoj.org/papers/10.21105/joss.04483/status.svg
-:target: https://doi.org/10.21105/joss.04483
+   :target: https://doi.org/10.21105/joss.04483
 
-,the Zenodo DOI:
+and the Zenodo DOI:
 
 .. image:: https://zenodo.org/badge/272233602.svg
-
-:target: https://zenodo.org/badge/latestdoi/272233602
+   :target: https://zenodo.org/badge/latestdoi/272233602
 
 and link to ``https://github.com/webbjj/clustertools``. 
 
@@ -91,7 +90,7 @@ References
 
 ``ckin`` - Bianchini, P. et al. 2018, MNRAS, 475, 96 (`ADS <https://ui.adsabs.harvard.edu/abs/2018MNRAS.475L..96B/abstract>`_)
 
-``cyl_coords`` ,``cart_to_cy``,``cyl_to_cart`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
+``cyl_coords``, ``cart_to_cyl``, ``cyl_to_cart`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
 ``find_centre(density=True)`` (default) - Harfst, S., Gualandris, A., Merritt, D., et al. 2007, NewA, 12, 357 (`ADS <https://ui.adsabs.harvard.edu/abs/2007NewA...12..357H/abstract>`_) or Casertano, S., Hut, P. 1985, ApJ, 298, 80 (`ADS <https://ui.adsabs.harvard.edu/abs/1985ApJ...298...80C/abstract>`_)
 
@@ -99,9 +98,9 @@ References
 
 ``initialize_orbit``, ``initialize_orbits``, ``interpolate_orbit``, ``interpolate_orbits`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``load_cluster('limepy','gcname')`` (default) - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 (`ADS <https://ui.adsabs.harvard.edu/abs/2015MNRAS.454..576G/abstract>`_) - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.4906D/abstract>`_) - Vasiliev E., 2019, MNRAS, 484,2832 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.484.2832V/abstract>`_)
+``load_cluster('limepy','gcname')`` (default) - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 (`ADS <https://ui.adsabs.harvard.edu/abs/2015MNRAS.454..576G/abstract>`_) - de Boer, T. J. L., Gieles, M., Balbinot, E., Hénault-Brunet, V., Sollima, A., Watkins, L. L., Claydon, I. 2019, MNRAS, 485, 4906 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.485.4906D/abstract>`_) - Vasiliev E., 2019, MNRAS, 484, 2832 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.484.2832V/abstract>`_)
 
-``load_cluster('limepy',gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 (`ADS <https://ui.adsabs.harvard.edu/abs/2015MNRAS.454..576G/abstract>`_) - Vasiliev E., 2019, MNRAS, 484,2832 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.484.2832V/abstract>`_)
+``load_cluster('limepy','gcname', source='harris')`` - Harris, W.E. 1996 (2010 Edition), AJ, 112, 1487 - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Gieles, M. & Zocchi, A. 2015, MNRAS, 454, 576 (`ADS <https://ui.adsabs.harvard.edu/abs/2015MNRAS.454..576G/abstract>`_) - Vasiliev E., 2019, MNRAS, 484, 2832 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.484.2832V/abstract>`_)
 
 ``meq_function``, ``meq_prof`` - Bianchini, P. et al. 2016, MNRAS, 458, 3644 (`ADS <https://ui.adsabs.harvard.edu/abs/2016MNRAS.458.3644B/abstract>`_)
 
@@ -113,25 +112,25 @@ References
 
 ``rlimiting`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 448, 4 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.488.5748W/abstract>`_)
+``rtidal`` - Bertin, G. & Varri, A.L. 2008, ApJ, 689, 1005 - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_) - Webb, J.J., Bovy, J., Carlberg, R.G., Gieles, M. 2019, MNRAS, 488, 5748 (`ADS <https://ui.adsabs.harvard.edu/abs/2019MNRAS.488.5748W/abstract>`_)
 
 ``tail_path``, ``tail_path_match``, ``to_tail`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``to_centre(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 (`ADS <https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..12G/abstract>`_)
+``to_centre(centre_method='orthographic')`` - GAIA Collaboration, 2018, A&A, 616, A12 (`ADS <https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..12G/abstract>`_)
 
-``to_centre(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University (`ADS <https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract>`_)
+``to_centre(centre_method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University (`ADS <https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract>`_)
 
-``to_cluster(method='orthonormal')`` - GAIA Collaboration, 2018, A&A, 616, A12 (`ADS <https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..12G/abstract>`_)
+``to_cluster(centre_method='orthographic')`` - GAIA Collaboration, 2018, A&A, 616, A12 (`ADS <https://ui.adsabs.harvard.edu/abs/2018A%26A...616A..12G/abstract>`_)
 
-``to_cluster(method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University (`ADS <https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract>`_)
+``to_cluster(centre_method='VandeVen')`` - van de Ven, G. 2005, PhD Thesis, Leiden University (`ADS <https://ui.adsabs.harvard.edu/abs/2005PhDT........12V/abstract>`_)
 
 ``to_sky``,``sky_coords``,``cart_to_sky`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
 ``virial_radius(method='critical_density')`` - Bovy J., 2015, ApJS, 216, 29 (`ADS <https://ui.adsabs.harvard.edu/abs/2015ApJS..216...29B/abstract>`_)
 
-``virial_radius(method=inverse_distance)`` - Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art ofAMUSE, doi:10.1088/978-0-7503-1320-9 (`ADS <https://ui.adsabs.harvard.edu/abs/2018araa.book.....P/abstract>`_)
+``virial_radius(method='inverse_distance')`` - Portegies Zwart S., McMillan S., 2018, Astrophysical Recipes; The art of AMUSE, doi:10.1088/978-0-7503-1320-9 (`ADS <https://ui.adsabs.harvard.edu/abs/2018araa.book.....P/abstract>`_)
 
-Contributers
+Contributors
 -----------------
 Jo Bovy - https://github.com/jobovy
 Erik Gillis - https://github.com/e-gillis

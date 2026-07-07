@@ -37,7 +37,7 @@ While unit conversions on a ``StarCluster`` are handled via :ref:`Operations <an
 Coordinates
 -----------
 
-While coordinate transformations to a ``StarCluster``  are handled via :ref:`Operations <analysis:operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions (``cart_to_cyl``,``sky_coords``,``cart_to_sky``) are wrappers around ``galpy`` coordinate transformations.
+While coordinate transformations to a ``StarCluster`` are handled via :ref:`Operations <analysis:operations>`, users may find the below functions helpful if trying to manually do some coordinate transformations. Note that several of these functions (``cart_to_cyl``,``sky_coords``,``cart_to_sky``) are wrappers around ``galpy`` coordinate transformations.
 
 .. automodapi:: clustertools.util.coordinates
         :no-inheritance-diagram:
@@ -57,7 +57,7 @@ Finally, several functions that are used throughout ``StarCluster`` that users m
 Constants
 ---------
 
-For convenience purposes, a few constants are saved to be used globally throughout ``clustertools``. A function that prints the conversion table between ``kw`` and stellar evolution type, as discussed in :ref:`Cluster <cluster>` is also included here.
+For convenience purposes, a few constants are saved to be used globally throughout ``clustertools``. A function that prints the conversion table between ``kw`` and stellar evolution type, as discussed in :ref:`Initialization <cluster>`, is also included here.
 
 .. automodapi:: clustertools.util.constants
         :no-inheritance-diagram:

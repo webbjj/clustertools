@@ -4,23 +4,23 @@ Installation
 github and pip install
 -----------------------
 
-To install ``clustertools``, simply clone the GitHub repository and install via setup tools:
+To install ``clustertools``, simply clone the GitHub repository and install via pip:
 
 >>> git clone https://github.com/webbjj/clustertools.git
 >>> cd clustertools
->>> python setup.py install
+>>> pip install .
 
 Please note that if you don't have permission to write files to the default install location (often /usr/local/lib), you will either need to run
 
->>> sudo python setup.py install
+>>> pip install --user .
 
-or
+or install into a directory you do have permission to write to and is in your PYTHONPATH:
 
->>> python setup.py install --prefix='PATH'
+>>> pip install --prefix='PATH' .
 
-where 'PATH' is a directory that you do have permission to write in and is in your PYTHONPATH.
+where 'PATH' is that directory.
 
-It has recently become possible to install ``clustertools`` using pip:
+It has recently become possible to install ``clustertools`` using pip directly from PyPI:
 
 >>> pip install clustertools
 
@@ -30,7 +30,7 @@ however please note this version is not updated as frequently as the GitHub repo
 
 or
 
->>> pip install clustertools --install-option="--prefix=PATH"
+>>> pip install --prefix='PATH' clustertools
 
 Note: For users looking to take advantage of the plotting features available in clustertools, it may be necessary to install the cm-super, dvipng, texlive, and texlive-extra packages if they aren't installed by default.
 

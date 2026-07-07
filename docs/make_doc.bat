@@ -1,1 +1,1 @@
-sphinx-apidoc -f -e -M -T -d 1 --ext-mathjax -o ./source/reference/ ../clustertools/
+python -m sphinx -b html source _build/html --keep-going
